@@ -1,6 +1,6 @@
 # game-rl-qwen25vl7b TRACE Final20 Temp0.6 Results
 
-Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.
+VisualPuzzles repair note: cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract; no generation or judge rerun was used.
 
 | benchmark_key       | benchmark           | dataset_alias         | prompt_run                             |   game-rl-qwen25vl7b |   game-rl-qwen25vl7b rows | game-rl-qwen25vl7b score run           |
 |:--------------------|:--------------------|:----------------------|:---------------------------------------|---------------------:|--------------------------:|:---------------------------------------|
@@ -11,7 +11,7 @@ Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-pa
 | puzzlevqa           | PuzzleVQA           | PuzzleVQA             | vlmevalkit_reasoning                   |                49.45 |                   2000.00 | llm_extracted                          |
 | logicvista          | LogicVista          | LogicVista            | vlmevalkit_defaults_qwen32b_judge      |                44.07 |                    447.00 | vlmevalkit_defaults_qwen32b_judge      |
 | mathvista           | MathVista           | MathVista_MINI        | vlmevalkit_defaults_qwen32b_judge      |                68.00 |                   1000.00 | vlmevalkit_defaults_qwen32b_judge      |
-| visualpuzzles       | VisualPuzzles       | VisualPuzzles         | vlmevalkit_reasoning                   |                19.18 |                   1168.00 | llm_extracted                          |
+| visualpuzzles       | VisualPuzzles       | VisualPuzzles         | vlmevalkit_reasoning                   |                21.40 |                   1168.00 | llm_extracted                          |
 | cvbench_3d          | CV-Bench 3D         | CV-Bench-3D           | vlmevalkit_defaults                    |                75.83 |                   1200.00 | llm_extracted                          |
 | wemath              | WeMath              | WeMath_COT            | vlmevalkit_cot_qwen32b_judge           |                65.34 |                   1740.00 | llm_extracted                          |
 | mathvision          | MathVision          | MathVision            | vlmevalkit_defaults_qwen32b_judge      |                26.48 |                   3040.00 | vlmevalkit_defaults_qwen32b_judge      |

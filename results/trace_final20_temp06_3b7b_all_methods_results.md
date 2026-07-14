@@ -1,6 +1,9 @@
 # TRACE Final20 Temp0.6 3B/7B All Methods Results
 
-Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.
+Deterministic repair notes:
+- ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls.
+- VisualPuzzles cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract.
+- No generation or judge rerun was used for these repairs.
 
 ## 3B
 | Benchmark           |    Rows |   Qwen2.5-VL-3B Base (3-seed avg) |   Qwen2.5-VL-3B Answer GRPO 500 (3-seed avg) |   Qwen2.5-VL-3B Annotation GRPO 500 (seed42) |
@@ -23,9 +26,9 @@ Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-pa
 | SpatialVizBench COT | 1180.00 |                             25.45 |                                        26.86 |                                        28.14 |
 | TableVQABench       | 1500.00 |                             69.12 |                                        71.88 |                                        72.48 |
 | TreeBench           |  405.00 |                             39.18 |                                        40.74 |                                        38.27 |
-| VisualPuzzles       | 1168.00 |                             17.32 |                                        18.86 |                                        17.38 |
+| VisualPuzzles       | 1168.00 |                             18.49 |                                        21.03 |                                        19.18 |
 | WeMath              | 1740.00 |                             46.93 |                                        57.87 |                                        51.67 |
-| Average             |  nan    |                             38.10 |                                        41.68 |                                        40.80 |
+| Average             |  nan    |                             38.16 |                                        41.79 |                                        40.89 |
 
 ## 7B
 | Benchmark           |    Rows |   Qwen2.5-VL-7B Base (3-seed avg) |   Qwen2.5-VL-7B Answer GRPO 500 (3-seed avg) |   OpenMOSS Game-RL Qwen2.5-VL-7B (seed42) |   Sphinx Qwen2.5-VL-7B 500 (seed42) |   PCGRPO Qwen2.5-VL-7B Jigsaw CARE (seed42) |   Vero Qwen2.5-VL-7B (seed42) |
@@ -48,9 +51,9 @@ Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-pa
 | SpatialVizBench COT | 1180.00 |                             26.50 |                                        31.61 |                                     29.41 |                               27.88 |                                       29.49 |                         31.19 |
 | TableVQABench       | 1500.00 |                             74.92 |                                        77.99 |                                     74.13 |                               73.12 |                                       69.68 |                         78.64 |
 | TreeBench           |  405.00 |                             40.91 |                                        43.21 |                                     39.26 |                               40.49 |                                       40.74 |                         41.73 |
-| VisualPuzzles       | 1168.00 |                             19.35 |                                        22.32 |                                     19.18 |                               18.49 |                                       20.21 |                         23.54 |
+| VisualPuzzles       | 1168.00 |                             21.66 |                                        24.49 |                                     21.40 |                               22.09 |                                       23.46 |                         27.91 |
 | WeMath              | 1740.00 |                             63.95 |                                        67.89 |                                     65.34 |                               65.17 |                                       65.06 |                         72.36 |
-| Average             |  nan    |                             46.33 |                                        50.94 |                                     47.20 |                               47.26 |                                       43.51 |                         50.31 |
+| Average             |  nan    |                             46.45 |                                        51.05 |                                     47.31 |                               47.44 |                                       43.67 |                         50.53 |
 
 ## Metadata
 | key                     | value                                                                                                                             |
@@ -60,3 +63,4 @@ Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-pa
 | decoding                | temperature=0.6, seed=42 for single-seed external methods; 3-seed average where labeled                                           |
 | benchmarks              | TRACE final20                                                                                                                     |
 | screenspot_table_repair | Re-parsed cached predictions for ScreenSpot positional clicks and TableVQABench final-answer wrappers; no generation/judge rerun. |
+| visualpuzzles_repair    | Re-scored cached Qwen3 extraction outputs with VisualPuzzles A-D option contract; no generation/judge rerun.                      |

@@ -159,6 +159,11 @@ def _literal_options(row: dict[str, Any]) -> dict[str, str]:
 
 
 def _valid_letters_for(benchmark: str, row: dict[str, Any]) -> str:
+    if benchmark == "visualpuzzles":
+        # VisualPuzzles sometimes stores non-choice metadata in the ``options``
+        # column even though the benchmark contract is always A-D. Do not let
+        # that metadata narrow extraction/scoring to only A.
+        return "ABCD"
     explicit = "".join(_option_columns(row, LETTERS).keys())
     if explicit:
         return explicit

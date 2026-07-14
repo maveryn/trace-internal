@@ -4,6 +4,8 @@ MathVerse scoring note: local Qwen3-32B judge outputs of the form `Judgement: 1`
 
 ScreenSpot/TableVQABench note: cached predictions are deterministically re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.
 
+VisualPuzzles note: cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract; no generation or judge rerun was used.
+
 ## Mean / Std
 | Task                |   n_seeds |   3B Base mean |   3B Base std |   3B Answer GRPO 500 mean |   3B Answer GRPO 500 std |   3B Delta mean |   3B Delta std |   7B Base mean |   7B Base std |   7B Answer GRPO 500 mean |   7B Answer GRPO 500 std |   7B Delta mean |   7B Delta std |
 |:--------------------|----------:|---------------:|--------------:|--------------------------:|-------------------------:|----------------:|---------------:|---------------:|--------------:|--------------------------:|-------------------------:|----------------:|---------------:|
@@ -29,10 +31,10 @@ ScreenSpot/TableVQABench note: cached predictions are deterministically re-parse
 | SpatialVizBench COT |         3 |          25.45 |          0.61 |                     26.86 |                     0.47 |            1.41 |           1.06 |          26.50 |          0.35 |                     31.61 |                     0.75 |            5.11 |           0.50 |
 | TableVQABench       |         3 |          69.12 |          0.68 |                     71.88 |                     0.54 |            2.76 |           0.18 |          74.92 |          1.13 |                     77.99 |                     0.50 |            3.08 |           1.28 |
 | TreeBench           |         3 |          39.18 |          2.24 |                     40.74 |                     0.99 |            1.56 |           1.61 |          40.91 |          1.61 |                     43.21 |                     1.54 |            2.30 |           1.24 |
-| VisualPuzzles       |         3 |          17.32 |          1.06 |                     18.86 |                     0.25 |            1.54 |           0.82 |          19.35 |          1.64 |                     22.32 |                     2.06 |            2.97 |           0.57 |
+| VisualPuzzles       |         3 |          18.49 |          1.19 |                     21.03 |                     0.22 |            2.54 |           0.99 |          21.66 |          2.18 |                     24.49 |                     2.27 |            2.83 |           0.09 |
 | VStarBench          |         3 |          69.98 |          2.36 |                     72.43 |                     3.68 |            2.44 |           1.32 |          76.27 |          1.09 |                     75.39 |                     0.91 |           -0.87 |           1.98 |
 | WeMath              |         3 |          46.93 |          1.04 |                     57.87 |                     1.16 |           10.94 |           1.11 |          63.95 |          1.77 |                     67.89 |                     0.78 |            3.95 |           1.28 |
-| Average             |           |          36.76 |               |                     40.04 |                          |            3.27 |                |          44.46 |               |                     48.37 |                          |            3.91 |                |
+| Average             |           |          36.81 |               |                     40.12 |                          |            3.31 |                |          44.55 |               |                     48.46 |                          |            3.91 |                |
 
 ## Seed Values
 |   seed | Task                |   3B Base |   3B Answer GRPO 500 |   7B Base |   7B Answer GRPO 500 |   3B Delta |   7B Delta |
@@ -103,9 +105,9 @@ ScreenSpot/TableVQABench note: cached predictions are deterministically re-parse
 |     42 | TreeBench           |     38.27 |                39.75 |     39.26 |                42.72 |       1.48 |       3.46 |
 |     43 | TreeBench           |     37.53 |                40.74 |     40.99 |                41.98 |       3.21 |       0.99 |
 |     44 | TreeBench           |     41.73 |                41.73 |     42.47 |                44.94 |       0.00 |       2.47 |
-|     42 | VisualPuzzles       |     16.10 |                18.58 |     18.24 |                20.55 |       2.48 |       2.31 |
-|     43 | VisualPuzzles       |     17.98 |                19.01 |     21.23 |                24.57 |       1.03 |       3.34 |
-|     44 | VisualPuzzles       |     17.89 |                19.01 |     18.58 |                21.83 |       1.11 |       3.25 |
+|     42 | VisualPuzzles       |     17.12 |                20.80 |     20.03 |                22.77 |       3.68 |       2.74 |
+|     43 | VisualPuzzles       |     19.18 |                21.23 |     24.14 |                27.05 |       2.05 |       2.91 |
+|     44 | VisualPuzzles       |     19.18 |                21.06 |     20.80 |                23.63 |       1.88 |       2.83 |
 |     42 | VStarBench          |     70.16 |                72.77 |     75.39 |                75.92 |       2.62 |       0.52 |
 |     43 | VStarBench          |     72.25 |                75.92 |     75.92 |                75.92 |       3.66 |       0.00 |
 |     44 | VStarBench          |     67.54 |                68.59 |     77.49 |                74.35 |       1.05 |      -3.14 |
@@ -127,3 +129,4 @@ ScreenSpot/TableVQABench note: cached predictions are deterministically re-parse
 | benchmarks              | Blink, ChartMuseum, ChartQAPro, CharXivReason, CountBenchQA, CountQA, CV-Bench 3D, ERQA, Game-QA-Lite, LogicVista, MathVerse, MathVision, MathVista, MM-HELIX, MMMU-ProVis, Physics, PhyX mini MC, PuzzleVQA, ScreenSpot, SpatialVizBench COT, TableVQABench, TreeBench, VisualPuzzles, VStarBench, WeMath | 25 selected benchmarks                                                     |
 | mathverse_fix           | Corrected MathVerse local judge parser to accept outputs like "Judgement: 1" from Qwen3-32B.                                                                                                                                                                                                               | Updated MathVerse row from existing judged artifacts; no generation rerun. |
 | screenspot_table_repair | ScreenSpot positional clicks and TableVQABench final-answer wrappers re-parsed from cached predictions.                                                                                                                                                                                                    | No generation or judge rerun.                                              |
+| visualpuzzles_repair    | Re-scored cached Qwen3 extraction outputs with VisualPuzzles A-D option contract.                                                                                                                                                                                                                          | No generation or judge rerun.                                              |

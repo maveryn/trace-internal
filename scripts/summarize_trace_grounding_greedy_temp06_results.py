@@ -90,15 +90,17 @@ def _score_sheet(
     benchmark_root: Path,
     run_root: Path,
     only: list[str],
+    run_set: str,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     summary, details, generation = build_tables(
         benchmark_root=benchmark_root,
         run_root=run_root,
         model_columns=MODEL_COLUMNS,
-        run_set="trace_grounding",
+        run_set=run_set,
         only=only,
         exclude=[],
     )
+    summary = summary[summary["benchmark_key"] != "average_excluding_screenspot"].reset_index(drop=True)
     return _add_deltas(summary), details, generation
 
 
@@ -112,21 +114,25 @@ def main() -> int:
     parser.add_argument("--excel", type=Path, default=REPO_ROOT / "results/trace_grounding_qwen25vl3b_base_answer_annotation_greedy_temp06.xlsx")
     parser.add_argument("--subset-root", type=Path, default=TRACE_GROUNDING_SUBSET_ROOT)
     parser.add_argument("--only", nargs="*", default=list(TRACE_GROUNDING_BENCHMARKS))
+    parser.add_argument("--run-set", default="trace_grounding")
+    parser.add_argument("--title", default="TRACE Grounding 3B Base / Answer / Annotation Results")
     args = parser.parse_args()
 
     greedy, greedy_details, greedy_generation = _score_sheet(
         benchmark_root=args.greedy_benchmark_root,
         run_root=args.greedy_run_root,
         only=args.only,
+        run_set=args.run_set,
     )
     temp06, temp06_details, temp06_generation = _score_sheet(
         benchmark_root=args.temp06_benchmark_root,
         run_root=args.temp06_run_root,
         only=args.only,
+        run_set=args.run_set,
     )
 
     lines = [
-        "# TRACE Grounding 3B Base / Answer / Annotation Results",
+        f"# {args.title}",
         "",
         f"Subset manifest root: `{args.subset_root}`",
         "",
@@ -143,6 +149,7 @@ def main() -> int:
             {"key": "suite", "value": "trace_grounding_qwen25vl3b_base_answer_annotation"},
             {"key": "subset_root", "value": str(args.subset_root)},
             {"key": "benchmarks", "value": ", ".join(args.only)},
+            {"key": "run_set", "value": args.run_set},
             {"key": "models", "value": ", ".join(slug for slug, _ in MODEL_COLUMNS)},
             {"key": "greedy_run_root", "value": str(args.greedy_run_root)},
             {"key": "greedy_benchmark_root", "value": str(args.greedy_benchmark_root)},

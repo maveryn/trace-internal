@@ -84,6 +84,11 @@ TRACE_GROUNDING_BENCHMARKS = (
     "tdbench_grounding",
 )
 
+TRACE_GROUNDING_COUNTING_EXTRA_BENCHMARKS = (
+    "ocrbench_v2_mini",
+    "screenspot_v2",
+)
+
 
 @dataclass(frozen=True)
 class BenchmarkSpec:
@@ -181,6 +186,8 @@ TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("refcoco", "RefCOCO", "RefCOCO", "vlmevalkit_bbox_iou", max_tokens=1024),
     BenchmarkSpec("groundingme", "GroundingME", "GroundingME", "vlmevalkit_bbox_iou", max_tokens=1024),
     BenchmarkSpec("tdbench_grounding", "TDBenchGrounding rot0", "tdbench_grounding_rot0", "vlmevalkit_bbox_centroid", max_tokens=1024),
+    BenchmarkSpec("ocrbench_v2_mini", "OCRBench v2 MINI", "OCRBench_v2_MINI", "vlmevalkit_defaults", max_tokens=2048),
+    BenchmarkSpec("screenspot_v2", "ScreenSpot v2", "ScreenSpot_v2", "vlmevalkit_defaults", max_tokens=1024),
 )
 
 ALL_BENCHMARKS: tuple[BenchmarkSpec, ...] = BENCHMARKS + TRACE_CANDIDATE37_EXTRA_BENCHMARKS
@@ -262,6 +269,8 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
         return [spec_by_key(key) for key in TRACE_CANDIDATE37_200_BENCHMARKS]
     if run_set == "trace_grounding":
         return [spec_by_key(key) for key in TRACE_GROUNDING_BENCHMARKS]
+    if run_set == "trace_grounding_counting_extra":
+        return [spec_by_key(key) for key in TRACE_GROUNDING_COUNTING_EXTRA_BENCHMARKS]
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 
@@ -530,6 +539,25 @@ GROUNDING_HF_DATASET_FILES = {
     "tdbench_grounding": ("Columbia-ICSL/TDBench", "tdbench_grounding_rot0.tsv", "tdbench_grounding_rot0.tsv"),
 }
 
+REMOTE_TSV_DATASET_FILES = {
+    "ocrbench_v2_mini": (
+        "https://opencompass.openxlab.space/utils/VLMEval/OCRBench_v2_MINI.tsv",
+        "OCRBench_v2_MINI.tsv",
+    ),
+    "screenspot_v2": (
+        "https://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Mobile.tsv",
+        "ScreenSpot_v2/ScreenSpot_v2_Mobile.tsv",
+    ),
+    "screenspot_v2_desktop": (
+        "https://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Desktop.tsv",
+        "ScreenSpot_v2/ScreenSpot_v2_Desktop.tsv",
+    ),
+    "screenspot_v2_web": (
+        "https://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Web.tsv",
+        "ScreenSpot_v2/ScreenSpot_v2_Web.tsv",
+    ),
+}
+
 
 def lmu_data_root() -> Path:
     env_root = os.environ.get("LMUData")
@@ -544,31 +572,60 @@ def lmu_data_root() -> Path:
 
 def materialize_grounding_benchmark_files(specs: Iterable[BenchmarkSpec], *, root: Path | None = None) -> None:
     """Pre-download HF TSVs that VLMEvalKit's raw URL downloader cannot fetch reliably."""
+    specs = list(specs)
     needed = [spec for spec in specs if spec.key in GROUNDING_HF_DATASET_FILES]
-    if not needed:
-        return
     data_root = root or lmu_data_root()
     token = (
         os.environ.get("HF_TOKEN")
         or os.environ.get("HUGGING_FACE_HUB_TOKEN")
         or os.environ.get("HUGGINGFACE_HUB_TOKEN")
     )
-    from huggingface_hub import hf_hub_download
+    if needed:
+        from huggingface_hub import hf_hub_download
 
-    for spec in needed:
-        repo_id, hf_filename, local_filename = GROUNDING_HF_DATASET_FILES[spec.key]
+        for spec in needed:
+            repo_id, hf_filename, local_filename = GROUNDING_HF_DATASET_FILES[spec.key]
+            target = data_root / local_filename
+            if target.exists() and target.stat().st_size > 0:
+                continue
+            print(f"[grounding-data] materializing {spec.key}: {repo_id}/{hf_filename} -> {target}")
+            cached = hf_hub_download(
+                repo_id=repo_id,
+                filename=hf_filename,
+                repo_type="dataset",
+                token=token,
+            )
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(cached, target)
+
+    remote_targets: list[tuple[str, str, str]] = []
+    spec_keys = {spec.key for spec in specs}
+    if "ocrbench_v2_mini" in spec_keys:
+        remote_targets.append(("ocrbench_v2_mini", *REMOTE_TSV_DATASET_FILES["ocrbench_v2_mini"]))
+    if "screenspot_v2" in spec_keys:
+        for key in ("screenspot_v2", "screenspot_v2_desktop", "screenspot_v2_web"):
+            remote_targets.append((key, *REMOTE_TSV_DATASET_FILES[key]))
+    if not remote_targets:
+        return
+
+    import requests
+    import urllib3
+
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    for key, url, local_filename in remote_targets:
         target = data_root / local_filename
         if target.exists() and target.stat().st_size > 0:
             continue
-        print(f"[grounding-data] materializing {spec.key}: {repo_id}/{hf_filename} -> {target}")
-        cached = hf_hub_download(
-            repo_id=repo_id,
-            filename=hf_filename,
-            repo_type="dataset",
-            token=token,
-        )
+        print(f"[benchmark-data] materializing {key}: {url} -> {target}")
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(cached, target)
+        tmp = target.with_suffix(target.suffix + f".tmp.{os.getpid()}")
+        with requests.get(url, stream=True, timeout=120, verify=False) as response:
+            response.raise_for_status()
+            with tmp.open("wb") as f:
+                for chunk in response.iter_content(chunk_size=16 * 1024 * 1024):
+                    if chunk:
+                        f.write(chunk)
+        tmp.replace(target)
 
 
 def grounding_preferred_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, int | None] | None:
@@ -641,6 +698,18 @@ def extract_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, in
     grounding = grounding_preferred_score_and_rows(scores_obj)
     if grounding is not None:
         return grounding
+    dataset = str(scores_obj.get("dataset") or "")
+    if dataset.startswith("OCRBench_v2"):
+        scores = scores_obj.get("scores", {})
+        if isinstance(scores, dict):
+            values = [
+                score_to_percent(scores[key])
+                for key in ("English Overall Score", "Chinese Overall Score")
+                if key in scores
+            ]
+            values = [value for value in values if value is not None]
+            if values:
+                return sum(values) / len(values), rows_int
     weighted = weighted_prefixed_overall_accuracy(scores_obj.get("scores"))
     if weighted is not None:
         score, weighted_rows = weighted

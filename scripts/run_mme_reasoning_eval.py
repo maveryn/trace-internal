@@ -370,7 +370,7 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
     score_file = benchmark_output_dir / f"{MME_REASONING_SPEC.alias}_predictions_qwen3_32b_score.xlsx"
     data.to_excel(score_file, index=False)
 
-    acc_df = MMEReasoning_acc(score_file)
+    acc_df = MMEReasoning_acc(str(score_file))
     acc_csv = benchmark_output_dir / "MME-Reasoning_acc.csv"
     acc_xlsx = benchmark_output_dir / "MME-Reasoning_acc.xlsx"
     acc_df.to_csv(acc_csv, index=False)

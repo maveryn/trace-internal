@@ -263,6 +263,43 @@ def reduce_numeric_reward_metrics(reward_extra_infos_dict: dict[str, list[Any]])
         if numeric_values:
             reduced[f"reward/{key}"] = float(np.mean(numeric_values))
 
+    mode_masks = {
+        "answer": reward_extra_infos_dict.get("trace_reward_mode_answer"),
+        "answer_and_annotation": reward_extra_infos_dict.get("trace_reward_mode_answer_and_annotation"),
+    }
+    mode_metric_keys = (
+        "overall",
+        "accuracy",
+        "answer_reward",
+        "annotation_reward",
+        "task_reward_raw",
+        "task_reward_effective",
+        "format",
+    )
+    for mode, raw_mask in mode_masks.items():
+        if raw_mask is None:
+            continue
+        try:
+            mask = np.asarray(raw_mask, dtype=float)
+        except (TypeError, ValueError):
+            continue
+        count = float(np.sum(mask))
+        reduced[f"reward/mode_count/{mode}"] = count
+        reduced[f"reward/mode_fraction/{mode}"] = float(count / max(1, len(mask)))
+        if count <= 0:
+            continue
+        for metric_key in mode_metric_keys:
+            raw_values = reward_extra_infos_dict.get(metric_key)
+            if raw_values is None:
+                continue
+            try:
+                values = np.asarray(raw_values, dtype=float)
+            except (TypeError, ValueError):
+                continue
+            if values.shape != mask.shape:
+                continue
+            reduced[f"reward/by_mode/{mode}/{metric_key}"] = float(np.sum(values * mask) / count)
+
     annotation_rewards = reward_extra_infos_dict.get("annotation_reward")
     if annotation_rewards is None:
         return reduced

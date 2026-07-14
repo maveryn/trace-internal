@@ -1,8 +1,10 @@
 # TRACE RLVR Training Runbook
 
-This is the operational runbook for the current split-v1 TRACE RLVR training
-pass. It records the commands to run on a GPU host and the CPU-safe checks that
-can be run anywhere.
+This is the retained operational runbook for the legacy split-v1 TRACE RLVR
+launcher. It records the commands for reproducing that path.
+
+For current all-1000-task EasyR1 training, including `task_conditioned`, use
+`docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md` instead.
 
 Use this runbook with:
 

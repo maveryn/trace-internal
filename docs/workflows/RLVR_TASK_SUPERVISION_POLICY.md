@@ -190,16 +190,27 @@ effective supervision mode:
 `reward_contract` remain stored for review and diagnostics even when a task is
 trained in answer mode.
 
-Use one system-prompt family that instructs the model to follow the final JSON
-contract requested by the user prompt. Pixel-coordinate instructions apply
-only when annotation is requested.
+`task_conditioned` is a run-level policy, not a third row contract. For every
+row, the loader resolves `trace_supervision_mode` and selects all three of the
+following together:
 
-Run-level policies should preserve the earlier ablations:
+- `answer`: `prompt_answer`, the answer system prompt, and answer reward;
+- `answer_and_annotation`: `prompt_answer_and_annotation`, the annotation
+  system prompt, and answer-plus-annotation reward.
 
-- `all_answer`: force every row to `answer`;
-- `all_answer_and_annotation`: force every row to
-  `answer_and_annotation`;
-- `task_conditioned_v1`: use the versioned task mapping.
+Do not combine one row's prompt with the other mode's system prompt or reward.
+There is no fallback when `trace_supervision_mode` is missing or invalid.
+
+A training batch may contain both concrete modes. Each row is tokenized with
+its own system prompt, and all rollouts for one GRPO prompt inherit that row's
+same prompt and reward contract. Batch mixing does not change the per-prompt
+advantage normalization.
+
+Run-level modes preserve the earlier ablations:
+
+- `answer`: force every row to `answer`;
+- `answer_and_annotation`: force every row to `answer_and_annotation`;
+- `task_conditioned`: use the versioned task mapping.
 
 ## Review And Validation Gates
 
@@ -208,7 +219,7 @@ Before training a task-conditioned run, verify:
 1. the manifest covers the complete active task inventory with no stale ids;
 2. every task has exactly one final mode;
 3. all rows from one task resolve to the same mode;
-4. selected prompts match the resolved mode;
+4. selected user and system prompts match the resolved mode;
 5. answer rows ignore annotation reward and require answer-only JSON;
 6. annotation rows require and score both answer and annotation;
 7. a mixed batch containing both modes passes reward and format tests;

@@ -48,6 +48,42 @@ def reduce_reward_metrics(metrics: dict[str, list[Any]], prefix: str = "reward/"
         except (TypeError, ValueError):
             continue
 
+    mode_masks = {
+        "answer": metrics.get("trace_reward_mode_answer"),
+        "answer_and_annotation": metrics.get("trace_reward_mode_answer_and_annotation"),
+    }
+    mode_metric_keys = (
+        "overall",
+        "accuracy",
+        "answer_reward",
+        "annotation_reward",
+        "task_reward_raw",
+        "task_reward_effective",
+        "format",
+    )
+    for mode, raw_mask in mode_masks.items():
+        if raw_mask is None:
+            continue
+        try:
+            mask = np.asarray(raw_mask, dtype=float)
+        except (TypeError, ValueError):
+            continue
+        count = float(np.sum(mask))
+        reduced[f"{prefix}mode_count/{mode}"] = count
+        reduced[f"{prefix}mode_fraction/{mode}"] = float(count / max(1, len(mask)))
+        if count <= 0:
+            continue
+        for metric_key in mode_metric_keys:
+            if metric_key not in metrics:
+                continue
+            try:
+                values = np.asarray(metrics[metric_key], dtype=float)
+            except (TypeError, ValueError):
+                continue
+            if values.shape != mask.shape:
+                continue
+            reduced[f"{prefix}by_mode/{mode}/{metric_key}"] = float(np.sum(values * mask) / count)
+
     if "annotation_reward" not in metrics:
         return reduced
 

@@ -765,7 +765,7 @@ def test_scene_page_shows_task_supervision_schema(tmp_path: Path) -> None:
         tmp_path / TASK_SUPERVISION_POLICY_REL_PATH,
         {
             "schema": "trace_task_supervision_policy_v1",
-            "policy_id": "task_conditioned_v1",
+            "policy_id": "task_conditioned",
             "status": "draft",
             "mode_field": "trace_supervision_mode",
             "reviewed_scenes": ["pages/workspace"],

@@ -20,7 +20,7 @@ explicitly marked as legacy.
 
 ## Shared Reward Convention
 
-All three modes keep the final scalar reward bounded in `[0, 1]`:
+All concrete reward formulas keep the final scalar reward bounded in `[0, 1]`:
 
 ```text
 overall = (1 - format_weight) * task_reward + format_weight * format_reward
@@ -185,8 +185,8 @@ scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh
 Useful environment variables:
 
 ```text
-TRACE_OUTPUT_MODE=answer|answer_and_annotation
-TRACE_REWARD_MODE=answer|answer_and_annotation
+TRACE_OUTPUT_MODE=answer|answer_and_annotation|task_conditioned
+TRACE_REWARD_MODE=answer|answer_and_annotation|task_conditioned
 TRACE_ANNOTATION_REWARD_FORMULA=gated|additive
 TRACE_ANNOTATION_FRACTION=0.25|0.5
 TRACE_FORMAT_WEIGHT=0.05
@@ -202,6 +202,32 @@ launcher passes them directly to the scorer. Otherwise it derives them from
 `TRACE_ANNOTATION_FRACTION`. The scorer normalizes the answer and annotation
 weights internally, so `0.75/0.25` and `3/1` are equivalent.
 
+## Task-Conditioned Run Policy
+
+`task_conditioned` is not a third output payload. It resolves each dataset row
+from `trace_supervision_mode` to one of the two concrete contracts:
+
+```text
+answer:
+  prompt_answer + answer system prompt + answer reward
+
+answer_and_annotation:
+  prompt_answer_and_annotation + annotation system prompt
+  + configured additive or gated annotation reward
+```
+
+The loader rejects missing row modes. Mixed batches are supported because each
+row is tokenized independently and its rollout group retains the same concrete
+mode through reward computation.
+
+Launcher:
+
+```bash
+TRACE_ANNOTATION_REWARD_FORMULA=additive \
+TRACE_ANNOTATION_FRACTION=0.5 \
+scripts/run_trace_qwen25vl3b_easyr1_task_conditioned_nokl_tmpfs.sh
+```
+
 ## Metrics For Analysis
 
 Use these for training curves and ablations:
@@ -214,6 +240,10 @@ reward/format
 reward/task_reward_raw
 reward/overall
 reward/zero_reward
+reward/mode_count/answer
+reward/mode_count/answer_and_annotation
+reward/by_mode/answer/overall
+reward/by_mode/answer_and_annotation/overall
 ```
 
 Cross-method answer-quality comparison:

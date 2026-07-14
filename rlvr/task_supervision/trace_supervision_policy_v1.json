@@ -1,6 +1,6 @@
 {
   "schema": "trace_task_supervision_policy_v1",
-  "policy_id": "task_conditioned_v1",
+  "policy_id": "task_conditioned",
   "status": "draft",
   "mode_field": "trace_supervision_mode",
   "reviewed_scenes": [

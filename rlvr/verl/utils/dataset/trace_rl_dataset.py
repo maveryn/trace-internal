@@ -23,8 +23,12 @@ from transformers import PreTrainedTokenizer, ProcessorMixin
 import verl.utils.torch_functional as VF
 from verl.utils.model import compute_position_id_with_mask
 from verl.utils.trace_mode import (
+    TRACE_OUTPUT_MODE_ANSWER,
+    TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION,
+    TRACE_OUTPUT_MODE_TASK_CONDITIONED,
     normalize_trace_output_mode,
     resolve_trace_prompt_key,
+    resolve_trace_row_output_mode,
     resolve_trace_system_prompt,
 )
 from .rl_dataset import PerBatchDomainSampler, _parse_per_batch_domain_weights
@@ -124,6 +128,8 @@ class TraceRLHFDataset(Dataset):
             config.get("prompt_key", "auto"),
             trace_output_mode=self.trace_output_mode,
         )
+        if self.trace_output_mode == TRACE_OUTPUT_MODE_TASK_CONDITIONED and self.prompt_key != "auto":
+            raise ValueError("task_conditioned requires data.prompt_key=auto for per-row prompt selection")
         self.answer_key = config.get("answer_key", "answer_gt")
         self.image_key = config.get("image_key", "images")
         self.video_key = config.get("video_key", "videos")
@@ -145,8 +151,23 @@ class TraceRLHFDataset(Dataset):
         self.domain_weights: dict[str, float] | None = None
         self.model_type = self._load_model_type_from_candidate(getattr(tokenizer, "name_or_path", None))
 
+        self.system_prompts_by_output_mode: dict[str, str] = {}
         if bool(config.get("disable_system_prompt", False)):
             self.system_prompt = None
+        elif self.trace_output_mode == TRACE_OUTPUT_MODE_TASK_CONDITIONED:
+            configured_system_prompt = str(config.get("system_prompt", "auto") or "").strip()
+            if configured_system_prompt.lower() not in {"", "auto"}:
+                raise ValueError(
+                    "task_conditioned requires data.system_prompt=auto so each row receives its matching system prompt"
+                )
+            self.system_prompt = None
+            for output_mode in (TRACE_OUTPUT_MODE_ANSWER, TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION):
+                prompt_text = self._load_prompt_text(
+                    resolve_trace_system_prompt("auto", trace_output_mode=output_mode)
+                )
+                if not prompt_text:
+                    raise ValueError(f"missing TRACE system prompt for output mode {output_mode!r}")
+                self.system_prompts_by_output_mode[output_mode] = prompt_text
         else:
             self.system_prompt = self._load_prompt_text(
                 resolve_trace_system_prompt(
@@ -339,12 +360,33 @@ class TraceRLHFDataset(Dataset):
             normalized.append(image)
         return normalized
 
+    def _resolve_example_output_mode(self, example: dict[str, Any]) -> str:
+        configured_mode = getattr(self, "trace_output_mode", TRACE_OUTPUT_MODE_ANSWER)
+        return resolve_trace_row_output_mode(
+            configured_mode,
+            trace_supervision_mode=example.get("trace_supervision_mode"),
+        )
+
+    def _resolve_example_system_prompt(self, example: dict[str, Any]) -> Optional[str]:
+        output_mode = self._resolve_example_output_mode(example)
+        prompts_by_mode = getattr(self, "system_prompts_by_output_mode", {})
+        if prompts_by_mode:
+            try:
+                return prompts_by_mode[output_mode]
+            except KeyError as exc:
+                raise ValueError(f"missing TRACE system prompt for output mode {output_mode!r}") from exc
+        return getattr(self, "system_prompt", None)
+
     def _resolve_prompt_answer_keys(self, example: dict[str, Any]) -> tuple[str, str]:
-        if self.prompt_key in example and self.answer_key in example:
-            return self.prompt_key, self.answer_key
-        if self.prompt_key == "prompt_answer" and "prompt_answer_only" in example and self.answer_key in example:
+        output_mode = self._resolve_example_output_mode(example)
+        configured_prompt_key = getattr(self, "prompt_key", "auto")
+        prompt_key = resolve_trace_prompt_key(configured_prompt_key, trace_output_mode=output_mode)
+
+        if prompt_key in example and self.answer_key in example:
+            return prompt_key, self.answer_key
+        if prompt_key == "prompt_answer" and "prompt_answer_only" in example and self.answer_key in example:
             return "prompt_answer_only", self.answer_key
-        if self.prompt_key == "prompt_answer_only" and "prompt_answer" in example and self.answer_key in example:
+        if prompt_key == "prompt_answer_only" and "prompt_answer" in example and self.answer_key in example:
             return "prompt_answer", self.answer_key
         if "prompt" in example and "answer_gt" in example:
             return "prompt", "answer_gt"
@@ -354,7 +396,8 @@ class TraceRLHFDataset(Dataset):
         available = ", ".join(sorted(example.keys()))
         raise KeyError(
             "Prompt/answer columns are missing from TRACE dataset row. "
-            f"Expected ({self.prompt_key}, {self.answer_key}). Available keys: {available}"
+            f"Expected ({prompt_key}, {self.answer_key}) for output mode {output_mode!r}. "
+            f"Available keys: {available}"
         )
 
     def _normalize_trace_metadata_fields(self, example: dict[str, Any]) -> dict[str, Any]:
@@ -382,8 +425,9 @@ class TraceRLHFDataset(Dataset):
             prompt_str = prompt_template.render(content=prompt_str, format_prompt_variant=self.format_prompt_variant)
 
         messages: list[dict[str, Any]] = []
-        if self.system_prompt and self.system_prompt.strip():
-            messages.append({"role": "system", "content": self.system_prompt.strip()})
+        system_prompt = self._resolve_example_system_prompt(example)
+        if system_prompt and system_prompt.strip():
+            messages.append({"role": "system", "content": system_prompt.strip()})
 
         if self.image_key in example:
             images = example.get(self.image_key) or []
@@ -491,6 +535,7 @@ class TraceRLHFDataset(Dataset):
             "tokenizer_name_or_path": getattr(self.tokenizer, "name_or_path", None),
             "processor_name_or_path": getattr(self.processor, "name_or_path", None),
             "model_type": self.model_type,
+            "trace_output_mode": self.trace_output_mode,
             "prompt_key": self.prompt_key,
             "answer_key": self.answer_key,
             "max_prompt_length": self.max_prompt_length,
@@ -498,6 +543,7 @@ class TraceRLHFDataset(Dataset):
             "max_pixels": self.max_pixels,
             "video_fps": self.video_fps,
             "system_prompt": self.system_prompt,
+            "system_prompts_by_output_mode": self.system_prompts_by_output_mode,
             "format_prompt": self.format_prompt,
             "format_prompt_variant": self.format_prompt_variant,
         }
@@ -567,6 +613,8 @@ class TraceRLHFDataset(Dataset):
 
     def __getitem__(self, index: int) -> dict[str, Any]:
         example: dict[str, Any] = self._normalize_trace_metadata_fields(dict(self.dataset[index]))
+        effective_output_mode = self._resolve_example_output_mode(example)
+        example["trace_output_mode"] = effective_output_mode
         prompt_key, answer_key = self._resolve_prompt_answer_keys(example)
         messages = self._build_messages(example, prompt_key=prompt_key)
         example.pop(prompt_key, None)
@@ -703,9 +751,12 @@ class TraceRLHFDataset(Dataset):
             "image_sizes",
             "benchmark_id",
             "parser_family",
+            "trace_supervision_mode",
+            "trace_output_mode",
         ):
             if key in example:
                 extra_info[key] = example[key]
+        extra_info["trace_prompt_key"] = prompt_key
         example["extra_info"] = extra_info
         example.setdefault("data_source", self.default_data_source)
 

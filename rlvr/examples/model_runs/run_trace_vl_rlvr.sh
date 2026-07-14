@@ -67,13 +67,21 @@ TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
 case "$TRACE_OUTPUT_MODE" in
   answer|answer_only)
     DEFAULT_PROMPT_KEY="prompt_answer"
+    DEFAULT_VAL_PROMPT_KEY="prompt_answer"
     DEFAULT_TRACE_REWARD_MODE="answer"
     DEFAULT_TRACE_SYSTEM_PROMPT="$RLVR_ROOT/examples/prompts/trace_vero_json_system_prompt_answer.txt"
     ;;
   answer_and_annotation|annotation)
     DEFAULT_PROMPT_KEY="prompt_answer_and_annotation"
+    DEFAULT_VAL_PROMPT_KEY="prompt_answer"
     DEFAULT_TRACE_REWARD_MODE="answer_and_annotation"
     DEFAULT_TRACE_SYSTEM_PROMPT="$RLVR_ROOT/examples/prompts/trace_vero_json_system_prompt_answer_and_annotation.txt"
+    ;;
+  task_conditioned)
+    DEFAULT_PROMPT_KEY="auto"
+    DEFAULT_VAL_PROMPT_KEY="auto"
+    DEFAULT_TRACE_REWARD_MODE="task_conditioned"
+    DEFAULT_TRACE_SYSTEM_PROMPT="auto"
     ;;
   *)
     echo "Unsupported TRACE_OUTPUT_MODE: $TRACE_OUTPUT_MODE" >&2
@@ -82,6 +90,7 @@ case "$TRACE_OUTPUT_MODE" in
 esac
 
 PROMPT_KEY="${PROMPT_KEY:-$DEFAULT_PROMPT_KEY}"
+VAL_PROMPT_KEY="${VAL_PROMPT_KEY:-$DEFAULT_VAL_PROMPT_KEY}"
 TRACE_REWARD_MODE="${TRACE_REWARD_MODE:-$DEFAULT_TRACE_REWARD_MODE}"
 TRACE_SYSTEM_PROMPT="${TRACE_SYSTEM_PROMPT:-$DEFAULT_TRACE_SYSTEM_PROMPT}"
 
@@ -111,6 +120,7 @@ export TRACE_VAL_MAX_RESPONSE_LENGTH="${TRACE_VAL_MAX_RESPONSE_LENGTH:-2048}"
 export TRAIN_FILES
 export TRACE_OUTPUT_MODE
 export PROMPT_KEY
+export VAL_PROMPT_KEY
 export TRACE_REWARD_MODE
 export TRACE_SYSTEM_PROMPT
 export TRACE_ANNOTATION_REWARD_FORMULA="${TRACE_ANNOTATION_REWARD_FORMULA:-gated}"
@@ -143,6 +153,7 @@ cmd=(
   data.train_files="$TRAIN_FILES"
   data.trace_output_mode="$TRACE_OUTPUT_MODE"
   data.prompt_key="$PROMPT_KEY"
+  data.val_prompt_key="$VAL_PROMPT_KEY"
   data.system_prompt="$TRACE_SYSTEM_PROMPT"
   data.train_batch_size="$TRAIN_BATCH_SIZE"
   data.val_batch_size="$VAL_BATCH_SIZE"

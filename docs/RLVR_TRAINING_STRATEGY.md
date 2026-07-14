@@ -253,7 +253,8 @@ is understood.
 
 ## Current Open Decisions
 
-- Whether the first run uses task-uniform or domain-balanced sampling.
-- The final manually reviewed task assignments for
-  `task_conditioned_v1`; assignment rules live in
+- Whether the next run uses task-uniform or domain-balanced sampling.
+- Whether the next task-conditioned run should test an additional reward
+  recipe after the first additive 0.50 comparison. The complete task mapping
+  and assignment rules live in
   `docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`.

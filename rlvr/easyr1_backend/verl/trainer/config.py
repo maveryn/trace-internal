@@ -50,6 +50,9 @@ class DataConfig:
     format_prompt: Optional[str] = None
     system_prompt: Optional[str] = None
     system_prompt_file: Optional[str] = None
+    trace_output_mode: str = "answer"
+    trace_answer_system_prompt_file: Optional[str] = None
+    trace_annotation_system_prompt_file: Optional[str] = None
     override_chat_template: Optional[str] = None
     shuffle: bool = True
     seed: int = 1
@@ -62,6 +65,14 @@ class DataConfig:
         self.image_dir = get_abs_path(self.image_dir, prompt="Image directory")
         self.format_prompt = get_abs_path(self.format_prompt, prompt="Format prompt file")
         self.system_prompt_file = get_abs_path(self.system_prompt_file, prompt="System prompt file")
+        self.trace_answer_system_prompt_file = get_abs_path(
+            self.trace_answer_system_prompt_file,
+            prompt="TRACE answer system prompt file",
+        )
+        self.trace_annotation_system_prompt_file = get_abs_path(
+            self.trace_annotation_system_prompt_file,
+            prompt="TRACE annotation system prompt file",
+        )
         self.override_chat_template = get_abs_path(self.override_chat_template, prompt="Chat template file")
 
 

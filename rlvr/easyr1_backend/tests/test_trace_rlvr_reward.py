@@ -53,3 +53,57 @@ def test_trace_reward_type_metrics_do_not_collide_with_scalar_reward_metric() ->
     assert "reward/annotation_reward/bbox" not in reduced
     unflattened = unflatten_dict(reduced)
     assert unflattened["reward"]["annotation_reward"] == 0.5
+
+
+def test_task_conditioned_reward_routes_mixed_batch_per_row() -> None:
+    reward_contract = {
+        "reward_contract_version": "v0",
+        "answer": {"id": "answer_exact_match_v0", "type": "integer"},
+        "annotation": {"id": "bbox_soft_iou_v0", "type": "bbox"},
+    }
+    common = {
+        "response_length": 1,
+        "ground_truth": json.dumps({"type": "integer", "value": 2}),
+        "annotation_gt": json.dumps({"type": "bbox", "value": [0, 0, 10, 10]}),
+        "reward_contract": json.dumps(reward_contract),
+    }
+
+    scores = compute_score(
+        [
+            {
+                **common,
+                "response": '{"answer":2}',
+                "trace_output_mode": "answer",
+                "trace_supervision_mode": "answer",
+            },
+            {
+                **common,
+                "response": '{"answer":2,"annotation":[0,0,10,10]}',
+                "trace_output_mode": "answer_and_annotation",
+                "trace_supervision_mode": "answer_and_annotation",
+            },
+        ],
+        trace_output_mode="task_conditioned",
+        trace_reward_mode="task_conditioned",
+        trace_format_weight=0.0,
+    )
+
+    assert [score["overall"] for score in scores] == [1.0, 1.0]
+    assert scores[0]["trace_reward_mode_answer"] == 1.0
+    assert scores[1]["trace_reward_mode_answer_and_annotation"] == 1.0
+
+
+def test_task_conditioned_metrics_report_mode_specific_rewards() -> None:
+    reduced = reduce_reward_metrics(
+        {
+            "overall": [1.0, 0.0, 0.5, 1.0],
+            "annotation_reward": [0.0, 0.0, 0.0, 1.0],
+            "trace_reward_mode_answer": [1.0, 1.0, 0.0, 0.0],
+            "trace_reward_mode_answer_and_annotation": [0.0, 0.0, 1.0, 1.0],
+        }
+    )
+
+    assert reduced["reward/mode_count/answer"] == 2.0
+    assert reduced["reward/mode_count/answer_and_annotation"] == 2.0
+    assert reduced["reward/by_mode/answer/overall"] == 0.5
+    assert reduced["reward/by_mode/answer_and_annotation/overall"] == 0.75

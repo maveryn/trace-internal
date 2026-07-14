@@ -6,6 +6,7 @@ import types
 from pathlib import Path
 
 import numpy as np
+import pytest
 from datasets import Dataset
 from PIL import Image
 
@@ -15,12 +16,14 @@ if "qwen_vl_utils" not in sys.modules:
     sys.modules["qwen_vl_utils.vision_process"] = vision_process
 
 from examples.reward_function.reward_trace import compute_score
-from verl.trainer.ppo.metric_utils import compute_rollout_group_metrics
+from verl.trainer.ppo.metric_utils import compute_rollout_group_metrics, reduce_numeric_reward_metrics
 from verl.utils.dataset import TraceRLHFDataset
 from verl.utils.trace_mode import (
+    TRACE_OUTPUT_MODE_TASK_CONDITIONED,
     default_trace_system_prompt_path,
     resolve_trace_prompt_key,
     resolve_trace_reward_mode,
+    resolve_trace_row_output_mode,
     resolve_trace_system_prompt,
 )
 from verl.utils.trace_reward import score_trace_response
@@ -76,14 +79,14 @@ def test_trace_reward_supports_all_active_annotation_contracts() -> None:
         (
             {"answer": 2, "annotation": {"A": [100, 200], "B": [320, 420]}},
             {"type": "integer", "value": 2},
-            {"type": "keyed_point_map", "value": {"B": [320, 420], "A": [100, 200]}},
-            _reward_contract("keyed_point_map_soft_distance_v0", "keyed_point_map"),
+            {"type": "point_map", "value": {"B": [320, 420], "A": [100, 200]}},
+            _reward_contract("point_map_soft_distance_v0", "point_map"),
         ),
         (
             {"answer": 2, "annotation": {"source": [10, 10, 20, 20], "target": [30, 30, 40, 40]}},
             {"type": "integer", "value": 2},
-            {"type": "keyed_bbox_map", "value": {"target": [30, 30, 40, 40], "source": [10, 10, 20, 20]}},
-            _reward_contract("keyed_bbox_map_soft_iou_v0", "keyed_bbox_map"),
+            {"type": "bbox_map", "value": {"target": [30, 30, 40, 40], "source": [10, 10, 20, 20]}},
+            _reward_contract("bbox_map_soft_iou_v0", "bbox_map"),
         ),
     ]
 
@@ -623,6 +626,123 @@ def test_trace_output_mode_resolves_prompt_reward_and_system_prompt_defaults() -
     assert resolve_trace_system_prompt("auto", trace_output_mode="answer") == str(answer_prompt_path)
     assert resolve_trace_system_prompt("auto", trace_output_mode="annotation") == str(annotation_prompt_path)
     assert resolve_trace_system_prompt("auto", trace_output_mode="answer_and_annotation") == str(annotation_prompt_path)
+
+
+def test_task_conditioned_mode_resolves_concrete_row_contracts() -> None:
+    assert resolve_trace_prompt_key("auto", trace_output_mode="task_conditioned") == "auto"
+    assert resolve_trace_system_prompt("auto", trace_output_mode="task_conditioned") == "auto"
+    assert (
+        resolve_trace_row_output_mode("task_conditioned", trace_supervision_mode="answer")
+        == "answer"
+    )
+    assert (
+        resolve_trace_row_output_mode(
+            "task_conditioned",
+            trace_supervision_mode="answer_and_annotation",
+        )
+        == "answer_and_annotation"
+    )
+    assert (
+        resolve_trace_reward_mode(
+            "auto",
+            trace_output_mode="task_conditioned",
+            trace_effective_output_mode="answer_and_annotation",
+        )
+        == "answer_and_annotation"
+    )
+    with pytest.raises(ValueError, match="trace_supervision_mode"):
+        resolve_trace_row_output_mode("task_conditioned")
+    with pytest.raises(ValueError, match="no single default system prompt"):
+        default_trace_system_prompt_path(trace_output_mode="task_conditioned")
+
+
+def test_task_conditioned_dataset_routes_prompt_and_system_prompt_per_row() -> None:
+    dataset = TraceRLHFDataset.__new__(TraceRLHFDataset)
+    dataset.trace_output_mode = TRACE_OUTPUT_MODE_TASK_CONDITIONED
+    dataset.prompt_key = "auto"
+    dataset.answer_key = "answer_gt"
+    dataset.system_prompt = None
+    dataset.system_prompts_by_output_mode = {
+        "answer": "Answer system contract",
+        "answer_and_annotation": "Annotation system contract",
+    }
+    dataset.format_prompt = None
+    dataset.format_prompt_variant = "boxed_only"
+    dataset.image_key = "images"
+    dataset.video_key = "videos"
+
+    answer_row = {
+        "trace_supervision_mode": "answer",
+        "prompt_answer": "Return only the answer payload.",
+        "prompt_answer_and_annotation": "Return answer and annotation.",
+        "answer_gt": {"type": "integer", "value": 2},
+    }
+    annotation_row = {
+        **answer_row,
+        "trace_supervision_mode": "answer_and_annotation",
+    }
+
+    assert dataset._resolve_prompt_answer_keys(answer_row)[0] == "prompt_answer"
+    assert dataset._resolve_prompt_answer_keys(annotation_row)[0] == "prompt_answer_and_annotation"
+    assert dataset._build_messages(answer_row)[0] == {
+        "role": "system",
+        "content": "Answer system contract",
+    }
+    assert dataset._build_messages(annotation_row)[0] == {
+        "role": "system",
+        "content": "Annotation system contract",
+    }
+
+
+def test_task_conditioned_reward_routes_each_item_in_mixed_batch() -> None:
+    common_extra = {
+        "answer_gt": {"type": "integer", "value": 2},
+        "annotation_gt": {"type": "bbox", "value": [0, 0, 10, 10]},
+        "reward_contract": _reward_contract("bbox_soft_iou_v0", "bbox"),
+    }
+    scores = compute_score(
+        data_sources=["trace", "trace"],
+        solution_strs=[
+            'Reasoning.\n{"answer":2}',
+            'Reasoning.\n{"answer":2,"annotation":[0,0,10,10]}',
+        ],
+        ground_truths=[2, 2],
+        extra_infos=[
+            {**common_extra, "trace_output_mode": "answer", "trace_supervision_mode": "answer"},
+            {
+                **common_extra,
+                "trace_output_mode": "answer_and_annotation",
+                "trace_supervision_mode": "answer_and_annotation",
+            },
+        ],
+        trace_output_mode="task_conditioned",
+        trace_reward_mode="auto",
+    )
+
+    assert [score["score"] for score in scores] == [1.0, 1.0]
+    assert scores[0]["trace_reward_mode_answer"] == 1.0
+    assert scores[0]["trace_reward_mode_answer_and_annotation"] == 0.0
+    assert scores[1]["trace_reward_mode_answer"] == 0.0
+    assert scores[1]["trace_reward_mode_answer_and_annotation"] == 1.0
+    assert scores[1]["annotation_reward"] == 1.0
+
+
+def test_task_conditioned_reward_metrics_are_split_by_effective_mode() -> None:
+    metrics = reduce_numeric_reward_metrics(
+        {
+            "overall": [1.0, 0.0, 0.5, 1.0],
+            "accuracy": [1.0, 0.0, 1.0, 1.0],
+            "annotation_reward": [0.0, 0.0, 0.0, 1.0],
+            "trace_reward_mode_answer": [1.0, 1.0, 0.0, 0.0],
+            "trace_reward_mode_answer_and_annotation": [0.0, 0.0, 1.0, 1.0],
+        }
+    )
+
+    assert metrics["reward/mode_count/answer"] == 2.0
+    assert metrics["reward/mode_count/answer_and_annotation"] == 2.0
+    assert metrics["reward/by_mode/answer/overall"] == 0.5
+    assert metrics["reward/by_mode/answer_and_annotation/overall"] == 0.75
+    assert metrics["reward/by_mode/answer_and_annotation/annotation_reward"] == 0.5
 
 
 def test_reward_trace_wrapper_returns_score_key() -> None:

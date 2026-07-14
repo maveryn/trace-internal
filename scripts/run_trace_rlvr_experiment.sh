@@ -11,6 +11,7 @@ Usage:
   scripts/run_trace_rlvr_experiment.sh alpha_ablation <0|0.5|1>
   scripts/run_trace_rlvr_experiment.sh annotation_ablation <gated|additive>
   scripts/run_trace_rlvr_experiment.sh final <qwen25vl3b|qwen3vl4b|qwen3vl8b|qwen25vl7b>
+  scripts/run_trace_rlvr_experiment.sh task_conditioned <qwen25vl3b|qwen3vl4b|qwen3vl8b|qwen25vl7b>
 
 Environment overrides:
   TRAIN_FILES, MODEL_PATH, TRACE_OUTPUT_MODE, TRACE_ANNOTATION_REWARD_FORMULA,
@@ -99,9 +100,13 @@ case "$mode" in
     export VAL_FILES="${VAL_FILES:-$(validation_files_for_alpha "$token")}"
     export TRAINER_EXPERIMENT_NAME="${TRAINER_EXPERIMENT_NAME:-trace_qwen3vl4b_alpha${token}_annotation_${arg}_250_seed20260504}"
     ;;
-  final)
+  final|task_conditioned)
     export MODEL_PATH="${MODEL_PATH:-$(model_path_for_alias "$arg")}"
-    export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
+    if [[ "$mode" == "task_conditioned" ]]; then
+      export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-task_conditioned}"
+    else
+      export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
+    fi
     export TRACE_ANNOTATION_REWARD_FORMULA="${TRACE_ANNOTATION_REWARD_FORMULA:-gated}"
     export TOTAL_TRAINING_STEPS="${TOTAL_TRAINING_STEPS:-900}"
     export TRAIN_FILES="${TRAIN_FILES:-maveryn/trace@train}"

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from verl.utils.local_strict_eval import strict_score_response
-from verl.utils.trace_mode import resolve_trace_reward_mode
+from verl.utils.trace_mode import TRACE_OUTPUT_MODE_ANSWER, resolve_trace_reward_mode
 from verl.utils.trace_reward import (
     _canonical_jsonable,
     _normalize_trace_answer_scoring,
@@ -59,9 +59,21 @@ def _score_single_reward_input(
     point_half_life_px: float | None = None,
 ) -> dict[str, float]:
     response = str(reward_input.get("response", "") or "")
-    normalized_mode = resolve_trace_reward_mode(trace_reward_mode, trace_output_mode=trace_output_mode)
+    extra_info = reward_input.get("extra_info")
+    extra_info = extra_info if isinstance(extra_info, dict) else {}
+    row_effective_output_mode = reward_input.get("trace_output_mode") or extra_info.get("trace_output_mode")
+    row_supervision_mode = reward_input.get("trace_supervision_mode") or extra_info.get("trace_supervision_mode")
+    trace_reward_input = is_trace_reward_input(reward_input)
+    if not trace_reward_input and row_effective_output_mode is None and row_supervision_mode is None:
+        row_effective_output_mode = TRACE_OUTPUT_MODE_ANSWER
+    normalized_mode = resolve_trace_reward_mode(
+        trace_reward_mode,
+        trace_output_mode=trace_output_mode,
+        trace_supervision_mode=row_supervision_mode,
+        trace_effective_output_mode=row_effective_output_mode,
+    )
     normalized_answer_scoring = _normalize_trace_answer_scoring(trace_answer_scoring)
-    if is_trace_reward_input(reward_input):
+    if trace_reward_input:
         trace_score = score_trace_response(
             response=response,
             answer_gt=reward_input["answer_gt"],
@@ -115,6 +127,8 @@ def _build_single_reward_input(
         "image_sizes",
         "image_sizes_exported",
         "source_image_size",
+        "trace_supervision_mode",
+        "trace_output_mode",
     ):
         if key in extra_info:
             reward_input[key] = extra_info[key]

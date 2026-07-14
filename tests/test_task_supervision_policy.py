@@ -39,7 +39,7 @@ def _scene_task_ids(domain: str, scene_id: str) -> set[str]:
 def test_task_supervision_policy_covers_every_task_in_each_reviewed_scene() -> None:
     policy = load_task_supervision_policy(REPO_ROOT)
 
-    assert policy.policy_id == "task_conditioned_v1"
+    assert policy.policy_id == "task_conditioned"
     assert policy.status == "draft"
     assert policy.mode_field == "trace_supervision_mode"
     assert policy.reviewed_scenes == tuple(sorted(set(policy.reviewed_scenes)))
@@ -113,7 +113,7 @@ def test_task_supervision_policy_rejects_cross_mode_and_legacy_rationales(
         json.dumps(
             {
                 "schema": "trace_task_supervision_policy_v1",
-                "policy_id": "task_conditioned_v1",
+                "policy_id": "task_conditioned",
                 "status": "draft",
                 "mode_field": "trace_supervision_mode",
                 "reviewed_scenes": ["charts/example"],

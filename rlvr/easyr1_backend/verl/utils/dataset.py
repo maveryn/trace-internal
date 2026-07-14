@@ -28,6 +28,14 @@ from qwen_vl_utils.vision_process import fetch_video
 from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizer, ProcessorMixin
 
+from trace.core.task_supervision_runtime import (
+    TRACE_OUTPUT_MODE_ANSWER,
+    TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION,
+    TRACE_OUTPUT_MODE_TASK_CONDITIONED,
+    normalize_trace_output_mode,
+    resolve_trace_row_output_mode,
+)
+
 from . import torch_functional as VF
 
 
@@ -110,6 +118,9 @@ class RLHFDataset(Dataset):
         format_prompt: Optional[str] = None,
         system_prompt: Optional[str] = None,
         system_prompt_file: Optional[str] = None,
+        trace_output_mode: str = TRACE_OUTPUT_MODE_ANSWER,
+        trace_answer_system_prompt_file: Optional[str] = None,
+        trace_annotation_system_prompt_file: Optional[str] = None,
         min_pixels: Optional[int] = None,
         max_pixels: Optional[int] = None,
         filter_overlong_prompts: bool = True,
@@ -127,6 +138,9 @@ class RLHFDataset(Dataset):
         self.truncation = truncation
         self.min_pixels = min_pixels
         self.max_pixels = max_pixels
+        self.trace_output_mode = normalize_trace_output_mode(trace_output_mode)
+        if self.trace_output_mode == TRACE_OUTPUT_MODE_TASK_CONDITIONED and self.prompt_key != "auto":
+            raise ValueError("task_conditioned requires prompt_key='auto' for per-row prompt selection")
 
         if "@" in data_path:
             data_path, data_split = data_path.split("@")
@@ -150,11 +164,32 @@ class RLHFDataset(Dataset):
                 self.format_prompt = f.read()
 
         self.system_prompt = system_prompt
-        if system_prompt_file:
-            with open(system_prompt_file, encoding="utf-8") as f:
-                self.system_prompt = f.read()
-        if self.system_prompt is not None:
-            self.system_prompt = self.system_prompt.strip() or None
+        self.system_prompts_by_output_mode: dict[str, str] = {}
+        if self.trace_output_mode == TRACE_OUTPUT_MODE_TASK_CONDITIONED:
+            if system_prompt or system_prompt_file:
+                raise ValueError(
+                    "task_conditioned uses trace_answer_system_prompt_file and "
+                    "trace_annotation_system_prompt_file instead of one global system prompt"
+                )
+            prompt_files = {
+                TRACE_OUTPUT_MODE_ANSWER: trace_answer_system_prompt_file,
+                TRACE_OUTPUT_MODE_ANSWER_AND_ANNOTATION: trace_annotation_system_prompt_file,
+            }
+            for output_mode, prompt_file in prompt_files.items():
+                if not prompt_file:
+                    raise ValueError(f"missing system prompt file for task-conditioned mode {output_mode!r}")
+                with open(prompt_file, encoding="utf-8") as f:
+                    prompt_text = f.read().strip()
+                if not prompt_text:
+                    raise ValueError(f"empty system prompt file for task-conditioned mode {output_mode!r}")
+                self.system_prompts_by_output_mode[output_mode] = prompt_text
+            self.system_prompt = None
+        else:
+            if system_prompt_file:
+                with open(system_prompt_file, encoding="utf-8") as f:
+                    self.system_prompt = f.read()
+            if self.system_prompt is not None:
+                self.system_prompt = self.system_prompt.strip() or None
 
         if filter_overlong_prompts:
             self.dataset = self.dataset.filter(
@@ -163,12 +198,33 @@ class RLHFDataset(Dataset):
                 num_proc=filter_overlong_prompts_workers,
             )
 
+    def _resolve_example_output_mode(self, example: dict[str, Any]) -> str:
+        return resolve_trace_row_output_mode(
+            self.trace_output_mode,
+            trace_supervision_mode=example.get("trace_supervision_mode"),
+        )
+
+    def _resolve_prompt_key(self, example: dict[str, Any]) -> str:
+        if self.prompt_key != "auto":
+            return self.prompt_key
+        output_mode = self._resolve_example_output_mode(example)
+        if output_mode == TRACE_OUTPUT_MODE_ANSWER:
+            return "prompt_answer"
+        return "prompt_answer_and_annotation"
+
     def _get_prompt_value(self, example: dict[str, Any]) -> str:
-        if self.prompt_key in example:
-            return example[self.prompt_key]
-        if self.prompt_key == "prompt_answer_only" and "prompt_answer" in example:
+        prompt_key = self._resolve_prompt_key(example)
+        if prompt_key in example:
+            return example[prompt_key]
+        if prompt_key == "prompt_answer_only" and "prompt_answer" in example:
             return example["prompt_answer"]
-        raise KeyError(f"prompt key {self.prompt_key!r} not found in dataset row")
+        raise KeyError(f"prompt key {prompt_key!r} not found in dataset row")
+
+    def _get_system_prompt(self, example: dict[str, Any]) -> Optional[str]:
+        if self.system_prompts_by_output_mode:
+            output_mode = self._resolve_example_output_mode(example)
+            return self.system_prompts_by_output_mode[output_mode]
+        return self.system_prompt
 
     def _build_messages(self, example: dict[str, Any]) -> list[dict[str, Any]]:
         prompt_str: str = self._get_prompt_value(example)
@@ -200,8 +256,9 @@ class RLHFDataset(Dataset):
         else:
             messages = [{"role": "user", "content": prompt_str}]
 
-        if self.system_prompt:
-            return [{"role": "system", "content": self.system_prompt}, *messages]
+        system_prompt = self._get_system_prompt(example)
+        if system_prompt:
+            return [{"role": "system", "content": system_prompt}, *messages]
         return messages
 
     def _filter_overlong_prompts(self, example: dict[str, Any]) -> bool:
@@ -241,11 +298,15 @@ class RLHFDataset(Dataset):
 
     def __getitem__(self, index):
         example: dict = self.dataset[index]
+        effective_output_mode = self._resolve_example_output_mode(example)
+        selected_prompt_key = self._resolve_prompt_key(example)
+        if self.trace_output_mode == TRACE_OUTPUT_MODE_TASK_CONDITIONED:
+            example["trace_output_mode"] = effective_output_mode
         if "uid" not in example and "instance_id" in example:
             example["uid"] = example["instance_id"]
         example["prompt"] = self._get_prompt_value(example)
         messages = self._build_messages(example)
-        example.pop(self.prompt_key, None)
+        example.pop(selected_prompt_key, None)
 
         if self.image_key in example:
             prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
@@ -334,4 +395,5 @@ class RLHFDataset(Dataset):
         example["position_ids"] = position_ids
         example["raw_prompt_ids"] = raw_prompt_ids
         example["ground_truth"] = example.pop(self.answer_key)
+        example.pop("prompt", None)
         return example

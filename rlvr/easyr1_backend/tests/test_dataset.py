@@ -53,5 +53,49 @@ def test_image_dataset(use_fast: bool):
     assert isinstance(dataset[0]["multi_modal_data"]["images"][0], Image)
 
 
+def test_task_conditioned_dataset_selects_prompt_and_system_contract_per_row() -> None:
+    dataset = RLHFDataset.__new__(RLHFDataset)
+    dataset.trace_output_mode = "task_conditioned"
+    dataset.prompt_key = "auto"
+    dataset.system_prompt = None
+    dataset.system_prompts_by_output_mode = {
+        "answer": "Answer system contract",
+        "answer_and_annotation": "Annotation system contract",
+    }
+    dataset.format_prompt = None
+    dataset.image_key = "images"
+    dataset.video_key = "videos"
+
+    answer_row = {
+        "trace_supervision_mode": "answer",
+        "prompt_answer": "Answer prompt",
+        "prompt_answer_and_annotation": "Annotation prompt",
+    }
+    annotation_row = {
+        **answer_row,
+        "trace_supervision_mode": "answer_and_annotation",
+    }
+
+    assert dataset._resolve_prompt_key(answer_row) == "prompt_answer"
+    assert dataset._resolve_prompt_key(annotation_row) == "prompt_answer_and_annotation"
+    assert dataset._build_messages(answer_row)[0] == {
+        "role": "system",
+        "content": "Answer system contract",
+    }
+    assert dataset._build_messages(annotation_row)[0] == {
+        "role": "system",
+        "content": "Annotation system contract",
+    }
+
+
+def test_task_conditioned_dataset_rejects_missing_row_contract() -> None:
+    dataset = RLHFDataset.__new__(RLHFDataset)
+    dataset.trace_output_mode = "task_conditioned"
+    dataset.prompt_key = "auto"
+
+    with pytest.raises(ValueError, match="trace_supervision_mode"):
+        dataset._resolve_prompt_key({"prompt_answer": "Answer prompt"})
+
+
 if __name__ == "__main__":
     test_image_dataset()

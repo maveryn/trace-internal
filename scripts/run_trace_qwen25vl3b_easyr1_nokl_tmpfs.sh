@@ -70,6 +70,8 @@ fi
 REWARD_FUNCTION="${REWARD_FUNCTION:-examples/reward_function/trace_rlvr.py:compute_score}"
 
 TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
+DEFAULT_TRACE_ANSWER_SYSTEM_PROMPT_FILE="null"
+DEFAULT_TRACE_ANNOTATION_SYSTEM_PROMPT_FILE="null"
 case "$TRACE_OUTPUT_MODE" in
   answer|answer_only)
     TRACE_OUTPUT_MODE="answer"
@@ -84,8 +86,15 @@ case "$TRACE_OUTPUT_MODE" in
     DEFAULT_PROMPT_KEY="prompt_answer_and_annotation"
     DEFAULT_SYSTEM_PROMPT_FILE="../examples/prompts/trace_vero_json_system_prompt_answer_and_annotation.txt"
     ;;
+  task_conditioned)
+    DEFAULT_TRACE_REWARD_MODE="task_conditioned"
+    DEFAULT_PROMPT_KEY="auto"
+    DEFAULT_SYSTEM_PROMPT_FILE="null"
+    DEFAULT_TRACE_ANSWER_SYSTEM_PROMPT_FILE="../examples/prompts/trace_vero_json_system_prompt_answer.txt"
+    DEFAULT_TRACE_ANNOTATION_SYSTEM_PROMPT_FILE="../examples/prompts/trace_vero_json_system_prompt_answer_and_annotation.txt"
+    ;;
   *)
-    echo "TRACE_OUTPUT_MODE must be answer, answer_only, annotation, or answer_and_annotation; got ${TRACE_OUTPUT_MODE}" >&2
+    echo "TRACE_OUTPUT_MODE must be answer, answer_only, annotation, answer_and_annotation, or task_conditioned; got ${TRACE_OUTPUT_MODE}" >&2
     exit 2
     ;;
 esac
@@ -134,6 +143,14 @@ import os
 mode = os.environ["TRACE_OUTPUT_MODE"]
 if mode == "answer":
     print("answer")
+elif mode == "task_conditioned":
+    formula = os.environ["TRACE_ANNOTATION_REWARD_FORMULA"]
+    fraction = os.environ.get("TRACE_ANNOTATION_FRACTION") or ""
+    if fraction:
+        suffix = f"ann{float(fraction):.2f}".replace(".", "p")
+    else:
+        suffix = "custom_weights"
+    print(f"task_conditioned_{formula}_{suffix}")
 else:
     formula = os.environ["TRACE_ANNOTATION_REWARD_FORMULA"]
     fraction = os.environ.get("TRACE_ANNOTATION_FRACTION") or ""
@@ -147,6 +164,29 @@ PY
 
 PROMPT_KEY="${PROMPT_KEY:-$DEFAULT_PROMPT_KEY}"
 SYSTEM_PROMPT_FILE="${SYSTEM_PROMPT_FILE:-$DEFAULT_SYSTEM_PROMPT_FILE}"
+TRACE_ANSWER_SYSTEM_PROMPT_FILE="${TRACE_ANSWER_SYSTEM_PROMPT_FILE:-$DEFAULT_TRACE_ANSWER_SYSTEM_PROMPT_FILE}"
+TRACE_ANNOTATION_SYSTEM_PROMPT_FILE="${TRACE_ANNOTATION_SYSTEM_PROMPT_FILE:-$DEFAULT_TRACE_ANNOTATION_SYSTEM_PROMPT_FILE}"
+
+if [[ "$TRACE_OUTPUT_MODE" == "task_conditioned" ]]; then
+  if [[ "$PROMPT_KEY" != "auto" ]]; then
+    echo "task_conditioned requires PROMPT_KEY=auto; got ${PROMPT_KEY}" >&2
+    exit 2
+  fi
+  if [[ "$TRACE_REWARD_MODE" != "task_conditioned" ]]; then
+    echo "task_conditioned requires TRACE_REWARD_MODE=task_conditioned; got ${TRACE_REWARD_MODE}" >&2
+    exit 2
+  fi
+  if [[ "$SYSTEM_PROMPT_FILE" != "null" ]]; then
+    echo "task_conditioned uses per-mode system prompts; SYSTEM_PROMPT_FILE must be null" >&2
+    exit 2
+  fi
+  for prompt_file in "$TRACE_ANSWER_SYSTEM_PROMPT_FILE" "$TRACE_ANNOTATION_SYSTEM_PROMPT_FILE"; do
+    if [[ "$prompt_file" == "null" || ! -f "$prompt_file" ]]; then
+      echo "task_conditioned system prompt file not found: ${prompt_file}" >&2
+      exit 2
+    fi
+  done
+fi
 
 MAX_STEPS="${MAX_STEPS:-600}"
 SAVE_FREQ="${SAVE_FREQ:-100}"
@@ -187,12 +227,21 @@ echo "[trace-easyr1] val_files=${VAL_FILES}"
 echo "[trace-easyr1] output_mode=${TRACE_OUTPUT_MODE} reward_mode=${TRACE_REWARD_MODE}"
 echo "[trace-easyr1] prompt_key=${PROMPT_KEY}"
 echo "[trace-easyr1] system_prompt_file=${SYSTEM_PROMPT_FILE}"
+if [[ "$TRACE_OUTPUT_MODE" == "task_conditioned" ]]; then
+  echo "[trace-easyr1] answer_system_prompt_file=${TRACE_ANSWER_SYSTEM_PROMPT_FILE}"
+  echo "[trace-easyr1] annotation_system_prompt_file=${TRACE_ANNOTATION_SYSTEM_PROMPT_FILE}"
+fi
 echo "[trace-easyr1] annotation_formula=${TRACE_ANNOTATION_REWARD_FORMULA}"
 echo "[trace-easyr1] answer_weight=${TRACE_ANSWER_WEIGHT} annotation_weight=${TRACE_ANNOTATION_WEIGHT} format_weight=${TRACE_FORMAT_WEIGHT}"
 echo "[trace-easyr1] actor_micro_batch_experience=${ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE}"
 echo "[trace-easyr1] actor_micro_batch_update=${ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_UPDATE}"
 if [[ -n "${REF_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE:-}" ]]; then
   echo "[trace-easyr1] ref_micro_batch_experience=${REF_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE}"
+fi
+
+if [[ "${TRACE_RLVR_DRY_RUN:-0}" == "1" ]]; then
+  echo "[trace-easyr1] dry-run configuration passed; training was not started"
+  exit 0
 fi
 
 python3 -m verl.trainer.main \
@@ -204,6 +253,9 @@ python3 -m verl.trainer.main \
   data.format_prompt=null \
   data.system_prompt=null \
   data.system_prompt_file="$SYSTEM_PROMPT_FILE" \
+  data.trace_output_mode="$TRACE_OUTPUT_MODE" \
+  data.trace_answer_system_prompt_file="$TRACE_ANSWER_SYSTEM_PROMPT_FILE" \
+  data.trace_annotation_system_prompt_file="$TRACE_ANNOTATION_SYSTEM_PROMPT_FILE" \
   data.rollout_batch_size="$ROLLOUT_BATCH_SIZE" \
   data.val_batch_size="$VAL_BATCH_SIZE" \
   data.max_prompt_length="$MAX_PROMPT_LENGTH" \

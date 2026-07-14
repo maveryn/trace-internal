@@ -17,6 +17,7 @@ explicitly requested.
 | answer wrapper | `scripts/run_trace_qwen25vl3b_easyr1_answer_nokl_tmpfs.sh` |
 | gated annotation wrapper | `scripts/run_trace_qwen25vl3b_easyr1_annotation_gated_nokl_tmpfs.sh` |
 | additive annotation wrapper | `scripts/run_trace_qwen25vl3b_easyr1_annotation_additive_nokl_tmpfs.sh` |
+| task-conditioned wrapper | `scripts/run_trace_qwen25vl3b_easyr1_task_conditioned_nokl_tmpfs.sh` |
 | reward adapter | `rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py` |
 | shared scorer | `trace/core/reward_scoring.py` |
 | reward-mode reference | `rlvr/TRACE_REWARD_MODES.md` |
@@ -53,6 +54,7 @@ scene_id
 query_id
 scene_variant
 trace_ref
+trace_supervision_mode
 ```
 
 The training split has `64,000` rows: `1000` active tasks x `64` samples per
@@ -62,6 +64,11 @@ the prompt rows before reuse.
 
 The validation parquet has `2,000` IID rows: `1000` active tasks x `2` samples
 per task, generated with a different seed.
+
+`trace_supervision_mode` is an additive per-task field with value `answer` or
+`answer_and_annotation`. Existing global answer and answer-plus-annotation
+runs continue to use their original prompt columns. The `task_conditioned`
+mode selects the matching prompt, system prompt, and reward per row.
 
 `images` contains the actual image bytes passed into EasyR1/vLLM.
 `image_sizes` contains the width/height of those same image bytes.
@@ -154,6 +161,7 @@ expected = [
     "query_id",
     "scene_variant",
     "trace_ref",
+    "trace_supervision_mode",
 ]
 row = next(iter(load_dataset("maveryn/trace", split="train", streaming=True, token=True)))
 assert list(row) == expected, list(row)
@@ -182,6 +190,19 @@ scripts/run_trace_qwen25vl3b_easyr1_annotation_gated_nokl_tmpfs.sh
 The smoke passes if it loads the HF parquets, computes reward metrics, logs to
 console/W&B, and writes a checkpoint under `/dev/shm/trace_rlvr/easyr1_checkpoints`.
 
+Before a task-conditioned GPU smoke, resolve its configuration without loading
+the model:
+
+```bash
+cd /home/shadeform/trace
+TRACE_RLVR_DRY_RUN=1 \
+scripts/run_trace_qwen25vl3b_easyr1_task_conditioned_nokl_tmpfs.sh
+```
+
+Then run the same one-step smoke settings with the task-conditioned wrapper.
+The loader must select the user prompt and system prompt per row, and the reward
+adapter must score each row with that same concrete mode.
+
 ## Ablation Matrix
 
 Use one row per machine when possible:
@@ -193,12 +214,18 @@ Use one row per machine when possible:
 | gated 0.50 | `scripts/run_trace_qwen25vl3b_easyr1_annotation_gated_nokl_tmpfs.sh` | `0.50` | `answer * (0.50 + 0.50 * annotation)` |
 | additive 0.25 | `scripts/run_trace_qwen25vl3b_easyr1_annotation_additive_nokl_tmpfs.sh` | `0.25` | `0.75 * answer + 0.25 * annotation` |
 | additive 0.50 | `scripts/run_trace_qwen25vl3b_easyr1_annotation_additive_nokl_tmpfs.sh` | `0.50` | `0.50 * answer + 0.50 * annotation` |
+| task-conditioned additive 0.50 | `scripts/run_trace_qwen25vl3b_easyr1_task_conditioned_nokl_tmpfs.sh` | `0.50` for annotation rows only | answer reward or `0.50 * answer + 0.50 * annotation`, selected per task |
 
 The optimized scalar is always:
 
 ```text
 overall = 0.95 * task_reward + 0.05 * format_reward
 ```
+
+For task-conditioned runs, also track `reward/mode_count/*`,
+`reward/mode_fraction/*`, and `reward/by_mode/<mode>/*`. These confirm the
+mixed batch contains the expected contracts and expose mode-specific reward
+without conflating answer-only rows with annotation rows.
 
 ## Background Launch Template
 

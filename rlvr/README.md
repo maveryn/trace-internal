@@ -25,7 +25,8 @@ Current scope:
 TRACE-specific behavior now integrated on top of the Vero stack:
 
 - `data.dataset_mode=trace` automatically selects the TRACE dataset adapter
-- TRACE reward modes are `answer` and `answer_and_annotation`
+- TRACE row reward modes are `answer` and `answer_and_annotation`; the
+  `task_conditioned` run policy selects between them per row
 - `TRACE_OUTPUT_MODE` is the common mode selector for prompt key, reward mode, and default system prompt
 - `TRACE_OUTPUT_MODE=annotation` is accepted as a shorthand alias for `answer_and_annotation`
 - TRACE outputs should end with a TRACE JSON object; reasoning may appear before that final object
@@ -64,6 +65,8 @@ Current EasyR1 paper-training path:
   `scripts/run_trace_qwen25vl3b_easyr1_annotation_gated_nokl_tmpfs.sh`
 - answer-and-annotation additive wrapper:
   `scripts/run_trace_qwen25vl3b_easyr1_annotation_additive_nokl_tmpfs.sh`
+- task-conditioned wrapper:
+  `scripts/run_trace_qwen25vl3b_easyr1_task_conditioned_nokl_tmpfs.sh`
 - all-1000-task IID tmpfs dataset builder:
   `scripts/prepare_trace_rlvr_all1000_iid_tmpfs.sh`
 - the older `rlvr/verl/` path remains in-tree for legacy/reference runs; do not
@@ -78,9 +81,9 @@ Current all-1000-task IID 500-step dataset recipe:
 - validation: `trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
   - `1000` active tasks x `2` samples per task = `2,000` rows
   - uses a different generation seed from train, so it is IID but non-overlapping by construction
-- both splits store answer-only and answer-and-annotation prompt columns, so
-  the same files can drive answer-only, additive annotation, and gated annotation
-  EasyR1 runs by changing `PROMPT_KEY` and reward-mode env vars
+- both splits store answer-only and answer-and-annotation prompt columns plus
+  `trace_supervision_mode`, so the same files can drive global answer, global
+  annotation, and per-task-conditioned EasyR1 runs
 - these files are published in the private HF dataset `maveryn/trace`; the
   generic EasyR1 launcher loads `maveryn/trace@train` and
   `maveryn/trace@validation` by default when `TRAIN_FILES` and `VAL_FILES` are unset
@@ -119,6 +122,13 @@ Example:
 ```bash
 cd /home/shadeform/trace
 MAX_STEPS=500 scripts/run_trace_qwen25vl3b_easyr1_answer_nokl_tmpfs.sh
+```
+
+Task-conditioned example:
+
+```bash
+cd /home/shadeform/trace
+MAX_STEPS=500 scripts/run_trace_qwen25vl3b_easyr1_task_conditioned_nokl_tmpfs.sh
 ```
 
 Qwen2.5-VL-7B answer-only all1000 recipe:

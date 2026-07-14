@@ -11,6 +11,7 @@ from trace.core.reward_scoring import (
     is_trace_reward_input,
     score_trace_response,
 )
+from trace.core.task_supervision_runtime import TRACE_OUTPUT_MODE_ANSWER, resolve_trace_reward_mode
 
 
 REWARD_NAME = "trace_rlvr"
@@ -76,10 +77,21 @@ def _score_one(
 ) -> dict[str, float]:
     response = str(reward_input.get("response", "") or "")
     answer_gt = reward_input.get("answer_gt", reward_input.get("ground_truth"))
-
-    if is_trace_reward_input(reward_input) or (
+    trace_reward_input = is_trace_reward_input(reward_input) or (
         answer_gt is not None and "annotation_gt" in reward_input and "reward_contract" in reward_input
-    ):
+    )
+    row_effective_output_mode = reward_input.get("trace_output_mode")
+    row_supervision_mode = reward_input.get("trace_supervision_mode")
+    if not trace_reward_input and row_effective_output_mode is None and row_supervision_mode is None:
+        row_effective_output_mode = TRACE_OUTPUT_MODE_ANSWER
+    effective_reward_mode = resolve_trace_reward_mode(
+        trace_reward_mode,
+        trace_output_mode=trace_output_mode,
+        trace_supervision_mode=row_supervision_mode,
+        trace_effective_output_mode=row_effective_output_mode,
+    )
+
+    if trace_reward_input:
         result = score_trace_response(
             response=response,
             answer_gt=_jsonish(answer_gt),
@@ -91,7 +103,7 @@ def _score_one(
             image_sizes=reward_input.get("image_sizes") or reward_input.get("image_sizes_exported"),
             metadata=_jsonish(reward_input.get("metadata")),
             extra_info=_jsonish(reward_input.get("extra_info")),
-            trace_reward_mode=trace_reward_mode if trace_reward_mode != "auto" else trace_output_mode,
+            trace_reward_mode=effective_reward_mode,
             trace_answer_scoring=trace_answer_scoring,
             trace_annotation_reward_formula=trace_annotation_reward_formula,
             answer_weight=float(trace_answer_weight),

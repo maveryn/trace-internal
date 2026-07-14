@@ -951,7 +951,8 @@ def _run_chartmuseum_local_judge(
         judged = judged_map[str(row["index"])]
         item["judge_model"] = args.judge_model
         item["judge_output"] = judged.get("judge_output", "")
-        item["score"] = 1.0 if chartmuseum.parse_judge_output(str(item["judge_output"])) else 0.0
+        parsed_binary = _parse_binary_judgement_output(item["judge_output"])
+        item["score"] = 1.0 if chartmuseum.parse_judge_output(str(item["judge_output"])) or parsed_binary == 1 else 0.0
         item["judge_output_token_count"] = judged.get("judge_output_token_count", 0)
         item["judge_finish_reason"] = judged.get("judge_finish_reason", "")
         judged_rows.append(item)

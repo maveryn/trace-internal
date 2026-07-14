@@ -89,6 +89,13 @@ TRACE_GROUNDING_COUNTING_EXTRA_BENCHMARKS = (
     "screenspot_v2",
 )
 
+TRACE_VIDEO4_BENCHMARKS = (
+    "qbench_video",
+    "videommmu",
+    "video_tt",
+    "tempcompass",
+)
+
 
 @dataclass(frozen=True)
 class BenchmarkSpec:
@@ -181,6 +188,41 @@ TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("seephys", "SEEPhys", "SeePhys", "vlmevalkit_reasoning"),
     BenchmarkSpec("vlmbias", "VLMBias", "VLMBias", "vlmevalkit_defaults"),
     BenchmarkSpec("visiongraph_q3", "VisionGraph-Q3", "VisionGraph_Q3", "vlmevalkit_q3", max_tokens=2048),
+    BenchmarkSpec(
+        "qbench_video",
+        "QBench-Video",
+        "QBench_Video_8frame",
+        "vlmevalkit_8frame_temp06",
+        max_tokens=4096,
+        max_images=8,
+        note="Fast video benchmark; VLMEvalKit concatenates MCQ and VQA splits.",
+    ),
+    BenchmarkSpec(
+        "videommmu",
+        "VideoMMMU",
+        "VideoMMMU_8frame",
+        "vlmevalkit_8frame_temp06",
+        max_tokens=4096,
+        max_images=8,
+        note="Gated HF dataset; access must be available via HF_TOKEN.",
+    ),
+    BenchmarkSpec(
+        "video_tt",
+        "Video-TT",
+        "Video_TT_16frame",
+        "vlmevalkit_16frame_temp06",
+        max_tokens=4096,
+        max_images=16,
+    ),
+    BenchmarkSpec(
+        "tempcompass",
+        "TempCompass",
+        "TempCompass_8frame",
+        "vlmevalkit_8frame_temp06",
+        max_tokens=4096,
+        max_images=8,
+        note="Uses the smallest VLMEvalKit frame-count alias; media payload is small but row count is larger.",
+    ),
     BenchmarkSpec("refspatial_wo_unseen", "RefSpatial wo unseen", "RefSpatial_wo_unseen", "vlmevalkit_point_mask", max_tokens=1024),
     BenchmarkSpec("osworld_g", "OSWorld-G", "OSWorld_G", "vlmevalkit_gui_click", max_tokens=1024),
     BenchmarkSpec("refcoco", "RefCOCO", "RefCOCO", "vlmevalkit_bbox_iou", max_tokens=1024),
@@ -271,6 +313,8 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
         return [spec_by_key(key) for key in TRACE_GROUNDING_BENCHMARKS]
     if run_set == "trace_grounding_counting_extra":
         return [spec_by_key(key) for key in TRACE_GROUNDING_COUNTING_EXTRA_BENCHMARKS]
+    if run_set == "trace_video4":
+        return [spec_by_key(key) for key in TRACE_VIDEO4_BENCHMARKS]
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 

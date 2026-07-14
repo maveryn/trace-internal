@@ -568,7 +568,11 @@ def main() -> None:
     parser.add_argument("--api-timeout", type=float, default=300.0)
     parser.add_argument("--api-max-retries", type=int, default=5)
     parser.add_argument("--parallelism-per-endpoint", type=int, default=4)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding"], default="trace_candidate37_200")
+    parser.add_argument(
+        "--run-set",
+        choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding", "trace_video4"],
+        default="trace_candidate37_200",
+    )
     parser.add_argument("--trace-candidate37-200", action="store_true")
     parser.add_argument("--run-root", type=Path, default=LIB_REPO_ROOT / "runs")
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)

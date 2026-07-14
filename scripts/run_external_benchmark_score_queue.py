@@ -1180,7 +1180,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=BASE_MODEL_SPEC.path)
     parser.add_argument("--model-slug", default=BASE_MODEL_SPEC.slug)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding"], default="remaining_base")
+    parser.add_argument(
+        "--run-set",
+        choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding", "trace_video4"],
+        default="remaining_base",
+    )
     parser.add_argument(
         "--trace-candidate37-200",
         action="store_true",

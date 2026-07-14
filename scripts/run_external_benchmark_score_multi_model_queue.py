@@ -138,7 +138,11 @@ def run_worker(args: argparse.Namespace) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-entry", action="append", type=_parse_model, dest="model_entries", required=True)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding"], default="trace_candidate37_200")
+    parser.add_argument(
+        "--run-set",
+        choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding", "trace_video4"],
+        default="trace_candidate37_200",
+    )
     parser.add_argument("--trace-candidate37-200", action="store_true")
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--worker-id", default=f"score-multi-{os.getpid()}")

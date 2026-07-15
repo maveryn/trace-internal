@@ -24,6 +24,26 @@ For each artifact, record:
 | Dataset split and row counts | Dataset manifests plus `docs/RLVR_TASK_SPLIT_PLAN.md` | Must bind to public dataset revision |
 | Base vs answer-RLVR benchmark table | Canonical consolidated result artifact from the RLVR handoff | Pending exact source binding and protocol cross-check |
 
+## External baseline identities
+
+System and dataset names in the related-work discussion are distinct from the
+model artifacts used in experiments. The canonical evaluated checkpoint names,
+repositories, and revisions are recorded in
+`rlvr/experiments/final_answer_only_manifest.json`. The paper-facing labels are:
+
+- `Game-RL Qwen2.5-VL-7B` for
+  `OpenMOSS-Team/Game-RL-Qwen2.5-VL-7B` at revision
+  `205b5934ce70504cfd6ae26b16f705d0b98b9306`;
+- `Sphinx Qwen2.5-VL-7B 500` for `xashru/sphinx_qwen7b_500` at revision
+  `6ffefb03d5cb0767683bfb42a084ea86b707ef9a`;
+- `PCGRPO Qwen2.5-VL-7B Jigsaw CARE` for
+  `armenjeddi/PCGRPO-Qwen2.5-VL-7B-Jigsaw-with-curriculum-with-grpo-care` at
+  revision `921bbced4176f5d362e98c843a57656c5d78dad7`;
+- `Vero-Qwen25-7B` for `zlab-princeton/Vero-Qwen25-7B` at revision
+  `180e84be5acb2aa887cf51015b84b6a6e453ee90`.
+
+GameQA is the dataset introduced by Game-RL, not the system or checkpoint name.
+
 ## Method, taxonomy, coverage, and quality assets
 
 The title-page lockup is generated from the canonical vector brand asset with:

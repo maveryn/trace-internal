@@ -301,7 +301,7 @@
       },
       {
         "slug": "game-rl-qwen25vl7b",
-        "label": "OpenMOSS Game-RL Qwen2.5-VL-7B",
+        "label": "Game-RL Qwen2.5-VL-7B",
         "source": "OpenMOSS-Team/Game-RL-Qwen2.5-VL-7B",
         "revision": "205b5934ce70504cfd6ae26b16f705d0b98b9306"
       },
@@ -319,7 +319,7 @@
       },
       {
         "slug": "vero-qwen25-7b",
-        "label": "Vero Qwen2.5-VL-7B",
+        "label": "Vero-Qwen25-7B",
         "source": "zlab-princeton/Vero-Qwen25-7B",
         "revision": "180e84be5acb2aa887cf51015b84b6a6e453ee90"
       }

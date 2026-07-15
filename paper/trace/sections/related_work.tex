@@ -87,28 +87,29 @@ audits of generation reliability, diversity, and difficulty
   \scriptsize
   \setlength{\tabcolsep}{2.5pt}
   \renewcommand{\arraystretch}{1.08}
-  \caption{Reported structural scale of procedural visual RL systems. Counts
-  follow each work's authored units; generated examples and LLM-expanded rules
-  are not counted as objectives.}
+  \caption{Reported structural scale of procedural visual RL systems. Groups
+  and authored visual/objective units follow each work's terminology and are
+  not directly equivalent; generated examples are excluded.}
   \label{tab:environment-comparison}
   \begin{tabular}{@{}l l c l r l@{}}
     \toprule
     System & Scope & Groups & Visual units & Objectives & Relation \\
     \midrule
     Jigsaw-R1    & Jigsaw       & 1  & 1 grammar    & 2 forms & joint \\
-    VisualSphinx & Logic puzzle & 8  & --           & 1       & joint \\
-    GameQA       & Games        & 4  & 30 games     & 158     & game$\to$task \\
-    Sphinx       & Abstract     & 5  & 25 renderers & 25      & 1:1 \\
-    TRON         & Multiskill   & 5  & 520 envs     & 520     & joint \\
+    VisualSphinx & Logic puzzle & 8  & 41,287 rules & 1 form  & joint \\
+    Game-RL      & Games        & 4  & 30 games     & 158 tasks & game$\to$task \\
+    Sphinx       & Abstract     & 5  & 25 renderers & 25 tasks & 1:1 \\
+    TRON         & Multiskill   & 5  & 520 envs     & 520 envs & joint \\
     \textbf{\trace} & Multidomain & \textbf{11} & \textbf{277 scenes}
       & \textbf{1,000} & scene$\to$task \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-VisualSphinx's 41,287 retained LLM-generated rules instantiate one completion
-objective, and its RL run samples 10,000 examples. \trace is distinguished by
-both its 11-domain breadth and its explicit 277-scene/1,000-task split. GameQA
-also separates games from tasks within one domain, while TRON couples generation
-and verification in 520 joint environments; COGS and SynthRL do not report
-fixed task inventories.
+VisualSphinx organizes 41,287 retained LLM-expanded rules into eight rule types
+and samples 10,000 puzzles for RL under one completion interface. Game-RL's
+GameQA dataset separates 30 games from 158 tasks within one domain, while TRON
+couples generation and verification in 520 environments across five ability
+buckets. \trace is distinguished by both its 11-domain breadth and its explicit
+277-scene/1,000-task split; COGS and SynthRL do not report fixed task
+inventories.

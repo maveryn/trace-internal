@@ -112,6 +112,7 @@ class GamesDominoesHigherSumThanReferenceCountTask:
     """Count face-up dominoes with a larger pip sum than the reference tile."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'aggregation')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

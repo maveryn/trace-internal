@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(split_triangle_angle_sum, unknown_role=target_angle_measure, formula_schema=triangle_angle_sum_or_adjacent_straight_angle); scene=triangle_relations; scope=split_triangle_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

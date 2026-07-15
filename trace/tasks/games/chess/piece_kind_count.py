@@ -41,6 +41,7 @@ class GamesChessPieceKindCountTask:
     """Count all visible pieces of the named kind."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

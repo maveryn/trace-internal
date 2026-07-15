@@ -22,6 +22,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox is the pixel box around the single visible question-mark target cell, node, or brick. It is not a one-item set.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## 2) Scene + task contract
 1. Entities/relations: A small arithmetic grid with visible row and column totals and one question-mark target cell.
 2. Supported `query_id` values: `single`

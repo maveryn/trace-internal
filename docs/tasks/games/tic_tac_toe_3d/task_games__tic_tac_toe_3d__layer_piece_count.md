@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 1. The target player mark is sampled with `target_player` (`X` or `O`).
 2. The target layer is sampled from top, middle, and bottom.

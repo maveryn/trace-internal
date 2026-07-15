@@ -20,6 +20,10 @@ Output binding: `answer` uses the `number` schema; Answer precision: `one_decima
 Annotation witnesses: `segment_set` witnesses from the finalized render. Annotation marks the two incoming velocity-arrow segments for puck A and puck B. Annotation and answer are projected from the same generated execution trace.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -1,6 +1,6 @@
-# TRACE Calibration Guide
+# Trace Calibration Guide
 
-This is the current calibration runbook for TRACE task reviews and solve-rate
+This is the current calibration runbook for Trace task reviews and solve-rate
 acceptance. Older review/planning artifacts are not acceptance inputs.
 
 ## Current Model
@@ -66,7 +66,7 @@ PYTHONPATH=. python scripts/sync_calibration_status_from_task_records.py
 
 ## Freshness
 
-The current TRACE-owned artifact baseline is `v0`. Task-review manifests,
+The current Trace-owned artifact baseline is `v0`. Task-review manifests,
 distribution reports, scene manifests, and solve-rate stats used for
 acceptance must carry:
 

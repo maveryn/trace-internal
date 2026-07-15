@@ -147,6 +147,7 @@ class ChartsHexbinDensityThresholdBinCountTask:
     """Count visible hex bins satisfying a discrete density threshold."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "threshold_bin_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

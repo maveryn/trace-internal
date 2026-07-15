@@ -31,6 +31,7 @@ def _bind_annotation(plan, rendered):
 @register_task
 class ChartsSizeEncodingFilteredItemExtremumLabelTask:
     task_id = T
+    reasoning_operations = ('filtering', 'ranking')
     domain = DOMAIN
     objective_contract = "filtered_item_extremum_label"
     supported_query_ids = tuple(Q)

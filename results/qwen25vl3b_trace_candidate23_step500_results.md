@@ -1,11 +1,11 @@
-# Qwen2.5-VL-3B TRACE Candidate-23 Step-400/500 Results
+# Qwen2.5-VL-3B Trace Candidate-23 Step-400/500 Results
 
 Generated on 2026-07-12 UTC.
 
 Model comparison:
 - Base: `Qwen/Qwen2.5-VL-3B-Instruct`
-- TRACE RLVR step 400: `trace-qwen25vl3b-easyr1-all1000-answer-nokl-step400`
-- TRACE RLVR step 500: `trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500`
+- Trace RLVR step 400: `trace-qwen25vl3b-easyr1-all1000-answer-nokl-step400`
+- Trace RLVR step 500: `trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500`
 
 Artifacts:
 - Step-400 generation/score logs: `logs/benchmark/trace_candidate23_step400_20260712T034819Z/`

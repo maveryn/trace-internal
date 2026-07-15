@@ -17,6 +17,10 @@ Output binding: `answer` is the selected visible clock label.
 Annotation witnesses: the scalar bbox of the selected clock face.
 Query ids: `earliest_time_label`, `latest_time_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## 2) Scene + Task Contract
 1. Public branch metadata: `query_id`
 2. Supported public `query_id`: `earliest_time_label`, `latest_time_label`

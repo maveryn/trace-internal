@@ -15,6 +15,10 @@
 - The image shows a cylinder with a cone on top. The cylinder height is unknown, while radius, cone height, and total volume are labeled.
 - Annotation witness: one bbox around the cylinder-cone solid.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/solid_formula/geometry_solid_formula_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

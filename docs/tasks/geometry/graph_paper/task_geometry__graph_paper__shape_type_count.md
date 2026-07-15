@@ -15,6 +15,10 @@
 - Mixed-shape triangle variants avoid exact equilateral triangles so every polygonal shape in this task can keep lattice vertices.
 - Count objects are placed using their actual graph-unit bounds so independent shapes do not overlap.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

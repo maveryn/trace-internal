@@ -69,6 +69,7 @@ def _prepare_destination_objective(
 @register_task
 class GamesRadialHuntBoardMarkedPieceDestinationCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

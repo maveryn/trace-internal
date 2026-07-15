@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is th
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed because before/after witness roles are distinct; keys are `before_cylinder` and `after_cylinder`. Each annotation box marks the corresponding graduated-cylinder readout, including the cylinder body, liquid level, tick marks, numeric scale labels, and mL unit.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -1,6 +1,6 @@
 # Shared Context Text Assets
 
-TRACE keeps repo-wide reusable non-answer context text under
+Trace keeps repo-wide reusable non-answer context text under
 `assets/context_text/`. Use this layer when a renderer needs visual chrome,
 captions, source notes, sidebar notes, callouts, decorative metric snippets,
 legend-like explanatory blocks, or other distractor text that is not part of
@@ -84,8 +84,8 @@ Source and license metadata live in `assets/context_text/sources.json`.
 Current sources are:
 
 - Darius Kazemi Corpora Project word/category lists, recorded as `CC0-1.0`.
-- TRACE-authored synthetic context templates, recorded under the local
-  `TRACE-SYNTHETIC.txt` note.
+- Trace-authored synthetic context templates, recorded under the local
+  `trace-synthetic.txt` note.
 
 Local license files live under `assets/context_text/licenses/`.
 
@@ -117,7 +117,7 @@ against clean/light cases so the scene is not usually crowded.
 
 Use `scripts/build_context_text_assets.py` to refresh the vendored manifests.
 The script fetches upstream CC0 word/category pools, normalizes ASCII strings,
-builds neutral TRACE template-derived phrases/sentences/paragraphs,
+builds neutral Trace template-derived phrases/sentences/paragraphs,
 deduplicates case-insensitively, writes local license notes, and updates
 `sources.json`.
 

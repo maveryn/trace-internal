@@ -116,7 +116,7 @@ algorithm:
     # Power used for weight scaling in "pow" method
     weight_pow: 2.0
 
-  # Threshold below which a prompt-group counts as zero-solve for TRACE-style grouped metrics
+  # Threshold below which a prompt-group counts as zero-solve for Trace-style grouped metrics
   zero_solve_threshold: 0.0
 
   # Threshold at or above which every rollout in a prompt-group counts as perfect

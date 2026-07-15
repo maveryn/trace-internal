@@ -1,7 +1,7 @@
 {
   "asset_version": "context_text_v0",
   "generated_by": "scripts/build_context_text_assets.py",
-  "source_policy": "Shared context/distractor text manifests are normalized from CC0/public-domain compatible sources and TRACE-authored templates. Runtime tasks should use these strings as non-answer context unless the verifier explicitly scopes them in.",
+  "source_policy": "Shared context/distractor text manifests are normalized from CC0/public-domain compatible sources and Trace-authored templates. Runtime tasks should use these strings as non-answer context unless the verifier explicitly scopes them in.",
   "sources": {
     "corpora_project": {
       "description": "Darius Kazemi's Corpora Project word and category lists.",
@@ -18,12 +18,12 @@
       "local_license": "licenses/CC0-1.0.txt"
     },
     "trace_context_templates": {
-      "description": "TRACE-authored neutral templates for chart, graph, and page context text.",
+      "description": "Trace-authored neutral templates for chart, graph, and page context text.",
       "source_url": "",
       "metadata_url": "",
-      "license": "TRACE synthetic context text templates",
+      "license": "Trace synthetic context text templates",
       "license_url": "",
-      "local_license": "licenses/TRACE-SYNTHETIC.txt"
+      "local_license": "licenses/trace-synthetic.txt"
     }
   },
   "manifests": {
@@ -40,7 +40,7 @@
         "trace_context_templates"
       ],
       "count": 2000,
-      "description": "TRACE-generated longer neutral context blocks built from CC0 word pools and templates."
+      "description": "Trace-generated longer neutral context blocks built from CC0 word pools and templates."
     },
     "paragraphs/context_template_blocks.txt": {
       "sources": [
@@ -48,7 +48,7 @@
         "trace_context_templates"
       ],
       "count": 2000,
-      "description": "TRACE-generated two-sentence context blocks built from neutral context sentence templates."
+      "description": "Trace-generated two-sentence context blocks built from neutral context sentence templates."
     },
     "phrases/callout_phrases.txt": {
       "sources": [
@@ -120,35 +120,35 @@
         "trace_context_templates"
       ],
       "count": 5000,
-      "description": "TRACE-generated neutral context sentences built from CC0 word pools and templates."
+      "description": "Trace-generated neutral context sentences built from CC0 word pools and templates."
     },
     "words/adjectives_corpora.txt": {
       "sources": [
         "corpora_project"
       ],
       "count": 961,
-      "description": "Normalized CC0 word pool used by TRACE context text templates."
+      "description": "Normalized CC0 word pool used by Trace context text templates."
     },
     "words/adverbs_corpora.txt": {
       "sources": [
         "corpora_project"
       ],
       "count": 326,
-      "description": "Normalized CC0 word pool used by TRACE context text templates."
+      "description": "Normalized CC0 word pool used by Trace context text templates."
     },
     "words/nouns_corpora.txt": {
       "sources": [
         "corpora_project"
       ],
       "count": 993,
-      "description": "Normalized CC0 word pool used by TRACE context text templates."
+      "description": "Normalized CC0 word pool used by Trace context text templates."
     },
     "words/verbs_corpora.txt": {
       "sources": [
         "corpora_project"
       ],
       "count": 547,
-      "description": "Normalized CC0 word pool used by TRACE context text templates."
+      "description": "Normalized CC0 word pool used by Trace context text templates."
     }
   }
 }

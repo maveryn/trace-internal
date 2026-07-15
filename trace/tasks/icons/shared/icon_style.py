@@ -26,7 +26,7 @@ def sample_icon_palette(
 ) -> Tuple[Color, ...]:
     """Sample one icon palette with anchor + pairwise color separation.
 
-    TRACE icon scenes keep the panel/background chrome mostly fixed, so the icon
+    Trace icon scenes keep the panel/background chrome mostly fixed, so the icon
     palette should stay well separated from those anchors for readability.
     """
 

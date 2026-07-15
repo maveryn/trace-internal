@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `row_scoped_color_count`, `column_scoped_color_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Contract
 The image shows one projected fixture surface arranged in rows and columns with
 repeated colored elements. The prompt asks for the number of elements of the

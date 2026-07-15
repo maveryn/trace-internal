@@ -1,6 +1,6 @@
-# TRACE Task-Unit Policy
+# Trace Task-Unit Policy
 
-This document defines what counts as one public TRACE task.
+This document defines what counts as one public Trace task.
 
 Use it when proposing tasks, deciding whether a branch is a `query_id` or a new
 task id, and auditing split/merge decisions under uniform task-level sampling.
@@ -62,11 +62,20 @@ contract:
 2. bounded rank or threshold parameters over the same candidate set;
 3. target attributes over the same visible witness family;
 4. operand variations that keep the same answer schema, annotation schema,
-   program schema, and query-facing scaffold.
+   program schema, and query-facing scaffold;
+5. a finite predicate or rule-family argument inside an explicitly reviewed
+   higher-order objective whose candidate type, outer computation, output
+   binding, witness roles, and visible scaffold remain fixed.
 
 A query id must not choose between public objectives. If changing `query_id`
 changes the answer schema, annotation schema, concrete program schema, semantic
 witness roles, or visible task scaffold, split the public task.
+
+Operation-family metadata is descriptive and multi-label; it does not define
+task boundaries by itself. A retained task may therefore cover several
+predicate families when its public objective is explicitly the evaluation of a
+prompt-bound predicate under one stable outer program. The task-level operation
+declaration records the union across supported branches.
 
 For attribute-heavy scenes, distinguish literal operands from visual reasoning
 channels. Changing the literal target within one channel, such as red to blue
@@ -119,7 +128,9 @@ Create a new task when a branch changes any of these:
 Common split signals:
 
 - unordered subset counting vs ordered sequence/path reasoning;
-- one-bound predicate count vs two-bound interval count;
+- one-bound predicate count vs two-bound interval count when the predicate
+  itself defines the objective rather than parameterizing one reviewed outer
+  program;
 - choosing a move vs computing the resulting state;
 - reading a value vs comparing/ranking multiple values;
 - selecting an answer option image instead of selecting a source-scene object.
@@ -222,10 +233,17 @@ When reviewing task boundaries, assign one concrete outcome:
 - `Split`: one task contains branches with different answer schemas,
   annotation schemas, program schemas, witness roles, or visible scaffolds.
 - `Retire`: task is redundant, degenerate, not naturally grounded, or not worth
-  maintaining as a TRACE sampling unit.
+  maintaining as a Trace sampling unit.
 - `Blocked Needs Inspection`: code, prompts, docs, or review artifacts disagree
   enough that the contract cannot be classified.
 
 Do not keep a vague "related task" bucket for merely related tasks. If a
 required merge condition fails, the decision is `Keep` unless the task itself
 has a concrete split, broaden, retire, or blocked reason.
+
+## 11) Versioning And Refinement
+The current public inventory is a stable release surface. Potential future
+consolidation or decomposition is non-blocking and should not be treated as a
+defect in the current version. Any later boundary change must be introduced as
+an explicit taxonomy version update with synchronized code, docs, review
+artifacts, and release notes.

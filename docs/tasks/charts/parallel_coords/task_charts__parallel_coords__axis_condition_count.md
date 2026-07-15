@@ -24,6 +24,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `segment_set` witnesses bound by `segment_set(matching_profile_segments)`. Annotation marks each counted profile segment between the adjacent named axes as `[[x0,y0],[x1,y1]]`. Axes, labels, threshold text, and decorative context are renderer context unless explicitly requested.
 Query ids: `above_on_both_axes`, `below_on_both_axes`, `above_on_one_below_on_other`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `logical_composition`
+
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `segment_set`.

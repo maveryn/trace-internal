@@ -539,6 +539,7 @@ class SymbolicClockTimeOrderLabelTask:
     """Choose the option card that lists four clocks from earliest to latest."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

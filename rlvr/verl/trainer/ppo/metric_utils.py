@@ -242,7 +242,7 @@ def compute_data_metrics(batch: DataProto, use_critic: bool = True) -> dict[str,
 def reduce_numeric_reward_metrics(reward_extra_infos_dict: dict[str, list[Any]]) -> dict[str, float]:
     """Reduce numeric reward-side metrics for logging.
 
-    Non-numeric values are skipped because TRACE reward extras may also contain structured debug payloads.
+    Non-numeric values are skipped because Trace reward extras may also contain structured debug payloads.
     """
 
     reduced: dict[str, float] = {}
@@ -334,7 +334,7 @@ def compute_rollout_group_metrics(
     perfect_solve_threshold: float = 1.0,
     eps: float = 1e-8,
 ) -> dict[str, float]:
-    """Aggregate rollout scores into per-prompt TRACE solve metrics."""
+    """Aggregate rollout scores into per-prompt Trace solve metrics."""
 
     if len(uid_list) != len(seq_scores):
         raise ValueError("UID count does not match number of sequence scores.")

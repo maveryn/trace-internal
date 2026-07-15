@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point` witnesses bound by `see_annotation_contract`. Annotation marks one printed value-label center on the selected route: the uniquely lower-valued bottleneck band. Node boxes, the other flow label on the same route, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.sankey.path_bottleneck_value.ChartsFlowSankeyPathBottleneckValuePublicTask`
 2. Prompt bundle: `charts_sankey_v1`

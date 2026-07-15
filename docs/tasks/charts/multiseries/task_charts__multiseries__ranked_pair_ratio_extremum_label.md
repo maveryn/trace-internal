@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `string_label`.
 Annotation witnesses: `unspecified` witnesses bound by `point_map(mark_center(answer_category, {numerator_series,denominator_series}))`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `largest_pair_ratio_label`, `smallest_pair_ratio_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Implementation
 - Source: `trace/tasks/charts/multiseries/ranked_pair_ratio_extremum_label.py`
 - Class: `ChartsMultiseriesRankedPairRatioExtremumTask`

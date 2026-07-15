@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`, `topology`
+
 ## Generation Notes
 1. The scene renders a tilted pinball playfield with one ball, one straight launch cue, flippers, slingshots, rails, bumpers, lanes, and labeled targets.
 2. Labeled bumpers, drop targets, rollover lanes, and standup targets are answer candidates; flippers, rails, posts, and slingshots are decorative playfield structure.

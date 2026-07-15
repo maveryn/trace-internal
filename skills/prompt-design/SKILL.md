@@ -1,6 +1,6 @@
 ---
 name: prompt-design
-description: Use when adding or updating TRACE prompt bundles, prompt slots, JSON examples, or prompt metadata and output-mode wiring.
+description: Use when adding or updating Trace prompt bundles, prompt slots, JSON examples, or prompt metadata and output-mode wiring.
 ---
 
 # Prompt Design
@@ -13,7 +13,7 @@ Use this when creating or changing prompt bundles or prompt-facing contract word
 3. `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md` when output-mode examples include annotation
 
 ## Prompt workflow
-1. Keep bundle structure aligned to TRACE's composition layers:
+1. Keep bundle structure aligned to Trace's composition layers:
    - scene,
    - task,
    - optional query,

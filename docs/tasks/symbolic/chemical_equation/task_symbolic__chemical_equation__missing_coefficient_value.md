@@ -18,6 +18,10 @@ Output binding: `answer` is the missing integer coefficient.
 Annotation witnesses: a `bbox_set` around the missing coefficient slot and each molecule card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## 2) Scene + Task Contract
 1. Every coefficient, including `1`, is explicitly drawn unless it is the one hidden `?` slot.
 2. Molecule cards show repeated atom chips only; formula strings are not drawn.

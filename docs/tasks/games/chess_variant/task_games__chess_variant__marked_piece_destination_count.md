@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema with one square bbox for each counted empty destination.
 Query ids: `single` public query; internal prompt key `marked_piece_destination_count`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generation Notes
 1. The visible rule card defines the movement geometry for every piece.
 2. The destination count is sampled independently from scene style and clutter axes.

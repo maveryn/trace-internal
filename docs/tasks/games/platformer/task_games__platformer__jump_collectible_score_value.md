@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Generation Notes
 1. Coins on the dashed jump arc score 1.
 2. Printed-value bonus items on the dashed jump arc score their printed value, sampled from `2, 3, 4`.

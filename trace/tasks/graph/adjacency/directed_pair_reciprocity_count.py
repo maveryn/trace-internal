@@ -152,6 +152,7 @@ def _sample_reciprocity_matrix(*, instance_seed: int, labels: Tuple[str, ...], q
 class GraphCountingAdjacencyDirectedPairReciprocityCountTask:
     """Count mutual unordered node pairs in a directed adjacency matrix."""
     task_id = 'task_graph__adjacency__directed_pair_reciprocity_count'
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_ADJACENCY_PAIR_RECIPROCITY_QUERY_IDS
 

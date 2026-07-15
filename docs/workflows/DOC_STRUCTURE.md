@@ -8,7 +8,8 @@ workflow doc.
 - `docs/contracts/` — repo-wide contracts: taxonomy, task-unit policy, prompt
   system, annotation/reward schema, architecture, validation errors, and ABI.
 - `docs/workflows/` — procedures for authoring, review, calibration,
-  documentation maintenance, benchmark review, and build validation.
+  documentation maintenance, benchmark review, build validation, and
+  coordinated public-release workstreams.
 - `docs/domains/` — domain-specific contracts only: scene boundaries,
   annotation conventions, prompt constraints, and domain rendering rules.
 - `docs/resources/` — shared resource guidance for fonts, labels, context text,
@@ -21,9 +22,9 @@ workflow doc.
   `docs/tasks/<domain>/<scene_id>/<task_id>.md`, plus the task-doc template and
   task-doc maintenance guide.
 - `docs/ACTIVE_TASK_INVENTORY.md` — generated active task inventory.
-- `docs/RLVR_TRAINING_STRATEGY.md` — current high-level TRACE RLVR training
+- `docs/RLVR_TRAINING_STRATEGY.md` — current high-level Trace RLVR training
   strategy notes.
-- `docs/RLVR_TASK_SPLIT_PLAN.md` — frozen TRACE RLVR train/test task split.
+- `docs/RLVR_TASK_SPLIT_PLAN.md` — frozen Trace RLVR train/test task split.
 - `docs/TODO.md` — current project backlog only.
 
 ## What Does Not Belong In Docs

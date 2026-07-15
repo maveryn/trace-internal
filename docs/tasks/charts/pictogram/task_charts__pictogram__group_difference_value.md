@@ -26,3 +26,7 @@ Operation: evaluate `difference` over the candidate set using the filters, compa
 Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_map` witnesses bound by `bbox_map(category_a_row,category_b_row)`. Annotation maps each compared category label to the bbox around that category row.
 Query ids: `single`.
+
+## Reasoning Operations
+
+Families: `filtering`, `formula_evaluation`

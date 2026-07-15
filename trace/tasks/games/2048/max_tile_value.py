@@ -44,6 +44,7 @@ def _construct_max_tile_attempt(*, rng: Any, axes: Any, target: int) -> Attempt2
 class Games2048MaxTileValueTask:
     """Return the largest tile value after one shown 2048 move."""
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'state_update')
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

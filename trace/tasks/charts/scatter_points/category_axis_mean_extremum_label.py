@@ -63,6 +63,7 @@ def _build_category_mean_plan(
 @register_task
 class ChartsScatterPointsCategoryAxisMeanExtremumLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation')
     domain = DOMAIN
     objective_contract = "category_axis_mean_extremum_label"
     supported_query_ids = QUERY_IDS

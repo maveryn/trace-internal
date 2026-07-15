@@ -158,7 +158,7 @@ python /home/shadeform/trace/scripts/summarize_trace_candidate37_200_results.py 
   --run-root "${RUN_ROOT}" \
   --suite-name trace_extra7_full_greedy4096_qwen25vl7b \
   --subset-label "${SUBSET_LABEL}" \
-  --title "Qwen2.5-VL-7B TRACE Extra7 Full Greedy-4096 Benchmark Results" \
+  --title "Qwen2.5-VL-7B Trace Extra7 Full Greedy-4096 Benchmark Results" \
   --markdown "${RESULTS_ROOT}/trace_extra7_full_greedy4096_qwen25vl7b_results.md" \
   --excel "${RESULTS_ROOT}/trace_extra7_full_greedy4096_qwen25vl7b_results.xlsx" \
   --models \

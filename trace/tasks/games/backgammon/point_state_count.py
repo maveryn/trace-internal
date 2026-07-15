@@ -135,6 +135,7 @@ class GamesBackgammonPointStateCountTask:
     """Count numbered Backgammon points by checker color and stack state."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

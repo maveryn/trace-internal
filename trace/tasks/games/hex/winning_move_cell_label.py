@@ -82,6 +82,7 @@ def _prepare_winning_move_objective(
 @register_task
 class GamesHexWinningMoveCellLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

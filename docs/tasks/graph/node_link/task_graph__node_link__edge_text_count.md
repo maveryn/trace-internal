@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the count of matching visibl
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the `bbox_set` of all visible edge-label text boxes whose text equals the queried label.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `node_link`

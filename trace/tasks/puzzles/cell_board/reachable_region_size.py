@@ -241,6 +241,7 @@ class PuzzlesCellBoardReachableRegionSizeTask:
     """Count the open region reachable by orthogonal moves from start."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

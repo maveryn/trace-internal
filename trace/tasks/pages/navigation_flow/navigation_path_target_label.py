@@ -43,6 +43,7 @@ class PagesNavigationFlowNavigationPathTargetLabelTask:
     """Identify the candidate reached by a visible navigation path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

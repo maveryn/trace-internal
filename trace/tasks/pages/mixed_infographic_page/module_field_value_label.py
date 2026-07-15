@@ -119,6 +119,7 @@ class PagesMixedInfographicModuleFieldValueLabelTask:
     """Read a visible value from one module on a dense mixed infographic page."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

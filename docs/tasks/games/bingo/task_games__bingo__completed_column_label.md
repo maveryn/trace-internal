@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `segment` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`
+
 ## Generation Notes
 1. The card has exactly one completed BINGO column.
 2. The answer is one of `B`, `I`, `N`, `G`, or `O`.

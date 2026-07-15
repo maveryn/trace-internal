@@ -58,6 +58,7 @@ class PhysicsSwitchCircuitLitBulbCountTask:
     """Count bulbs that are on in a mixed branch circuit."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

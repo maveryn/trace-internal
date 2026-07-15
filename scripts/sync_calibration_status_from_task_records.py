@@ -49,7 +49,7 @@ def _prompt_count(stats: Mapping[str, Any]) -> str:
 
 def _write_markdown(path: Path, *, status: Mapping[str, Any]) -> None:
     rows: list[str] = [
-        "# TRACE Calibration Sweep Status",
+        "# Trace Calibration Sweep Status",
         "",
         "Derived compatibility view. Do not edit by hand.",
         "",

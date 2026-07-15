@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is an exact
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys: `supporting_strands_region`, `known_force_label`, `unknown_force_label`. Annotation is keyed because witness roles are distinct; each key maps to the final-image pixel box for that role.
 Query ids: `missing_effort_force_value`, `missing_load_force_value`.
 
+## Reasoning Operations
+
+Families: `counting`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

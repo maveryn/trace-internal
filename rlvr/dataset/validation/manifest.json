@@ -1,7 +1,7 @@
 {
   "name": "external_validation_selected512_trace6",
   "created_from": "/home/jovyan/work/trace/rlvr_legacy/dataset/validation/manifest.json",
-  "description": "TRACE-style external validation subset for the active rlvr/ stack. MathVerse is excluded for now. The default set keeps six 512-row validation benchmarks.",
+  "description": "Trace-style external validation subset for the active rlvr/ stack. MathVerse is excluded for now. The default set keeps six 512-row validation benchmarks.",
   "selection_model": "Qwen/Qwen3-VL-2B-Instruct",
   "selection_max_tokens": 1536,
   "selection_max_prompt_length": 1536,

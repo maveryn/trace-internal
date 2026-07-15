@@ -21,6 +21,7 @@ class PagesStepListBetweenNamedStepsCountTask:
     """Return the number of numbered steps strictly between two named step titles."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

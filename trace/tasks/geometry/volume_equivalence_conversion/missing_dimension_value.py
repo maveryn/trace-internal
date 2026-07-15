@@ -161,6 +161,7 @@ class GeometryVolumeEquivalenceConversionMissingDimensionValueTask:
     """Solve a missing dimension after converting one solid to an equal-volume target solid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

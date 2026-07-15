@@ -21,6 +21,7 @@ class ChartsMapNamedRegionSetTotalValueTask:
     """Sum visible integer values for a named set of map regions."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation',)
     domain = "charts"
     objective_contract = "named_region_set_total_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

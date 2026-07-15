@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `string_label`.
 Annotation witnesses: `unspecified` witnesses bound by `point_map(mark_center(target_category, all_series))`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `largest_series_at_category_label`, `smallest_series_at_category_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Implementation
 - Source: `trace/tasks/charts/multiseries/series_rank_at_category_label.py`
 - Class: `ChartsMultiseriesSeriesRankAtCategoryLabelTask`

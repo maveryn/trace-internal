@@ -30,6 +30,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`
+
 ## Annotation Contract
 Annotation is the bounding box of the selected wall-mounted object in the room scene. The option panel and option text are not annotation.
 

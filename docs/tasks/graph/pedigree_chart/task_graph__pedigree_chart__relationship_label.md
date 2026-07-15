@@ -18,6 +18,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`
+
 ## Answer And Annotation
 1. Answer type: `option_letter`.
 2. Annotation schema: `bbox_set`.

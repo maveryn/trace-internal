@@ -41,6 +41,7 @@ class ChartsComboCrossMarkDifferenceValueTask:
     """Compute the signed difference between primary and overlaid line marks at one label."""
 
     task_id = "task_charts__combo_mark__cross_mark_difference_value"
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     objective_contract = "cross_mark_difference_value"
     supported_query_ids = (PRIMARY_MINUS_LINE_QUERY_ID, LINE_MINUS_PRIMARY_QUERY_ID)

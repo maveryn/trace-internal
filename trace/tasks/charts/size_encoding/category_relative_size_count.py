@@ -172,6 +172,7 @@ def _bind_annotation(plan, rendered):
 @register_task
 class ChartsSizeEncodingCategoryRelativeSizeCountTask:
     task_id = T
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = DOMAIN
     objective_contract = "category_relative_size_count"
     supported_query_ids = tuple(Q)

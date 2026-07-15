@@ -1,6 +1,6 @@
 # Shared Label Assets
 
-TRACE keeps repo-wide reusable text labels under `assets/labels/`. Use this
+Trace keeps repo-wide reusable text labels under `assets/labels/`. Use this
 layer for visible node labels, chart categories, page names, legend names,
 organization-style tokens, place names, and other prompt/render labels that are
 not task-specific.

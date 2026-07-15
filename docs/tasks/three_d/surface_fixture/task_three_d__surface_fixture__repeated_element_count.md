@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Contract
 The image shows one projected fixture surface with one visible element family:
 tiles, holes, slots, compartments, vents, windows, doors, drawer pulls, bricks,

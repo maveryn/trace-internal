@@ -61,6 +61,7 @@ class GeometryCircleChordLengthFromRadiusCentralAngleValueTask:
     """Compute a chord length from a visible radius and central angle."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = (QUERY_ID,)

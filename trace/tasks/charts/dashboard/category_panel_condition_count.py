@@ -44,6 +44,7 @@ class ChartsDashboardCategoryPanelConditionCountTask:
     """Count dashboard panels where one shared category satisfies a value threshold."""
 
     task_id = "task_charts__dashboard__category_panel_condition_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "category_panel_condition_count"
     supported_query_ids = (GREATER_THAN_QUERY_ID, LESS_THAN_QUERY_ID)

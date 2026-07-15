@@ -79,6 +79,7 @@ class GamesSolitaireCascadeCardAtDepthLabelTask(SolitaireLifecycleTask):
     """Choose the card at a requested visible depth in one tableau column."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

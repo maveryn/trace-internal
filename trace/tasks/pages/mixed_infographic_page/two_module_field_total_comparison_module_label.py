@@ -73,6 +73,7 @@ class PagesMixedInfographicTwoModuleFieldTotalComparisonModuleLabelTask:
     """Compare totals for one additive field across two modules."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

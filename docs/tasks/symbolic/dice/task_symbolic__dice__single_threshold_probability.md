@@ -17,6 +17,10 @@ Annotation schema: `bbox`.
 Annotation witnesses: the scalar bbox of the single visible dice tray.
 Query ids: `single_value_at_least_probability`, `single_value_at_most_probability`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `formula_evaluation`
+
 ## Generation And Trace
 1. The task asks for a probability over a sampled visible top-value threshold; `query_id` selects at-least versus at-most semantics.
 2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.

@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(cuboid_dimension_measurements, unknown_role=surface_area, formula_schema=cuboid_total_surface_area); scene=rectangular_solid; scope=cuboid_surface_area_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `single` asks for the total surface area of the cuboid from the visible length, width, and height labels.
 - The sampled dimensions, view jitter, face palette, style, font, and render retry index are internal replay metadata.

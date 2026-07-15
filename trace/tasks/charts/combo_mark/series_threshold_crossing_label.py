@@ -124,6 +124,7 @@ class ChartsComboSeriesThresholdCrossingLabelTask:
     """Return the first category where one combo series crosses a threshold."""
 
     task_id = "task_charts__combo_mark__series_threshold_crossing_label"
+    reasoning_operations = ('filtering', 'comparison', 'ranking')
     domain = DOMAIN
     objective_contract = "series_threshold_crossing_label"
     supported_query_ids = (

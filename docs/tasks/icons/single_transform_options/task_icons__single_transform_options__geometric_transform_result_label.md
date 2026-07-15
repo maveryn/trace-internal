@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `selected_option` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `rotate_90_clockwise_result_label`, `rotate_90_counterclockwise_result_label`, `rotate_180_result_label`, `flip_horizontal_result_label`, `flip_vertical_result_label`.
 
+## Reasoning Operations
+
+Families: `transformation`
+
 ## Identity
 
 - Domain: `icons`

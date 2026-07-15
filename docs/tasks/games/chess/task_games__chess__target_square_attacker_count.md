@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `king_square_attacker_count`, `white_piece_attacks_target_square_count`, `black_piece_attacks_target_square_count`.
 
+## Reasoning Operations
+
+Families: `counting`, `spatial_relations`
+
 ## Generation Notes
 1. Annotation marks bounding boxes for all attacking pieces from the queried side.
 2. For `king_square_attacker_count`, the marked target square contains the king and the queried side is the opponent.

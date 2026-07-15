@@ -21,6 +21,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`, `matching`
+
 ## Generation Notes
 1. The board shows lettered colored boxes and matching colored goal dots.
 2. No box starts on its matching goal.

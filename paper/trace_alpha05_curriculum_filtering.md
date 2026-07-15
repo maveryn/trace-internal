@@ -1,14 +1,14 @@
-# TRACE Alpha-0.5 Curriculum Filtering
+# Trace Alpha-0.5 Curriculum Filtering
 
-This note describes the construction of the TRACE answer-mode curriculum subset
+This note describes the construction of the Trace answer-mode curriculum subset
 used for RLVR training. The process has two stages: first, we generate a
-query-id-aware 200k TRACE training pool; second, we run a staged base-model
+query-id-aware 200k Trace training pool; second, we run a staged base-model
 rollout filter and retain a stratified 102,400-example training subset.
 
 ## Source Pool
 
-The source pool contains 200,000 TRACE answer-mode instances generated from the
-100 accepted default TRACE tasks. Task sampling used a query-id-aware weighting
+The source pool contains 200,000 Trace answer-mode instances generated from the
+100 accepted default Trace tasks. Task sampling used a query-id-aware weighting
 scheme with alpha `0.5`. For a task with `v_t` active query ids, the task
 weight was:
 

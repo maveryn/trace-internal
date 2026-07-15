@@ -24,6 +24,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(counted_cells)`. Annotation marks rendered bboxes for exactly the counted cells in row-major order. Colorbar, axes, labels, titles, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.

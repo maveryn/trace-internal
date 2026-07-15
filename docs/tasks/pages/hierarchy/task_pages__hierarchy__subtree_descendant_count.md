@@ -16,6 +16,10 @@
 7. Prompt query key: `subtree_descendant_count`
 8. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_hierarchy_v1`
 2. Scene key: `hierarchy_diagram`

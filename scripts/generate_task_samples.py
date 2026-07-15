@@ -943,7 +943,7 @@ def _generate_samples_for_task(
 def main() -> int:
     """Parse CLI args and generate task sample artifacts."""
     parser = argparse.ArgumentParser(
-        description="Generate TRACE task sample images/data, per-task Excel files, and per-domain combined workbooks"
+        description="Generate Trace task sample images/data, per-task Excel files, and per-domain combined workbooks"
     )
     parser.add_argument("--out", default="review/task-reviews", help="Output root directory")
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")

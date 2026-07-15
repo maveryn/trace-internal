@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_point(lettered_candidate_points, predicate=inside_shaded_region, region_rule_family)); scene=coordinate_plane; scope=locus_point_label`
 
+## Reasoning Operations
+
+Families: `spatial_relations`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

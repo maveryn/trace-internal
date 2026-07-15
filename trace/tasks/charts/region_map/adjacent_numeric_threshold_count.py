@@ -21,6 +21,7 @@ TASK_COUNT_ANSWER_MAX = 4
 @register_task
 class ChartsMapAdjacentNumericThresholdCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'spatial_relations')
     domain = "charts"
     objective_contract = "adjacent_numeric_threshold_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

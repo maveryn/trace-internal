@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; the option label for t
 Annotation witnesses: `annotation` uses the `segment` schema; one image-pixel segment from the present word's first-letter.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `matching`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the option label for the word present in the grid.

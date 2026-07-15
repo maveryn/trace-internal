@@ -17,6 +17,10 @@
 8. Query arguments: fixed overlap predicate; old source branch is recorded as `source_query_id=overlap_count`.
 9. Render arguments: day label, event intervals, lane assignments, scene variant, style variant, accent color, render dimensions, and post-render noise.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_schedule_v1`
 2. Scene key: `day_schedule`

@@ -12,6 +12,10 @@
 ## Program Contract
 - `curvilinear_gap_area(container=rectangle, packed_shape=two_equal_circles, given=rectangle_width, target=shaded_area); scene=tangent_packing; scope=two_circles_in_rectangle_gap_area`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the v1 scene prompt bundle configured for `tangent_packing`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

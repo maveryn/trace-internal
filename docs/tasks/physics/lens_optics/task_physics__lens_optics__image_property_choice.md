@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys are `lens`, `object_arrow`, and `focal_marks`. Annotation must mark minimal visual witnesses from the final rendered diagram. It must not mark option cards, option letters, title text, decorative grid lines, hidden image-position metadata, or a solved image arrow.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`
+
 ## Query Branches
 
 | Query id | Program schema |

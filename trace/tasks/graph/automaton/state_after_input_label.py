@@ -316,6 +316,7 @@ def _edge_label_bbox_entries(rendered_scene: RenderedGraphScene, edges: Sequence
 class GraphRelationAutomatonStateSimulationLabelTask:
     """Simulate a state-transition diagram and answer the reached state label."""
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'state_update')
     domain = 'graph'
     supported_query_ids = SUPPORTED_AUTOMATON_QUERY_IDS
 

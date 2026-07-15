@@ -17,6 +17,10 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema; non-empty.
 Annotation schema: `bbox_set`.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`
+
 ## Query IDs
 - `row_most_shape_number`
 - `row_fewest_shape_number`

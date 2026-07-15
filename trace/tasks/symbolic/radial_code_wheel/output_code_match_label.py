@@ -38,6 +38,7 @@ _BINDING = RadialChoiceTaskBinding(
 @register_task
 class SymbolicRadialOutputCodeMatchLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = "symbolic"
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True

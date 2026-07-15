@@ -1,10 +1,10 @@
-# TRACE RLVR Training Runbook
+# Trace RLVR Training Runbook
 
-This is the retained operational runbook for the legacy split-v1 TRACE RLVR
+This is the retained operational runbook for the legacy split-v1 Trace RLVR
 launcher. It records the commands for reproducing that path.
 
 For current all-1000-task EasyR1 training, including `task_conditioned`, use
-`docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md` instead.
+`docs/workflows/ANNOTATION_ABLATION_RUNBOOK.md` instead.
 
 Use this runbook with:
 
@@ -65,7 +65,7 @@ the model or start training.
 
 ## Base Validation Before RL
 
-Run this on the GPU host to establish the pre-training TRACE validation score:
+Run this on the GPU host to establish the pre-training Trace validation score:
 
 ```bash
 cd /home/jovyan/work/trace
@@ -87,7 +87,7 @@ Track at minimum:
 - grouped domain/task metrics
 
 Do not start the RL run if validation fails to load the dataset, cannot parse
-TRACE reward payloads, or shows a severe format-validity regression from the
+Trace reward payloads, or shows a severe format-validity regression from the
 prompt-pilot baseline.
 
 ## Base External Benchmarks
@@ -214,7 +214,7 @@ PYTHONPATH=. python scripts/run_external_benchmark_score_queue.py \
   --queue-name trace-qwen25vl3b-step200_external_eval_v1
 ```
 
-Continue only if TRACE validation improved or remained healthy and external
+Continue only if Trace validation improved or remained healthy and external
 benchmarks do not show unacceptable broad regressions.
 
 ## Continue From Step 200
@@ -269,7 +269,7 @@ For each run, record:
 - git commit and dirty-worktree status
 - dataset repo/revision or local parquet manifest
 - checkpoint paths retained
-- TRACE validation summary for every checkpoint
+- Trace validation summary for every checkpoint
 - external benchmark queue names and score summaries
 - known failures or manually excluded comparisons
 

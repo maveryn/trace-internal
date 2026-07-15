@@ -772,7 +772,7 @@ def _run_parent(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run staged TRACE curriculum rollouts and keep probing only extreme prompts.")
+    parser = argparse.ArgumentParser(description="Run staged Trace curriculum rollouts and keep probing only extreme prompts.")
     parser.add_argument("--parquet", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model", default="Qwen/Qwen3-VL-4B-Instruct")

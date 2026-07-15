@@ -72,6 +72,7 @@ def _prepare_higher_rank_objective(instance_seed, task_params, _query_id, _query
 @register_task
 class GamesCardsHigherThanReferenceCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'ranking')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

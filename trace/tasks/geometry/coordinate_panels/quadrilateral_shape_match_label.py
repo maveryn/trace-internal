@@ -68,6 +68,7 @@ class GeometryCoordinateQuadrilateralShapeMatchLabelTask:
     """Choose the coordinate panel whose four points form the requested quadrilateral."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'matching')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

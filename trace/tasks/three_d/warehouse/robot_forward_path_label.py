@@ -422,6 +422,7 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
     """Choose the first object a red-boxed robot would reach when moving forward."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations', 'topology')
     domain = "three_d"
     default_dataset_enabled = True
 

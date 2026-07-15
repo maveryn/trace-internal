@@ -38,6 +38,7 @@ class ChartsContourDensityDensityExtremumRegionLabelTask:
     """Return the region label with the highest or lowest density."""
 
     task_id = "task_charts__contour_density__density_extremum_region_label"
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "density_extremum_region_label"
     supported_query_ids = (HIGHEST_QUERY_ID, LOWEST_QUERY_ID)

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `full_row_count`, `one_gap_row_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 1. Query ids choose the requested row status: full or exactly one empty cell.
 2. Annotation marks whole qualifying row bboxes on the rendered board.

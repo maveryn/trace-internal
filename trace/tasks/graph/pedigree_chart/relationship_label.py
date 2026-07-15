@@ -137,6 +137,7 @@ class GraphPedigreeRelationshipLabelTask:
     """Identify a relationship between two labeled people in a pedigree chart."""
 
     task_id = RELATIONSHIP_TASK_ID
+    reasoning_operations = ('topology',)
     domain = "graph"
     default_dataset_enabled = True
     supported_query_ids = (SINGLE_QUERY_ID,)

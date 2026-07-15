@@ -128,6 +128,7 @@ def _build_task_output(*, instance: ShipStatusInstance, rendered_context: Any, a
 class GamesBattleshipShipStatusCountTask:
     """Count sunk or partially hit ships in the shown fleet."""
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = SHIP_STATUS_COUNT_QUERY_IDS

@@ -53,7 +53,7 @@ def score_external_response(
     parser_family: str | None = None,
     metadata: Any | None = None,
 ) -> tuple[float, bool, str | None, str]:
-    """Score an external validation response, accepting TRACE JSON answer payloads."""
+    """Score an external validation response, accepting Trace JSON answer payloads."""
     extracted_trace_answer = extract_trace_answer_for_scoring(response)
     if extracted_trace_answer is not None:
         accuracy, extracted, extracted_answer, method = strict_score_response(

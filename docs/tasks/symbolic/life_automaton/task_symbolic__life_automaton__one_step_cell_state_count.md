@@ -16,6 +16,10 @@ Output binding: `answer` is the matching cell count as an integer.
 Annotation witnesses: a homogeneous `bbox_set` of source-grid cell positions that have the requested state after the update; the set is empty when the answer is `0`.
 Query ids: `one_step_alive_cell_count`, `one_step_dead_cell_count`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Contract
 1. Query ids: `one_step_alive_cell_count|one_step_dead_cell_count`
 2. Answer type: `integer`

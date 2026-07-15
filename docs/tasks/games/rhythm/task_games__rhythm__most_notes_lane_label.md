@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox_set` schema for all note objects in the winning lane.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`
+
 ## Notes
 - The sampled scene has one lane with a unique maximum note-object count.
 - A long vertical note counts as one note object.

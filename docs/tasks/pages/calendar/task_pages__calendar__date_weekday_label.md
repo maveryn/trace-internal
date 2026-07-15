@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_month_date_weekday_header_lookup(target_date); output=visible_weekday_header_label; annotation=bbox(target_date_cell); scene=calendar; scope=one Gregorian month-view calendar`
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_v1`
 2. Scene key: `month_calendar`

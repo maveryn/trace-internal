@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is an
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed because input/output side roles are distinct; keys are `input_side` and `output_side`. Each annotation box marks the corresponding piston side, including its force label, chamber, and area label.
 Query ids: `missing_input_area`, `missing_input_force`, `missing_output_force`, `missing_piston_area`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_tangent_radius_right_triangle, unknown_role=radius_length, formula_schema=radius_from_external_distance_and_angle); scene=circle_theorem; scope=radius_from_external_distance_and_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 - `single`: given the center-to-exterior distance and the exterior angle to the tangent point, solve the circle radius.
 

@@ -19,6 +19,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`
+
 ## Query IDs
 - `closest_to_finish_label`
 - `farthest_from_finish_label`

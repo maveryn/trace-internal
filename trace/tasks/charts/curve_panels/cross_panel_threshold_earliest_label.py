@@ -44,6 +44,7 @@ class ChartsScientificCrossPanelThresholdEarliestLabelTask:
     """Select the panel where one method crosses a threshold earliest."""
 
     task_id = "task_charts__curve_panels__cross_panel_threshold_earliest_label"
+    reasoning_operations = ('filtering', 'comparison', 'ranking')
     domain = "charts"
     objective_contract = "cross_panel_threshold_earliest_label"
     supported_query_ids = (UPWARD_QUERY_ID, DOWNWARD_QUERY_ID)

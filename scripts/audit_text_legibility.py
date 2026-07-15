@@ -399,7 +399,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.path.insert(0, root_text)
     findings = semantic_text_color_findings(root, tuple(args.scan_roots or DEFAULT_SCAN_ROOTS))
     if findings:
-        print("Semantic glyph text-color usage is not allowed for active TRACE tasks.", file=sys.stderr)
+        print("Semantic glyph text-color usage is not allowed for active Trace tasks.", file=sys.stderr)
         print("Use nonsemantic readable text ink and encode categories with marks/swatches instead.", file=sys.stderr)
         for finding in findings:
             print(finding, file=sys.stderr)

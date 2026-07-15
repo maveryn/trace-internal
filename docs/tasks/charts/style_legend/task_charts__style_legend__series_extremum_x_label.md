@@ -29,6 +29,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point`. Annotation marks the selected plotted marker for the fixed legend series. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `series_highest_x_label`, `series_lowest_x_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

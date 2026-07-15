@@ -1,4 +1,4 @@
-# TRACE Validation Error Codes
+# Trace Validation Error Codes
 
 Catalog of `validation_report.json` `error_code` values.
 

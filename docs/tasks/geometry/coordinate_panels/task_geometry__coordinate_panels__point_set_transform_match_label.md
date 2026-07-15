@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_panel(candidate_coordinate_panels_6, point_set_transform)); scene=coordinate_panels; scope=point_set_transform_match_label`
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_panels`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

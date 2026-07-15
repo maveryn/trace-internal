@@ -66,6 +66,7 @@ def _prepare_cone_objective(
 @task_registry.register_task
 class GeometrySolidRevolutionConeVolumeValueTask:
     task_id = CONE_TASK_ID
+    reasoning_operations = ('transformation', 'formula_evaluation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = CONE_QUERY_IDS

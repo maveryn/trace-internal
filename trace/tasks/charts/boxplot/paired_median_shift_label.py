@@ -272,6 +272,7 @@ class ChartsDistributionBoxplotPairedMedianShiftLabelTask:
     """Select the matched label with the requested before/after median shift."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (INCREASE_QUERY_ID, DECREASE_QUERY_ID, ABSOLUTE_QUERY_ID)

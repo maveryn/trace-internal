@@ -35,6 +35,7 @@ class ChartsScientificCurveIntersectionCountTask:
     """Count intersections between two methods in one subplot."""
 
     task_id = "task_charts__curve_panels__curve_intersection_count"
+    reasoning_operations = ('counting', 'spatial_relations')
     domain = "charts"
     objective_contract = "curve_intersection_count"
     supported_query_ids = (QUERY_ID,)

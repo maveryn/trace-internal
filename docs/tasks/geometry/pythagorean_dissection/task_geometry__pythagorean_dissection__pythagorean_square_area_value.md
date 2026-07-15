@@ -12,6 +12,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_pythagorean_square_dissection, derivation_rule=leg_a_squared_plus_leg_b_squared, output_role=square_EFGH_area); scene=pythagorean_dissection; scope=pythagorean_square_area_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `single` is the public no-branch query. Segment values, answer support, fill palette, orientation, font, layout, and whole-scene rotation are internal replay metadata.
 

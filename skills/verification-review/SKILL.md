@@ -1,6 +1,6 @@
 ---
 name: verification-review
-description: Use when validating TRACE changes with tests, task reviews, and answer-distribution checks, or when debugging review failures and support skew.
+description: Use when validating Trace changes with tests, task reviews, and answer-distribution checks, or when debugging review failures and support skew.
 ---
 
 # Verification Review

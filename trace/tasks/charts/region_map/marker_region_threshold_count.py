@@ -24,6 +24,7 @@ TASK_COUNT_ANSWER_MAX = 4
 @register_task
 class ChartsRegionMapMarkerRegionThresholdCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "charts"
     objective_contract = "marker_region_threshold_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

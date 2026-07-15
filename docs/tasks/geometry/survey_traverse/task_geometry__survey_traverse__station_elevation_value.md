@@ -11,6 +11,10 @@
 ## Program Contract
 - `survey_station_elevation_value(visible_station_profile, visible_field_note, branch=leveling_station_elevation) -> target_station_elevation; scene=survey_traverse; scope=station_elevation_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the v1 scene prompt bundle configured for `survey_traverse`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

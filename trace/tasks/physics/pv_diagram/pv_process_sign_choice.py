@@ -50,6 +50,7 @@ class PhysicsPVDiagramProcessSignChoiceTask:
     """Choose the labeled PV process whose gas work has the requested sign."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

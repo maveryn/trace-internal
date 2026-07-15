@@ -13,13 +13,13 @@ train_files: ~/data/rlhf/gsm8k/train.parquet
 # Validation parquet. Can be a list or a single file.
 val_files: ~/data/rlhf/gsm8k/test.parquet
 
-# Validation path. Use "trace_benchmark" for one-dataloader-per-benchmark TRACE validation.
+# Validation path. Use "trace_benchmark" for one-dataloader-per-benchmark Trace validation.
 validation_style: standard
 
-# TRACE benchmark validation currently excludes these held-out benchmarks by default.
+# Trace benchmark validation currently excludes these held-out benchmarks by default.
 trace_validation_exclude_benchmarks: ["mathverse_mini"]
 
-# Dataset mode selector. Use "trace" for TRACE exports, otherwise leave "none".
+# Dataset mode selector. Use "trace" for Trace exports, otherwise leave "none".
 dataset_mode: none
 
 # The field in the dataset where the prompt is located. Default is 'prompt'.

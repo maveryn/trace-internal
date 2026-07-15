@@ -123,6 +123,7 @@ def _select_boundary_problem(*, instance_seed: int, params: Mapping[str, Any]) -
 class GeometryCoordinateCompositeBoundaryPointMatchLabelTask:
     domain = DOMAIN
     task_id = TASK_ID
+    reasoning_operations = ('logical_composition', 'spatial_relations', 'matching')
     supported_query_ids = QUERY_IDS
     default_dataset_enabled = True
 

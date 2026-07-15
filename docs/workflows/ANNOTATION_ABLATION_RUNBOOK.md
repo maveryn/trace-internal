@@ -1,8 +1,8 @@
-# TRACE Annotation Ablation Runbook
+# Trace Annotation Ablation Runbook
 
-This is the handoff runbook for agents running TRACE answer-and-annotation
+This is the handoff runbook for agents running Trace answer-and-annotation
 ablations on separate GPU hosts. It uses the active EasyR1 backend, the all-1000
-TRACE RLVR dataset on Hugging Face, and tmpfs-backed cache/checkpoint paths.
+Trace RLVR dataset on Hugging Face, and tmpfs-backed cache/checkpoint paths.
 
 Use this for new paper runs. Do not use the legacy `rlvr/verl/` launchers unless
 explicitly requested.
@@ -20,7 +20,7 @@ explicitly requested.
 | task-conditioned wrapper | `scripts/run_trace_qwen25vl3b_easyr1_task_conditioned_nokl_tmpfs.sh` |
 | reward adapter | `rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py` |
 | shared scorer | `trace/core/reward_scoring.py` |
-| reward-mode reference | `rlvr/TRACE_REWARD_MODES.md` |
+| reward-mode reference | `rlvr/REWARD_MODES.md` |
 
 ## Dataset
 

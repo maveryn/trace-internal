@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `transformation`
+
 ## Query Contract
 1. Public query id: `single`
 2. The task always asks for the folded-cube face that shares the red marked edge.

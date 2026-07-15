@@ -36,6 +36,10 @@ Annotation witnesses: `annotation` uses the scalar `bbox` schema for the selecte
 Query ids: `single`.
 Internal generation axes: `mirror_axis` is sampled from `vertical` or `horizontal`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_mirror_grid_v1`
 2. `scene_key`: `missing_mirror_grid`

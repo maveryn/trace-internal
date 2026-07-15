@@ -81,6 +81,7 @@ class GamesCardsMissingCardToCompleteHandLabelTask:
     """Choose the candidate card that completes a requested card pattern."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

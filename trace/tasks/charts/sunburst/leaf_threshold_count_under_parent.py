@@ -24,6 +24,7 @@ class ChartsSunburstLeafThresholdCountUnderParentTask:
     """Count outer leaves under a parent that satisfy a one-bound threshold."""
 
     task_id = "task_charts__sunburst__leaf_threshold_count_under_parent"
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'topology')
     domain = DOMAIN
     objective_contract = "leaf_threshold_count_under_parent"
     supported_query_ids = ("above_threshold_leaf_count_under_parent", "below_threshold_leaf_count_under_parent")

@@ -16,6 +16,10 @@ Annotation schema: `segment_set`.
 Annotation witnesses: a homogeneous `segment_set` of semantic endpoint-to-endpoint bond segments for matching bonds.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `answer_gt.value` is the number of visible bonds whose order matches `target_bond_order`.

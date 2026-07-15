@@ -12,6 +12,10 @@
 - `solve_formula(visible_triangle_relations_measurements, unknown_role=segment_length, formula_schema=parallel_section_scale); scene=triangle_relations; scope=parallel_section_segment_value`
 - The visible construction marks and prompt state that `DE` is parallel to `BC`. The requested segment may be either the inner parallel section or the corresponding base segment; that target segment role is internal trace metadata.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

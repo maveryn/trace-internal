@@ -18,10 +18,10 @@ from .local_strict_eval import strict_score_response
 
 
 def score_trace_response(**kwargs: Any) -> dict[str, float]:
-    """Score one TRACE response using the shared TRACE core scorer.
+    """Score one Trace response using the shared Trace core scorer.
 
     RLVR keeps the legacy strict answer scorer adapter here because that parser
-    is VERL/RLVR-local compatibility behavior. TRACE core owns the public
+    is VERL/RLVR-local compatibility behavior. Trace core owns the public
     answer/annotation contract dispatch and annotation geometry scoring.
     """
 

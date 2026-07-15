@@ -84,6 +84,7 @@ class GamesTetrisDropResultLabelTask:
     """Choose the labeled board produced by the shown fixed drop."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -12,6 +12,10 @@
 - `solve_formula(angle_bisector_theorem_variable, unknown_role=variable_value, formula_schema=angle_bisector_side_split_ratio); scene=triangle_relations; scope=angle_bisector_variable_value`
 - The visible construction marks and prompt state that `AD` bisects angle `BAC`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

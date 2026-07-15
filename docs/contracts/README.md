@@ -1,6 +1,6 @@
 # Contract Docs
 
-This folder contains repo-wide contracts that should change only when TRACE
+This folder contains repo-wide contracts that should change only when Trace
 runtime semantics change. Keep workflow instructions, transition plans, generated
 inventories, and domain-specific policy outside `docs/contracts/`.
 
@@ -9,7 +9,8 @@ inventories, and domain-specific policy outside `docs/contracts/`.
 - `SOURCE_LAYOUT.md` — current task-source layout and shared-code ownership.
 - `TAXONOMY.md` — public `domain -> scene_id -> task_id` taxonomy.
 - `TASK_UNIT_POLICY.md` — task/query boundary and merge/split rules.
-- `PROGRAM_SCHEMA_CATALOG.md` — reusable program-schema names for task contracts.
+- `PROGRAM_SCHEMA_CATALOG.md` — reusable program schemas and the canonical
+  task-level reasoning-operation metadata vocabulary.
 - `PROMPT_SYSTEM.md` — prompt asset schema, composition, and metadata.
 - `ANNOTATION_AND_REWARD_CONTRACTS.md` — annotation type selection and
   answer/annotation reward dispatch contract.

@@ -48,6 +48,7 @@ def _prepare_result_board_objective(instance_seed: int, params: Dict[str, Any], 
 class Games2048MoveResultBoardLabelTask:
     """Choose the labeled candidate board matching one shown 2048 move result."""
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -51,6 +51,7 @@ def _construct_missing_weight_dataset(
 @register_task
 class PuzzlesBalanceScaleMissingObjectWeightValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

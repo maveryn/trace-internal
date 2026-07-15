@@ -34,6 +34,7 @@ class PagesHierarchyManagerMostDirectReportsLabelTask:
     """Select the non-CEO manager with the most immediate reports."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'topology')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

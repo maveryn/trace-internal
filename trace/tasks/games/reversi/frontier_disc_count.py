@@ -86,6 +86,7 @@ class GamesReversiFrontierDiscCountTask:
     """Count queried-color discs touching at least one empty square."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

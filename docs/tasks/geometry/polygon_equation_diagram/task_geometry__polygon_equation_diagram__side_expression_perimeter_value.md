@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_equal_side_polygon_equation_then_perimeter_sum, unknown_role=perimeter_value, formula_schema=equal_side_expression_perimeter_value); scene=polygon_equation_diagram; scope=side_expression_perimeter_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Internal Construction Families
 The public task has no semantic query branch. The sampled polygon side count is recorded as trace metadata:
 

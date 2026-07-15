@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export one task-review workbook from an existing RLVR parquet + TRACE dataset root.
+"""Export one task-review workbook from an existing RLVR parquet + Trace dataset root.
 
 This is intended for calibration review sets under review/task-reviews/, where we
 want the same workbook-style artifact as task-reviews/ but for one exact probe
@@ -28,7 +28,7 @@ from trace.core.task_review_workbooks import write_inspection_excel as _write_in
 def _parse_cli() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export one workbook for an exact task probe set")
     parser.add_argument("--parquet", required=True, help="RLVR parquet for the exact probe set")
-    parser.add_argument("--dataset-root", required=True, help="TRACE dataset root that produced the parquet")
+    parser.add_argument("--dataset-root", required=True, help="Trace dataset root that produced the parquet")
     parser.add_argument("--out-root", default="review/task-reviews", help="Output root for workbook artifacts")
     parser.add_argument("--task-id", default="", help="Optional task id override")
     parser.add_argument(

@@ -400,6 +400,7 @@ class ThreeDObjectSceneLineSideLabelTask:
     """Choose the marked point on a requested side of a directed line between two named objects."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True

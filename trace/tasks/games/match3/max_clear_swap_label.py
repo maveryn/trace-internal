@@ -69,6 +69,7 @@ class GamesMatch3MaxClearSwapLabelTask(Match3SingleQueryTaskBase):
     """Choose the labeled match-3 swap that clears the most gems."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'state_update')
     _namespace = f"{SCENE_ID}.max_clear_swap"
     _default_branch = "single"
     _prepare_objective = staticmethod(_prepare_max_clear_objective)

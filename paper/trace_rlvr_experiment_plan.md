@@ -1,6 +1,6 @@
-# TRACE RLVR Experiment Plan
+# Trace RLVR Experiment Plan
 
-This note records the planned TRACE RLVR training sequence. The goal is to use a
+This note records the planned Trace RLVR training sequence. The goal is to use a
 small set of controlled ablations on Qwen3-VL-4B to choose the dataset and reward
 configuration, then train the final model family for 800 steps.
 
@@ -15,7 +15,7 @@ We will train three vision-language models:
 | `Qwen/Qwen2.5-VL-7B-Instruct` | Final Qwen2.5-VL comparison model. |
 
 Unless otherwise specified, Qwen3 models use `max_prompt_length=1536`; Qwen2.5-VL
-uses `max_prompt_length=2048`. TRACE training uses `max_response_length=2048`.
+uses `max_prompt_length=2048`. Trace training uses `max_response_length=2048`.
 The external validation benchmarks use `val_max_response_length=1536` and the
 same JSON answer extraction protocol.
 
@@ -58,20 +58,20 @@ The default validation suite is:
 | `mmmu_pro_vision` |
 | `countqa` |
 
-Validation uses TRACE-style JSON answer prompting and extraction. The main model
+Validation uses Trace-style JSON answer prompting and extraction. The main model
 selection metric is mean external validation accuracy, with per-benchmark
 accuracy retained for diagnosis.
 
-Each alpha dataset also has a 1,024-example TRACE holdout validation set for
+Each alpha dataset also has a 1,024-example Trace holdout validation set for
 within-distribution overfitting checks:
 
-| Alpha | TRACE holdout parquet |
+| Alpha | Trace holdout parquet |
 |---:|---|
 | `0.0` | `rlvr/dataset/validation/trace_rlvr_validation_1024_query_id_alpha0_answer_seed20260506.parquet` |
 | `0.5` | `rlvr/dataset/validation/trace_rlvr_validation_1024_query_id_alpha0_5_answer_seed20260507.parquet` |
 | `1.0` | `rlvr/dataset/validation/trace_rlvr_validation_1024_query_id_alpha1_answer_seed20260508.parquet` |
 
-These holdouts are independently generated from TRACE with fresh seeds and the
+These holdouts are independently generated from Trace with fresh seeds and the
 same alpha-specific task sampling policy as their matching training dataset.
 They are not sampled from the staged-probe retained pool. They have no train
 `uid` or `instance_id` overlap and should be interpreted only within the
@@ -183,9 +183,9 @@ The training stack now supports:
 2. model-specific default prompt length:
    - Qwen3-VL: `1536`;
    - Qwen2.5-VL: `2048`;
-3. TRACE training response length `2048`;
+3. Trace training response length `2048`;
 4. answer-only and answer+annotation prompt modes through `TRACE_OUTPUT_MODE`;
-5. configurable TRACE annotation reward formula:
+5. configurable Trace annotation reward formula:
    - `gated`;
    - `additive`;
 6. first-class `query_id` in future RLVR parquets, rather than requiring

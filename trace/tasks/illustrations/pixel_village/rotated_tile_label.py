@@ -165,6 +165,7 @@ class IllustrationsPixelVillageRotatedTileLabelTask:
     """Select the lettered tile that has been rotated in a pixel-village grid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = "illustrations"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True

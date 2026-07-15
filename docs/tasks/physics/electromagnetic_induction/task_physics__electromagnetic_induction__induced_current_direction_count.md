@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the numb
 Annotation witnesses: `bbox_set` witnesses from the finalized render. Annotation is the unordered set of bboxes around the full matching mini-panels. If the answer is `0`, annotation is an empty array.
 Query ids: `clockwise_induced_current_count`, `counterclockwise_induced_current_count`, `no_induced_current_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

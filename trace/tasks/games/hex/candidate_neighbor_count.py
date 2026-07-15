@@ -100,6 +100,7 @@ class GamesHexCandidateNeighborCountTask:
     """Count red, blue, or empty neighbors touching one labeled Hex cell."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -1,0 +1,18 @@
+\section{Analysis}
+\label{sec:analysis}
+
+We organize transfer analysis around three questions: which external task
+families benefit from \trace training, whether breadth across program
+contracts is associated with transfer beyond synthetic renderings, and where
+procedural visual style limits generalization. Negative transfer is reported
+alongside gains rather than being absorbed into an aggregate score.
+
+\subsection{Model-conditional task difficulty}
+
+\trace does not assign one intrinsic difficulty score across its heterogeneous
+task contracts.  Under a fixed model checkpoint and evaluation protocol,
+however, empirical solve rate provides a practical difficulty proxy: it can
+identify tasks near the current policy's competence frontier, exclude tasks
+that are uniformly solved or failed, and initialize a curriculum.  This
+ordering is deliberately model conditional.  It should be recomputed as the
+policy changes rather than interpreted as a permanent property of the task.

@@ -29,6 +29,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(answer_parent_leaf_value_labels)`. Annotation marks the centers of the printed outer leaf value labels under the answer parent category. Renderer context such as decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `highest_parent_total_label`, `lowest_parent_total_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `topology`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

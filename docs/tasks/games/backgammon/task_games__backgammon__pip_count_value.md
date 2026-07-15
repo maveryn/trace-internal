@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `topology`, `formula_evaluation`
+
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.
 2. The generated board is a sparse exact-answer race position with answer support `1..8`.

@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `string_label`.
 Annotation witnesses: `unspecified` witnesses bound by `bbox_set(parent_child_rectangles)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `largest_parent_total`, `smallest_parent_total`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `topology`
+
 ## Review Notes
 
 This task uses the current source layout. Query ids select the extremum direction; public task code owns the parent-total comparison, answer binding, annotation leaf ids, prompt slots, and task-specific trace fields.

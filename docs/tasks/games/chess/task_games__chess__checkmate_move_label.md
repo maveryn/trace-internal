@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. The board shows standard chess coordinates on the margins and a visible panel of candidate moves.
 2. The visible options are encoded as piece name plus source and destination square.

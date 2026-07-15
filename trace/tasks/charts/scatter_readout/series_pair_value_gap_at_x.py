@@ -56,6 +56,7 @@ class ChartsScatterSeriesPairValueGapAtXTask:
     """Compute the absolute value gap between two series at the same x-axis label."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     objective_contract = "series_pair_value_gap_at_x"
     supported_query_ids = QUERY_IDS

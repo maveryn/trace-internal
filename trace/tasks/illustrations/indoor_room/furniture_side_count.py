@@ -286,6 +286,7 @@ class IllustrationsIndoorRoomFurnitureSideCountTask:
     """Count objects left or right of named furniture."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'spatial_relations')
     domain = "illustrations"
     supported_query_ids = QUERY_IDS
     default_dataset_enabled = True

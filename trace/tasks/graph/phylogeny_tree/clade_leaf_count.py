@@ -127,6 +127,7 @@ class GraphPhylogenyTreeCladeLeafCountTask:
     """Count all terminal taxa descending from the visually marked clade."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'topology')
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

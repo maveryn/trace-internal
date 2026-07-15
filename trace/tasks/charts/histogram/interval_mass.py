@@ -63,6 +63,7 @@ def _build_interval_mass_plan(params, instance_seed, selected_query_id, query_pr
 
 class ChartsDistributionHistogramIntervalMassTask:
     task_id = TASK_ID
+    reasoning_operations = ('aggregation',)
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = SUPPORTED_QUERY_IDS

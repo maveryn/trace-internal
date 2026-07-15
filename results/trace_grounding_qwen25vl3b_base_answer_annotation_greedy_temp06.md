@@ -1,4 +1,4 @@
-# TRACE Grounding 3B Base / Answer / Annotation Results
+# Trace Grounding 3B Base / Answer / Annotation Results
 
 Subset manifest root: `/home/shadeform/trace/benchmark/subsets/trace_grounding`
 

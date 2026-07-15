@@ -363,9 +363,9 @@ def _write_license_files() -> None:
         "License URL: https://creativecommons.org/publicdomain/zero/1.0/\n",
         encoding="utf-8",
     )
-    (license_dir / "TRACE-SYNTHETIC.txt").write_text(
-        "TRACE synthetic context text templates.\n\n"
-        "These template strings were authored for TRACE synthetic task generation\n"
+    (license_dir / "trace-synthetic.txt").write_text(
+        "Trace synthetic context text templates.\n\n"
+        "These template strings were authored for Trace synthetic task generation\n"
         "and combined with permissively licensed source word/category pools.\n",
         encoding="utf-8",
     )
@@ -383,7 +383,7 @@ def _write_readme() -> None:
         "drawn text element.\n\n"
         "## Source Policy\n\n"
         "Assets are normalized from CC0/public-domain compatible sources and\n"
-        "project-local TRACE synthetic templates. `sources.json` records source\n"
+        "project-local Trace synthetic templates. `sources.json` records source\n"
         "URLs, local license files, and per-manifest counts.\n\n"
         "## Regeneration\n\n"
         "Run:\n\n"
@@ -411,7 +411,7 @@ def _source_metadata(manifest_counts: Mapping[str, int]) -> dict[str, object]:
         "generated_by": "scripts/build_context_text_assets.py",
         "source_policy": (
             "Shared context/distractor text manifests are normalized from CC0/public-domain "
-            "compatible sources and TRACE-authored templates. Runtime tasks should use these "
+            "compatible sources and Trace-authored templates. Runtime tasks should use these "
             "strings as non-answer context unless the verifier explicitly scopes them in."
         ),
         "sources": {
@@ -424,12 +424,12 @@ def _source_metadata(manifest_counts: Mapping[str, int]) -> dict[str, object]:
                 "local_license": "licenses/CC0-1.0.txt",
             },
             "trace_context_templates": {
-                "description": "TRACE-authored neutral templates for chart, graph, and page context text.",
+                "description": "Trace-authored neutral templates for chart, graph, and page context text.",
                 "source_url": "",
                 "metadata_url": "",
-                "license": "TRACE synthetic context text templates",
+                "license": "Trace synthetic context text templates",
                 "license_url": "",
-                "local_license": "licenses/TRACE-SYNTHETIC.txt",
+                "local_license": "licenses/trace-synthetic.txt",
             },
         },
         "manifests": manifests,
@@ -446,13 +446,13 @@ def _manifest_description(relative_path: str) -> str:
         "phrases/callout_phrases.txt": "Short callout labels for annotation boxes.",
         "phrases/metric_snippets.txt": "Decorative metric snippets containing numbers for distractor text.",
         "phrases/legend_notes.txt": "Legend-like explanatory strings for context panels.",
-        "sentences/context_template_sentences.txt": "TRACE-generated neutral context sentences built from CC0 word pools and templates.",
-        "paragraphs/context_template_blocks.txt": "TRACE-generated two-sentence context blocks built from neutral context sentence templates.",
-        "paragraphs/context_long_blocks.txt": "TRACE-generated longer neutral context blocks built from CC0 word pools and templates.",
+        "sentences/context_template_sentences.txt": "Trace-generated neutral context sentences built from CC0 word pools and templates.",
+        "paragraphs/context_template_blocks.txt": "Trace-generated two-sentence context blocks built from neutral context sentence templates.",
+        "paragraphs/context_long_blocks.txt": "Trace-generated longer neutral context blocks built from CC0 word pools and templates.",
         "domains/industries_corpora.txt": "Industry labels used as topic/context fillers.",
     }
     if relative_path.startswith("words/"):
-        return "Normalized CC0 word pool used by TRACE context text templates."
+        return "Normalized CC0 word pool used by Trace context text templates."
     return descriptions.get(str(relative_path), "Generated shared context text manifest.")
 
 

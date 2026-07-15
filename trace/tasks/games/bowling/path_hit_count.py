@@ -81,6 +81,7 @@ class GamesBowlingPathHitCountTask:
     """Count standing pins whose visible body is crossed by the shown path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

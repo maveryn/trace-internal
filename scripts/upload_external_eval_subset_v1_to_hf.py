@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Upload TRACE external eval subset manifests to Hugging Face Hub."""
+"""Upload Trace external eval subset manifests to Hugging Face Hub."""
 
 from __future__ import annotations
 
@@ -80,7 +80,7 @@ def _validate_subset_root(root: Path) -> dict:
 def _write_dataset_card(path: Path, manifest: dict) -> None:
     path.write_text(
         f"""---
-pretty_name: TRACE External Eval Subsets
+pretty_name: Trace External Eval Subsets
 language:
 - en
 license: other
@@ -90,9 +90,9 @@ tags:
 - benchmark-subsets
 ---
 
-# TRACE External Eval Subsets
+# Trace External Eval Subsets
 
-Private manifest-only benchmark subsets for TRACE RLVR checkpoint comparison.
+Private manifest-only benchmark subsets for Trace RLVR checkpoint comparison.
 
 This repository stores source indices and hashes only. It does not redistribute
 benchmark images or media.
@@ -108,7 +108,7 @@ Benchmarks:
 `chartqapro`, `charxivreason`, `mathvista`, `mmmu_pro_vision`, `countqa`,
 `game_qa_lite`, `blink`, and pooled `screenspotpro`.
 
-The TRACE repo documents the run workflow in
+The Trace repo documents the run workflow in
 `docs/workflows/EXTERNAL_BENCHMARK_EVAL.md`.
 """,
         encoding="utf-8",
@@ -123,7 +123,7 @@ def main() -> int:
     parser.add_argument("--revision", default="main")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-readme", action="store_true")
-    parser.add_argument("--commit-message", default="Upload TRACE external eval subset v1 manifests")
+    parser.add_argument("--commit-message", default="Upload Trace external eval subset v1 manifests")
     args = parser.parse_args()
 
     token = _read_token(Path(args.token_file))

@@ -56,6 +56,7 @@ class GamesTowerDefenseCoveredPathSegmentCountTask:
     """Count visible path nodes covered by at least one tower range ring."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'spatial_relations', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

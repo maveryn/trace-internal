@@ -61,6 +61,7 @@ def _build_plan(params, instance_seed, selected, probabilities):
 @register_task
 class ChartsRadialProgressExtremumRemainingLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "extremum_remaining_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

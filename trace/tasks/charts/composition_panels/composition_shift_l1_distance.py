@@ -107,6 +107,7 @@ def _build_plan(params, seed, _query_id, _probs):
 @register_task
 class ChartsCompositionPanelsCompositionShiftL1DistanceTask:
     task_id = T
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "composition_shift_l1_distance"
     supported_query_ids = (SINGLE_QUERY_ID,)

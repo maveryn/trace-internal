@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation marks the selected labeled gear-train panel. Scalar annotation checked: `true`; exactly one option panel is selected by construction.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

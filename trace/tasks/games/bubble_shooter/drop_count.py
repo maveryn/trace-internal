@@ -84,6 +84,7 @@ class GamesBubbleShooterDropCountTask:
     """Count bubbles that drop because they are no longer connected to the top."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

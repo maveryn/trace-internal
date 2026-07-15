@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `no_shift_collision_time`, `left_shift_collision_time`, `right_shift_collision_time`.
 
+## Reasoning Operations
+
+Families: `filtering`, `state_update`
+
 ## Generation Notes
 1. Query ids choose no shift, left shift, or right shift before the vertical drop.
 2. A timestep is one successful downward move by one row; the failed collision move is not counted.

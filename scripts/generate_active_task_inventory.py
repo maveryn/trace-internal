@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the committed active TRACE task inventory.
+"""Generate the committed active Trace task inventory.
 
 The inventory is intentionally derived from the live default-task registry and
 public taxonomy. Narrative docs should link to the generated markdown instead

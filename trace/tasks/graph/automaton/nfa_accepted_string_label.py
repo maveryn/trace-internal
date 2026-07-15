@@ -27,6 +27,7 @@ def _prepare_nfa_acceptance_objective(_instance_seed: int, _params: Mapping[str,
 class GraphRelationAutomatonNfaAcceptedStringLabelTask:
     """Choose which candidate input string is accepted by a nondeterministic automaton."""
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'state_update', 'matching')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
 

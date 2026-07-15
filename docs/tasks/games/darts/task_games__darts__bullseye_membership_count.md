@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `inside_bullseye_count`, `outside_bullseye_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Generation Notes
 1. The scene renders a simplified dartboard with 10 numbered sectors and one center bullseye.
 2. Query ids switch only the user-facing membership predicate: inside vs outside the bullseye.

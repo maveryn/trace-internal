@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the TRACE task-review web app."""
+"""Run the Trace task-review web app."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import sys
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the TRACE task-review browser app")
+    parser = argparse.ArgumentParser(description="Run the Trace task-review browser app")
     parser.add_argument("--host", default="127.0.0.1", help="Bind host. Use 0.0.0.0 for remote access.")
     parser.add_argument("--port", type=int, default=7860, help="Bind port")
     parser.add_argument("--review-root", default="review/task-reviews", help="Review artifact root")
@@ -112,7 +112,7 @@ def main() -> int:
             if key in metadata
         )
         print(
-            "Refusing to start a second TRACE review app for the same review root and feedback DB. "
+            "Refusing to start a second Trace review app for the same review root and feedback DB. "
             f"Lock: {lock_path}. Current owner: {owner or 'unknown'}.",
             file=sys.stderr,
         )

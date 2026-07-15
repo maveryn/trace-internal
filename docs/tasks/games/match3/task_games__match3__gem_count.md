@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `grid_color_gem_count`, `row_color_gem_count`, `column_color_gem_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 1. Gem colors are sampled from the repo-wide canonical named-color palette.
 2. Prompt-facing color labels include the canonical hex value, for example `red [#E63232]`.

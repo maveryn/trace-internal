@@ -1,4 +1,4 @@
-"""TRACE package."""
+"""Trace package."""
 
 __all__ = [
     "core",

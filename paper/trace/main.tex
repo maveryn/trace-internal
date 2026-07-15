@@ -1,0 +1,65 @@
+\pdfminorversion=7
+\documentclass{article}
+
+\PassOptionsToPackage{numbers,sort&compress}{natbib}
+\usepackage[preprint]{neurips_2026}
+\input{preamble}
+
+\title{%
+  \includegraphics[width=2.55in]{figures/trace-logo.pdf}\\[-0.08em]
+  A Taxonomy-Guided Environment for\\
+  Multidomain Visual Reasoning
+}
+
+\author{%
+  Md Tanvirul Alam \\
+  Rochester Institute of Technology \\
+  Rochester, NY, USA \\
+  \texttt{ma8235@rit.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\sloppy
+Reinforcement learning with verifiable rewards has advanced language
+reasoning, but multimodal training still lacks visual data that combine broad
+coverage with exact, reproducible supervision. We present \trace, a
+taxonomy-guided environment for multidomain visual reasoning. \trace separates
+visible scene grammars from executable reasoning tasks, allowing visual form,
+program structure, and bounded query variation to be controlled independently.
+Each instance is generated from latent semantic state and yields a rendered
+image, prompt, typed answer, verifier state, and replayable execution trace.
+The environment contains 1,000 tasks across 277 scenes and 11 visual domains,
+with controlled variation in semantic content, layout, palette, typography,
+context, and rendering. Using answer-based rewards, we study whether training
+on this procedural distribution transfers beyond its synthetic imagery and
+find broad improvements across external visual-reasoning evaluations. \trace
+therefore provides a controlled setting for studying how visual task breadth
+affects multimodal reasoning.
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/trace_design}
+\input{sections/taxonomy}
+\input{sections/environment_coverage}
+\input{sections/generation_quality}
+\input{sections/experiments}
+\input{sections/results}
+\input{sections/analysis}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\section*{Broader Impact}
+\input{sections/broader_impact}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\input{sections/appendix}
+
+\end{document}

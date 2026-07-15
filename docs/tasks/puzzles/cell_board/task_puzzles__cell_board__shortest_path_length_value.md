@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `segment_set` schema; one image-pixel segment for each adjacent step along a shortest path from `S` to `G`; segment count equals the answer.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `topology`
+
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular board with dark wall cells, light passable cells, a green start cell marked `S`, a red goal cell marked `G`, and disconnected passable distractors.
 2. Supported `query_id` values: `single`

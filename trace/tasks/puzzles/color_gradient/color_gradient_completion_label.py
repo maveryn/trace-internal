@@ -28,6 +28,7 @@ class PuzzlesColorGradientCompletionLabelTask:
     """Choose the labeled option that completes a one-dimensional gradient."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

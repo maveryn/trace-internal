@@ -25,6 +25,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(turning_points)`. Annotation marks every local peak or trough point counted by the selected query. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `peak_turning_point_count`, `trough_turning_point_count`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `point_set`.

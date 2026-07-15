@@ -27,6 +27,10 @@ Output binding: `answer` uses the `option_letter` schema; one of the visible opt
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Task Contract
 Renders a construction-site source panel with one missing visual region and four or six same-size lettered patch options. The model selects the option letter that restores the missing region.
 

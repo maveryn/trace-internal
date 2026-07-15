@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Audit semantic-marker legibility metadata in generated TRACE task samples."""
+"""Audit semantic-marker legibility metadata in generated Trace task samples."""
 
 from __future__ import annotations
 

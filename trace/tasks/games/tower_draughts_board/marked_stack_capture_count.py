@@ -59,6 +59,7 @@ class GamesTowerDraughtsBoardMarkedStackCaptureCountTask:
     """Count opponent-controlled stacks the X-marked stack can capture now."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

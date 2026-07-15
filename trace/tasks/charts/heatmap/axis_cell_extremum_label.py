@@ -18,6 +18,7 @@ QUERY_BINDINGS = {
 @register_task
 class ChartsHeatmapAxisCellExtremumLabelTask:
     task_id = "task_charts__heatmap__axis_cell_extremum_label"
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "axis_cell_extremum_label"
     supported_query_ids = tuple(QUERY_BINDINGS)

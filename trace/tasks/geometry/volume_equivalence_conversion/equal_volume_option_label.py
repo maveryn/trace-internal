@@ -251,6 +251,7 @@ class GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask:
     """Select the option solid that has equal volume to the source solid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

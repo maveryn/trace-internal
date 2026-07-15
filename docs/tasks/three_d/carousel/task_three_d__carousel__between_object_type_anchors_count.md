@@ -18,6 +18,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Annotation Contract
 Annotation is an unordered array of `[x0, y0, x1, y1]` pixel boxes around the counted objects between the marked anchors. Anchor objects themselves are not annotation.
 

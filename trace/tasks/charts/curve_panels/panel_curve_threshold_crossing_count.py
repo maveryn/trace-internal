@@ -42,6 +42,7 @@ class ChartsScientificPanelCurveThresholdCrossingCountTask:
     """Count curves in one panel crossing a threshold in the requested direction."""
 
     task_id = "task_charts__curve_panels__panel_curve_threshold_crossing_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "charts"
     objective_contract = "panel_curve_threshold_crossing_count"
     supported_query_ids = (UPWARD_QUERY_ID, DOWNWARD_QUERY_ID)

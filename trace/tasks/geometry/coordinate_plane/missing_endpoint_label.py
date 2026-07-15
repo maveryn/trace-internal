@@ -52,6 +52,7 @@ class GeometryCoordinateMissingEndpointLabelTask:
     """Choose the candidate endpoint that makes the shown point the midpoint."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'formula_evaluation')
     domain = "geometry"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

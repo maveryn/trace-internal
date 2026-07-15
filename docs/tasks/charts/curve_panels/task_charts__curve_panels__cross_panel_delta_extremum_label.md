@@ -33,6 +33,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label|unan
 Annotation witnesses: `point_map` witnesses bound by `point_map(start_point,end_point)|empty_map`. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Answerable instances map `start_point` and `end_point` to points on the selected method markers in the answer subplot. Unanswerable instances use an empty annotation object because the requested method is not plotted in every subplot.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

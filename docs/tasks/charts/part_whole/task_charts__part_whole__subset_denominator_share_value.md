@@ -24,6 +24,10 @@ Output binding: `answer` is the `unspecified` value bound by `unspecified`.
 Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Annotation Contract
 Annotation maps every denominator-subset category label to an `[x,y]` pixel point at the center of its chart segment.
 

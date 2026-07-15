@@ -18,6 +18,10 @@
 ## Program Contract
 - `concept_map_branch_child_count(branch_label); output=integer_value; annotation=bbox_set(counted_child_item_nodes); scene=concept_map; scope=one concept-map diagram`
 
+## Reasoning Operations
+
+Families: `counting`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_concept_map_v1`
 2. Scene key: `concept_map_diagram`

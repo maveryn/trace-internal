@@ -28,6 +28,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(compared_panels)`. Annotation marks the two full compared panel boxes.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

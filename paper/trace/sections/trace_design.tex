@@ -1,0 +1,84 @@
+\section{The \trace Environment}
+\label{sec:design}
+
+\subsection{An executable instance contract}
+
+A conventional visual question-answering example pairs an image and prompt
+with an answer.  This is insufficient for reproducible visual RL because it
+does not record how the answer was constructed, how it should be scored, or
+how the instance can be reconstructed.  \trace instead represents an instance
+as
+\begin{equation}
+  \mathcal{D}_i =
+  \bigl(I_i, p_i, y_i, c_i, \operatorname{ref}(\tau_i)\bigr),
+  \label{eq:instance-contract}
+\end{equation}
+where $I_i$ and $p_i$ are the rendered image and prompt, $y_i$ is a typed
+answer, $c_i$ is its reward contract, and $\tau_i$ is the corresponding
+execution trace. The trace records the semantic scene, sampled query, task
+execution, rendering decisions, and verifier state. A compact reference to
+$\tau_i$ supports deterministic replay and failure analysis while keeping the
+training example itself concise.
+\trace can additionally project selected semantic objects into image
+coordinates for visual auditing, but these auxiliary annotations are not used
+by the primary training experiments in this report.
+
+\subsection{Execute, render, and verify}
+
+Generation is factorized around a semantic scene rather than performed by
+writing labels after an image has been drawn.  Let $s$ denote a scene grammar,
+$t$ a task, $q$ an internal query branch, $z$ an instance seed, and $\theta$
+the sampled generation parameters.  The conceptual computation is
+\begin{align}
+  x &= G_s(z, \theta_s), &
+  (y,v) &= P_t(x;q), \label{eq:semantic-execution}\\
+  I &= R_s(x;z,\theta_r), &
+  p &= H_{s,t}(x,q;z,\theta_p), \label{eq:render-prompt}\\
+  c &= \rho\!\left(\operatorname{type}(y),v\right), &
+  \tau &= \Gamma(s,t,q,z,\theta,x,v).
+  \label{eq:projection-contract}
+\end{align}
+Here $G_s$ constructs a semantic state $x$, and the task program $P_t$
+returns the typed answer $y$ together with verifier state $v$.  The renderer
+$R_s$ realizes the image from the same state, while $H_{s,t}$ selects and fills
+a prompt template. The reward resolver $\rho$ binds the answer type and
+verifier state to a reusable scoring contract, and $\Gamma$ records the
+execution as a replayable trace.
+
+Each supported answer type uses deterministic normalization followed by
+exact-match scoring. Task programs therefore produce typed answers and
+verifier state rather than defining ad hoc rewards for individual objectives.
+
+All random choices descend from $z$ through independent seeded streams. The
+task, query, semantic parameters, prompt realization, visual parameters, and
+image identity are retained in $\tau$. Consequently, rendering diversity does not
+change the task result, and a failed instance can be reconstructed from its
+trace rather than inferred from the pixels.
+
+\subsection{Tracing one reachable-region computation}
+
+Figure~\ref{fig:reachable-pipeline} instantiates this process for a cell-board
+task.  The board contains light passable cells, dark walls, and a marked start
+cell $S$.  The program performs a four-neighbor flood fill from $S$, producing
+a set $v$ of four reachable cell identities.  Its cardinality gives the answer
+$y=4$, and the integer answer type selects exact-match scoring.  Disconnected
+light cells remain visual distractors but cannot enter the program result.
+
+This example illustrates the central consistency guarantee: the answer,
+rendered scene, and verifier payload are produced from one semantic execution
+rather than assembled as independent labels.  The trace retains the flood-fill
+inputs and selected cell identities, allowing the instance to be replayed and
+inspected. Construction, uniqueness, and rendering checks must pass before
+the prompt, typed answer, reward contract, and trace reference are admitted to
+the dataset.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/reachable_region_pipeline.png}
+  \caption{An end-to-end \trace instance.  A semantic cell board is executed
+  with a four-neighbor reachability program.  The resulting set of four cells
+  determines the integer answer.  Program constraints, answer uniqueness,
+  rendering, and replay state are validated before the prompt, typed answer,
+  exact-match reward, and trace reference form the final instance.}
+  \label{fig:reachable-pipeline}
+\end{figure*}

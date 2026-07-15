@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `aggregation`
+
 ## Generation Notes
 1. Renders a face-up domino tableau with one tile marked `REF`; countable tiles are the other visible dominoes.
 2. Query ids are internal replay/sampling keys and do not define public task units.

@@ -12,6 +12,10 @@
 - `solve_formula(visible_triangle_relations_measurements, unknown_role=segment_length, formula_schema=angle_bisector_theorem_segment_length); scene=triangle_relations; scope=angle_bisector_segment_value`
 - The visible construction marks and prompt state that `AD` bisects `angle BAC`. The requested segment may be either the whole base or one split base segment; that target segment role is internal trace metadata.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

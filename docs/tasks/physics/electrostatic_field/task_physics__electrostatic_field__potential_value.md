@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is an
 Annotation witnesses: `point_map` witnesses from the finalized render. Annotation role keys are `Q1`, `Q2`, `Q3`, and `P`; each maps to the final-image pixel point at the center of the corresponding marker. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, decorative chrome, or derived numeric annotations.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

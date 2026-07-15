@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Generation Notes
 1. The scene renders a simplified dartboard with 10 numbered sectors, one center bullseye, and exactly one dart.
 2. A dart in a numbered sector scores that number; a dart in the center bullseye scores `50`.

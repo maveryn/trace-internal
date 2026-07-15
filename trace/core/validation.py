@@ -1,4 +1,4 @@
-"""Pre-finalize validation for TRACE dataset builds."""
+"""Pre-finalize validation for Trace dataset builds."""
 
 from __future__ import annotations
 

@@ -13,6 +13,10 @@
 ## Program Contract
 - `solve_formula(visible_trapezoid_extension_measurements, unknown_role=length_measure, formula_schema=extension_from_parallelogram_perimeter); scene=trapezoid_extension; scope=extension_from_parallelogram_perimeter`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/trapezoid_extension/geometry_trapezoid_extension_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -59,6 +59,7 @@ class PhysicsCircuitEquivalentTotalResistanceValueTask:
 
     domain = "physics"
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'topology', 'formula_evaluation')
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 

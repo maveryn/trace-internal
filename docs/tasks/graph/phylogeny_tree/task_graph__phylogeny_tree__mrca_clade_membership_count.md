@@ -18,6 +18,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `topology`
+
 ## Query IDs
 1. Supported `query_id`: `single`.
 2. The prompt objective key is `mrca_leaf_count`; it is trace metadata, not a public query branch.

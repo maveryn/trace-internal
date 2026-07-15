@@ -11,6 +11,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; scalar bbox marks the selected order option.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations: Three pan-scale comparison panels over three unknown object labels, using direct-offset, shared-object-context, or aggregate comparison expressions, plus a query row with four visual order options.
 2. Supported `query_id` values: `single`

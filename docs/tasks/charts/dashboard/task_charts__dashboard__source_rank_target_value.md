@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point_map` witnesses bound by `point_map(source_panel, target_panel)`. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_source_rank_target_value`, `smallest_source_rank_target_value`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

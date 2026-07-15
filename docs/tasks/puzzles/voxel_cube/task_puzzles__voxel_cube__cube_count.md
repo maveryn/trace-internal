@@ -22,6 +22,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox` schema; the full rendered voxel structure.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `annotation_gt.type = bbox`

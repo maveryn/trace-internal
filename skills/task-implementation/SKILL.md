@@ -1,11 +1,11 @@
 ---
 name: task-implementation
-description: Use when implementing or refactoring TRACE task code, wiring configs and registration, or deciding helper placement and module layout.
+description: Use when implementing or refactoring Trace task code, wiring configs and registration, or deciding helper placement and module layout.
 ---
 
 # Task Implementation
 
-Use this when turning a TRACE task design into code.
+Use this when turning a Trace task design into code.
 
 ## Read first
 1. `docs/contracts/SYSTEM_ARCHITECTURE.md`

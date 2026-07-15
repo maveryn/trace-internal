@@ -46,6 +46,7 @@ class ChartsScientificCurveAtXExtremumLabelTask:
     """Return the method label with the highest value at one x-position in one subplot."""
 
     task_id = "task_charts__curve_panels__curve_at_x_extremum_label"
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "curve_at_x_extremum_label"
     supported_query_ids = (QUERY_ID,)

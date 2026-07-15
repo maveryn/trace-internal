@@ -1,4 +1,4 @@
-# Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results
+# Qwen2.5-VL-3B Trace Candidate37 200-Row Benchmark Results
 
 Subset manifest root: `benchmark/subsets/trace_candidate37_200`
 

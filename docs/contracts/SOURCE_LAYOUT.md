@@ -1,6 +1,6 @@
-# TRACE Source Layout
+# Trace Source Layout
 
-This document defines the current TRACE v0 task-source shape. It is a
+This document defines the current Trace v0 task-source shape. It is a
 final-state architecture contract.
 
 ## Public Task Files
@@ -14,6 +14,7 @@ trace/tasks/<domain>/<scene_id>/<objective_contract>.py
 The public task file owns the objective-specific behavior:
 
 - literal public `task_id`;
+- literal code-authoritative `reasoning_operations` tuple;
 - supported `query_id` values and query validation;
 - objective-specific sampling constraints;
 - answer binding;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess Natural Earth regional polygons into compact TRACE map assets."""
+"""Preprocess Natural Earth regional polygons into compact Trace map assets."""
 
 from __future__ import annotations
 
@@ -358,7 +358,7 @@ def main() -> int:
     parser.add_argument(
         "--output-dir",
         default="assets/charts/maps",
-        help="Directory where TRACE map asset JSON files are written.",
+        help="Directory where Trace map asset JSON files are written.",
     )
     args = parser.parse_args()
     build_assets(Path(str(args.output_dir)))

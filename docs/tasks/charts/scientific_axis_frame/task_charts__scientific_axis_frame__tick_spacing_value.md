@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `segment` witnesses bound by `segment(tick_interval)`. Annotation is the segment between the two tick marks in the requested first or last visible adjacent interval. Decorative plotted data, axis labels, and distractor text are metadata unless explicitly queried. Annotation marks the requested first or last visible adjacent tick interval as one axis segment.
 Query ids: `x_first_tick_spacing_value`, `x_last_tick_spacing_value`, `y_first_tick_spacing_value`, `y_last_tick_spacing_value`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scientific_axis_frame.tick_spacing_value.ChartsScientificAxisFrameTickSpacingValueTask`
 2. Prompt lookup domain/scene: `charts/scientific_axis_frame`

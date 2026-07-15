@@ -65,6 +65,7 @@ class PagesMixedInfographicModuleTwoFieldConditionItemLabelTask:
     """Find the item satisfying one numeric and one categorical condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'comparison')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

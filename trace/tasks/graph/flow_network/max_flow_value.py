@@ -152,6 +152,7 @@ class GraphFlowNetworkMaxFlowValueTask:
     """Answer maximum-flow value questions on a directed capacity graph."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'topology')
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

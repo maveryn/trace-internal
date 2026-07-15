@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export calibration stats/workbooks from a TRACE curriculum probe run."""
+"""Export calibration stats/workbooks from a Trace curriculum probe run."""
 
 from __future__ import annotations
 

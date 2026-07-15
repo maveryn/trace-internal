@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `string_label`.
 Annotation witnesses: `unspecified` witnesses bound by `point_map(mark_center(answer_category, {series_a,series_b}))`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `comparison`, `matching`
+
 ## Implementation
 - Source: `trace/tasks/charts/multiseries/pair_equality_label.py`
 - Class: `ChartsMultiseriesPairEqualityLabelTask`

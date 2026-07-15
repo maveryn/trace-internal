@@ -17,6 +17,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_category_point_cluster)`. Annotation marks one bounding box around the answer category's point cluster. Axes, legends, category labels, titles, and distractor text are not annotation targets.
 Query ids: `largest_mean_x_category_label`, `smallest_mean_x_category_label`, `largest_mean_y_category_label`, `smallest_mean_y_category_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_points.category_axis_mean_extremum_label.ChartsScatterPointsCategoryAxisMeanExtremumLabelTask`
 2. Prompt bundle: `prompts/charts/scatter_points/charts_scatter_points_v1.json`

@@ -1,4 +1,4 @@
-"""Browser-based TRACE task-review inspection app."""
+"""Browser-based Trace task-review inspection app."""
 
 from __future__ import annotations
 

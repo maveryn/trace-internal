@@ -390,6 +390,7 @@ class IllustrationsRpgTacticalMapMovementSequenceEndpointLabelTask:
     """Choose the lettered tile where the blue unit ends after a move sequence."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'state_update')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

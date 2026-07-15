@@ -21,6 +21,7 @@ class PagesScheduleLongerThanReferenceCountTask:
   """Count scheduled events longer than the highlighted reference event."""
 
   task_id = TASK_ID
+  reasoning_operations = ('filtering', 'counting', 'comparison')
   domain = _lifecycle.DOMAIN
   supported_query_ids = SUPPORTED_QUERY_IDS
   default_dataset_enabled = True

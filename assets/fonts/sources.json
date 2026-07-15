@@ -7,7 +7,7 @@
       "description": "Google Fonts repository containing binary font files served by Google Fonts.",
       "repository_url": "https://github.com/google/fonts",
       "metadata_url": "https://github.com/google/fonts",
-      "license_policy": "Each family directory contains its own license file; selected TRACE families use SIL Open Font License 1.1."
+      "license_policy": "Each family directory contains its own license file; selected Trace families use SIL Open Font License 1.1."
     }
   },
   "families": {

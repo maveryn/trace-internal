@@ -20,6 +20,7 @@ def _build_task_output(materialized):
 class ChartsThreeDBarCategoryTotalGapValueTask:
     """Compute the absolute gap between totals for two x-axis categories."""
     task_id = 'task_charts__bar_3d__category_total_gap_value'
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = 'category_total_gap_value'
     supported_query_ids = ('category_total_gap_value',)

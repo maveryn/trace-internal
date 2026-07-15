@@ -12,6 +12,10 @@
 - The candidate panel is rendered as graph paper; each square is one visible step.
 - Route instructions show bearing plus step count, and candidate endpoints sit on grid intersections.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `state_update`
+
 ## Prompt Bundle
 - Prompt text is loaded from the geometry prompt bundle configured for this scene/task override.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -48,6 +48,7 @@ class PagesInfographicSectionMetricRankedItemLabelTask:
     """Identify a metric card by rank of its printed value inside one section."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

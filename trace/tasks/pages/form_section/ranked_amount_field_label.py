@@ -44,6 +44,7 @@ class PagesFormSectionRankedAmountFieldLabelTask:
     """Select the field label for a ranked amount inside one named section."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = "pages"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

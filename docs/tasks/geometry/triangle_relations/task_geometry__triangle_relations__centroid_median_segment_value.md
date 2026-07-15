@@ -12,6 +12,10 @@
 - `solve_formula(visible_triangle_relations_measurements, unknown_role=median_segment_length, formula_schema=centroid_median_ratio); scene=triangle_relations; scope=centroid_median_segment_value`
 - The visible construction marks `D` as the midpoint of `BC`, and the prompt states that `G` is the centroid. The requested segment may be either a centroid-to-vertex segment or the whole median; that target segment role is internal trace metadata.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

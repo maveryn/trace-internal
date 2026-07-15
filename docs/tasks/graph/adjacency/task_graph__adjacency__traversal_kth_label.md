@@ -27,6 +27,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox_sequence` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Annotation
 1. Answer type: `string`.
 2. Annotation type: `bbox_sequence`.

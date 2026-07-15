@@ -421,7 +421,7 @@ def _task_doc_has_concrete_program_contract(path: Path) -> bool:
 
 def _parse_cli() -> argparse.Namespace:
     """Parse CLI arguments for task-review workflow execution."""
-    parser = argparse.ArgumentParser(description="Run TRACE task review workflow")
+    parser = argparse.ArgumentParser(description="Run Trace task review workflow")
     parser.add_argument("--tasks", default="", help="Comma-separated task ids (default: all registered tasks)")
     parser.add_argument(
         "--mode",

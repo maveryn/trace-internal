@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and export a default-task TRACE dataset for RLVR training."""
+"""Build and export a default-task Trace dataset for RLVR training."""
 
 from __future__ import annotations
 
@@ -33,19 +33,19 @@ def _remove_path(path: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build a default-task TRACE dataset and export it to RLVR parquet"
+        description="Build a default-task Trace dataset and export it to RLVR parquet"
     )
-    parser.add_argument("--output-root", default="./out", help="TRACE build output root")
+    parser.add_argument("--output-root", default="./out", help="Trace build output root")
     parser.add_argument(
         "--dataset-name",
         default="trace_rlvr_train_128k_all_tasks",
-        help="Logical TRACE dataset name used in the build config",
+        help="Logical Trace dataset name used in the build config",
     )
     parser.add_argument(
         "--num-instances",
         type=int,
         default=128000,
-        help="Total TRACE instances to generate; equal mode requires divisibility across active tasks",
+        help="Total Trace instances to generate; equal mode requires divisibility across active tasks",
     )
     parser.add_argument(
         "--task-sampling-policy",
@@ -65,15 +65,15 @@ def main() -> int:
         default=8,
         help="Deterministic per-task probes used to resolve active query-id counts for query-id-aware sampling",
     )
-    parser.add_argument("--instance-version", default="v0", help="TRACE instance ABI version")
-    parser.add_argument("--image-format", default="png", help="TRACE image format")
+    parser.add_argument("--instance-version", default="v0", help="Trace instance ABI version")
+    parser.add_argument("--image-format", default="png", help="Trace image format")
     parser.add_argument(
         "--max-attempts-per-instance",
         type=int,
         default=100,
         help="Per-instance bounded resampling limit",
     )
-    parser.add_argument("--sampling-seed", type=int, default=0, help="TRACE build sampling seed")
+    parser.add_argument("--sampling-seed", type=int, default=0, help="Trace build sampling seed")
     parser.add_argument(
         "--workers",
         type=int,
@@ -97,7 +97,7 @@ def main() -> int:
         choices=("active", "answer", "answer_only", "annotation", "answer_and_annotation"),
         default="answer_and_annotation",
         help=(
-            "Which TRACE prompt variant to export into the RLVR prompt column "
+            "Which Trace prompt variant to export into the RLVR prompt column "
             "(answer=answer_only, annotation=answer_and_annotation)"
         ),
     )
@@ -131,7 +131,7 @@ def main() -> int:
     parser.add_argument(
         "--build-only",
         action="store_true",
-        help="Build the TRACE dataset but skip RLVR parquet export",
+        help="Build the Trace dataset but skip RLVR parquet export",
     )
     parser.add_argument(
         "--reset",
@@ -175,7 +175,7 @@ def main() -> int:
     min_task_weight = min((float(task.weight or 1.0) for task in config.tasks), default=0.0)
     max_task_weight = max((float(task.weight or 1.0) for task in config.tasks), default=0.0)
     print(
-        f"TRACE build: tasks={task_count} policy={args.task_sampling_policy} per_task={per_task_count} "
+        f"Trace build: tasks={task_count} policy={args.task_sampling_policy} per_task={per_task_count} "
         f"task_count_range={min_task_count}..{max_task_count} "
         f"task_weight_range={min_task_weight:.3f}..{max_task_weight:.3f} "
         f"total={args.num_instances} workers={args.workers} max_in_flight={args.max_in_flight}"
@@ -208,7 +208,7 @@ def main() -> int:
     except BuildError as exc:
         raise SystemExit(f"build failed: {exc}") from exc
 
-    print(f"TRACE dataset: {final_path}")
+    print(f"Trace dataset: {final_path}")
     if args.build_only:
         return 0
 

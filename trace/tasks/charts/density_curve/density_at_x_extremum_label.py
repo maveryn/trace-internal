@@ -41,6 +41,7 @@ class ChartsDistributionDensityCurveDensityAtXExtremumLabelTask:
     """Return the density-curve label with the highest or lowest density at a marked x-value."""
 
     task_id = "task_charts__density_curve__density_at_x_extremum_label"
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "density_at_x_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -102,6 +102,7 @@ class GraphPhylogenyTreeSisterLeafLabelTask:
     """Return the leaf label sharing an immediate parent with a queried leaf."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

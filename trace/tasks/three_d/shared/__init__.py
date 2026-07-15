@@ -1,1 +1,1 @@
-"""Shared helpers for TRACE three_d-domain tasks."""
+"""Shared helpers for Trace three_d-domain tasks."""

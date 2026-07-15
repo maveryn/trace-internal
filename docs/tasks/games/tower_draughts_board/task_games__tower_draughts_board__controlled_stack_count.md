@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Generation Notes
 1. The board uses alternating playable squares with stacks of red and black disks.
 2. A stack is controlled by the color of its top disk; lower disks are visible distractors.

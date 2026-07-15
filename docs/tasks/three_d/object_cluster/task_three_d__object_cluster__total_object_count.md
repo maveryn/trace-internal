@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Contract
 The image shows many small synthetic perspective 3D objects arranged on a plain
 surface. The objects remain visually clustered, but generation may use one or

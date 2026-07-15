@@ -93,6 +93,7 @@ class PuzzlesArithmeticVerticalArithmeticHiddenDigitValueTask:
     """Solve the hidden digit in a vertical arithmetic problem."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

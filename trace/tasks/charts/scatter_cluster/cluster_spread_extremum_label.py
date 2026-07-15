@@ -81,6 +81,7 @@ class ChartsScatterClusterSpreadExtremumLabelTask:
     """Return the cluster with extremal within-cluster spread."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "cluster_spread_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

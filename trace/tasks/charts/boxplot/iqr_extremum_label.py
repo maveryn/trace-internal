@@ -217,6 +217,7 @@ class ChartsDistributionBoxplotIqrExtremumLabelTask:
     """Select the boxplot with the largest or smallest interquartile range."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (LARGEST_IQR_QUERY_ID, SMALLEST_IQR_QUERY_ID)

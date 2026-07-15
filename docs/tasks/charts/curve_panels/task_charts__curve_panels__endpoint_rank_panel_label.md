@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(answer_endpoint_mark)`. Annotation should mark the selected endpoint marker in the answer subplot. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `start_highest_panel_label`, `start_lowest_panel_label`, `end_highest_panel_label`, `end_lowest_panel_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

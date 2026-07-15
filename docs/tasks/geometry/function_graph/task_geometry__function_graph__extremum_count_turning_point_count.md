@@ -10,6 +10,10 @@
 ## Program Contract
 - `count(filter(function_graph_feature_points, feature_type=turning_point)); scene=function_graph; scope=extremum_count_turning_point_count`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `function_graph`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

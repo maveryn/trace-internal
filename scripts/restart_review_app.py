@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Safely restart the TRACE task-review web app."""
+"""Safely restart the Trace task-review web app."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from urllib.request import Request, urlopen
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Restart the TRACE task-review browser app")
+    parser = argparse.ArgumentParser(description="Restart the Trace task-review browser app")
     parser.add_argument("--host", default="127.0.0.1", help="Bind host for the restarted app")
     parser.add_argument("--port", type=int, default=7860, help="Bind port")
     parser.add_argument("--review-root", default="review/task-reviews", help="Review artifact root")

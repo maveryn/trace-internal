@@ -106,7 +106,7 @@ def resolve_qwen_vl_get_rope_index(
 
 
 class TraceRLHFDataset(Dataset):
-    """TRACE-specific RLHF dataset adapter for the Vero-derived PPO stack."""
+    """Trace-specific RLHF dataset adapter for the Vero-derived PPO stack."""
 
     def __init__(
         self,
@@ -166,7 +166,7 @@ class TraceRLHFDataset(Dataset):
                     resolve_trace_system_prompt("auto", trace_output_mode=output_mode)
                 )
                 if not prompt_text:
-                    raise ValueError(f"missing TRACE system prompt for output mode {output_mode!r}")
+                    raise ValueError(f"missing Trace system prompt for output mode {output_mode!r}")
                 self.system_prompts_by_output_mode[output_mode] = prompt_text
         else:
             self.system_prompt = self._load_prompt_text(
@@ -188,7 +188,7 @@ class TraceRLHFDataset(Dataset):
                 self._filter_overlong_prompts_batch,
                 batched=True,
                 batch_size=32,
-                desc="Filtering overlong TRACE prompts",
+                desc="Filtering overlong Trace prompts",
                 cache_file_name=cache_file_name,
                 load_from_cache_file=True,
                 num_proc=self.filter_overlong_prompts_workers,
@@ -225,7 +225,7 @@ class TraceRLHFDataset(Dataset):
 
         values = np.asarray([str(value) for value in self.dataset[self.domain_sampling_key]], dtype=object)
         if values.size == 0:
-            raise ValueError("Dataset is empty; cannot build TRACE per-batch domain sampler")
+            raise ValueError("Dataset is empty; cannot build Trace per-batch domain sampler")
 
         available_domains = sorted(str(value) for value in np.unique(values) if str(value))
         if not available_domains:
@@ -241,7 +241,7 @@ class TraceRLHFDataset(Dataset):
             }
             if not filtered_weights:
                 raise ValueError(
-                    "No per_batch_domain_weights entries matched TRACE "
+                    "No per_batch_domain_weights entries matched Trace "
                     f"{self.domain_sampling_key!r} values: {available_domains}"
                 )
             total = float(sum(filtered_weights.values()))
@@ -259,7 +259,7 @@ class TraceRLHFDataset(Dataset):
 
     def build_domain_sampler(self, batch_size: int, seed: int = 18, shuffle: bool = True) -> PerBatchDomainSampler:
         if self.domain2indices is None or self.domain_weights is None:
-            raise RuntimeError("per_batch_domain_weights is not configured for this TRACE dataset")
+            raise RuntimeError("per_batch_domain_weights is not configured for this Trace dataset")
         return PerBatchDomainSampler(
             domain2indices=self.domain2indices,
             domain_weights=self.domain_weights,
@@ -374,7 +374,7 @@ class TraceRLHFDataset(Dataset):
             try:
                 return prompts_by_mode[output_mode]
             except KeyError as exc:
-                raise ValueError(f"missing TRACE system prompt for output mode {output_mode!r}") from exc
+                raise ValueError(f"missing Trace system prompt for output mode {output_mode!r}") from exc
         return getattr(self, "system_prompt", None)
 
     def _resolve_prompt_answer_keys(self, example: dict[str, Any]) -> tuple[str, str]:
@@ -395,7 +395,7 @@ class TraceRLHFDataset(Dataset):
 
         available = ", ".join(sorted(example.keys()))
         raise KeyError(
-            "Prompt/answer columns are missing from TRACE dataset row. "
+            "Prompt/answer columns are missing from Trace dataset row. "
             f"Expected ({prompt_key}, {self.answer_key}) for output mode {output_mode!r}. "
             f"Available keys: {available}"
         )

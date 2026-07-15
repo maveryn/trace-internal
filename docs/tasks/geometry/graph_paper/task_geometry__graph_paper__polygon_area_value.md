@@ -11,6 +11,10 @@
 ## Program Contract
 - `compute_lattice_polygon_area(target=polygon, shape_family={rectangle|triangle|parallelogram}, output_role=area_integer); scene=graph_paper; scope=single_polygon`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

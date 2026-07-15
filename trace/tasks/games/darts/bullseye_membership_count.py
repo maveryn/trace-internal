@@ -60,6 +60,7 @@ class GamesDartsBullseyeMembershipCountTask:
     """Count darts inside or outside the single bullseye."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

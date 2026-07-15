@@ -15,6 +15,10 @@
 6. Query argument axes: icon filter and extremum direction.
 7. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `filtering`, `ranking`, `aggregation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_infographic_v1`
 2. Scene key: `infographic_metric_arithmetic`

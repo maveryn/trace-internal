@@ -21,6 +21,7 @@ def _build_objective_plan() -> NodeLinkObjectivePlan:
 class GraphRelationLargestChordlessCycleSizeTask:
     """Public owner for the node-link largest-chordless-cycle size objective."""
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

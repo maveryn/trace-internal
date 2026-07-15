@@ -44,6 +44,7 @@ class PhysicsRefractionLayersMediumSpeedOrderLabelTask:
     """Choose the fastest-to-slowest light-speed order from ray bending."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

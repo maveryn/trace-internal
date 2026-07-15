@@ -65,6 +65,7 @@ def _bind_answer_annotation(scene_payload, frequency_spec):
 @register_task
 class IconsIconGridDistinctColorCountTask(IconGridCategoryTaskLifecycle):
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

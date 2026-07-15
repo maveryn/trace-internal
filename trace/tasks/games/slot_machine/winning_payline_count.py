@@ -77,6 +77,7 @@ class GamesSlotMachineWinningPaylineCountTask:
     """Count row or diagonal paylines whose three visible symbols all match."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'matching')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = (DEFAULT_QUERY_ID,)

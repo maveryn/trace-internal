@@ -72,6 +72,7 @@ class ChartsScientificAxisFrameTickSpacingValueTask:
     """Compute spacing between requested adjacent numeric tick labels."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     objective_contract = "tick_spacing_value"
     supported_query_ids = TICK_SPACING_QUERY_IDS

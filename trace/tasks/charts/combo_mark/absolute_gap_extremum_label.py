@@ -36,6 +36,7 @@ class ChartsComboAbsoluteGapExtremumLabelTask:
     """Find the category with an extremal absolute gap between the two encodings."""
 
     task_id = "task_charts__combo_mark__absolute_gap_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "absolute_gap_extremum_label"
     supported_query_ids = (LARGEST_ABSOLUTE_QUERY_ID, SMALLEST_NONZERO_QUERY_ID)

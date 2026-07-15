@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=regular_polygon_side_length, formula_schema=perimeter_divided_by_side_count_or_area_apothem_relation); scene=regular_polygon_decomposition; scope=side_length_value`
 
+## Reasoning Operations
+
+Families: `counting`, `formula_evaluation`
+
 ## Query Semantics
 - `side_length_from_perimeter` asks for one regular-polygon side length from the visible total perimeter.
 - `side_length_from_total_area_and_apothem` asks for one regular-polygon side length from total area and apothem labels.

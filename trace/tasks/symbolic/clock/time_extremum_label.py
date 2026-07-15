@@ -565,6 +565,7 @@ class SymbolicClockCompareTask:
   """Compare multiple labeled analog clocks and identify the earliest or latest one."""
 
   task_id = TASK_ID
+  reasoning_operations = ('ranking',)
   domain = DOMAIN
   supported_query_ids = SUPPORTED_QUERY_IDS
   default_dataset_enabled = True

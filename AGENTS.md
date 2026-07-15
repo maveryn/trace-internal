@@ -1,7 +1,7 @@
-# TRACE AGENTS
+# Trace Agents
 
 ## Project goal
-TRACE is a grounded visual reasoning task environment for RLVR.
+Trace is a grounded visual reasoning task environment for RLVR.
 Each generated instance should include:
 - prompt
 - typed answer

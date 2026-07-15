@@ -21,6 +21,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`, `topology`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is one center point for the selected first-hit pin, projected from the same generated game state used for answer verification.

@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys are `input_waveform` and `selected_spectrum`. Annotation must mark the input time-domain waveform panel and the selected matching spectrum option panel. It must not mark every option, decorative axes/grid lines, title text, or hidden semantic labels.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -98,7 +98,7 @@ if [[ "${FILTER_OVERLONG_PROMPTS}" != "0" && "${FILTER_OVERLONG_PROMPTS,,}" != "
   cmd+=(--filter-overlong-prompts)
 fi
 
-echo "TRACE staged Qwen3-VL-4B curriculum probe"
+echo "Trace staged Qwen3-VL-4B curriculum probe"
 echo "  dataset: ${DATASET}"
 echo "  output: ${OUTPUT_DIR}"
 echo "  model: ${MODEL}"

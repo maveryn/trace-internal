@@ -65,6 +65,7 @@ class ChartsScatterClusterTrendDirectionLabelTask:
     """Return the cluster label with the strongest requested trend direction."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "cluster_trend_direction_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -29,6 +29,7 @@ class PuzzlesPolyominoAssemblyCompositionResultLabelTask:
     """Choose which option shape can be composed from the two source pieces."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

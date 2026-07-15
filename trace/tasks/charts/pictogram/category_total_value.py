@@ -62,6 +62,7 @@ def _build_plan(params: dict, instance_seed: int, selected: str, probabilities: 
 @register_task
 class ChartsPictogramCategoryTotalValueTask:
     task_id = "task_charts__pictogram__category_total_value"
+    reasoning_operations = ('filtering', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "category_total_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

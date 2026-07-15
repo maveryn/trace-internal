@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Contract
 Renders a Reference before/after icon pair and a labeled Scene grid of six
 before/after icon-pair cells, then asks which labeled Scene cell has the same

@@ -13,6 +13,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsSingleSeriesOrderStatisticValueTask:
     task_id = T
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "order_statistic_value"
     supported_query_ids = tuple(Q)

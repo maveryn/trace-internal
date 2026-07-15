@@ -14,6 +14,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsTrendObservedThresholdCrossingLabelTask:
     task_id = T
+    reasoning_operations = ('filtering', 'comparison', 'ranking')
     domain = DOMAIN
     objective_contract = "observed_threshold_crossing_label"
     supported_query_ids = tuple(Q)

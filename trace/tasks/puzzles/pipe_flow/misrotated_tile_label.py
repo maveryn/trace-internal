@@ -59,6 +59,7 @@ class PuzzlesPipeFlowMisrotatedTileLabelTask:
     """Choose which labeled pipe tile must be rotated to restore flow."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'transformation')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

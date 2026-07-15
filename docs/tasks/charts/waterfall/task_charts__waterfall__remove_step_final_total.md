@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_map` witnesses bound by `bbox_map(final_total_bar,target_contribution_bar)`. `final_total_bar` marks the full final-total bar. `target_contribution_bar` marks the full contribution bar being removed.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `state_update`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program contract | Answer schema | Annotation schema |

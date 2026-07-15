@@ -58,6 +58,7 @@ class SymbolicProbabilityDicePairDifferenceProbabilityTask:
     """Compute a two-tray probability for an absolute pair difference."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'formula_evaluation')
     domain = "symbolic"
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True

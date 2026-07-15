@@ -58,7 +58,7 @@ def _build_dataset(
             "answer_key": answer_key,
             "image_key": "images",
             "video_key": "videos",
-            # TraceRLHFDataset resolves empty/auto to the TRACE JSON system
+            # TraceRLHFDataset resolves empty/auto to the Trace JSON system
             # prompt. Use a sentinel and clear it after construction when a
             # user-only legacy prompt is requested.
             "system_prompt": str(system_prompt) if system_prompt is not None else "__TRACE_NO_SYSTEM_PROMPT__",

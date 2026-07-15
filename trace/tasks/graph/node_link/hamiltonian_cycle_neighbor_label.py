@@ -21,6 +21,7 @@ def _build_objective_plan() -> NodeLinkObjectivePlan:
 class GraphRelationHamiltonianCycleNeighborLabelTask:
     """Public owner for the node-link Hamiltonian-cycle neighbor label objective."""
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

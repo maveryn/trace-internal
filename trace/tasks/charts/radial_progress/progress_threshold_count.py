@@ -76,6 +76,7 @@ def _build_plan(params, instance_seed, selected, probabilities):
 @register_task
 class ChartsRadialProgressThresholdCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "progress_threshold_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

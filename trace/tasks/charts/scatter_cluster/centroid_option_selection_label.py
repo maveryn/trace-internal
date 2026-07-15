@@ -74,6 +74,7 @@ class ChartsScatterClusterCentroidOptionSelectionLabelTask:
     """Choose the option marker closest to a named cluster centroid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'spatial_relations', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "centroid_option_selection_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

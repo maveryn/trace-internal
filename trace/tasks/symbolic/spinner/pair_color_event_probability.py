@@ -185,6 +185,7 @@ class SymbolicSpinnerPairColorEventProbabilityTask:
     """Compute a product-space probability from two independent spinners."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'formula_evaluation')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -145,6 +145,7 @@ class SymbolicScaleValidationCountTask:
     """Count scale fragments that correctly fit the requested key."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

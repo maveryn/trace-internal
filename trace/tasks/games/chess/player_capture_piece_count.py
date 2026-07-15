@@ -69,6 +69,7 @@ class GamesChessPlayerCapturePieceCountTask:
     """Count opponent pieces that the named side can capture immediately."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

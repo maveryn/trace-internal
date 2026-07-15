@@ -17,6 +17,10 @@ Annotation schema: `bbox_map`.
 Annotation witnesses: a `bbox_map` with `tray_a` and `tray_b` bboxes.
 Query ids: `pair_parity_combo_probability`, `pair_color_value_combo_probability`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Generation And Trace
 1. The task asks for a probability over one die selected from each tray under a sampled paired predicate.
 2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.

@@ -16,6 +16,10 @@ Query ids: `single`.
 
 The finish cell is the final colored home-lane cell near the center for the queried color. The answer is the exact single die roll needed to move from the queried token's current home-lane cell to that finish cell.
 
+## Reasoning Operations
+
+Families: `topology`, `state_update`, `formula_evaluation`
+
 ## Generator
 
 - Implementation: `trace/tasks/games/ludo_board/winning_roll_value.py`

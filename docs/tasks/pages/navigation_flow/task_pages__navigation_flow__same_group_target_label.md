@@ -18,6 +18,10 @@
 ## Program Contract
 - `same_group_target(reference_candidate_letter); output=option_letter; annotation=bbox(target_control); scene=navigation_flow; scope=one desktop application navigation screen`
 
+## Reasoning Operations
+
+Families: `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_navigation_flow_v1`
 2. Scene key: `navigation_flow`

@@ -14,6 +14,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsCountingThresholdValueCountTask:
     task_id = T
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "threshold_value_count"
     supported_query_ids = tuple(Q)

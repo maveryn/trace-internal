@@ -15,6 +15,10 @@
 6. Query argument axes: rank direction, rank position, and target section.
 7. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_infographic_v1`
 2. Scene key: `infographic_metric_arithmetic`

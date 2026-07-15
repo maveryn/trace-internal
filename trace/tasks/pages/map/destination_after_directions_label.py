@@ -42,6 +42,7 @@ class PagesMapDestinationAfterDirectionsLabelTask:
     """Identify the destination reached after following visible map directions."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'topology', 'state_update')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

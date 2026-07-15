@@ -292,6 +292,7 @@ class IllustrationsConstructionSiteMissingPatchLabelTask:
     """Select the patch option that matches a missing construction-site region."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = DOMAIN
     supported_query_ids = QUERY_IDS
     default_dataset_enabled = True

@@ -1,4 +1,4 @@
-# TRACE Grounding Benchmark Subsets
+# Trace Grounding Benchmark Subsets
 
 Fixed manifest-only subsets for grounding benchmark evaluation.
 

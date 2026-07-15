@@ -84,6 +84,7 @@ class ChartsScientificThresholdSeriesCountTask:
     """Count methods above or below a threshold at one x-position in one subplot."""
 
     task_id = "task_charts__curve_panels__threshold_series_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "charts"
     objective_contract = "threshold_series_count"
     supported_query_ids = (ABOVE_QUERY_ID, BELOW_QUERY_ID)

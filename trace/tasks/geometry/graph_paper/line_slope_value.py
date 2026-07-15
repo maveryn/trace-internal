@@ -33,6 +33,7 @@ class GeometryGraphPaperLineSlopeValueTask:
     """Compute the slope of one rendered segment."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

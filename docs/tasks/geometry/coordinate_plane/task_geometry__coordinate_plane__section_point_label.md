@@ -11,6 +11,10 @@
 - `label(select_candidate_point(candidate_points, coordinate_rule=section_formula, section_ratio=ratio_from_p_to_q)); scene=coordinate_plane; scope=section_point_label`
 - The task renders four lettered candidate points. All candidates are integer lattice points strictly on segment `PQ`; off-segment distractors are not allowed.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

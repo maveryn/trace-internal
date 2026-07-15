@@ -45,6 +45,7 @@ class ChartsScientificCrossPanelDeltaExtremumLabelTask:
     """Select the panel with the largest increase for one method over an interval."""
 
     task_id = "task_charts__curve_panels__cross_panel_delta_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = "charts"
     objective_contract = "cross_panel_delta_extremum_label"
     supported_query_ids = (QUERY_ID,)

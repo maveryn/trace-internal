@@ -1,0 +1,150 @@
+\section{Coverage Diagnostics}
+\label{app:coverage}
+
+Figure~\ref{fig:environment-coverage} complements the main-paper coverage
+summary with typed answer interfaces and the number of internal query branches
+per task.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/environment_coverage.png}
+  \caption{Output and query structure in the \trace environment. Left: typed
+  answer interfaces. Right: number of internal semantic query branches per
+  task. Counts are computed from the complete set of objective contracts.}
+  \label{fig:environment-coverage}
+\end{figure*}
+
+\section{Generation and Validation Details}
+\label{app:generation}
+
+\subsection{Domain construction profiles}
+
+Prompt wording is composed from scene, task, and optional query templates.
+Dynamic labels and values come from the same execution trace as the answer.
+The profiles below therefore focus on domain-specific construction and visible
+vocabularies rather than repeating common prompt and verifier rules.
+
+\paragraph{Charts.}
+Procedural marks, axes, scales, legends, and panels realize Cartesian, radial,
+map, flow, table, and composition scenes. Renderers vary chart treatments,
+palettes, typography, tick density, mark styling, and compatible report
+context without changing the underlying data. Entity, temporal, scientific,
+and compact label pools provide readable series, category, panel, and region
+names while preserving uniqueness within each figure.
+
+\paragraph{Games.}
+Procedural boards, tracks, hands, scores, pieces, enemies, and action states are
+combined with curated cards, dice, tokens, and sprite-like assets. Layouts and
+skins follow each game's visible grammar rather than a shared generic board.
+Coordinates, score displays, status labels, and move cues are derived from the
+simulated state, with optional HUD and surface treatments providing controlled
+visual variation.
+
+\paragraph{Geometry.}
+Analytic constructions generate points, lines, angles, polygons, circles,
+solids, coordinate systems, and measurement instruments from solved numeric
+constraints. Textbook, whiteboard, and technical-diagram treatments vary
+stroke, shading, notation placement, and typography. Point names,
+measurements, equations, and option labels are bound after construction so the
+visible diagram and symbolic problem statement share one consistent geometric
+state.
+
+\paragraph{Graph.}
+Graph instances begin with explicit nodes, edges, weights, paths, and state
+transitions, then realize them through circular, layered, tree, route, or
+force-directed layouts. Node shapes, edge styles, palettes, and framing vary
+independently of topology. Numeric, alphabetic, and named node vocabularies are
+sampled without collisions, while labels and edge values remain attached to
+their semantic graph elements across layout changes.
+
+\paragraph{Icons.}
+Curated icon assets populate fields, grids, paths, rings, paired canvases, and
+rendered option sets. Procedural controls vary icon type, color, scale,
+rotation, spacing, ordering, and transform while maintaining legibility and
+answer uniqueness. Short marker and option labels are placed as part of the
+scene geometry, allowing counting, adjacency, transformation, and matching
+objectives to share a stable visual vocabulary.
+
+\paragraph{Illustrations.}
+Semantic object, part, and tile catalogs are composed into rooms, construction
+sites, libraries, tactical maps, and isometric scenes. Scene-specific layout
+rules govern occupancy, overlap, depth, and permitted object relations;
+palette, asset, framing, and surface variants alter appearance afterward.
+Visible tile, object, and option labels are used only where the objective needs
+explicit reference, leaving other scenes to rely on their illustrated forms.
+
+\paragraph{Pages.}
+Structured records are realized through forms, tables, calendars, schedules,
+application controls, documents, and infographic components. Page templates
+control hierarchy, alignment, chrome, spacing, and typography, while
+information-style and context profiles vary presentation density. Field
+names, section headings, dates, values, and control labels are generated from
+curated assets and remain linked to the underlying document state.
+
+\paragraph{Physics.}
+Procedural apparatus, forces, wires, rays, fields, graphs, and measurement
+instruments are assembled from explicit physical quantities and component
+states. Technical-diagram profiles vary line work, component treatments,
+backgrounds, and label placement while retaining the solved configuration.
+Quantities, units, directions, and component names are rendered from the same
+state used by formula evaluation, comparison, and state-transition programs.
+
+\paragraph{Puzzles.}
+Rule-bearing grids, mazes, pipes, matrices, nets, voxel boards, and candidate
+sets are sampled with valid solutions and unique completions. Procedural
+symbols, board skins, spacing, missing-cell treatments, and option scaffolds
+vary the presentation without revealing the hidden rule. Coordinates,
+candidate letters, and compact clues are introduced only when required by the
+puzzle grammar or answer interface.
+
+\paragraph{Symbolic.}
+Notation-specific generators produce clocks, abaci, dice, spinners, musical
+staves, logic circuits, formal tables, tapes, and encoded glyph systems.
+Symbols and transitions are represented as executable state rather than
+decorative text. Fonts, notation cards, palettes, spacing, and layout vary by
+scene, while tokens, values, note names, and state labels remain bound to the
+formal structure being queried.
+
+\paragraph{Three-dimensional.}
+Procedural meshes and object assets are arranged under explicit cameras,
+projections, depth relations, occlusion, and surface constraints. Renderers
+vary viewpoint, materials, lighting, ground or wall treatments, and framing
+without changing the queried scene relation. Object, lane, wall, point, and
+candidate labels are placed after projection and checked against the final
+image geometry for visibility and separation.
+
+\subsection{Invariant enforcement}
+
+Semantic generation enforces task-specific constraints and answer uniqueness
+before rendering. Render-only controls may not alter program operands, task
+definitions, answer values, or verifier semantics. Structural realization is
+completed before any geometry-bearing verifier payload is projected, and
+post-render effects preserve the final canvas coordinate system. Sampled
+choices are derived from independent seeded streams and retained in the
+execution trace, allowing the semantic instance and its realized image to be
+replayed together.
+
+\subsection{Rendering control flow}
+
+Figure~\ref{fig:rendering-pipeline} summarizes the control boundaries behind
+the concrete sweep in Figure~\ref{fig:rendering-variation}. Semantic execution
+precedes visual realization, while scene-compatible style, layout, context,
+and raster controls preserve the answer contract. The exact order of optional
+finishing layers is renderer-specific; every applied choice is retained in
+the trace.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/rendering_variation_pipeline.png}
+  \caption{Conceptual control flow for visual realization. Structural and
+  surface controls are render-only when they preserve the latent
+  relations and answer. Projection and validation use answer-bearing
+  geometry, while optional context and raster finishing remain
+  scene-specific and are recorded in the execution trace.}
+  \label{fig:rendering-pipeline}
+\end{figure*}
+
+\input{tables/rendering_variation_profiles}
+\FloatBarrier
+
+\input{sections/scene_atlas}

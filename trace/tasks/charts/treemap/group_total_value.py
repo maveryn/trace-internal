@@ -114,6 +114,7 @@ def _build_group_total_plan(instance_seed: int, params: Mapping[str, Any], selec
 @register_task
 class ChartsCompositionTreemapGroupTotalValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "group_total_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

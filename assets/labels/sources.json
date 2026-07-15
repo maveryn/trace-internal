@@ -28,7 +28,7 @@
       "local_license": "licenses/NATURAL-EARTH-PUBLIC-DOMAIN.txt"
     },
     "sec_company_tickers": {
-      "description": "SEC company ticker exchange file; TRACE uses tickers and generic terms extracted from company names.",
+      "description": "SEC company ticker exchange file; Trace uses tickers and generic terms extracted from company names.",
       "source_url": "https://www.sec.gov/files/company_tickers_exchange.json",
       "metadata_url": "https://www.sec.gov/file/company-tickers-exchange",
       "license": "U.S. government public domain / factual identifiers",
@@ -52,12 +52,12 @@
       "local_license": "licenses/US-GOV-PUBLIC-DOMAIN.txt"
     },
     "trace_synthetic_categories": {
-      "description": "Project-local synthetic category labels authored for TRACE task generation.",
+      "description": "Project-local synthetic category labels authored for Trace task generation.",
       "source_url": "",
       "metadata_url": "",
-      "license": "TRACE synthetic label assets",
+      "license": "Trace synthetic label assets",
       "license_url": "",
-      "local_license": "licenses/TRACE-SYNTHETIC.txt"
+      "local_license": "licenses/trace-synthetic.txt"
     }
   },
   "manifests": {

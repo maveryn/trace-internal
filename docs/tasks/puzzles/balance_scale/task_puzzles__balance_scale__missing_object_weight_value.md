@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox marks the question-mark value box in the query row.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## 2) Scene + task contract
 1. Entities/relations: Three balanced pan-scale panels with three labeled unknown object tokens, numbered weights, at least one direct single-object value panel, at least one compound/context panel, and a query row showing one object equal to a question-mark value.
 2. Supported `query_id` values: `single`

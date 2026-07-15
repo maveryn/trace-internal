@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(off_diagonal_candidate_cells)`. Annotation marks the off-diagonal candidate cells in the selected actual-class row. Matrix headers, diagonal cells, legends, titles, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

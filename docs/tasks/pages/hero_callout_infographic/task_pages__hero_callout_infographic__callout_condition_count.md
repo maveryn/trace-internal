@@ -16,6 +16,10 @@
 7. Prompt query key: `callout_condition_count`
 8. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_hero_callout_infographic_v1`
 2. Scene key: `hero_callout_infographic`

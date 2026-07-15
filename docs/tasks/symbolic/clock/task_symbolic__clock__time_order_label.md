@@ -17,6 +17,10 @@ Output binding: `answer` is the selected numbered option label.
 Annotation witnesses: one `bbox` marking the correct answer card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## 2) Scene + Task Contract
 1. Public branch metadata: `query_id`
 2. Supported public `query_id`: `single`

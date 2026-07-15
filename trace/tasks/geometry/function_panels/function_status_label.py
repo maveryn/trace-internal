@@ -36,6 +36,7 @@ class GeometryFunctionPanelsFunctionStatusLabelTask:
     """Choose the only panel that passes the vertical-line test."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'matching')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

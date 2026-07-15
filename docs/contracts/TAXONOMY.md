@@ -1,6 +1,6 @@
-# TRACE Public Taxonomy
+# Trace Public Taxonomy
 
-TRACE public metadata uses:
+Trace public metadata uses:
 
 ```text
 domain -> scene_id -> task_id
@@ -78,7 +78,16 @@ or deterministic index enumeration as a substitute for random sampling of
 semantic axes. Exact stratification belongs in the external sampler/review
 harness, not inside public task generators.
 
-## 6) Source Of Truth
+## 6) Reasoning-Operation Metadata
+Each public task declares a code-authoritative, multi-label decomposition over
+the 13 analysis families defined in
+`docs/contracts/PROGRAM_SCHEMA_CATALOG.md`. These labels support coverage
+analysis and paper figures; they are not public taxonomy nodes, task-boundary
+rules, or sampling units. The current 1,000-task inventory remains the stable
+public surface even when several tasks share operation families or outer
+program scaffolds.
+
+## 7) Source Of Truth
 The active taxonomy mapping lives in `trace/core/taxonomy.py`. Build,
 validation, RLVR export, review tooling, and docs checks should resolve public
 taxonomy through that module instead of parsing task ids by string.

@@ -86,6 +86,7 @@ def _build_plan(params: dict, instance_seed: int, selected: str, probabilities: 
 @register_task
 class ChartsPictogramThresholdCountTask:
     task_id = "task_charts__pictogram__threshold_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "threshold_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

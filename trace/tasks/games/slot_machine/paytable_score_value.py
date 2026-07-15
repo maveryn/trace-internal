@@ -84,6 +84,7 @@ class GamesSlotMachinePaytableScoreValueTask:
     """Compute the total score from winning row or diagonal paylines."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = (DEFAULT_QUERY_ID,)

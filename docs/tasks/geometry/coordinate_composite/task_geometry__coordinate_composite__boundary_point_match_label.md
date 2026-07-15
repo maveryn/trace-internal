@@ -10,6 +10,10 @@
 ## Program Contract
 - `select(candidate_point where on_boundary(candidate_point, object_a) and on_boundary(candidate_point, object_b)); scene=coordinate_composite; scope=boundary_point_match_label`
 
+## Reasoning Operations
+
+Families: `logical_composition`, `spatial_relations`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_coordinate_composite_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

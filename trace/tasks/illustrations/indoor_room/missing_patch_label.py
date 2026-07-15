@@ -168,6 +168,7 @@ class IllustrationsIndoorRoomMissingPatchLabelTask:
     """Select the exact patch option that matches a missing indoor-room region."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = "illustrations"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True

@@ -18,6 +18,10 @@
 ## Program Contract
 - `record_table_enabled_action_for_type_count(type_label, action_label); output=integer_value; annotation=bbox_set(counted_rows); scene=record_table; scope=one sectioned record-table page`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_record_table_v1`
 2. Scene key: `record_table`

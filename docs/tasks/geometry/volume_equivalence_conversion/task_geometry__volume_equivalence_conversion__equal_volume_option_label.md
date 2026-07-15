@@ -12,6 +12,10 @@
 ## Program Contract
 - `select_option(equal_volume_solid_conversion_options, target=option_with_matching_volume); scene=volume_equivalence_conversion; scope=equal_volume_option_label`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`, `matching`
+
 ## Query Semantics
 - `cone_matches_cylinder_option` asks which cylinder option has the same volume as the source cone.
 - `cylinder_matches_cone_option` asks which cone option has the same volume as the source cylinder.

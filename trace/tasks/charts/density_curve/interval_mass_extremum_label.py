@@ -41,6 +41,7 @@ class ChartsDistributionDensityCurveIntervalMassExtremumLabelTask:
     """Return the density-curve label with the greatest or least interval mass."""
 
     task_id = "task_charts__density_curve__interval_mass_extremum_label"
+    reasoning_operations = ('ranking', 'aggregation')
     domain = "charts"
     objective_contract = "interval_mass_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

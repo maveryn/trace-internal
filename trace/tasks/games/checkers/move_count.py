@@ -68,6 +68,7 @@ class GamesCheckersMoveCountPublicTask:
     """Count Checkers landing squares matching one sampled move condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

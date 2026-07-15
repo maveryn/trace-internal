@@ -48,7 +48,25 @@
 3. Reject/resample conditions:
 4. No-auto-relaxation guarantee:
 
-## 5) Tests
+## 5) Program and reasoning metadata
+1. Concrete `## Program Contract` expression:
+2. `## Reasoning Operations` families, in the canonical order from
+   `docs/contracts/PROGRAM_SCHEMA_CATALOG.md`:
+
+```markdown
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+```
+
+Reasoning operations are exhaustive analysis metadata, not public taxonomy
+nodes. The public task class's literal `reasoning_operations` tuple is the
+source of truth; this section is its exact documentation mirror. Record every
+meaningful answer-determining operation, but do not count primitive visual
+access, output binding, annotation construction, or MCQ letter binding.
+`direct_retrieval` is an exclusive fallback and must appear alone.
+
+## 6) Tests
 1. Determinism test:
 2. Answer/annotation consistency test:
 3. Prompt metadata/placeholder test:

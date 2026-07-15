@@ -26,3 +26,7 @@ Operation: evaluate `count` over the candidate set using the filters, comparison
 Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(counted_age_group_rows)`. Annotation marks one row bbox around the paired bars for each row where the queried side is greater than the other side.
 Query ids: `left_side_greater_count`, `right_side_greater_count`.
+
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`

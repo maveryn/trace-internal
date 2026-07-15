@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `spatial_relations`, `topology`
+
 ## Generation Notes
 1. The path is drawn with small visible enemy markers along a winding or switchback route.
 2. Towers are placed off the path and display circular range rings.

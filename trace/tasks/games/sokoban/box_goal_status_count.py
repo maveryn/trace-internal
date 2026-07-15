@@ -68,6 +68,7 @@ class GamesSokobanBoxGoalStatusCountTask(SokobanLifecycleTask):
     """Count boxes that are on or off their matching colored goal dots."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'matching')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

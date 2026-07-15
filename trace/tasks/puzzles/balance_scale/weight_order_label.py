@@ -329,6 +329,7 @@ class PuzzlesBalanceScaleWeightOrderLabelTask:
     """Choose the MCQ option showing the correct object-weight order."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation', 'matching')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

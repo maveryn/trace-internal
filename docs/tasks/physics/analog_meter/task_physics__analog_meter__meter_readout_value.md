@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the inte
 Annotation witnesses: `segment` witnesses from the finalized render. Annotation marks the visible meter needle as one pixel segment from tail to tip. Scale ticks and the unit label remain visible context in the image and trace metadata, but they are not public annotation witnesses.
 Query ids: `ammeter_readout`, `voltmeter_readout`.
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## Query Branches
 
 | Query id | Program schema |

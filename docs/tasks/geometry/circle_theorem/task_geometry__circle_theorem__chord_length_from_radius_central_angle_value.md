@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_circle_radius_and_central_angle, unknown_role=chord_length, formula_schema=chord_length_from_radius_central_angle); scene=circle_theorem; scope=chord_length_from_radius_central_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the geometry circle prompt bundle configured for this scene/task override.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

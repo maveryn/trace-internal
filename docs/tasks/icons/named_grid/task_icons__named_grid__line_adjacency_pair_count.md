@@ -17,6 +17,10 @@ Annotation witnesses: `annotation` uses the `segment_set` schema; each segment c
 Annotation schema: `segment_set`.
 Query ids: `row_unordered_adjacent_pair_count`, `column_unordered_adjacent_pair_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Query IDs
 
 - `row_unordered_adjacent_pair_count`

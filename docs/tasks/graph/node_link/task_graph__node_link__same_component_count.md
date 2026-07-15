@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `topology`
+
 ## Summary
 1. Domain: `graph`
 2. Scene id: `node_link`

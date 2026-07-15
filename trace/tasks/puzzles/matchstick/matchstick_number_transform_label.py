@@ -73,6 +73,7 @@ class PuzzlesMatchstickNumberTransformLabelTask:
     """Choose the candidate number reachable from Source by one stick edit."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'state_update')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

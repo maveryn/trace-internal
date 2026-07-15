@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema for the counted frontier disc centers.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Generation Notes
 
 - A frontier disc is a queried-color disc adjacent horizontally, vertically, or diagonally to at least one empty board cell.

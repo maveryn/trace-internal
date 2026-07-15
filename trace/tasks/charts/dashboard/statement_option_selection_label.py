@@ -31,6 +31,7 @@ class ChartsDashboardStatementOptionSelectionLabelTask:
     """Select the statement option whose truth value matches the requested condition."""
 
     task_id = "task_charts__dashboard__statement_option_selection_label"
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     objective_contract = "statement_option_selection_label"
     supported_query_ids = (QUERY_ID,)

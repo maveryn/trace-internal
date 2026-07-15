@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(answer_mark)`. Annotation marks the target-series mark at the answer category only. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `primary_first_above_threshold_label`, `primary_first_below_threshold_label`, `line_first_above_threshold_label`, `line_first_below_threshold_label`.
 
+## Reasoning Operations
+
+Families: `filtering`, `comparison`, `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

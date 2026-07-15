@@ -105,6 +105,7 @@ def _build_parent_total_extremum_plan(
 @register_task
 class ChartsCompositionTreemapParentTotalExtremumLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "parent_total_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

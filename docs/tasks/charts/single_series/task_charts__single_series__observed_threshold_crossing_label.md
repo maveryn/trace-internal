@@ -25,6 +25,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(crossing_mark)`. Annotation marks the first observed threshold-crossing mark. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `observed_above_threshold_crossing_label`, `observed_below_threshold_crossing_label`.
 
+## Reasoning Operations
+
+Families: `filtering`, `comparison`, `ranking`
+
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `point`.

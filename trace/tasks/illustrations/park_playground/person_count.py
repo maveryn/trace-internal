@@ -61,6 +61,7 @@ class IllustrationsParkPlaygroundPersonCountTask:
     """Count all visible people in the park/playground scene."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

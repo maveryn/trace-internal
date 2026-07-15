@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and export a task-specific TRACE dataset for calibration probing."""
+"""Build and export a task-specific Trace dataset for calibration probing."""
 
 from __future__ import annotations
 
@@ -46,18 +46,18 @@ def _parse_task_params(raw: str) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Build one task-only TRACE dataset and export it to an RLVR-ready parquet for calibration probing."
+        description="Build one task-only Trace dataset and export it to an RLVR-ready parquet for calibration probing."
     )
-    parser.add_argument("--task-id", required=True, help="TRACE task id to build")
+    parser.add_argument("--task-id", required=True, help="Trace task id to build")
     parser.add_argument(
         "--output-root",
         default="./out/calibration",
-        help="TRACE build output root for task-specific calibration datasets",
+        help="Trace build output root for task-specific calibration datasets",
     )
     parser.add_argument(
         "--dataset-name",
         default=None,
-        help="Logical TRACE dataset name (default: derived from task-id and num-instances)",
+        help="Logical Trace dataset name (default: derived from task-id and num-instances)",
     )
     parser.add_argument(
         "--num-instances",
@@ -65,15 +65,15 @@ def main() -> int:
         default=200,
         help="Number of task instances to generate for the calibration probe",
     )
-    parser.add_argument("--instance-version", default="v0", help="TRACE instance ABI version")
-    parser.add_argument("--image-format", default="png", help="TRACE image format")
+    parser.add_argument("--instance-version", default="v0", help="Trace instance ABI version")
+    parser.add_argument("--image-format", default="png", help="Trace image format")
     parser.add_argument(
         "--max-attempts-per-instance",
         type=int,
         default=100,
         help="Per-instance bounded resampling limit",
     )
-    parser.add_argument("--sampling-seed", type=int, default=0, help="TRACE build sampling seed")
+    parser.add_argument("--sampling-seed", type=int, default=0, help="Trace build sampling seed")
     parser.add_argument(
         "--workers",
         type=int,
@@ -101,7 +101,7 @@ def main() -> int:
         "--prompt-variant",
         choices=("active", "answer", "answer_only", "annotation", "answer_and_annotation"),
         default="answer",
-        help="Which TRACE prompt variant to export into the RLVR prompt column",
+        help="Which Trace prompt variant to export into the RLVR prompt column",
     )
     parser.add_argument(
         "--image-path-mode",
@@ -124,7 +124,7 @@ def main() -> int:
     parser.add_argument(
         "--build-only",
         action="store_true",
-        help="Build the TRACE dataset but skip RLVR parquet export",
+        help="Build the Trace dataset but skip RLVR parquet export",
     )
     parser.add_argument(
         "--reset",
@@ -191,7 +191,7 @@ def main() -> int:
     except BuildError as exc:
         raise SystemExit(f"build failed: {exc}") from exc
 
-    print(f"TRACE dataset: {final_path}")
+    print(f"Trace dataset: {final_path}")
     if args.build_only:
         return 0
 

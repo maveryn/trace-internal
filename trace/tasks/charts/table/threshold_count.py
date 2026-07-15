@@ -42,6 +42,7 @@ class ChartsTableThresholdCountTask:
     """Count rows whose value in one table column is above or below a threshold."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "threshold_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(visible_paper_fold_angle_labels, unknown_role=half_angle_x, formula_schema=fold_bisector_with_straight_angle, output=angle_degrees_1dp); scene=paper_fold; scope=paper_fold_angle_value`
 
+## Reasoning Operations
+
+Families: `transformation`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `paper_fold`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

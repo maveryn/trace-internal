@@ -25,6 +25,7 @@ class ThreeDObjectClusterMultiAttributeExclusionCountTask:
     """Count clustered objects matching one attribute while excluding another."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

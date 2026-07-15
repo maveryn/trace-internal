@@ -100,6 +100,7 @@ def _prepare_scoped_color_objective(
 @register_task
 class ThreeDSurfaceFixtureScopedColoredElementCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -35,6 +35,7 @@ def _bind_annotation(plan, rendered):
 @register_task
 class ChartsSizeEncodingGlobalItemExtremumCategoryLabelTask:
     task_id = T
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "global_item_extremum_category_label"
     supported_query_ids = tuple(Q)

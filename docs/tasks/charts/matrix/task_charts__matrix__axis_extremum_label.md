@@ -31,6 +31,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label|unan
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(candidate_line_cells)`. Annotation marks all active candidate cells in the selected row or column. If the answer is `unanswerable`, annotation is an empty `bbox_set`. Matrix headers, legends, titles, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `row_highest_axis_extremum_label`, `row_lowest_axis_extremum_label`, `column_highest_axis_extremum_label`, `column_lowest_axis_extremum_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_event_grid_category_slot_day_count(category_label, slot_id); output=integer_value; annotation=bbox_set(matching_event_chips); scene=calendar_event_grid; scope=one month calendar with Top/Mid/Bottom event slots`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_event_grid_v1`
 2. Scene key: `calendar_event_grid`

@@ -18,6 +18,10 @@
 ## Program Contract
 - `process_flow_lane_filtered_handoff_count(lane_name, relation_mode); output=integer_value; annotation=segment_set(matching_handoff_arrows); scene=process_flow; scope=one process-flow diagram`
 
+## Reasoning Operations
+
+Families: `counting`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_process_flow_v1`
 2. Scene key: `process_flow_diagram`

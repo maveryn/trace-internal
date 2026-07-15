@@ -11,6 +11,10 @@
 ## Program Contract
 - `compute_circle_circumference_from_grid_radius(target=circle, output_role=exact_pi_expression); scene=graph_paper; scope=single_circle`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

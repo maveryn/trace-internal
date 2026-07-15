@@ -72,6 +72,7 @@ def _prepare_same_suit_objective(instance_seed, task_params, _query_id, _query_p
 @register_task
 class GamesCardsSameSuitAsReferenceCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

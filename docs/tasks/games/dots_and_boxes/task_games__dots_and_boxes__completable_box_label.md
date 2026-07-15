@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `state_update`
+
 ## Generation Notes
 1. The scene renders exactly six labeled box options `A` through `F`.
 2. Exactly one labeled option box has exactly three drawn sides and can be completed by drawing one missing side.

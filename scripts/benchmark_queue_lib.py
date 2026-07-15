@@ -310,21 +310,21 @@ ALL_BENCHMARKS: tuple[BenchmarkSpec, ...] = BENCHMARKS + TRACE_CANDIDATE37_EXTRA
 
 ABLATION_MODELS: tuple[ModelSpec, ...] = (
     ModelSpec(
-        "TRACE alpha0 answer step250",
+        "Trace alpha0 answer step250",
         "trace-qwen3vl4b-alpha0-answer-step250",
         str(REPO_ROOT / "checkpoints/trace_rlvr_merged_hf/trace_qwen3vl4b_alpha0_answer_step250"),
         ("0", "1"),
         "full",
     ),
     ModelSpec(
-        "TRACE alpha0.5 answer step250",
+        "Trace alpha0.5 answer step250",
         "trace-qwen3vl4b-alpha0-5-answer-step250",
         str(REPO_ROOT / "checkpoints/trace_rlvr_merged_hf/trace_qwen3vl4b_alpha0_5_answer_step250"),
         ("2", "3"),
         "full",
     ),
     ModelSpec(
-        "TRACE alpha1 answer step250",
+        "Trace alpha1 answer step250",
         "trace-qwen3vl4b-alpha1-answer-step250",
         str(REPO_ROOT / "checkpoints/trace_rlvr_merged_hf/trace_qwen3vl4b_alpha1_answer_step250"),
         ("4", "5"),

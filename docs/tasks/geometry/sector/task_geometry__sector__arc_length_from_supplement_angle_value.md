@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(circular_sector, target=arc_length, formula_schema=arc_length_from_radius_and_supplement_angle); scene=sector; scope=arc_length_from_supplement_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_sector_formula_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -112,6 +112,7 @@ def _build_plan(params, seed, _query_id, _probs):
 @register_task
 class ChartsCompositionPanelsSegmentCountNearestTargetPanelLabelTask:
     task_id = T
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "segment_count_nearest_target_panel_label"
     supported_query_ids = (SINGLE_QUERY_ID,)

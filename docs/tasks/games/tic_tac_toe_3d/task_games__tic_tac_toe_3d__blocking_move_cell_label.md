@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox_set` schema and contains bboxes for the blocking cell and the two opponent cells in the immediate threat line; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `x_blocking_move_label`, `o_blocking_move_label`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.
 2. The board is a 3 by 3 by 3 Tic-Tac-Toe state with exactly one immediate opponent winning cell and no immediate winning cell for the target player.

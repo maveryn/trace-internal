@@ -39,6 +39,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_render
 class PhysicsCollisionStickyCollisionDirectionChoiceTask:
     domain = "physics"
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True
 

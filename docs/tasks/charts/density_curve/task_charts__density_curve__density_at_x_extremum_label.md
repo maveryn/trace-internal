@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(answer_density_at_x)`. Annotation should mark the point where the answer curve intersects the marked x-value, not the legend label, title, axis text, or reference-line label. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `highest_density_at_x_label`, `lowest_density_at_x_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

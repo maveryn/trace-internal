@@ -45,7 +45,7 @@ def resolve_integer_axis(
     support: Sequence[int],
     explicit_key: str,
 ) -> Tuple[int, Dict[str, float]]:
-    """Resolve one integer generation axis using TRACE's deterministic cursor policy."""
+    """Resolve one integer generation axis using Trace's deterministic cursor policy."""
 
     support_tuple = tuple(int(value) for value in support)
     if not support_tuple:

@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point_map` witnesses bound by `point_map(min_point, max_point)`. Annotation should map `min_point` and `max_point` to the answer subplot's minimum and maximum plotted markers. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_panel_spread_label`, `smallest_panel_spread_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -11,6 +11,10 @@
 ## Program Contract
 - `label(select_panel(candidate_coordinate_relations, relation_sign_over_prompted_interval)); scene=function_panels; scope=sign_interval_label`
 
+## Reasoning Operations
+
+Families: `comparison`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_analytical_function_property_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

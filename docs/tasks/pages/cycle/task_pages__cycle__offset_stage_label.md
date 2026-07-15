@@ -18,6 +18,10 @@
 ## Program Contract
 - `stage_at_offset(cycle_order, start_stage=query_stage, relation=before_or_after, steps=k, arrow_direction=cycle_direction); output=stage_label; annotation=bbox(destination_stage); scene=cycle; scope=one directed cycle diagram`
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_cycle_v1`
 2. Scene key: `cycle_diagram`

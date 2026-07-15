@@ -1,4 +1,4 @@
-# TRACE Evaluation Setup
+# Trace Evaluation Setup
 
 This directory is the local home for benchmark evaluation that mirrors the Vero evaluation stack as closely as possible while keeping only the pieces we need in this repository.
 

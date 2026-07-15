@@ -23,6 +23,10 @@ Output binding: `answer` uses the `option_letter` schema; the unique valid optio
 Annotation witnesses: `annotation` uses the `bbox` schema; one image-pixel bounding box around the matching option-loop image.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `transformation`, `matching`
+
 ## Query Contract
 
 - Supported public `query_id`: `single`

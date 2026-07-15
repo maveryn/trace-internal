@@ -36,6 +36,7 @@ class GeometryFunctionPanelsOneToOneStatusLabelTask:
     """Choose the only panel that is a one-to-one function."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'matching')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

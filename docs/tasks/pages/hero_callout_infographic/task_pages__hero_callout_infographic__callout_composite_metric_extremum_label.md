@@ -16,6 +16,10 @@
 7. Prompt query key: `callout_composite_metric_extremum_label`
 8. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_hero_callout_infographic_v1`
 2. Scene key: `hero_callout_infographic`

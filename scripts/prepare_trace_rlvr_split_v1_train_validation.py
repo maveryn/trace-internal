@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build TRACE RLVR train/validation parquet files from task split v1."""
+"""Build Trace RLVR train/validation parquet files from task split v1."""
 
 from __future__ import annotations
 

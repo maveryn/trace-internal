@@ -29,6 +29,7 @@ def _extremum_direction_probabilities(query_probabilities):
 @register_task
 class ChartsRegionMapMarkerRegionExtremumLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "marker_region_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

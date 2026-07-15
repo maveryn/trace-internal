@@ -61,6 +61,7 @@ class PagesMixedInfographicModuleConditionItemCountTask:
     """Count items in one module whose field value satisfies a condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

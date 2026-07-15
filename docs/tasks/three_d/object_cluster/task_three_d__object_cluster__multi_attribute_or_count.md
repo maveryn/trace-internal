@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## Contract
 The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks how many objects match an inclusive OR predicate: the object is the named type or the object has the named color. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`. Objects matching both conditions are counted once.
 

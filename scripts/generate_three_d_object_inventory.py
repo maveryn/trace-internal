@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Generate TRACE three_d named-object inventory sheets."""
+"""Generate Trace three_d named-object inventory sheets."""
 
 from __future__ import annotations
 
@@ -240,7 +240,7 @@ def generate_inventory(
     special_profiles = [profile for profile in sorted_profiles if profile.resource_kind != "standalone"]
     sheets = [
         _make_sheet(
-            title="TRACE 3D Named Small Objects",
+            title="Trace 3D Named Small Objects",
             profiles=small_profiles,
             path=output_dir / "three_d_named_small_objects.png",
             columns=int(columns),
@@ -250,7 +250,7 @@ def generate_inventory(
             canvas_height=int(canvas_height),
         ),
         _make_sheet(
-            title="TRACE 3D Named Large Objects",
+            title="Trace 3D Named Large Objects",
             profiles=large_profiles,
             path=output_dir / "three_d_named_large_objects.png",
             columns=int(columns),
@@ -260,7 +260,7 @@ def generate_inventory(
             canvas_height=int(canvas_height),
         ),
         _make_sheet(
-            title="TRACE 3D Mounted, Composite, Variant, and Reference Objects",
+            title="Trace 3D Mounted, Composite, Variant, and Reference Objects",
             profiles=special_profiles,
             path=output_dir / "three_d_named_mounted_composite_variant_objects.png",
             columns=int(columns),

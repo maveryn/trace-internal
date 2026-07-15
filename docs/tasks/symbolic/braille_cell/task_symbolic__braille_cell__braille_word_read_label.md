@@ -17,6 +17,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: a `bbox_map` with `source_plate` and `selected_option` roles.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`
+
 ## 2) Scene + Task Contract
 1. Public branch metadata: `query_id`
 2. Supported `query_id`: `single`

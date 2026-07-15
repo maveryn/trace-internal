@@ -1,4 +1,4 @@
-# TRACE Python dependencies (initial bootstrap set)
+# Trace Python dependencies (initial bootstrap set)
 
 # Core rendering / generation
 Pillow>=9.0.0

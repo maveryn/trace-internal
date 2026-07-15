@@ -59,6 +59,7 @@ class GamesSlidingBlockBlockerCountTask:
     """Count rectangular blocks currently occupying the red target block's exit path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'topology')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

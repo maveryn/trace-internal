@@ -122,7 +122,7 @@ http://<host>:8888/proxy/7860/
 ```
 
 If Jupyter asks for its own login, authenticate to Jupyter first, then open the
-proxy URL and enter `TRACE_REVIEW_APP_TOKEN` at the TRACE Review login screen.
+proxy URL and enter `TRACE_REVIEW_APP_TOKEN` at the Trace Review login screen.
 
 ## Refresh Rules
 

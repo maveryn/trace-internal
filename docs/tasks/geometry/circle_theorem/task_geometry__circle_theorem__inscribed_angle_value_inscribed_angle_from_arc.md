@@ -10,6 +10,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_circle_theorem_measurements, derivation_rule=inscribed_angle_from_arc, output_role=angle_measure); scene=circle_theorem; scope=inscribed_angle_value_inscribed_angle_from_arc`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `circle_theorem`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

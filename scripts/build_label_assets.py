@@ -414,7 +414,7 @@ def main() -> None:
         encoding="utf-8",
     )
     (license_dir / "US-GOV-PUBLIC-DOMAIN.txt").write_text(
-        "U.S. federal government source data is treated as public domain for TRACE label assets.\n"
+        "U.S. federal government source data is treated as public domain for Trace label assets.\n"
         "Reference: 17 U.S.C. 105, U.S. government works.\n",
         encoding="utf-8",
     )
@@ -423,9 +423,9 @@ def main() -> None:
         "Source terms: https://www.naturalearthdata.com/about/terms-of-use/\n",
         encoding="utf-8",
     )
-    (license_dir / "TRACE-SYNTHETIC.txt").write_text(
-        "TRACE synthetic label assets.\n\n"
-        "These labels were authored for TRACE synthetic task generation and are\n"
+    (license_dir / "trace-synthetic.txt").write_text(
+        "Trace synthetic label assets.\n\n"
+        "These labels were authored for Trace synthetic task generation and are\n"
         "included as project-local assets. They are not copied from an external\n"
         "upstream dataset.\n",
         encoding="utf-8",
@@ -465,7 +465,7 @@ def main() -> None:
                 "local_license": "licenses/NATURAL-EARTH-PUBLIC-DOMAIN.txt",
             },
             "sec_company_tickers": {
-                "description": "SEC company ticker exchange file; TRACE uses tickers and generic terms extracted from company names.",
+                "description": "SEC company ticker exchange file; Trace uses tickers and generic terms extracted from company names.",
                 "source_url": SEC_TICKERS_URL,
                 "metadata_url": "https://www.sec.gov/file/company-tickers-exchange",
                 "license": "U.S. government public domain / factual identifiers",
@@ -489,12 +489,12 @@ def main() -> None:
                 "local_license": "licenses/US-GOV-PUBLIC-DOMAIN.txt",
             },
             "trace_synthetic_categories": {
-                "description": "Project-local synthetic category labels authored for TRACE task generation.",
+                "description": "Project-local synthetic category labels authored for Trace task generation.",
                 "source_url": "",
                 "metadata_url": "",
-                "license": "TRACE synthetic label assets",
+                "license": "Trace synthetic label assets",
                 "license_url": "",
-                "local_license": "licenses/TRACE-SYNTHETIC.txt",
+                "local_license": "licenses/trace-synthetic.txt",
             },
         },
         "manifests": {

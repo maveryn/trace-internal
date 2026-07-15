@@ -18,6 +18,10 @@
 ## Program Contract
 - `module_condition_item_count(module_title, field_label, numeric_condition); output=integer_count; annotation=bbox_set(matching_value_cells); scene=mixed_infographic_page; scope=one titled module within one dense mixed infographic page`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`

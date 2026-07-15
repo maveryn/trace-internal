@@ -27,6 +27,10 @@ Output binding: `answer` uses the `integer` schema; a non-negative integer deriv
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `hard_hat_color_worker_count`, `vest_color_worker_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Task Contract
 Counts visible workers matching one sampled safety-gear color attribute.
 

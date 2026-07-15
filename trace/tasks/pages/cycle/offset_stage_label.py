@@ -54,6 +54,7 @@ class PagesCycleOffsetStageLabelTask:
     """Return the exact visible stage reached by walking along a directed cycle."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'topology')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

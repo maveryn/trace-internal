@@ -43,6 +43,7 @@ class PagesInfographicSectionIconTotalValueTask:
     """Compute a section total filtered by icon type."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation',)
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

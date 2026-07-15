@@ -76,6 +76,7 @@ class GamesSokobanClosestBoxGoalLabelTask(SokobanLifecycleTask):
     """Select the labeled box closest to its matching colored goal dot."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations', 'matching')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

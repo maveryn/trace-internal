@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_circle_theorem_measurements, unknown_role=arc_measure, formula_schema=intersecting_chords_arc_measure); scene=circle_theorem; scope=intersecting_chords_arc_measure_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `circle_theorem`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

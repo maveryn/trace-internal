@@ -36,6 +36,7 @@ class ChartsParallelCoordinatesAllCrossingsBetweenAdjacentAxesTask:
     """Count all pairwise profile crossings across one adjacent-axis interval."""
 
     task_id = "task_charts__parallel_coords__all_crossings_between_adjacent_axes"
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = DOMAIN
     objective_contract = "all_crossings_between_adjacent_axes"
     supported_query_ids = SUPPORTED_QUERY_IDS

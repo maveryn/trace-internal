@@ -54,6 +54,7 @@ class ChartsDashboardPanelTotalExtremumLabelTask:
     """Find which dashboard panel has the largest or smallest category total."""
 
     task_id = "task_charts__dashboard__panel_total_extremum_label"
+    reasoning_operations = ('ranking', 'aggregation')
     domain = DOMAIN
     objective_contract = "panel_total_extremum_label"
     supported_query_ids = (LARGEST_PANEL_TOTAL_QUERY_ID, SMALLEST_PANEL_TOTAL_QUERY_ID)

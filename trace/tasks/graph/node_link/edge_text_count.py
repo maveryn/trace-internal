@@ -39,6 +39,7 @@ def _build_objective_plan() -> NodeLinkObjectivePlan:
 @register_task
 class GraphCountingEdgeTextLabelCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

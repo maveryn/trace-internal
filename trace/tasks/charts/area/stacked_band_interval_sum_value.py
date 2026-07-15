@@ -25,6 +25,7 @@ def _stacked_series_sample(params: dict[str, Any], *, instance_seed: int) -> tup
 class ChartsAreaStackedBandIntervalSumValueTask:
     """Compute an interval sum for one band in a stacked area chart."""
     task_id = 'task_charts__area__stacked_band_interval_sum_value'
+    reasoning_operations = ('aggregation',)
     domain = DOMAIN
     objective_contract = 'stacked_band_interval_sum_value'
     supported_query_ids = (DEFAULT_QUERY_ID,)

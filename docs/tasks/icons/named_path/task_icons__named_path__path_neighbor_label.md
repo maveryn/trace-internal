@@ -18,6 +18,10 @@ Query ids: `after_first_shape_label`, `before_first_shape_label`,
 `after_last_shape_label`, `before_last_shape_label`,
 `after_second_shape_label`, `before_second_shape_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Contract
 1. The image shows a single continuous open path marked from `START` to `END`.
 2. Procedural named icons are placed on ordered path stops.

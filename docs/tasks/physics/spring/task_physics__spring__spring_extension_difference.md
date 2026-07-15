@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is th
 Annotation witnesses: `bbox_set` witnesses from the finalized render. Annotation must mark the two visible spring-extension markers being compared. Extension-marker boxes are vertically padded around the marker so the annotation target is not too thin.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

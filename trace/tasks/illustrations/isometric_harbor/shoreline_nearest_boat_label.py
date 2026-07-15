@@ -132,6 +132,7 @@ class IllustrationsIsometricHarborShorelineNearestBoatLabelTask:
     """Choose the lettered open-water boat closest to the shoreline."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

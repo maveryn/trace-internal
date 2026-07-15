@@ -38,6 +38,7 @@ class GamesPlatformerJumpCollectibleScoreValueTask:
     """Sum collectible scores along the shown jump arc."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

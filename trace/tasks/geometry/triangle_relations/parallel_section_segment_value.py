@@ -67,6 +67,7 @@ class GeometryTriangleRelationsParallelSectionSegmentValueTask:
     """Infer a requested segment length from a parallel section in a triangle."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

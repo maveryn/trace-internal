@@ -33,6 +33,7 @@ def _build_objective_plan():
 @register_task
 class GraphCountingCrossColorEdgeCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

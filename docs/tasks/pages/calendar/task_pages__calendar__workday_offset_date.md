@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_month_workday_offset(direction={after,before}, offset); output=integer_value; annotation=bbox_map(reference_date,target_date); scene=calendar; scope=one Gregorian month-view calendar`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_v1`
 2. Scene key: `month_calendar`

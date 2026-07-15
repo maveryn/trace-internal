@@ -11,6 +11,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; scalar bbox marks the selected relation option.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations: Three balanced pan-scale reference panels over three unknown object labels, plus a query row comparing two symbolic pan expressions and four visual relation options. The internal `not_determined` relation is displayed to users as `Cannot determine`.
 2. Supported `query_id` values: `single`

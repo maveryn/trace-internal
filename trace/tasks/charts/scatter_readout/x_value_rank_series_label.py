@@ -84,6 +84,7 @@ class ChartsScatterXValueRankSeriesLabelTask:
     """Select the highest or lowest series at one x-axis label."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "x_value_rank_series_label"
     supported_query_ids = QUERY_IDS

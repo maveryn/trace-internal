@@ -1,4 +1,4 @@
-# Qwen2.5-VL TRACE Candidate24 Full Greedy-4096 Benchmark Results
+# Qwen2.5-VL Trace Candidate24 Full Greedy-4096 Benchmark Results
 
 Subset manifest root: `benchmark/subsets/trace_candidate24_full`
 

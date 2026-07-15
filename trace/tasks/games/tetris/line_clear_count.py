@@ -72,6 +72,7 @@ class GamesTetrisLineClearCountTask:
     """Count the best possible row clears for the visible next piece."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

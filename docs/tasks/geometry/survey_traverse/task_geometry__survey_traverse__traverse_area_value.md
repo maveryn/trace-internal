@@ -11,6 +11,10 @@
 ## Program Contract
 - `survey_traverse_area_value(visible_traverse_shape, visible_field_note, branch=offset_trapezoid_area) -> enclosed_area; scene=survey_traverse; scope=traverse_area_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the v1 scene prompt bundle configured for `survey_traverse`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

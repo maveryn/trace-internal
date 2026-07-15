@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(center(marker_bubble(matching_regions)))`. Annotation marks one center point for every marker bubble whose value satisfies the requested threshold predicate. Renderer context such as map outlines, legends, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `greater_than_marker_region_threshold_count`, `less_than_marker_region_threshold_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

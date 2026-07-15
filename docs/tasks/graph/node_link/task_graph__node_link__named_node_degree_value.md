@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the queried degree value for
 Annotation witnesses: `annotation` uses the `segment_set` schema; the `segment_set` of endpoint-center segments for all edges counted toward the queried degree value.
 Query ids: `undirected_named_node_degree_value`, `directed_named_node_in_degree_value`, `directed_named_node_out_degree_value`, `directed_named_node_total_degree_value`.
 
+## Reasoning Operations
+
+Families: `filtering`, `topology`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`

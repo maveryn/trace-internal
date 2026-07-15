@@ -24,6 +24,7 @@ class IconsPairedCanvasRotationChangeCountTask(IconsPanelAttributeChangeCountTas
     """Count Right-panel icons whose rotation changed from the Left panel."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'transformation')
     domain = "icons"
     supported_query_ids = (SINGLE_QUERY_ID,)
     query_ids = _resolve_rotation_change_query_ids()

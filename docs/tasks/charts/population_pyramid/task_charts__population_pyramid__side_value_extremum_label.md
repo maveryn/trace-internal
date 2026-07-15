@@ -26,3 +26,7 @@ Operation: evaluate `select_label` over the candidate set using the filters, com
 Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_side_bar)`. Annotation marks the selected side-specific bar as one `[x0, y0, x1, y1]` pixel box.
 Query ids: `left_side_largest_value_label`, `left_side_smallest_value_label`, `right_side_largest_value_label`, `right_side_smallest_value_label`.
+
+## Reasoning Operations
+
+Families: `ranking`

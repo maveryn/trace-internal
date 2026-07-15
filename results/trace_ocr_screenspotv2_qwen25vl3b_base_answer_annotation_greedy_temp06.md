@@ -1,4 +1,4 @@
-# TRACE OCRBench-v2 MINI / ScreenSpot-v2 3B Base / Answer / Annotation Results
+# Trace OCRBench-v2 MINI / ScreenSpot-v2 3B Base / Answer / Annotation Results
 
 Subset manifest root: `/home/shadeform/LMUData`
 

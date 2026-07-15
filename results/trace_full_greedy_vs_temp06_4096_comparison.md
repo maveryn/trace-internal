@@ -1,4 +1,4 @@
-# TRACE Full Greedy vs Temp0.6-4096 Comparison
+# Trace Full Greedy vs Temp0.6-4096 Comparison
 
 Generation config for temp0.6: `temperature=0.6`, `top_p=1.0`, `top_k=-1`, `presence_penalty=0.0`, `repetition_penalty=1.0`, `max_tokens=4096`, `seed=42`.
 Delta columns are `temp0.6 - greedy` using the same normalized benchmark score.

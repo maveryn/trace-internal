@@ -229,6 +229,7 @@ class ThreeDSurfaceFixtureColorFrequencyOptionLabelTask:
     """Select the labeled text option naming a color frequency condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

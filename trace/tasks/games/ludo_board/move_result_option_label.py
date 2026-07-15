@@ -152,6 +152,7 @@ class GamesLudoBoardMoveResultOptionLabelTask(LudoSingleQueryTaskBase):
     """Choose which visible board letter a shown roll sequence reaches."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'state_update')
     _namespace = f"{SCENE_NAMESPACE}.move_result"
     _prepare_objective = staticmethod(_PREPARE_OBJECTIVE)
 

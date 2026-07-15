@@ -262,6 +262,7 @@ class IconsNamedStripShapeRunLengthTask:
     """Ask for longest/shortest consecutive run length of a named icon shape."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'topology')
     domain = DOMAIN
     supported_query_ids = QUERY_IDS
     default_dataset_enabled = True

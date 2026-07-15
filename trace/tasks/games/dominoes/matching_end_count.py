@@ -74,6 +74,7 @@ class GamesDominoesMatchingEndCountTask:
     """Count loose dominoes that can connect to the marked reference end."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'matching')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

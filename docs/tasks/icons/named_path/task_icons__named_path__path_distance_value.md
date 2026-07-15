@@ -20,6 +20,10 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema for every counted
 path-stop icon strictly between the two prompt-bound endpoint icons.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Contract
 1. The image shows a single continuous open path marked from `START` to `END`.
 2. The two prompt-bound named icon types each appear exactly once.

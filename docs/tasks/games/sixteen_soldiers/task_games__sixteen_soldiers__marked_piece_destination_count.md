@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema for simple adjacent empty destination centers.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`, `state_update`
+
 ## Generation Notes
 
 - The board is a fixed 37-point Sixteen Soldiers line graph with a 5 by 5 center and two triangular extensions.

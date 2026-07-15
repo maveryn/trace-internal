@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `integer_value`.
 Annotation witnesses: `unspecified` witnesses bound by `bbox_set(parent_child_rectangles)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `topology`
+
 ## Review Notes
 
 This task uses the current source layout. The public task file owns target parent selection, answer binding, annotation binding, and prompt slots; scene-local shared code only provides treemap data, rendering, prompt, and projection primitives.

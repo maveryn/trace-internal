@@ -18,6 +18,10 @@
 ## Program Contract
 - `module_two_field_condition_item(module_title, numeric_field_label, numeric_condition, category_field_label, category_value); output=string_visible_item_label; annotation=bbox(matching_item_container); scene=mixed_infographic_page; scope=one titled module within one dense mixed infographic page`
 
+## Reasoning Operations
+
+Families: `filtering`, `comparison`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`

@@ -24,6 +24,7 @@ class ThreeDCarouselScopedBeltColorCountTask:
     """Count objects of one semantic color on one carousel belt."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

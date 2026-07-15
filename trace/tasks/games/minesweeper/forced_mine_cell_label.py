@@ -83,6 +83,7 @@ class GamesMinesweeperForcedMineCellLabelTask:
     """Choose the labeled hidden cell that is guaranteed to be a mine."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

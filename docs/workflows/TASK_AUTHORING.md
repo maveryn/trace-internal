@@ -1,4 +1,4 @@
-# TRACE Task Authoring Guide
+# Trace Task Authoring Guide
 
 Use this as the procedural checklist for adding or modifying tasks. Keep policy
 definitions in `docs/contracts/`; this file should tell an implementer what to
@@ -35,20 +35,23 @@ do and where to verify it.
    `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`.
 2. Register the task with `@register_task` and make sure the module is imported
    through the active task registration path.
-3. Keep user-facing prompt text in external prompt bundles, not task modules.
-4. Resolve and validate `query_id` in the public task file. Pass semantic
+3. Declare the reviewed reasoning families as a literal class-level
+   `reasoning_operations` tuple, using the canonical vocabulary and order in
+   `docs/contracts/PROGRAM_SCHEMA_CATALOG.md`.
+4. Keep user-facing prompt text in external prompt bundles, not task modules.
+5. Resolve and validate `query_id` in the public task file. Pass semantic
    arguments to shared helpers; do not route shared code by task id, query id,
    or objective name.
-5. Treat literal operands as parameters, not query ids. Split public tasks when
+6. Treat literal operands as parameters, not query ids. Split public tasks when
    changing the visual reasoning channel or predicate arity changes how the
    model must scan the image, for example color pattern vs size pattern,
    type-match vs color-match, or shape-only lookup vs color+shape lookup.
-6. Build the final output from one execution trace:
+7. Build the final output from one execution trace:
    typed `answer_gt`, typed `annotation_gt`, prompt slots, render/projection
    data, witness records, and `TaskOutput`.
-7. Keep randomness explicit, deterministic from seed/spec/version inputs, and
+8. Keep randomness explicit, deterministic from seed/spec/version inputs, and
    recorded when it affects prompts, layout, rendering, answer, or annotation.
-8. For semantic random axes, define an explicit support or bounded range plus
+9. For semantic random axes, define an explicit support or bounded range plus
    optional weights, then sample with a seeded RNG draw. Uniform sampling means
    every support item has weight `1`. Do not implement sampling by `seed % n`,
    hash-index modulo, cursor cycling, or other deterministic enumeration inside
@@ -56,11 +59,11 @@ do and where to verify it.
    `uniform_choice_with_probabilities`, `weighted_support_choice`, or
    `integer_range_choice`; put exact stratification in the review/dataset
    sampler if exact strata are required.
-9. Enforce unique final answers by construction. Use bounded resampling and do
+10. Enforce unique final answers by construction. Use bounded resampling and do
    not silently relax semantic constraints.
-10. Do not emit scalar difficulty fields or hand-authored reward contracts from
+11. Do not emit scalar difficulty fields or hand-authored reward contracts from
    task code.
-11. Remove retired task ids, wrapper aliases, disabled registry entries, stale
+12. Remove retired task ids, wrapper aliases, disabled registry entries, stale
    configs, stale prompt branches, and stale review paths in the same change.
 
 ## Prompt Checklist
@@ -169,13 +172,16 @@ do and where to verify it.
 ## Docs And Review Checklist
 1. Update the affected task doc under
    `docs/tasks/<domain>/<scene_id>/<task_id>.md`.
-2. Regenerate `docs/ACTIVE_TASK_INVENTORY.md` when active tasks, scenes, or
+2. Run `PYTHONPATH=. python scripts/audit_task_reasoning_operations.py` and
+   require the task doc's `## Reasoning Operations` block to match the public
+   task class. Use `--sync-docs` only after the code declaration is reviewed.
+3. Regenerate `docs/ACTIVE_TASK_INVENTORY.md` when active tasks, scenes, or
    taxonomy mappings change.
-3. Update the matching domain doc only for domain-specific policy changes.
-4. Update workflow or contract docs only when the reusable process or ABI
+4. Update the matching domain doc only for domain-specific policy changes.
+5. Update workflow or contract docs only when the reusable process or ABI
    changes.
-5. Generate review artifacts only under `review/task-reviews/`.
-6. Use the browser review app as the default inspection surface. Reload its
+6. Generate review artifacts only under `review/task-reviews/`.
+7. Use the browser review app as the default inspection surface. Reload its
    index after artifact changes and restart it after app/indexer/schema changes.
 
 ## Standard Checks
@@ -185,6 +191,7 @@ Run focused tests first, then the relevant docs and surface checks:
 PYTHONPATH=. python scripts/generate_active_task_inventory.py --check
 PYTHONPATH=. python scripts/audit_active_domain_surfaces.py
 PYTHONPATH=. python scripts/check_active_inventory_integrity.py --include-local-cache
+PYTHONPATH=. python scripts/audit_task_reasoning_operations.py
 PYTHONPATH=. python scripts/check_skill_consistency.py
 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=. pytest -q tests/test_docs_consistency.py
 git diff --check -- docs skills scripts tests trace configs prompts review assets AGENTS.md README.md

@@ -21,6 +21,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `state_update`, `matching`
+
 ## Generation Notes
 1. Simulate the listed moves in order. The answer is the visible option label for the final head cell or `GAME OVER`.
 2. Annotation is the bbox set for visible in-board cells traversed by the head up to the result.

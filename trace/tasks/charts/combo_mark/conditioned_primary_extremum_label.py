@@ -45,6 +45,7 @@ class ChartsComboConditionedPrimaryExtremumLabelTask:
     """Filter by the line series and find an extremum in the primary mark series."""
 
     task_id = "task_charts__combo_mark__conditioned_primary_extremum_label"
+    reasoning_operations = ('filtering', 'comparison', 'ranking')
     domain = DOMAIN
     objective_contract = "conditioned_primary_extremum_label"
     supported_query_ids = (MAX_QUERY_ID, MIN_QUERY_ID)

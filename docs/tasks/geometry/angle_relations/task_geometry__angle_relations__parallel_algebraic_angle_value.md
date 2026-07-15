@@ -10,6 +10,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_parallel_line_angle_expressions, derivation_rule=same_side_supplementary_parallel_transversal_algebra, output_role=target_angle_measure); scene=angle_relations; scope=parallel_algebraic_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `angle_relations`.
 - Prompt schema: external prompt bundle

@@ -1,4 +1,4 @@
-# TRACE Ann29 3B Annotation Comparison
+# Trace Ann29 3B Annotation Comparison
 
 Model: `maveryn/trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500`
 

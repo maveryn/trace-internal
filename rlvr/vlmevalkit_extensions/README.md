@@ -1,4 +1,4 @@
-# TRACE VLMEvalKit Extensions
+# Trace VLMEvalKit Extensions
 
 This directory mirrors local VLMEvalKit dataset adapters and helper runner
 scripts that are applied into `external/VLMEvalKit`, which is an ignored nested
@@ -12,22 +12,14 @@ python scripts/apply_vlmevalkit_trace_extensions.py
 
 Included adapters:
 
-- `trace_local_vqa.py`: TRACE-local CountQA and Game-QA-Lite adapters.
-- `evochart.py`: TRACE-local EvoChart-QA adapter for `gsarch/EvoChart-QA`,
-  including the neutral `EvoChart` dataset entry, optional Qwen2.5/Qwen3 prompt
-  aliases, deterministic relaxed chart-answer scoring for smoke checks, and
-  queue-level direct judge scoring for final reported results.
-- `mirage.py`: DongSky/MIRAGE adapter with checksum-verified metadata/image
-  download, released-prompt construction, resumable local Qwen3-32B answer
-  extraction, persisted raw judge responses/metadata, and overall plus
-  category-level accuracy scoring.
+- `trace_local_vqa.py`: Trace-local CountQA and Game-QA-Lite adapters.
 - `visiongraph.py`: `VisionGraph_Q3` and `VisionGraph_Q3_CoT`, exposing only
   the third VisionGraph graph-reasoning question as single-turn image VQA.
 
 Included runner scripts:
 
 - `scripts/batched_vlmevalkit_qwen3vl.py`: local generation/scoring helpers
-  used by TRACE benchmark queues.
+  used by Trace benchmark queues.
 - `scripts/batched_chartmuseum_vllm.py`: ChartMuseum local generation and judge
   prompt utilities.
 - `scripts/batched_chartqapro_vllm.py`: ChartQAPro final-answer extraction and

@@ -41,6 +41,7 @@ class ChartsDistributionDensityCurveModeLocationExtremumLabelTask:
     """Return the density-curve label with the leftmost or rightmost mode."""
 
     task_id = "task_charts__density_curve__mode_location_extremum_label"
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "mode_location_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -22,6 +22,10 @@ Output binding: `answer` is the `string` value bound by `string`.
 Annotation witnesses: `bbox` witnesses bound by `see_annotation_contract`. Annotation should mark the answer cluster hull, not the legend row or cluster label text. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `upward_trend_label`, `downward_trend_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Annotation Contract
 1. Answer schema: `string`.
 2. Annotation schema: `bbox`.

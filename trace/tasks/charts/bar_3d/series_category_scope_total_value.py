@@ -16,6 +16,7 @@ INTERVAL_QUERY_ID = 'series_interval_total_value'
 class ChartsThreeDBarSeriesCategoryScopeTotalValueTask:
     """Compute a total for one series over all or a contiguous subset of categories."""
     task_id = 'task_charts__bar_3d__series_category_scope_total_value'
+    reasoning_operations = ('aggregation',)
     domain = DOMAIN
     objective_contract = 'series_category_scope_total_value'
     supported_query_ids = (ALL_CATEGORIES_QUERY_ID, INTERVAL_QUERY_ID)

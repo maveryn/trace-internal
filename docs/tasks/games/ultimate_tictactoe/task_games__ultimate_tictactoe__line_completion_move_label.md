@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `x_winning_move_label`, `o_winning_move_label`, `x_blocking_move_label`, `o_blocking_move_label`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. Query ids choose X/O and winning/blocking tactic semantics.
 2. Annotation contains the selected option-cell bbox.

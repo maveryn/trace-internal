@@ -17,6 +17,10 @@ Annotation schema: `bbox`.
 Annotation witnesses: the scalar bbox of the single visible dice tray.
 Query ids: `conditional_value_property_given_color_probability`, `conditional_color_given_value_property_probability`, `conditional_color_given_value_set_probability`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Generation And Trace
 1. The task asks for a conditional probability over one uniformly selected die from the shown tray.
 2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.

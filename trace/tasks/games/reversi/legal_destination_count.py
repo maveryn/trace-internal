@@ -67,6 +67,7 @@ class GamesReversiLegalDestinationCountTask:
     """Count all legal destination squares for the current player."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

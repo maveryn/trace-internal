@@ -31,6 +31,7 @@ def _build_objective_plan():
 @register_task
 class GraphCountingDegreeAfterRemovalFilterCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology', 'state_update')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
 

@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: the scalar bbox of the selected circuit-option panel.
 Query ids: `output_one_label`, `output_zero_label`.
 
+## Reasoning Operations
+
+Families: `logical_composition`, `topology`, `formula_evaluation`
+
 ## Query Contract
 1. Query metadata: `query_id`
 2. Supported `query_id` values:

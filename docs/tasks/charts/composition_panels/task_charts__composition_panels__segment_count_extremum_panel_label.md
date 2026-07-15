@@ -28,6 +28,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point_map` witnesses bound by `point_map(segment_percent,panel_total)`. Annotation maps `segment_percent` to the selected panel's target-segment percentage label and `panel_total` to the selected panel's total-count text.
 Query ids: `largest_count`, `smallest_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

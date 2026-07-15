@@ -1,4 +1,4 @@
-"""Index active TRACE task-review sidecars for browser inspection."""
+"""Index active Trace task-review sidecars for browser inspection."""
 
 from __future__ import annotations
 

@@ -39,6 +39,7 @@ class PuzzlesCellBoardLargestComponentSizeTask:
     """Return the size of the largest target-color connected component."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'topology')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

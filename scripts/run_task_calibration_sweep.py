@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI wrapper for the TRACE task calibration sweep."""
+"""CLI wrapper for the Trace task calibration sweep."""
 
 from __future__ import annotations
 

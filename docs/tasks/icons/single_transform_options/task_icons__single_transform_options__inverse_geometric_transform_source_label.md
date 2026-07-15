@@ -17,6 +17,10 @@ Query ids: `rotate_90_clockwise_source_label`,
 `rotate_90_counterclockwise_source_label`, `rotate_180_source_label`,
 `flip_horizontal_source_label`, `flip_vertical_source_label`.
 
+## Reasoning Operations
+
+Families: `transformation`
+
 ## Identity
 
 - Domain: `icons`

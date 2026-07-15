@@ -18,6 +18,7 @@ _RENDER_DEFAULTS = load_scene_generation_rendering_prompt_defaults(DOMAIN, SCENE
 @register_task
 class GeometryAngleRelationsTriangleExteriorAngleTask:
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

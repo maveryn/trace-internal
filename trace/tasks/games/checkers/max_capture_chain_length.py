@@ -87,6 +87,7 @@ class GamesCheckersMaxCaptureChainLengthTask:
     """Find the maximum capture-chain length for the marked king checker."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

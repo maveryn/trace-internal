@@ -248,6 +248,7 @@ class IllustrationsParkPlaygroundRotatedTileLabelTask:
     """Select the lettered tile that has been rotated inside a park grid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = "illustrations"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True

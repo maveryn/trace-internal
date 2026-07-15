@@ -99,6 +99,7 @@ class GamesMinigolfShotPathLabelTask:
     """Identify the numbered shot cue that reaches the hole."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -39,6 +39,7 @@ class ChartsTableCategoricalValueCountTask:
     """Count rows whose categorical table-cell value matches a target category."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = DOMAIN
     objective_contract = "categorical_value_count"
     supported_query_ids = (SINGLE_QUERY_ID,)

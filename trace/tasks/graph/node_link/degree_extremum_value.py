@@ -61,6 +61,7 @@ def _build_objective_plan():
 @register_task
 class GraphComparisonExtremeDegreeValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
 

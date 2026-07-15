@@ -17,6 +17,10 @@
 8. Query arguments: resolved target section title and unique marker label within that section.
 9. Render arguments: section count, per-section item-count support, target marker, scene layout variant, visual style, and post-render noise.
 
+## Reasoning Operations
+
+Families: `filtering`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_sectioned_infographic_v1`
 2. Scene key: `sectioned_infographic`

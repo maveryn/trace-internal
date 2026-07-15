@@ -10,6 +10,10 @@
 ## Program Contract
 - `select(candidate_point where region_predicate(candidate_point, drawn_objects)); scene=coordinate_composite; scope=region_membership_label`
 
+## Reasoning Operations
+
+Families: `spatial_relations`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_coordinate_composite_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

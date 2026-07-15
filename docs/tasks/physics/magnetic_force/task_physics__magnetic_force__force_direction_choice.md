@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

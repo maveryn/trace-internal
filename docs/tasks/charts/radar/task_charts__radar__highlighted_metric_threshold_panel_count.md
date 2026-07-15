@@ -30,3 +30,7 @@ Operation: evaluate `count` over the candidate set using the filters, comparison
 Output binding: `answer` is the `unspecified` value bound by `unspecified`.
 Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `single`.
+
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`

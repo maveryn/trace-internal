@@ -30,3 +30,7 @@ Operation: evaluate `select_label` over the candidate set using the filters, com
 Output binding: `answer` is the `unspecified` value bound by `unspecified`.
 Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `largest_side_gap_label`, `smallest_nonzero_side_gap_label`.
+
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`

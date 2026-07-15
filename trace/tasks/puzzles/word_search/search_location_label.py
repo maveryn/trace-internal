@@ -85,6 +85,7 @@ class PuzzlesWordSearchLocationLabelTask:
     """Choose the option that locates the target word."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'topology', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

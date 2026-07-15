@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the count of remaining isola
 Annotation witnesses: `annotation` uses the `point_set` schema; the unordered `point_set` of pixel centers for all remaining nodes that would have total degree zero after the queried node is removed.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`, `state_update`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`

@@ -953,6 +953,7 @@ class PhysicsMagneticForceForceDirectionChoiceTask:
     """Choose the magnetic force direction for a moving charged particle."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

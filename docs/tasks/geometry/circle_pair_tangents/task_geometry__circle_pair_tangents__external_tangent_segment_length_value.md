@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_external_common_tangent_measurements, unknown_role=tangent_length|center_distance, formula_schema=external_common_tangent_right_triangle); scene=circle_pair_tangents; scope=external_tangent_segment_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_circle_pair_tangents_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

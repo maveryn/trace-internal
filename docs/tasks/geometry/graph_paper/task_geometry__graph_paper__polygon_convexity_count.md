@@ -13,6 +13,10 @@
 - Convex and concave polygons use integer graph-paper vertices and vary their side count from 5 to 7. Convex polygons are not required to be regular, and concave polygons use a visible inward notch.
 - Count objects are placed using their actual graph-unit bounds so independent polygons do not overlap.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

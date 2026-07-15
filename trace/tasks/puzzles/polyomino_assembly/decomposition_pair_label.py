@@ -29,6 +29,7 @@ class PuzzlesPolyominoAssemblyDecompositionPairLabelTask:
     """Choose which pair of option pieces can compose the target shape."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

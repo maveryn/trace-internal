@@ -45,6 +45,7 @@ class GeometryRegularPolygonDecompositionCentralAngleTask:
     """Find a central angle in a regular-polygon decomposition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'formula_evaluation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

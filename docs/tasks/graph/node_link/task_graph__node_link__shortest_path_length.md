@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the number of edges on that 
 Annotation witnesses: `annotation` uses the `point_sequence` schema; the `point_sequence` of node-center pixel points after the source node along the unique shortest path, ending at the goal node.
 Query ids: `undirected_shortest_path_length`, `directed_shortest_path_length`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `topology`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `path`

@@ -1,6 +1,6 @@
-# TRACE RLVR Task Split
+# Trace RLVR Task Split
 
-This document freezes the task-level TRACE RLVR train/test split for the 1000
+This document freezes the task-level Trace RLVR train/test split for the 1000
 active public tasks listed in `docs/ACTIVE_TASK_INVENTORY.md`.
 
 Source snapshot:

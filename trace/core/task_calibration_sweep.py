@@ -1,4 +1,4 @@
-"""Run the current TRACE task calibration sweep.
+"""Run the current Trace task calibration sweep.
 
 The sweep is intentionally task-at-a-time and resumable.  It builds one fixed
 50-sample dataset per task, exports the matching task-review workbook, probes
@@ -1237,7 +1237,7 @@ def _write_status_files(args: argparse.Namespace, status: dict[str, Any]) -> Non
     _write_json(status_json_path, status)
 
     rows: list[str] = []
-    rows.append("# TRACE Calibration Sweep Status")
+    rows.append("# Trace Calibration Sweep Status")
     rows.append("")
     rows.append(f"Updated: `{status['updated_at']}`")
     rows.append("")

@@ -10,16 +10,21 @@ Repo-local workflow skills under `skills/` are operational overlays. The canonic
 - `TASK_AUTHORING.md` — task creation checklist and contract guidance.
 Shared text/font/rationale resources live under `../resources/`.
 
+## Public release
+- `PUBLIC_RELEASE/README.md` - coordination contract and independent agent
+  briefs for the paper, release engineering, public documentation, task
+  catalog/gallery, RLVR results, and public API workstreams.
+
 ## RLVR-specific workflows
 RLVR training/export/validation docs live under:
 - `../../rlvr/README.md` for the active Vero-derived RLVR port.
-- `../RLVR_TRAINING_STRATEGY.md` for tentative TRACE RLVR training,
+- `../RLVR_TRAINING_STRATEGY.md` for tentative Trace RLVR training,
   reward-ablation, response-length, and evaluation-cadence strategy.
 - `RLVR_TASK_SUPERVISION_POLICY.md` for assigning each task a stable
   answer-only or answer-and-annotation training mode.
 - `RLVR_TRAINING_RUNBOOK.md` for retained legacy split-v1 training,
   validation, checkpoint-merge, resume, and external-benchmark commands.
-- `TRACE_ANNOTATION_ABLATION_RUNBOOK.md` for current EasyR1 all1000 global
+- `ANNOTATION_ABLATION_RUNBOOK.md` for current EasyR1 all1000 global
   answer, global annotation, and task-conditioned runs on tmpfs-heavy GPU
   hosts.
 - `TASK_REVIEW_WEB_APP.md` for the active task-review workspace.

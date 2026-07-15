@@ -24,6 +24,7 @@ class ThreeDCarouselBetweenObjectTypeAnchorsCountTask:
     """Count objects strictly between two marked anchors described by type."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -18,6 +18,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a partial icon fragment on the left and six labeled full-icon options on the right.
 2. Supported `query_id` value: `single`

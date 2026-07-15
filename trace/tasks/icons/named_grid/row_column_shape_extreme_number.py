@@ -351,6 +351,7 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
     """Return the numbered grid line with a unique extreme named-icon count."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking')
     domain = DOMAIN
     supported_query_ids = QUERY_IDS
     default_dataset_enabled = True

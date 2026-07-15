@@ -25,6 +25,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(matching_marks)`. Annotation marks every visible mark satisfying the strict threshold predicate. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `above_threshold_count`, `below_threshold_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `point_set`.

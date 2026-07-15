@@ -21,6 +21,7 @@ DEFAULT_QUERY_ID = ABOVE_QUERY_ID
 @register_task
 class ChartsHeatmapColorbarThresholdCellCountTask:
     task_id = "task_charts__heatmap__colorbar_threshold_cell_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "colorbar_threshold_cell_count"
     supported_query_ids = QUERY_IDS

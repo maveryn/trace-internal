@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema for every legal destination cell.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generation Notes
 
 - The task counts all legal empty destination cells for the current player.

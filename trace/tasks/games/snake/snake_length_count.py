@@ -63,6 +63,7 @@ def _prepare_snake_length_objective(attempt_seed, task_params, axes):
 @register_task
 class GamesSnakeLengthCountTask(SnakeLifecycleTask):
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
         return run_snake_task(self, instance_seed, params, max_attempts, _prepare_snake_length_objective)

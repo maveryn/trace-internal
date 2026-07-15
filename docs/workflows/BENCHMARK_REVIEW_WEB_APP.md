@@ -2,7 +2,7 @@
 
 The benchmark-review web app is a separate browser surface for inspecting model
 performance on external benchmark runs. It is intentionally not part of the
-`trace/` package because it does not define TRACE generation, verification, or
+`trace/` package because it does not define Trace generation, verification, or
 task-review behavior.
 
 ## Source And State
@@ -101,7 +101,7 @@ The launcher refuses to bind a non-localhost host without a token.
 
 ## Review Surface
 
-The top-level view lists benchmarks instead of TRACE domains. Each benchmark
+The top-level view lists benchmarks instead of Trace domains. Each benchmark
 page supports these filters:
 
 - `All`

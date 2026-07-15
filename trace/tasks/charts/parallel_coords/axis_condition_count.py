@@ -45,6 +45,7 @@ class ChartsParallelCoordinatesAxisConditionCountTask:
     """Count profiles satisfying a two-axis threshold condition."""
 
     task_id = "task_charts__parallel_coords__axis_condition_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'logical_composition')
     domain = DOMAIN
     objective_contract = "axis_condition_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

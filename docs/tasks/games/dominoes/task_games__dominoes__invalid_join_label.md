@@ -21,6 +21,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `segment` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Generation Notes
 1. Renders one face-up domino chain with seven dominoes and exactly six labeled joins `A` through `F`.
 2. Exactly one adjacent join has mismatched touching halves.

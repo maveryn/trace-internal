@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. The target clear-count branch is a generation axis recorded as `target_clear_count`, not a public query branch.
 2. The renderer always shows exactly four labeled result-board options in a two-by-two grid below the START board.

@@ -10,6 +10,10 @@
 ## Program Contract
 - `compare_two_polar_graph_components(candidates={P,Q}, component={radius|angle_degrees}, operation={absolute_radius_difference|smaller_angular_difference}, output_role=integer_difference_value, annotation_witness=point_map_P_Q); scene=polar_graph_paper; scope=coordinate_difference_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Task Summary
 - Scene: `polar_graph_paper`
 - Objective contract: `coordinate_difference_value`

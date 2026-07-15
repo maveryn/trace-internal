@@ -56,6 +56,7 @@ def _build_cumulative_rank_plan(params, instance_seed, selected_query_id, query_
 
 class ChartsDistributionHistogramCumulativeRankLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = SUPPORTED_QUERY_IDS

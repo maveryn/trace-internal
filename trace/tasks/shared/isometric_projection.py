@@ -9,7 +9,7 @@ Point3 = Tuple[float, float, float]
 
 
 def iso_project_point_3d(point_3d: Sequence[float]) -> Point2:
-    """Project one 3D point into the canonical TRACE isometric 2D plane."""
+    """Project one 3D point into the canonical Trace isometric 2D plane."""
 
     x_value = float(point_3d[0])
     y_value = float(point_3d[1])

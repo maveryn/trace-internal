@@ -15,6 +15,10 @@
 6. Query argument axes: section totals derived from visible card values.
 7. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `formula_evaluation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_infographic_v1`
 2. Scene key: `infographic_metric_arithmetic`

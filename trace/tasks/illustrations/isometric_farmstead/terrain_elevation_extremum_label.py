@@ -117,6 +117,7 @@ class IllustrationsIsometricFarmsteadTerrainElevationExtremumLabelTask:
     """Choose the lettered terrain tile that is highest or lowest."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

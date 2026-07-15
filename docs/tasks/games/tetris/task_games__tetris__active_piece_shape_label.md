@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Generation Notes
 1. The renderer shows a Tetris board with one active falling piece and four text options naming tetromino shapes.
 2. The answer is the selected option letter whose shape name matches the falling piece.

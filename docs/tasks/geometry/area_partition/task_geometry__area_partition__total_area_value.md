@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_area_partition_measurements, unknown_role=area_measure, formula_schema=shaded_unit_fraction_area_to_total_area, partition_rule=visible_fraction_partition_rule); scene=area_partition; scope=total_area_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `area_partition`.
 - Prompt schema: external prompt bundle

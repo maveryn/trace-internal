@@ -143,6 +143,7 @@ class PagesControlBoardStateExtremumGroupLabelTask:
     """Select the visible control group with the most matching state controls."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'logical_composition')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

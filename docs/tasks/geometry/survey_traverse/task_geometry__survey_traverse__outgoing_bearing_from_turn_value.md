@@ -11,6 +11,10 @@
 ## Program Contract
 - `survey_outgoing_bearing_from_turn(visible_station_line, visible_north_reference, incoming_bearing, turn_angle, turn_direction=left|right) -> outgoing_bearing_degrees; scene=survey_traverse; scope=outgoing_bearing_from_turn_value`
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the v1 scene prompt bundle configured for `survey_traverse`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -79,6 +79,7 @@ class PuzzlesTentsViolatingTentLabelTask(TentsSceneTask):
     """Choose the labeled tent that is not orthogonally adjacent to any tree."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     supported_query_ids = SUPPORTED_QUERY_IDS
     prompt_task_key = PROMPT_TASK_KEY
     prompt_query_key = PROMPT_QUERY_KEY

@@ -1,4 +1,4 @@
-# Contributing to TRACE
+# Contributing to Trace
 
 ## Purpose
 This file is the short developer workflow and pre-commit checklist for day-to-day contributions.

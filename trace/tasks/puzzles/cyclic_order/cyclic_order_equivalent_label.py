@@ -60,6 +60,7 @@ class PuzzlesCyclicOrderEquivalentLabelTask:
     """Identify the only option loop with the same cyclic order as the reference."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'transformation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

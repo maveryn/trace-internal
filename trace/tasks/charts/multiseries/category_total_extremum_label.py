@@ -69,6 +69,7 @@ class ChartsMultiseriesCategoryTotalExtremumLabelTask:
     """Return the category label with a ranked total across series."""
 
     task_id = "task_charts__multiseries__category_total_extremum_label"
+    reasoning_operations = ('ranking', 'aggregation')
     domain = DOMAIN
     objective_contract = "category_total_extremum_label"
     supported_query_ids = CATEGORY_TOTAL_QUERY_IDS

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `point_map` witnesses from the finalized render. Annotation role keys are `Q1`, `Q2`, `Q3`, and `P`; each maps to the final-image pixel point at the center of the corresponding marker. For force-query branches, the P marker contains the visible sign of the test charge; for the electric-field branch, P is neutral.
 Query ids: `electric_field_direction`, `force_on_positive_charge`, `force_on_negative_charge`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

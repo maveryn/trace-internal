@@ -42,6 +42,7 @@ class ChartsTableColumnSummaryValueTask:
     """Compute a sum, mean, or median over one numeric table column."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation',)
     domain = DOMAIN
     objective_contract = "column_summary_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

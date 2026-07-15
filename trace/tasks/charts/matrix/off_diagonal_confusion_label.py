@@ -25,6 +25,7 @@ class ChartsMatrixOffDiagonalConfusionLabelTask:
     """Return the predicted-column label with the largest off-diagonal count."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'ranking')
     domain = "charts"
     objective_contract = "off_diagonal_confusion_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

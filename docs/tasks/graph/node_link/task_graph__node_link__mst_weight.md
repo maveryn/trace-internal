@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the sum of the weights on th
 Annotation witnesses: `annotation` uses the `segment_set` schema; the `segment_set` of endpoint-node-center segments for all MST edges.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `topology`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `optimization`
@@ -50,7 +54,7 @@ Query ids: `single`.
    - requested layout variants are all reusable node-link layouts: `circular|shell|spring|grid_jitter|layered|component_clustered|path_spine|radial_tree`,
    - the renderer may fall back to a cleaner node-link layout when a sampled layout is too cramped for readable node or edge-label separation.
 10. Visual variation:
-   - one whole-image named node color is sampled from the shared TRACE named-color palette,
+   - one whole-image named node color is sampled from the shared Trace named-color palette,
    - one whole-image node glyph style is sampled from `circle|rounded_square|hexagon`,
    - one whole-image label format is sampled as `letters` by default; numeric labels remain renderer-supported but are not part of this task's default generation distribution,
    - one whole-image layout transform is sampled from `identity|rotate_90|rotate_180|rotate_270|mirror_left_right|mirror_up_down`,

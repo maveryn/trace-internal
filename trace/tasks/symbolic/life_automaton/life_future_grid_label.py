@@ -46,6 +46,7 @@ class SymbolicLifeAutomatonFutureGridLabelTask:
     """Choose the option showing the grid after one or two Life updates."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

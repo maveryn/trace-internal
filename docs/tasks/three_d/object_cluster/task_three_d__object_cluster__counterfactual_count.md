@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `aggregation`, `state_update`, `formula_evaluation`
+
 ## Contract
 The image shows many small synthetic perspective 3D objects arranged on a plain surface. This scene is a bare clustered-counting surface: it does not use option labels, named reference objects, relation prompts, or grid-based spatial cues.
 

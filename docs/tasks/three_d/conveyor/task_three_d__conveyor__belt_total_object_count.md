@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`, `belt_total_count`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Contract
 The image shows one 3D straight-conveyor scene with three visible parallel
 belts. Landscape canvases use three horizontal lanes labeled by prompt position

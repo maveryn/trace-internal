@@ -176,6 +176,7 @@ class ThreeDSurfaceFixtureElementCountExtremumLabelTask:
     """Select the labeled surface-fixture option panel with the highest or lowest count."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

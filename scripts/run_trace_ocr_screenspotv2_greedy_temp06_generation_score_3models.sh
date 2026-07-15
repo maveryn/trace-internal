@@ -186,7 +186,7 @@ python /home/shadeform/trace/scripts/summarize_trace_grounding_greedy_temp06_res
   --excel "${RESULTS_ROOT}/trace_ocr_screenspotv2_qwen25vl3b_base_answer_annotation_greedy_temp06.xlsx" \
   --subset-root "${DATA_ROOT}" \
   --run-set full \
-  --title "TRACE OCRBench-v2 MINI / ScreenSpot-v2 3B Base / Answer / Annotation Results" \
+  --title "Trace OCRBench-v2 MINI / ScreenSpot-v2 3B Base / Answer / Annotation Results" \
   --only "${BENCHMARKS[@]}" \
   2>&1 | tee "${LOG_ROOT}/summarize.log"
 

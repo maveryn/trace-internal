@@ -18,6 +18,10 @@
 ## Program Contract
 - `category_grid_slot_item_lookup(category_label, subcategory_label, ordinal_slot); output=item_label_string; annotation=bbox_map(category_header,subcategory_header,target_item); scene=category_grid; scope=one category-grid page`
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_category_grid_v1`
 2. Scene key: `category_grid`

@@ -71,6 +71,7 @@ class GamesSlidingBlockMovableBlockCountTask:
     """Count labeled blocks that can slide at least one cell."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

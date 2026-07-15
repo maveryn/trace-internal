@@ -28,6 +28,7 @@ class ThreeDConveyorBeltTotalObjectCountTask:
     """Count all visible objects on one selected conveyor belt."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

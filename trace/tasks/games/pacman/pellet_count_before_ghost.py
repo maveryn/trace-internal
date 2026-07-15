@@ -155,6 +155,7 @@ class GamesPacmanPelletCountBeforeGhostTask:
     """Count route pellets before the first ghost is reached."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'spatial_relations', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

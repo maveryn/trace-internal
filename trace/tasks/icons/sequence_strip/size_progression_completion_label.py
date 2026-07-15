@@ -149,6 +149,7 @@ def _build_plan(
 @register_task
 class IconsSequenceStripSizeProgressionCompletionTask:
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'formula_evaluation', 'matching')
     domain = "icons"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

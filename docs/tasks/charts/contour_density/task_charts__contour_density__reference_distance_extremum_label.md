@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_region)`. Annotation should contain one bbox around the selected answer contour region. Renderer context such as axes, decorative labels, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
 Query ids: `point_nearest_region_label`, `point_farthest_region_label`, `vertical_line_nearest_region_label`, `vertical_line_farthest_region_label`, `horizontal_line_nearest_region_label`, `horizontal_line_farthest_region_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

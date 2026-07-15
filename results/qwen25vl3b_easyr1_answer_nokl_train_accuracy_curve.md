@@ -1,4 +1,4 @@
-# Qwen2.5-VL-3B TRACE EasyR1 No-KL Train Accuracy
+# Qwen2.5-VL-3B Trace EasyR1 No-KL Train Accuracy
 
 - Source: local W&B `.wandb` histories under `/dev/shm/trace_rlvr/wandb/wandb`.
 - Metric: `reward/accuracy` from train batches.

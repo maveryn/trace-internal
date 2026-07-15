@@ -17,6 +17,10 @@
 8. Query arguments: `direction=before|after`; `offset=1..4` is sampled as a prompt parameter, not a query id.
 9. Render arguments: month/year, event count, scene variant, style variant, accent color, render dimensions, and post-render noise.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_timeline_v1`
 2. Scene key: `milestone_timeline`

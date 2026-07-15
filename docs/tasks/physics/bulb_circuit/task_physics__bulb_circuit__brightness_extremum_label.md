@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; The answer value is the selec
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation marks one bounding box around the selected answer bulb symbol and its resistance label. Other bulb boxes remain visible context in the image and trace metadata, but they are not public annotation witnesses.
 Query ids: `brightest_bulb_label`, `dimmest_bulb_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

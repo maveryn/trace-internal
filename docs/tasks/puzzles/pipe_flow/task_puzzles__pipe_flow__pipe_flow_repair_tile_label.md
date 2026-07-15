@@ -30,6 +30,10 @@ Output binding: `answer` uses the `option_letter` schema; the capital-letter lab
 Annotation witnesses: `annotation` uses the `bbox_map` schema; not used because the task has two semantically distinct visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the capital-letter label on the correct 2x2 repair option panel.

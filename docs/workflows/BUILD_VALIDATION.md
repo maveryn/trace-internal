@@ -1,4 +1,4 @@
-# TRACE Build and Validation
+# Trace Build and Validation
 
 Operational policy for build lifecycle and pre-finalize validation.
 

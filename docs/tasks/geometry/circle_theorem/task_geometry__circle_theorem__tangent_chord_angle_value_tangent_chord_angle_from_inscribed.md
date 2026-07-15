@@ -10,6 +10,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_circle_theorem_measurements, derivation_rule=tangent_chord_angle_from_inscribed, output_role=angle_measure); scene=circle_theorem; scope=tangent_chord_angle_value_tangent_chord_angle_from_inscribed`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `circle_theorem`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

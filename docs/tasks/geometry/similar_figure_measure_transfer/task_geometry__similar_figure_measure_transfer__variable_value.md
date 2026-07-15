@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_similar_figure_marked_side_equation, unknown_role=variable_value, formula_schema=similar_side_ratio); scene=similar_figure_measure_transfer; scope=variable_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_geo3k_marked_equations_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

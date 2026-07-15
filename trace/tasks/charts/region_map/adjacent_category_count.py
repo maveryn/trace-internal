@@ -21,6 +21,7 @@ class ChartsMapAdjacentCategoryCountTask:
     """Count neighboring regions assigned to a requested category."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = "charts"
     objective_contract = "adjacent_category_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

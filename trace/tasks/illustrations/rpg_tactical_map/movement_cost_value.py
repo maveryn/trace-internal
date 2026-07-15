@@ -224,6 +224,7 @@ class IllustrationsRpgTacticalMapMovementCostValueTask:
     """Return the shortest movement-point cost to a marked destination tile."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'topology')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

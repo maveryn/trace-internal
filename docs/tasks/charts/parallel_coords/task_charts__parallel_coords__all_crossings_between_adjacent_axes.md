@@ -24,6 +24,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(crossing_points)`. Annotation marks one point at each counted profile-line crossing between the named adjacent axes. Axes, labels, threshold text, and decorative context are renderer context unless explicitly requested.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `point_set`.

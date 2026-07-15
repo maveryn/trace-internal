@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is an
 Annotation witnesses: `bbox_set_map` witnesses from the finalized render. Annotation uses keys `known_weights` and `target_weight`; each key maps to final-image pixel boxes for the corresponding visible weight blocks. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

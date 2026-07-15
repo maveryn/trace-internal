@@ -44,7 +44,7 @@ def value_to_unit(value: float, value_range: tuple[float, float]) -> float:
 
 
 def surface_plot_basis(plot_bbox: Sequence[float]) -> ProjectionBasis2D:
-    """Return the current TRACE surface-chart oblique projection basis."""
+    """Return the current Trace surface-chart oblique projection basis."""
 
     left, top, right, bottom = [float(value) for value in plot_bbox[:4]]
     width = max(1.0, right - left)

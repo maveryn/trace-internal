@@ -278,6 +278,7 @@ class IllustrationsCountingWorkerSafetyGearCountTask:
     """Count workers matching a visible hard-hat or vest color condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "illustrations"
     supported_queries = QUERY_IDS
     supported_query_ids = QUERY_IDS

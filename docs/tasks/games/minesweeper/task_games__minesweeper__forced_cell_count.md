@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `forced_mine_count`, `forced_safe_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 1. The scene shows a visible Minesweeper board with opened number cells, hidden cells, and flags.
 2. The query branch selects whether to count hidden cells forced to be mines or forced to be safe.

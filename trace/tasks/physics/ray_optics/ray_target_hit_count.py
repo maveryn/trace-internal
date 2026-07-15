@@ -61,6 +61,7 @@ class PhysicsRayOpticsRayTargetHitCountTask:
     """Count visible target points intersected by the solved ray path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

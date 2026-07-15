@@ -148,6 +148,7 @@ class GamesDominoesSumToTargetCountTask:
     """Count face-up dominoes whose pip sum equals the sampled target total."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'aggregation')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

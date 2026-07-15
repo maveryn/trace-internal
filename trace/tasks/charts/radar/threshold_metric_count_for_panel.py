@@ -149,6 +149,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
 @register_task
 class ChartsRadarThresholdMetricCountForPanelTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "threshold_metric_count_for_panel"
     supported_query_ids = (QUERY_ID,)

@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one bounding box around the selected waveform panel. Annotation must mark the minimal selected panel witness from the final rendered diagram. It must not mark every panel, background grid lines, title text, or derived property annotations.
 Query ids: `highest_amplitude_label`, `lowest_amplitude_label`, `highest_frequency_label`, `lowest_frequency_label`, `longest_wavelength_label`, `shortest_wavelength_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Task Contract
 Selects the labeled waveform panel with the requested highest or lowest wave property.
 

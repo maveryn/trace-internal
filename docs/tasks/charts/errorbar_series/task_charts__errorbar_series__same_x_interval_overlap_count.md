@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `segment_set` witnesses bound by `segment_set(matching_errorbar_interval_spans)`. Annotation is an unordered array of lower-to-upper error-bar interval segments for the counted overlapping marks at the named x-axis label. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `spatial_relations`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

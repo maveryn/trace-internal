@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema for all scoring note objects in the target lane.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `aggregation`, `formula_evaluation`
+
 ## Notes
 - `target_lane` is prompt-bound by lane number.
 - The side score palette maps three note colors to integer score values `1`, `2`, and `3`.

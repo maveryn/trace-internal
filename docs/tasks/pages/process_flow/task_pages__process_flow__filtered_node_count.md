@@ -18,6 +18,10 @@
 ## Program Contract
 - `process_flow_filtered_node_count(filter_family, predicate); output=integer_value; annotation=bbox_set(counted_step_nodes); scene=process_flow; scope=one process-flow diagram`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_process_flow_v1`
 2. Scene key: `process_flow_diagram`

@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `string_label`.
 Annotation witnesses: `unspecified` witnesses bound by `point_map(mark_center(answer_category, all_series))`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `largest_series_share_label`, `smallest_series_share_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `formula_evaluation`
+
 ## Implementation
 - Source: `trace/tasks/charts/multiseries/ranked_series_share_extremum_label.py`
 - Class: `ChartsMultiseriesRankedSeriesShareExtremumTask`

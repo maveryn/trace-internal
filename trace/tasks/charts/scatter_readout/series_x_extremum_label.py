@@ -132,6 +132,7 @@ class ChartsScatterSeriesExtremumXLabelTask:
     """Select the x-axis label for the highest or lowest point in one series."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "series_x_extremum_label"
     supported_query_ids = QUERY_IDS

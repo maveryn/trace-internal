@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_event_grid_busiest_date_label(); output=integer_date_number; annotation=bbox_set(event_chips_on_unique_busiest_date); scene=calendar_event_grid; scope=one month calendar with Top/Mid/Bottom event slots`
 
+## Reasoning Operations
+
+Families: `filtering`, `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_event_grid_v1`
 2. Scene key: `calendar_event_grid`

@@ -27,6 +27,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = (
 @register_task
 class PuzzlesRavenMatrixFeatureBindingLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

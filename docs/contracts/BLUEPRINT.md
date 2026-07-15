@@ -1,9 +1,9 @@
-# TRACE Blueprint
+# Trace Blueprint
 
 Status: normative contract for dataset ABI, determinism, and build policy.
 
 ## 1) Goal
-TRACE generates grounded visual-reasoning instances with:
+Trace generates grounded visual-reasoning instances with:
 
 1. prompt,
 2. typed answer,

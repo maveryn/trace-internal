@@ -78,6 +78,7 @@ class GamesTicTacToe3DLayerPieceCountTask:
     """Count target-player pieces in one named 3D Tic-Tac-Toe layer."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

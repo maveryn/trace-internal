@@ -44,6 +44,7 @@ class GraphRelationGraphOptionsContainedSubgraphLabelTask:
     """Select the option graph contained in the displayed target graph."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'matching')
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

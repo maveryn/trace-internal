@@ -87,7 +87,7 @@ def sample_palette(
 
     Scene role: density curves often overlap, so this helper owns the curve
     color contract before objective binding. Key invariant: the default path
-    returns a deterministic subset of the shared TRACE visibility-safe palette
+    returns a deterministic subset of the shared Trace visibility-safe palette
     with pairwise Lab separation high enough for every visible curve.
     """
 
@@ -126,14 +126,14 @@ def _sample_trace_safe_curve_palette(
     min_pairwise_distance: float,
     distance_space: str,
 ) -> tuple[RGB, ...]:
-    """Choose one TRACE-safe color subset satisfying the curve separation floor."""
+    """Choose one Trace-safe color subset satisfying the curve separation floor."""
 
     candidate_pool = tuple(tuple(int(channel) for channel in color) for color in TRACE_SAFE_DENSITY_CURVE_PALETTE_RGB)
     size = int(count)
     if size < 1:
         return tuple()
     if size > len(candidate_pool):
-        raise ValueError("density_curve_count exceeds shared TRACE safe color support")
+        raise ValueError("density_curve_count exceeds shared Trace safe color support")
     threshold = float(min_pairwise_distance)
     feasible: list[tuple[RGB, ...]] = []
     best_combo: tuple[RGB, ...] | None = None
@@ -147,7 +147,7 @@ def _sample_trace_safe_curve_palette(
             feasible.append(tuple(combo))
     if not feasible:
         raise ValueError(
-            f"no {size}-color TRACE safe density-curve subset reaches pairwise {threshold:.1f}; "
+            f"no {size}-color Trace safe density-curve subset reaches pairwise {threshold:.1f}; "
             f"best={best_distance:.3f}"
         )
     selected = list(feasible[int(rng.randrange(len(feasible)))])

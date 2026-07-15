@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=regular_polygon_perimeter, formula_schema=two_area_divided_by_apothem); scene=regular_polygon_decomposition; scope=perimeter_value`
 
+## Reasoning Operations
+
+Families: `filtering`, `formula_evaluation`
+
 ## Query Semantics
 - `single` asks for regular-polygon perimeter from visible total-area and apothem labels.
 - The semantic prompt branch uses `perimeter_from_total_area_and_apothem`; the public query id remains `single`.

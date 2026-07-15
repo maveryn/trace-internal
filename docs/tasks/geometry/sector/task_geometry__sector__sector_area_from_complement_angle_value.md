@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(circular_sector, target=sector_area, formula_schema=sector_area_from_radius_and_complement_angle); scene=sector; scope=sector_area_from_complement_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_sector_formula_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

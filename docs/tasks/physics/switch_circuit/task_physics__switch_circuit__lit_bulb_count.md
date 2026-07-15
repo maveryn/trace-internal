@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the coun
 Annotation witnesses: `bbox_set` witnesses from the finalized render. Annotation is the unordered set of bboxes around bulb symbols that will be on. If the answer is `0`, annotation is an empty array.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the exac
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one final-image pixel box around the full resistor network between terminals `A` and `B`, including resistor symbols, value labels, and connecting wires. Annotation must not mark decorative frame chrome, answer text, or inferred equivalent-resistance calculations.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `topology`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

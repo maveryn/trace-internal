@@ -41,6 +41,7 @@ class GeometryCircleTangentLengthFromRadiusAndExternalDistanceValueTask:
     """Compute the tangent length using the radius and exterior distance."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

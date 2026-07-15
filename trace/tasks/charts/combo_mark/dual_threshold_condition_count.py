@@ -82,6 +82,7 @@ class ChartsComboDualThresholdConditionCountTask:
     """Count categories satisfying two one-bound threshold conditions."""
 
     task_id = "task_charts__combo_mark__dual_threshold_condition_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'logical_composition')
     domain = DOMAIN
     objective_contract = "dual_threshold_condition_count"
     supported_query_ids = (

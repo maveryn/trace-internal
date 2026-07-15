@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run lightweight answer-distribution checks across TRACE tasks."""
+"""Run lightweight answer-distribution checks across Trace tasks."""
 
 from __future__ import annotations
 

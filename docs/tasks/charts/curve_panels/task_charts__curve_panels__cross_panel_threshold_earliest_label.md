@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(crossing_mark)`. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `cross_panel_upward_threshold_earliest_label`, `cross_panel_downward_threshold_earliest_label`.
 
+## Reasoning Operations
+
+Families: `filtering`, `comparison`, `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

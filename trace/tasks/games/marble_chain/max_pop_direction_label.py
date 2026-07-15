@@ -69,6 +69,7 @@ class GamesMarbleChainMaxPopDirectionLabelTask(MarbleSingleQueryTaskBase):
     """Choose the marble-chain shot direction that pops the most marbles."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'topology', 'state_update')
     _namespace = f"{SCENE_ID}.max_pop_direction"
     _prepare_objective = staticmethod(_prepare_max_pop_objective)
 

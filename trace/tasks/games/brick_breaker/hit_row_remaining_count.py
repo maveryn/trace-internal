@@ -97,6 +97,7 @@ class GamesBrickBreakerHitRowRemainingCountTask:
     """Count same-row bricks remaining after the visible ball path hits one brick."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

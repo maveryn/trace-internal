@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_month_weekday_occurrence_lookup(weekday_index, occurrence); output=integer_value; annotation=bbox(target_date_cell); scene=calendar; scope=one Gregorian month-view calendar`
 
+## Reasoning Operations
+
+Families: `filtering`, `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_v1`
 2. Scene key: `month_calendar`

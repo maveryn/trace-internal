@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_event_grid_date_for_category_slot_lookup(category_label, slot_id); output=integer_date_number; annotation=bbox(matching_event_chip); scene=calendar_event_grid; scope=one month calendar with Top/Mid/Bottom event slots`
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_event_grid_v1`
 2. Scene key: `calendar_event_grid`

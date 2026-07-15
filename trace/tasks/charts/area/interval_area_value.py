@@ -19,6 +19,7 @@ def _interval_area_relations(*, query_id: str, x_labels: tuple[str, ...], values
 class ChartsAreaIntervalAreaValueTask:
     """Compute interval area over a filled area chart."""
     task_id = 'task_charts__area__interval_area_value'
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = 'interval_area_value'
     supported_query_ids = (DEFAULT_QUERY_ID,)

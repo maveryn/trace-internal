@@ -22,6 +22,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox is the pixel box around the single visible question-mark target cell, node, or brick. It is not a one-item set.
 Query ids: `hidden_addition_digit_value`, `hidden_subtraction_digit_value`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## 2) Scene + task contract
 1. Entities/relations: A vertical arithmetic layout with one question-mark digit cell and a visible addition or subtraction operator.
 2. Supported `query_id` values: `hidden_addition_digit_value`, `hidden_subtraction_digit_value`

@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option label.
 Annotation witnesses: a scalar `bbox` around the selected option card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## 2) Scene + Task Contract
 1. All coefficient slots in the equation are hidden as `?` boxes.
 2. Molecule cards show repeated atom chips only; formula strings are not drawn.

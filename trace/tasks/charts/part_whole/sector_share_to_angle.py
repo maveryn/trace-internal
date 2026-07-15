@@ -62,6 +62,7 @@ class ChartsCompositionChartSectorShareToAngleTask:
     """Return the central angle for a selected circular chart span."""
 
     task_id = "task_charts__part_whole__sector_share_to_angle"
+    reasoning_operations = ('aggregation', 'topology', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "sector_share_to_angle"
     supported_query_ids = SUPPORTED_QUERY_IDS

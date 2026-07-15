@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point_map` witnesses bound by `point_map(highest, lowest)`. Annotation marks the top-center points of the highest and lowest bars in the requested category using keys `highest` and `lowest`. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -116,7 +116,7 @@ def _font_is_bold(font: ImageFont.ImageFont) -> bool:
 
 
 def symbol_safe_font_for_text(text: str, font: ImageFont.ImageFont) -> ImageFont.ImageFont:
-    """Return a font that can render TRACE math symbols used in readouts.
+    """Return a font that can render Trace math symbols used in readouts.
 
     The readout font pool is optimized for compact Latin text; most families do
     not include glyphs such as the angle sign.  When one of these symbols is

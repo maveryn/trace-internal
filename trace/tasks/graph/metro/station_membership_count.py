@@ -80,6 +80,7 @@ class GraphCountingMetroStationMembershipCountTask:
     """Count stations by transfer or single-route membership."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'topology')
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

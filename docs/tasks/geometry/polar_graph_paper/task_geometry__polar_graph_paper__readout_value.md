@@ -10,6 +10,10 @@
 ## Program Contract
 - `read_polar_graph_component(candidate=P, component={radius|angle_degrees}, operation=read_ring_or_spoke_value, output_role=integer_component_value, annotation_witness=point_P); scene=polar_graph_paper; scope=readout_value`
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## Task Summary
 - Scene: `polar_graph_paper`
 - Objective contract: `readout_value`

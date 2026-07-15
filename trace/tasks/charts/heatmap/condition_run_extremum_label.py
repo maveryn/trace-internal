@@ -16,6 +16,7 @@ DEFAULT_QUERY_ID = "single"
 @register_task
 class ChartsHeatmapConditionRunExtremumLabelTask:
     task_id = "task_charts__heatmap__condition_run_extremum_label"
+    reasoning_operations = ('filtering', 'ranking')
     domain = DOMAIN
     objective_contract = "condition_run_extremum_label"
     supported_query_ids = QUERY_IDS

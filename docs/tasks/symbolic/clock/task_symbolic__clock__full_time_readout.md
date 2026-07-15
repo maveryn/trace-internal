@@ -17,6 +17,10 @@ Output binding: `answer` is the option label whose card shows the displayed zero
 Annotation witnesses: the scalar `bbox` of the selected answer card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## 2) Scene + Task Contract
 1. Public branch metadata: `query_id`
 2. Supported public `query_id`: `single`

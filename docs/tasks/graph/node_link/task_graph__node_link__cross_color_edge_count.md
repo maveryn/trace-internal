@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `segment_set` schema; a `segment_set` for every counted edge; each segment is `[[x0, y0], [x1, y1]]`, where each endpoint is an `[x, y]` pixel point at an endpoint node center.
 Query ids: `cross_color_edge_count`, `directed_cross_color_edge_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`
@@ -22,7 +26,7 @@ Query ids: `cross_color_edge_count`, `directed_cross_color_edge_count`.
 1. Branch metadata: `query_id`
 2. `query_id`: `cross_color_edge_count` for undirected graphs, `directed_cross_color_edge_count` for directed graphs
 3. Supported `graph_directionality` values: `undirected|directed`
-4. Supported node colors: the 10-color shared TRACE named-color palette: red, blue, green, yellow, orange, purple, brown, cyan, magenta, and maroon
+4. Supported node colors: the 10-color shared Trace named-color palette: red, blue, green, yellow, orange, purple, brown, cyan, magenta, and maroon
 5. `answer_gt.type`: `integer`
 6. `annotation_gt.type`: `segment_set`
 7. Undirected query: count edges with one endpoint in the first queried color and the other endpoint in the second queried color.

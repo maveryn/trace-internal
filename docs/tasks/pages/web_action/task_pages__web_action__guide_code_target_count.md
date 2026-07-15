@@ -19,6 +19,10 @@
 ## Program Contract
 - `web_action_guide_code_target_count(control_family={click_button,input_field,select_option}, guide_code); output=integer; annotation=bbox_set(matching_controls_with_candidate_markers); scene=web_action; scope=one browser-style action-target page`
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_web_action_v1`
 2. Scene key: `web_action`

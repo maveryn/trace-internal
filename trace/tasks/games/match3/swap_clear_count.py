@@ -203,6 +203,7 @@ class GamesMatch3SwapClearCountTask(Match3SingleQueryTaskBase):
     """Count how many gems immediately clear after the marked swap."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     _namespace = f"{SCENE_ID}.swap_clear_count"
     _default_branch = "single"
     _prepare_objective = staticmethod(_prepare_swap_clear_count_objective)

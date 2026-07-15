@@ -55,6 +55,7 @@ class PuzzlesArithmeticEqualSumLineConstraintValueTask:
     """Solve the missing value in an equal-side-sum arithmetic diagram."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

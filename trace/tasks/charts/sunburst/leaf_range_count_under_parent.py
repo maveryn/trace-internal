@@ -17,6 +17,7 @@ class ChartsSunburstLeafRangeCountUnderParentTask:
     """Count outer leaves under a parent whose values fall inside a range."""
 
     task_id = "task_charts__sunburst__leaf_range_count_under_parent"
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'topology')
     domain = DOMAIN
     objective_contract = "leaf_range_count_under_parent"
     supported_query_ids = (SINGLE_QUERY_ID,)

@@ -309,6 +309,7 @@ class IconsPairGridReferenceColorPairMatchLabelTask:
     """Select the labeled cell that matches the Reference pair colors."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

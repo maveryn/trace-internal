@@ -384,7 +384,7 @@ def package_count_result(
     annotation_bboxes: Sequence[Sequence[float]],
     answer_value: int,
 ) -> TaskOutput:
-    """Package a fully bound public count task result into TRACE output."""
+    """Package a fully bound public count task result into Trace output."""
 
     checked_prompt_defaults = required_group_defaults(
         prompt_defaults,

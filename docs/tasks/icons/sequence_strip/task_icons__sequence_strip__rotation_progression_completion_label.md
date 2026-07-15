@@ -11,6 +11,10 @@ Output binding: `answer` uses the `D` schema; generation binds a unique final an
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Identity
 
 - Domain: `icons`

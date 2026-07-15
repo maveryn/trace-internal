@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed because witness roles are distinct; keys include `wire_current` and `point_p`. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`
+
 ## Task Contract
 Selects the in-plane magnetic-field arrow direction at a marked point near a wire carrying current into or out of the page.
 

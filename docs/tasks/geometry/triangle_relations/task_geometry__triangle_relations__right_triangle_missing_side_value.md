@@ -12,6 +12,10 @@
 - `solve_formula(visible_triangle_relations_measurements, unknown_role=side_length, formula_schema=right_triangle_trig_missing_side); scene=triangle_relations; scope=right_triangle_missing_side_value`
 - The visible right-triangle construction shows one angle and one side measure sufficient to infer the requested target side. The target side role and trig formula family are internal trace metadata.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

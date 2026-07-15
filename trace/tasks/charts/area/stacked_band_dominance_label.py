@@ -20,6 +20,7 @@ def _rank_category_totals(*, series_labels: tuple[str, ...], series_values: dict
 class ChartsAreaStackedDominanceLabelTask:
     """Find the dominant stacked-area category over a labeled interval."""
     task_id = 'task_charts__area__stacked_band_dominance_label'
+    reasoning_operations = ('ranking', 'aggregation')
     domain = DOMAIN
     objective_contract = 'stacked_band_dominance_label'
     supported_query_ids = (DEFAULT_QUERY_ID,)

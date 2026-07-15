@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 1. Count the immediate up/down/left/right moves that keep the head inside the board and out of the body or gray walls.
 2. Annotation is the bbox set for safe destination cells. It is empty when no direction is safe.

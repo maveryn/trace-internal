@@ -450,6 +450,7 @@ class GeometryGraphingAverageRateValueTask:
     """Compute average rate of change between two marked points on a function graph."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

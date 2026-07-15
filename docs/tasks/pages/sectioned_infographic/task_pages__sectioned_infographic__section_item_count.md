@@ -17,6 +17,10 @@
 8. Query arguments: resolved target section title.
 9. Render arguments: section count, per-section item-count support, scene layout variant, visual style, and post-render noise.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_sectioned_infographic_v1`
 2. Scene key: `sectioned_infographic`

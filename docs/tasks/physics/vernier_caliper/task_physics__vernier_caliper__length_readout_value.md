@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema with support `A` throug
 Annotation witnesses: one `bbox` witness from the finalized render. Annotation marks the selected option cell. Tick-center readout witnesses are retained in trace metadata for audit, but are not the task annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

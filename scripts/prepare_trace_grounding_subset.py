@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare the fixed TRACE grounding benchmark subset manifests."""
+"""Prepare the fixed Trace grounding benchmark subset manifests."""
 
 from __future__ import annotations
 
@@ -192,7 +192,7 @@ def main() -> int:
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8")
 
     lines = [
-        "# TRACE Grounding Benchmark Subsets",
+        "# Trace Grounding Benchmark Subsets",
         "",
         "Fixed manifest-only subsets for grounding benchmark evaluation.",
         "",

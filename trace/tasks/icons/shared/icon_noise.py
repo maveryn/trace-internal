@@ -1,4 +1,4 @@
-"""Per-icon noise helpers for TRACE icon tasks.
+"""Per-icon noise helpers for Trace icon tasks.
 
 These helpers sample subtle edits per icon instance, apply them before
 compositing, and keep the icon alpha channel stable so bbox annotation stays

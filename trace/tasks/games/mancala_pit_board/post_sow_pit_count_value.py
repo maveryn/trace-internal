@@ -156,6 +156,7 @@ class GamesMancalaPitBoardPostSowPitCountTask(MancalaSingleQueryTaskBase):
     """Count seeds in a target Mancala pit after one sowing move."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     _namespace = f"{SCENE_ID}.post_sow_count"
     _prepare_objective = staticmethod(_prepare_post_sow_count_objective)
 

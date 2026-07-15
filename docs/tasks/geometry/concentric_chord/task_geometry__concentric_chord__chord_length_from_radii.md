@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_concentric_chord_measurements, unknown_role=length_measure, formula_schema=chord_length_from_radii); scene=concentric_chord; scope=chord_length_from_radii`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `concentric_chord`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

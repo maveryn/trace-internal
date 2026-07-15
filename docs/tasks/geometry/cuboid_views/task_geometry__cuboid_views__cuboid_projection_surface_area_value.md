@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_cuboid_views_measurements, unknown_role=surface_area, formula_schema=surface_area_from_orthographic_views); scene=cuboid_views; scope=cuboid_projection_surface_area_value`
 
+## Reasoning Operations
+
+Families: `transformation`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `cuboid_views`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

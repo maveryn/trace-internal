@@ -19,6 +19,10 @@ Output binding: `answer` uses the `option_letter` schema; the selected folded-re
 Annotation witnesses: `annotation` uses the `bbox` schema; exactly one image-pixel bbox around the selected option panel.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`
+
 ## Contract
 1. The scene shows one fold-reference panel and exactly four labeled result options.
 2. Parameter axis: `fold_axis=vertical|horizontal`.

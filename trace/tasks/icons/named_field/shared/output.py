@@ -2,7 +2,7 @@
 
 Public task files own target selection, answer binding, annotation binding, and
 final ``TaskOutput`` construction. These helpers only serialize scene state and
-task-supplied semantic fields into TRACE payload sections.
+task-supplied semantic fields into Trace payload sections.
 """
 
 from __future__ import annotations

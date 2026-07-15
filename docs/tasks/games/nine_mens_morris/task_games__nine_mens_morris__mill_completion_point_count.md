@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `white_mill_completion_point_count`, `black_mill_completion_point_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `state_update`
+
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.
 2. The two semantic query ids differ only by queried piece color.

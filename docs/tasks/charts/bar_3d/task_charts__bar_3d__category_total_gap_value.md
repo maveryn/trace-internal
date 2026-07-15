@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point_set_map` witnesses bound by `point_set_map(category_a_total_bars, category_b_total_bars)`. Annotation is keyed by the two compared category labels; each key maps to the top-center points for all series bars in that category. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

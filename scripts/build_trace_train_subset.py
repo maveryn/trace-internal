@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a deterministic smaller TRACE RLVR training parquet from a full train parquet."""
+"""Build a deterministic smaller Trace RLVR training parquet from a full train parquet."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import pyarrow.parquet as pq
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True, help="Path to the source TRACE RLVR parquet.")
+    parser.add_argument("--source", required=True, help="Path to the source Trace RLVR parquet.")
     parser.add_argument("--output", required=True, help="Path to the output subset parquet.")
     parser.add_argument(
         "--target-rows",
@@ -169,7 +169,7 @@ def main() -> None:
     )
 
     print(
-        "Built TRACE train subset:",
+        "Built Trace train subset:",
         f"source={source}",
         f"output={output}",
         f"rows={written_rows}",

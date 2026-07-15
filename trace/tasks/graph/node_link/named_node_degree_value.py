@@ -55,6 +55,7 @@ def _build_objective_plan():
 @register_task
 class GraphCountingNamedNodeDegreeValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
 

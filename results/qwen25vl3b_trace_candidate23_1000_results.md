@@ -1,4 +1,4 @@
-# Qwen2.5-VL-3B TRACE Candidate23 Stage 2 Results
+# Qwen2.5-VL-3B Trace Candidate23 Stage 2 Results
 
 Date: 2026-07-12
 
@@ -6,7 +6,7 @@ Stage: cumulative 1000 samples per benchmark where available. Benchmarks with fe
 
 Models:
 - Base: `Qwen/Qwen2.5-VL-3B-Instruct`
-- TRACE step500: `/dev/shm/trace_rlvr/merged_hf/trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500`
+- Trace step500: `/dev/shm/trace_rlvr/merged_hf/trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500`
 
 Artifacts:
 - Subset root: `benchmark/subsets/trace_candidate23_1000`

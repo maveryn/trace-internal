@@ -73,6 +73,7 @@ class SymbolicProbabilityDicePairSumThresholdProbabilityTask:
     """Compute a two-tray probability for a pair-sum threshold."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'formula_evaluation')
     domain = "symbolic"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

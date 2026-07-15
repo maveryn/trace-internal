@@ -15,6 +15,10 @@
 - The image shows a house-shaped prism with rectangular wall and triangular roof cross-section. The prism length is unknown, while base width, wall height, roof height, and volume are labeled.
 - Annotation witness: one bbox around the house-prism solid.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/solid_formula/geometry_solid_formula_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -30,4 +30,4 @@ Common rendering contract:
 
 The generated chart tasks assign synthetic values/categories to these regions.
 The Natural Earth geometry is only the visual scaffold; answers are verified
-from TRACE metadata, not from pixels or external geography facts.
+from Trace metadata, not from pixels or external geography facts.

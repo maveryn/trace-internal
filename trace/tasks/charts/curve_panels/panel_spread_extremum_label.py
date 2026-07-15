@@ -59,6 +59,7 @@ class ChartsScientificPanelSpreadExtremumLabelTask:
     """Select the subplot with the largest or smallest marker-value spread."""
 
     task_id = "task_charts__curve_panels__panel_spread_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = "charts"
     objective_contract = "panel_spread_extremum_label"
     supported_query_ids = (LARGEST_QUERY_ID, SMALLEST_QUERY_ID)

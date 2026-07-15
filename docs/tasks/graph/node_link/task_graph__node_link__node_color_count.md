@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the count of matching nodes.
 Annotation witnesses: `annotation` uses the `point_set` schema; the unordered `point_set` of pixel centers for all nodes whose semantic fill color matches the queried color.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`
@@ -22,7 +26,7 @@ Query ids: `single`.
 1. Branch metadata: `query_id`
 2. `query_id`: `single`
 3. Supported `graph_directionality` values: `undirected|directed`
-4. Supported target colors: shared TRACE named-color palette (`red`, `blue`, `green`, `yellow`, `orange`, `purple`, `brown`, `cyan`, `magenta`, `maroon`)
+4. Supported target colors: shared Trace named-color palette (`red`, `blue`, `green`, `yellow`, `orange`, `purple`, `brown`, `cyan`, `magenta`, `maroon`)
 5. `answer_gt.type`: `integer`
 6. `annotation_gt.type`: `point_set`
 7. Scene contract:

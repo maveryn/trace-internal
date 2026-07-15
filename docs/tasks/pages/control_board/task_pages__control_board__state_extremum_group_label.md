@@ -18,6 +18,10 @@
 ## Program Contract
 - `argmax_group(count(filter(gui_controls, group_name=group and state_condition in {enabled=false, selected=true and enabled=true}))); output=group_name_string; annotation=bbox(selected_group_panel); scene=control_board; scope=one grouped control-board screen`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`, `logical_composition`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_control_board_v1`
 2. Scene key: `control_board`

@@ -21,6 +21,7 @@ class ChartsMapNumericIntervalRegionCountTask:
     """Count map regions whose values fall inside a numeric interval."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "charts"
     objective_contract = "numeric_interval_region_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

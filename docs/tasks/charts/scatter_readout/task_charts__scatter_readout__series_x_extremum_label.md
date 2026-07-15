@@ -18,6 +18,10 @@ Output binding: `answer` is the `string_label_or_unanswerable` value bound by `s
 Annotation witnesses: `scalar` witnesses bound by `point(target_mark)|empty_map`. Answerable annotation is one [x,y] pixel point at the center of the selected scatter mark. If the sampled branch is unanswerable because the requested series is absent from the legend, annotation is an empty object. Axes, legends, titles, readout numbers, and distractor text are metadata.
 Query ids: `series_highest_x_label`, `series_lowest_x_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_readout.series_x_extremum_label.ChartsScatterSeriesExtremumXLabelTask`
 2. Prompt bundle: `prompts/charts/scatter_readout/charts_scatter_readout_v1.json`

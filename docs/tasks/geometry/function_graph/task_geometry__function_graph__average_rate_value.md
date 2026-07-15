@@ -11,6 +11,10 @@
 ## Program Contract
 - `average_rate(marked_function_points, point_roles=A|B); scene=function_graph; scope=average_rate_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `function_graph`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

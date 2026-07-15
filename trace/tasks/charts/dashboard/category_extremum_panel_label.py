@@ -43,6 +43,7 @@ class ChartsDashboardCategoryExtremumPanelLabelTask:
     """Find which dashboard panel has an extremal value for one category."""
 
     task_id = "task_charts__dashboard__category_extremum_panel_label"
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "category_extremum_panel_label"
     supported_query_ids = (LARGEST_PANEL_QUERY_ID, SMALLEST_PANEL_QUERY_ID)

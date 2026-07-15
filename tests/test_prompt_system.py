@@ -1,4 +1,4 @@
-"""Tests for the current TRACE prompt bundle system."""
+"""Tests for the current Trace prompt bundle system."""
 
 from __future__ import annotations
 

@@ -47,7 +47,7 @@ def layout_panel_grid(
 ) -> Tuple[BBox, ...]:
     """Place panel boxes in a centered row grid inside ``container_bbox``.
 
-    Rows use the shared TRACE chart row policy by default. When a row is not
+    Rows use the shared Trace chart row policy by default. When a row is not
     full, it is centered relative to the widest row.
     """
 

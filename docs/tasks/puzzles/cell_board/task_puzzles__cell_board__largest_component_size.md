@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; image-pixel cell bboxes for all cells in the unique largest component; bbox-set cardinality equals the answer.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `topology`
+
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular colored cell board with a single largest target-color component containing one or more cells.
 2. Supported `query_id` values: `single`

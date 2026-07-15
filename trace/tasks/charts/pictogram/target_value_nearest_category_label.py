@@ -110,6 +110,7 @@ def _build_plan(params: dict, instance_seed: int, selected: str, probabilities: 
 @register_task
 class ChartsPictogramTargetValueNearestCategoryLabelTask:
     task_id = "task_charts__pictogram__target_value_nearest_category_label"
+    reasoning_operations = ('filtering', 'ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "target_value_nearest_category_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

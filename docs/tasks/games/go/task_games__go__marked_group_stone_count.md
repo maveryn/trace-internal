@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Generation Notes
 1. The scene draws one red outline around a single black or white reference stone.
 2. The answer is the number of same-color stones connected edge-to-edge to that marked stone, including the marked stone.

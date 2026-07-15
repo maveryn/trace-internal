@@ -22,6 +22,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the correct projection option panel.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `annotation_gt.type = bbox`

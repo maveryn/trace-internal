@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox_set` witnesses from the finalized render. Annotation contains two pixel boxes around the two visible ray-bend regions where the ray crosses the media interfaces. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, full media regions, or derived hidden speed ranks.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

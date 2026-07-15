@@ -75,6 +75,7 @@ def _prepare_height_objective(
 @task_registry.register_task
 class GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask:
     task_id = HEIGHT_TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = HEIGHT_QUERY_IDS

@@ -108,6 +108,7 @@ class ChartsStyleLegendXPositionExtremumSeriesLabelTask:
     """Select the styled legend series with an extremal value at one x position."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "x_position_extremum_series_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_cylinder_wrap_measurements, unknown_role=marked_surface_path_length, formula_schema=surface_path_pythagorean_length); scene=cylinder_wrap; scope=surface_path_length_value`
 
+## Reasoning Operations
+
+Families: `topology`, `transformation`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `cylinder_wrap`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `horizontal_block_count`, `vertical_block_count`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Generation Notes
 1. The board has no target block or exit arrow for this task.
 2. `horizontal_block_count` counts blocks wider than they are tall.

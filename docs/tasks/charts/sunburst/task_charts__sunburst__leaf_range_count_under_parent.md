@@ -29,6 +29,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(matching_leaf_value_labels)`. Annotation marks the centers of the printed outer leaf value labels inside the requested inclusive value range under the requested parent category. Renderer context such as decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `topology`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

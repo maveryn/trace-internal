@@ -10,6 +10,10 @@
 ## Program Contract
 - `count(filter(points, quadrant(point)=quadrant(reference_point))); scene=coordinate_plane; scope=same_quadrant_point_count`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

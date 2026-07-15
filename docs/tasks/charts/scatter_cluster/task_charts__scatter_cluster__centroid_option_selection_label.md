@@ -22,6 +22,10 @@ Output binding: `answer` is the `option_letter` value bound by `option_letter`.
 Annotation witnesses: `point` witnesses bound by `see_annotation_contract`. The rendered centroid-option markers use either `4` labels (`A..D`) or `6` labels (`A..F`) by construction. Annotation should mark the center point of the selected option marker. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `spatial_relations`, `formula_evaluation`
+
 ## Annotation Contract
 1. Answer schema: `option_letter`.
 2. Annotation schema: `point`.

@@ -32,6 +32,7 @@ class SymbolicBrailleWordMatchLabelTask:
     """Choose the Braille plate that encodes the source word."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = "symbolic"
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True

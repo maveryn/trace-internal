@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the count of matching edges.
 Annotation witnesses: `annotation` uses the `segment_set` schema; the unordered `segment_set` of endpoint-center segments for all edges whose semantic stroke color matches the queried color.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `counting`
@@ -22,7 +26,7 @@ Query ids: `single`.
 1. Branch metadata: `query_id`
 2. `query_id`: `single`
 3. Supported `graph_directionality` values: `undirected|directed`
-4. Supported target colors: shared TRACE named-color palette (`red`, `blue`, `green`, `yellow`, `orange`, `purple`, `brown`, `cyan`, `magenta`, `maroon`)
+4. Supported target colors: shared Trace named-color palette (`red`, `blue`, `green`, `yellow`, `orange`, `purple`, `brown`, `cyan`, `magenta`, `maroon`)
 5. `answer_gt.type`: `integer`
 6. `annotation_gt.type`: `segment_set`
 7. Scene contract:

@@ -194,6 +194,7 @@ class GeometryConeNetBaseRadiusFromSectorAngleTask:
     """Return the cone base radius implied by the arc length of the sector net."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

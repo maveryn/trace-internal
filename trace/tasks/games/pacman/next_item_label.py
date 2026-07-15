@@ -202,6 +202,7 @@ class GamesPacmanNextItemLabelTask:
     """Choose the first labeled bonus item reached on the highlighted route."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

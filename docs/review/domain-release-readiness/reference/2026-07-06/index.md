@@ -1,7 +1,7 @@
 # Domain Release-Readiness Reference Snapshot
 
 This dated reference snapshot preserves issue-focused domain release-readiness
-reports for the TRACE task surface reviewed on 2026-07-06.
+reports for the Trace task surface reviewed on 2026-07-06.
 
 Solve-rate status was intentionally ignored for this pass.
 

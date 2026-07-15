@@ -25,6 +25,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point` witnesses bound by `point(selected_mark)`. Annotation marks the selected ranked-statistic mark point only. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `median_order_statistic_value`, `nth_highest_order_statistic_value`, `nth_lowest_order_statistic_value`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Annotation Contract
 1. Answer schema: `integer_value`.
 2. Annotation schema: `point`.

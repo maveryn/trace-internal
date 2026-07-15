@@ -335,6 +335,7 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
     """Find a missing centerline segment in an overlapping-circle chain."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

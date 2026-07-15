@@ -77,6 +77,7 @@ def _prepare_area_from_parallelogram_perimeter(
 @register_task
 class GeometryTrapezoidAreaFromParallelogramPerimeterTask:
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

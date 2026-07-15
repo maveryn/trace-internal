@@ -36,6 +36,7 @@ class ChartsScientificGlobalValueExtremumPanelLabelTask:
     """Select the subplot containing the overall maximum or minimum marker."""
 
     task_id = "task_charts__curve_panels__global_value_extremum_panel_label"
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "global_value_extremum_panel_label"
     supported_query_ids = (MAX_QUERY_ID, MIN_QUERY_ID)

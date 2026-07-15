@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export a built TRACE dataset into an RLVR-ready file."""
+"""Export a built Trace dataset into an RLVR-ready file."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from trace.core.rlvr_export import export_trace_dataset_to_rlvr
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Export TRACE train instances into RLVR-ready JSONL/parquet")
+    parser = argparse.ArgumentParser(description="Export Trace train instances into RLVR-ready JSONL/parquet")
     parser.add_argument(
         "--source",
         required=True,
-        help="TRACE dataset root or its train_instances.jsonl file",
+        help="Trace dataset root or its train_instances.jsonl file",
     )
     parser.add_argument(
         "--output",
@@ -31,7 +31,7 @@ def main() -> int:
         choices=("active", "answer", "answer_only", "annotation", "answer_and_annotation"),
         default="answer_and_annotation",
         help=(
-            "Which TRACE prompt variant to export into the RLVR prompt column "
+            "Which Trace prompt variant to export into the RLVR prompt column "
             "(answer=answer_only, annotation=answer_and_annotation)."
         ),
     )

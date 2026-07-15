@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_panel(candidate_region_panels, condition_box, region_rule_family)); scene=coordinate_plane; scope=locus_panel_match_label`
 
+## Reasoning Operations
+
+Families: `comparison`, `logical_composition`, `spatial_relations`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

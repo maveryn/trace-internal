@@ -18,6 +18,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`, `spatial_relations`, `topology`
+
 ## Answer And Annotation
 1. `answer_gt.type`: `integer`.
 2. `annotation_gt.type`: `point_set`.

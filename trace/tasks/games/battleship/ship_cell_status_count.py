@@ -150,6 +150,7 @@ def _build_task_output(*, instance: ShipCellStatusInstance, rendered_context: An
 class GamesBattleshipShipCellStatusCountTask:
     """Count hit or unhit cells on the named fleet ship."""
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = SHIP_CELL_STATUS_COUNT_QUERY_IDS

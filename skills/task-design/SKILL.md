@@ -1,6 +1,6 @@
 ---
 name: task-design
-description: Use when designing or reshaping a TRACE task contract, choosing answer and annotation types, deciding task versus query_id placement, or planning sampling and balancing before implementation.
+description: Use when designing or reshaping a Trace task contract, choosing answer and annotation types, deciding task versus query_id placement, or planning sampling and balancing before implementation.
 ---
 
 # Task Design

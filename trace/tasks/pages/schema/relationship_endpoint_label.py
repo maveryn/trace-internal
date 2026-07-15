@@ -52,6 +52,7 @@ class PagesSchemaRelationshipEndpointLabelTask:
     """Identify the target table reached by a labeled relationship."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

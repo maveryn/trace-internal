@@ -34,6 +34,7 @@ class ChartsErrorbarSeriesBoundExtremumXLabelTask:
     """Find the x-axis label with an extremal error-bar bound."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = QUERY_IDS

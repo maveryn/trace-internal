@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_candidate_point(candidate_points, coordinate_rule=translation, translation_rule)); scene=coordinate_plane; scope=translated_point_label`
 
+## Reasoning Operations
+
+Families: `transformation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

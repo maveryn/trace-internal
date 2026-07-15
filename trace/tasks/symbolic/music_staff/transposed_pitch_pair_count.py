@@ -135,6 +135,7 @@ class SymbolicTransposedPitchPairCountTask:
     """Count marked note pairs that match the requested transposition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'transformation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -51,6 +51,7 @@ class PagesInfographicSectionIconTotalDifferenceValueTask:
     """Compute the difference between two icon-filtered section totals."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

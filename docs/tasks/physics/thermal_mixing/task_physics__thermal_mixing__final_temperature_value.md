@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the inte
 Annotation witnesses: `bbox_set` witnesses from the finalized render. Annotation is an unordered set of bounding boxes around the visible initial temperature labels used in the average. Annotation must not mark the cup bodies, final mixing container, hidden derived final temperature, decorative arrows, title text, background grid, or prompt-only assumptions.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

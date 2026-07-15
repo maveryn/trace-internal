@@ -29,6 +29,7 @@ class GraphPathMetroShortestPathLengthTask:
     """Count route segments in a unique shortest station path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'topology')
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

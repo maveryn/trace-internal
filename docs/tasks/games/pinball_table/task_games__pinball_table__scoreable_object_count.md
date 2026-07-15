@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Generation Notes
 1. The scene renders a tilted pinball playfield with one ball, decorative table elements, and 5 to 8 visible table objects.
 2. Scoreable objects display numeric score labels. Non-scoreable distractors have no visible text.

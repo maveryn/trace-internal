@@ -68,6 +68,7 @@ def _build_value_at_x_plan(
 @register_task
 class ChartsScatterSeriesValueAtXValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('direct_retrieval',)
     domain = DOMAIN
     objective_contract = "series_value_at_x_value"
     supported_query_ids = QUERY_IDS

@@ -17,6 +17,10 @@ Annotation schema: `bbox_map`.
 Annotation witnesses: a `bbox_map` with `tray_a` and `tray_b` bboxes.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Generation And Trace
 1. The task asks for the probability that one uniformly selected die from each tray has a sampled exact sum.
 2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.

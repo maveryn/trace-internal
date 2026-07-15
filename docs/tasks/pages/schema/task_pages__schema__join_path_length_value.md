@@ -22,3 +22,7 @@ length and adds distractor relationships that do not create a shorter or tied
 shortest path between the requested endpoint tables. Annotation marks only the
 relationship-line segments on the shortest path. Endpoint table boxes are trace
 context, not public annotation.
+
+## Reasoning Operations
+
+Families: `counting`, `topology`

@@ -162,6 +162,7 @@ class PuzzlesSudokuMistakeCellLabelTask:
     """Choose the lettered filled cell whose digit must be changed."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = (SINGLE_QUERY_ID,)

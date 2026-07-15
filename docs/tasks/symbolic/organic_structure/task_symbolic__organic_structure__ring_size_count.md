@@ -16,6 +16,10 @@ Annotation schema: `bbox_set`.
 Annotation witnesses: a homogeneous `bbox_set` of matching ring bboxes.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `topology`
+
 ## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `answer_gt.value` is the number of visible rings whose polygon has the requested vertex count.

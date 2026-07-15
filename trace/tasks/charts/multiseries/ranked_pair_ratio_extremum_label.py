@@ -72,6 +72,7 @@ class ChartsMultiseriesRankedPairRatioExtremumTask:
     """Return the category label ranked by numerator-over-denominator ratio."""
 
     task_id = "task_charts__multiseries__ranked_pair_ratio_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "ranked_pair_ratio_extremum_label"
     supported_query_ids = PAIR_RATIO_QUERY_IDS

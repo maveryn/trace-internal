@@ -12,7 +12,7 @@ drawn text element.
 ## Source Policy
 
 Assets are normalized from CC0/public-domain compatible sources and
-project-local TRACE synthetic templates. `sources.json` records source
+project-local Trace synthetic templates. `sources.json` records source
 URLs, local license files, and per-manifest counts.
 
 ## Regeneration

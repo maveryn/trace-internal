@@ -18,6 +18,10 @@ Annotation schema: `bbox_set`.
 Annotation witnesses: `annotation` uses one whole grid-cell bbox per distinct icon color. For each color, choose the representative occupied cell in the topmost row; if tied, choose the leftmost such cell.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Notes
 The scene uses visible grid cells so representative-category annotation targets
 are stable rectangular cells, not tight icon-object boxes.

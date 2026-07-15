@@ -55,6 +55,7 @@ class ChartsContourDensityReferenceDistanceExtremumLabelTask:
     """Return the region label nearest to or farthest from a reference mark."""
 
     task_id = "task_charts__contour_density__reference_distance_extremum_label"
+    reasoning_operations = ('ranking', 'spatial_relations')
     domain = DOMAIN
     objective_contract = "reference_distance_extremum_label"
     supported_query_ids = (

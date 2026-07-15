@@ -19,6 +19,10 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema and contains only
 the counted target icons.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Identity
 
 - Domain: `icons`

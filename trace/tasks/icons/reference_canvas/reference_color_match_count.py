@@ -20,6 +20,7 @@ class IconsReferenceCanvasReferenceColorMatchCountTask(IconsReferenceCanvasRefer
     """Count scene icons with the same color as the reference icon."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'matching')
     domain = "icons"
     supported_query_ids = (SINGLE_QUERY_ID,)
     supported_variants = ("match_color",)

@@ -142,6 +142,7 @@ class GamesLudoBoardCaptureRollOptionLabelTask(LudoSingleQueryTaskBase):
     """Choose which visible roll option lands the mover on the target token."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'state_update')
     _namespace = f"{SCENE_NAMESPACE}.capture_roll"
     _prepare_objective = staticmethod(_PREPARE_OBJECTIVE)
 

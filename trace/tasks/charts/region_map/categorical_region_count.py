@@ -21,6 +21,7 @@ class ChartsMapCategoricalRegionCountTask:
     """Count map regions assigned to one visible legend category."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "charts"
     objective_contract = "categorical_region_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

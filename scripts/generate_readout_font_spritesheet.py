@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a visual review sheet for the TRACE readout font pool."""
+"""Generate a visual review sheet for the Trace readout font pool."""
 
 from __future__ import annotations
 

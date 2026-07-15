@@ -13,6 +13,10 @@
 
 Annotation marks the selected angle's vertex point.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

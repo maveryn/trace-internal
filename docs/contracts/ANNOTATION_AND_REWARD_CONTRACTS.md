@@ -1,14 +1,14 @@
-# TRACE Annotation And Reward Contracts
+# Trace Annotation And Reward Contracts
 
-Normative contract for TRACE annotation types and answer/annotation reward
+Normative contract for Trace annotation types and answer/annotation reward
 dispatch.
 
-TRACE v0 uses **annotation** as the public grounding term. Active prompts,
+Trace v0 uses **annotation** as the public grounding term. Active prompts,
 outputs, review artifacts, and reward contracts must use `annotation` /
 `annotation_gt`; do not add alternate public grounding keys, prompt wording, or
 compatibility aliases.
 
-Conceptually, TRACE annotations are **answer-verification witnesses**: the
+Conceptually, Trace annotations are **answer-verification witnesses**: the
 minimal final-image visual primitives needed to verify the task answer contract
 for that task family. For direct selection and counting tasks, this is usually
 the selected/countable answer object or region. For chart, graph, measurement,
@@ -21,14 +21,14 @@ could use. Store derivation/proof/debug details in `trace_payload`,
 `annotation_gt`.
 
 ## 1) Purpose
-TRACE has two public output contracts:
+Trace has two public output contracts:
 
 - `answer_gt`: task answer value. In v0, answer reward uses exact-match
   normalization for every registered answer type.
 - `annotation_gt`: minimal visual answer-verification witness. The annotation
   type determines the generic annotation scorer.
 
-Every built TRACE instance carries a compact `reward_contract` payload so RLVR
+Every built Trace instance carries a compact `reward_contract` payload so RLVR
 code can select the generic answer and annotation scorers without task-specific
 branching. The payload is instance-local, versioned, and derived from the public
 `answer_gt.type` and `annotation_gt.type`.

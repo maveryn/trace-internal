@@ -51,6 +51,7 @@ def _construct_equivalent_count_dataset(
 @register_task
 class PuzzlesBalanceScaleEquivalentObjectCountValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'formula_evaluation', 'matching')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

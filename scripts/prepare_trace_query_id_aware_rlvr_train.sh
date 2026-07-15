@@ -77,7 +77,7 @@ if [[ "${RESET}" != "0" && "${RESET,,}" != "false" && "${RESET,,}" != "no" ]]; t
   cmd+=(--reset)
 fi
 
-echo "TRACE query-id-aware RLVR build"
+echo "Trace query-id-aware RLVR build"
 echo "  alpha: ${ALPHA}"
 echo "  dataset: ${DATASET_NAME}"
 echo "  rows: ${NUM_INSTANCES}"

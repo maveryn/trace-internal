@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generation Notes
 1. Count only exposed tableau cards, using the visible foundation suit and top-rank state.
 2. Annotation contains only the bboxes for the counted exposed cards.

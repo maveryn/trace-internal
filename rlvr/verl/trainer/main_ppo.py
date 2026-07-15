@@ -378,7 +378,7 @@ def create_rl_dataset(data_paths, data_config, tokenizer, processor, is_train=Tr
 
 
 def create_rl_val_datasets(data_paths, data_config, tokenizer, processor) -> dict[str, Dataset]:
-    """Create per-benchmark TRACE validation datasets."""
+    """Create per-benchmark Trace validation datasets."""
     val_sources = filter_trace_validation_sources(
         data_paths,
         excluded_benchmarks=data_config.get("trace_validation_exclude_benchmarks", []),

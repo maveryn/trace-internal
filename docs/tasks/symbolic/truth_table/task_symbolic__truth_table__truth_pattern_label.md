@@ -17,6 +17,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: a scalar `bbox` around the selected pattern option card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `logical_composition`, `formula_evaluation`, `matching`
+
 ## 2) Scene + Task Contract
 1. The input table shows variables `A`, `B`, and `C` in row order `000..111`.
 2. Six option cards show eight-value patterns in top-to-bottom row order.

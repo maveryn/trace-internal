@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(equal_volume_solid_conversion, target=missing_dimension, formula_schema=volume_equivalence_missing_dimension); scene=volume_equivalence_conversion; scope=missing_dimension_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `cuboid_to_cylinder_length` asks for the target cylinder length that gives the same volume as the source cuboid.
 - `cylinder_to_cone_height` asks for the target cone height that gives the same volume as the source cylinder.

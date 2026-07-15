@@ -26,3 +26,7 @@ Operation: evaluate `select_label` over the candidate set using the filters, com
 Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_category_row)`. Annotation marks the answer category row as one `[x0, y0, x1, y1]` pixel box.
 Query ids: `single`.
+
+## Reasoning Operations
+
+Families: `filtering`, `ranking`, `formula_evaluation`

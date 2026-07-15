@@ -25,6 +25,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = (
 @register_task
 class PuzzlesRubiksNetMoveResultLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

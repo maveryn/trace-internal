@@ -353,6 +353,7 @@ class IllustrationsRpgTacticalMapCounterfactualTerrainConversionCostValueTask:
     """Return shortest movement cost after the best one-tile road conversion."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'topology', 'state_update')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

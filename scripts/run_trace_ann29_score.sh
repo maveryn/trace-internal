@@ -182,7 +182,7 @@ python /home/shadeform/trace/scripts/summarize_trace_candidate37_200_results.py 
   --run-root "${RUN_ROOT}" \
   --suite-name "trace_ann29_${DECODING}" \
   --subset-label "${SUBSET_LABEL}" \
-  --title "TRACE Annotation Additive 0.50 Step500 Ann29 ${DECODING} Benchmark Results" \
+  --title "Trace Annotation Additive 0.50 Step500 Ann29 ${DECODING} Benchmark Results" \
   --markdown "${RESULTS_ROOT}/trace_ann29_${DECODING}_results.md" \
   --excel "${RESULTS_ROOT}/trace_ann29_${DECODING}_results.xlsx" \
   --models "${MODEL_SLUG}" \

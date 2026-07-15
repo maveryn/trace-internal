@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `segment_set` witnesses bound by `segment_set(comparison_bar_top_center_pairs)`. Annotation is a `segment_set`; each segment is two `[x, y]` pixel points formatted `[[x0, y0], [x1, y1]]` and connects the top-center points of the two compared bars for one counted category. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

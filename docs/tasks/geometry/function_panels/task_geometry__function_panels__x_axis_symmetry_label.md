@@ -11,6 +11,10 @@
 ## Program Contract
 - `label(select_panel(candidate_coordinate_relations, relation_has_x_axis_symmetry)); scene=function_panels; scope=x_axis_symmetry_label`
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_analytical_function_property_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

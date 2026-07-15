@@ -669,7 +669,7 @@ def main() -> None:
     parser.add_argument(
         "--trace-candidate37-200",
         action="store_true",
-        help="Use the fixed 37-benchmark TRACE-aligned 200-row candidate suite.",
+        help="Use the fixed 37-benchmark Trace-aligned 200-row candidate suite.",
     )
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--worker-id", default=f"generation-{os.getpid()}")

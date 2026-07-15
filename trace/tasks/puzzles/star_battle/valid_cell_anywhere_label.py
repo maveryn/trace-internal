@@ -64,6 +64,7 @@ class PuzzlesStarBattleValidCellAnywhereLabelTask:
     """Choose the one labeled cell where another Star Battle star can be placed."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

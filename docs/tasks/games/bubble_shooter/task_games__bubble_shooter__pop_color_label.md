@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. This task is owned by the current-layout public file `trace/tasks/games/bubble_shooter/pop_color_label.py`.
 2. The public task id selects the objective; `query_id` is `single`.

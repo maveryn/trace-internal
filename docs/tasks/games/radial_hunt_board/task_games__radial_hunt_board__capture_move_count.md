@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`, `state_update`
+
 ## Generation Notes
 1. The board is a Pretwa-inspired radial graph with three concentric circles and three diameters, producing 19 playable points.
 2. A legal capture move jumps over one adjacent opposing piece along the same drawn circle or diameter line and lands on the empty point immediately beyond it.

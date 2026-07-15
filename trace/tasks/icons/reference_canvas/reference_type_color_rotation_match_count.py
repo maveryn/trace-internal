@@ -22,6 +22,7 @@ class IconsReferenceCanvasReferenceTypeColorRotationMatchCountTask(
     """Count scene icons matching the reference icon's type, color, and rotation."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'transformation', 'matching')
     domain = "icons"
     supported_query_ids = (SINGLE_QUERY_ID,)
     supported_variants = ("match_type_color_rotation",)

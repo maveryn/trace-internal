@@ -10,6 +10,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_cyclic_quadrilateral_with_extension_angles, derivation_rule=exterior_angle_equals_opposite_interior_angle, output_role=angle_measure); scene=circle_theorem; scope=cyclic_quadrilateral_exterior_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `circle_theorem`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

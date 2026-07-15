@@ -67,6 +67,7 @@ def _prepare_connection_gap_objective(
 @register_task
 class GamesHexConnectionGapCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

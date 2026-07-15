@@ -16,6 +16,10 @@ Output binding: `answer` is the missing code symbol.
 Annotation witnesses: one `point` marking the matching symbol center on the missing symbol's ring.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations:
    - one three-ring radial code wheel with symbols `A|B|C|D`;

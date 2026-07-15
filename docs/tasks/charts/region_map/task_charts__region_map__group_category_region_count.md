@@ -31,6 +31,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(filtered_regions)`. Annotation contains center points for every visible country that is both inside the named continent and in the target category; legend, title, and context text are not annotation targets. This task is geography-only and uses the `world_countries` geographic map variant. Selected countries must pass the region-map geographic component visibility constraints. Answer values are constructed in the range `1..5`.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

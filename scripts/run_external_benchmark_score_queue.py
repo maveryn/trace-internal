@@ -783,7 +783,7 @@ def _run_wemath_subset_score(
         "dataset": spec.alias,
         "model": model_path,
         "run_name": spec.run_name,
-        "harness": "TRACE subset-safe WeMath option-letter exact scorer",
+        "harness": "Trace subset-safe WeMath option-letter exact scorer",
         "rows": len(data),
         "score": overall,
         "scores": scores,
@@ -888,7 +888,7 @@ def _run_physics_subset_score(
         "dataset": spec.alias,
         "model": model_path,
         "run_name": spec.run_name,
-        "harness": "TRACE local Physics boxed-answer scorer with timeout-safe extraction",
+        "harness": "Trace local Physics boxed-answer scorer with timeout-safe extraction",
         "rows": len(rows),
         "score": scores["Overall"],
         "scores": scores,
@@ -2045,7 +2045,7 @@ def _run_chartqapro_extracted_score(
             "source_predictions": str(source_path),
             "changed_predictions": changed,
             "unchanged_predictions": len(rows) - changed,
-            "extractor": "TRACE ChartQAPro answer-is extractor",
+            "extractor": "Trace ChartQAPro answer-is extractor",
         },
         "artifacts": {
             "prediction_table": str(source_path),
@@ -2253,7 +2253,7 @@ def main() -> None:
     parser.add_argument(
         "--trace-candidate37-200",
         action="store_true",
-        help="Use the fixed 37-benchmark TRACE-aligned 200-row candidate suite.",
+        help="Use the fixed 37-benchmark Trace-aligned 200-row candidate suite.",
     )
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--worker-id", default=f"score-{os.getpid()}")

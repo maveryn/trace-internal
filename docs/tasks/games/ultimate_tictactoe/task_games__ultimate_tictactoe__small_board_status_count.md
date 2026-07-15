@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `x_won_board_count`, `o_won_board_count`, `neither_won_board_count`, `drawn_board_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 1. Query ids choose which small-board status category is counted.
 2. Annotation contains one small-board bbox for each counted board.

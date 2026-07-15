@@ -21,6 +21,7 @@ ENDPOINT_SIDES = ('first', 'last')
 class ChartsAnnotatedSeriesCalloutEndpointChangeValueTask:
     """Compute the absolute value change between a callout mark and one endpoint."""
     task_id = 'task_charts__annotated_series__callout_endpoint_change_value'
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     objective_contract = 'callout_endpoint_change_value'
     supported_query_ids = (CALLOUT_ENDPOINT_QUERY_ID,)

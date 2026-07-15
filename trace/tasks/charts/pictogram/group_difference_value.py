@@ -77,6 +77,7 @@ def _build_plan(params: dict, instance_seed: int, selected: str, probabilities: 
 @register_task
 class ChartsPictogramGroupDifferenceValueTask:
     task_id = "task_charts__pictogram__group_difference_value"
+    reasoning_operations = ('filtering', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "group_difference_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

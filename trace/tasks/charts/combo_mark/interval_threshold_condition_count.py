@@ -112,6 +112,7 @@ class ChartsComboIntervalThresholdConditionCountTask:
     """Count categories satisfying one interval condition and one threshold condition."""
 
     task_id = "task_charts__combo_mark__interval_threshold_condition_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'logical_composition')
     domain = DOMAIN
     objective_contract = "interval_threshold_condition_count"
     supported_query_ids = (PRIMARY_INTERVAL_LINE_ABOVE_QUERY_ID, LINE_INTERVAL_PRIMARY_ABOVE_QUERY_ID)

@@ -130,6 +130,7 @@ class GamesLudoBoardWinningRollValueTask(LudoSingleQueryTaskBase):
     """Find the exact roll needed for one Ludo token to finish."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'state_update', 'formula_evaluation')
     _namespace = f"{SCENE_NAMESPACE}.winning_roll"
     _prepare_objective = staticmethod(_prepare_winning_roll_objective)
 

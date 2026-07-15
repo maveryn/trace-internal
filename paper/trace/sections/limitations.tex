@@ -1,0 +1,17 @@
+\section{Limitations}
+\label{sec:limitations}
+
+The taxonomy is designed and curated by humans, so its task boundaries remain
+judgment calls even when guided by program contracts. Procedural renderers can
+introduce style regularities unlike natural images, and broad task count does
+not guarantee complete coverage of real visual reasoning. Metadata verifiers
+guarantee consistency with the generated world, not that every rendering is
+equally easy to perceive. \trace also does not define task-local
+difficulty ladders or a universal ordering across tasks.  Solve rate depends on
+the evaluated model and protocol, while structural factors such as distractor
+quality in multiple choice and derivation depth in geometry are not directly
+commensurate.  Future work could combine contract-preserving complexity axes
+within tasks with cross-task prerequisite relations inferred from executable
+programs and empirical learning curves. \trace additionally contains
+projected visual annotations used during task auditing, but establishing
+whether and how they should be used as training targets remains future work.

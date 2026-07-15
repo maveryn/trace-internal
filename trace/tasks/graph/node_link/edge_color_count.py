@@ -35,6 +35,7 @@ def _build_objective_plan() -> NodeLinkObjectivePlan:
 class GraphCountingEdgeColorCountTask:
     """Public owner for the node-link edge-color count objective."""
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

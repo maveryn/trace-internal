@@ -239,6 +239,7 @@ class SymbolicAbacusDisplayedValueReadoutTask:
     """Read the integer represented by a three-column soroban-style abacus."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

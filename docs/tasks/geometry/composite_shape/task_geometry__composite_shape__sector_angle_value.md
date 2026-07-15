@@ -11,6 +11,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_composite_shape_measurements, derivation_rule=sector_angle_from_visible_measure, output_role=central_angle); scene=composite_shape; scope=sector_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

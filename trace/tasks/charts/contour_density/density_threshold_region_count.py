@@ -53,6 +53,7 @@ class ChartsContourDensityDensityThresholdRegionCountTask:
     """Count regions whose visible density level satisfies a threshold."""
 
     task_id = "task_charts__contour_density__density_threshold_region_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "density_threshold_region_count"
     supported_query_ids = (AT_LEAST_QUERY_ID, BELOW_QUERY_ID)

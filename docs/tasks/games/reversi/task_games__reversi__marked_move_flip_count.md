@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema for the centers of all discs flipped by the marked move.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generation Notes
 
 - The marked empty square is a legal Reversi move for the current player.

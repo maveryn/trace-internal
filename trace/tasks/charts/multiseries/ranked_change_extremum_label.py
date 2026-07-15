@@ -176,6 +176,7 @@ class ChartsMultiseriesRankedChangeExtremumTask:
     """Return the category label at a ranked change or absolute-gap extremum."""
 
     task_id = "task_charts__multiseries__ranked_change_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "ranked_change_extremum_label"
     supported_query_ids = RANKED_CHANGE_QUERY_IDS

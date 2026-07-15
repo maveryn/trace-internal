@@ -12,6 +12,10 @@
 ## Program Contract
 - `radius(incircle_tangent_triangle, tangent_equalities={AD=AF,BD=BE,CE=CF}); scene=incircle_tangents; scope=incircle_radius_from_area_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_tangent_polygon_incircle_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

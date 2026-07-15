@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `segment_set` witnesses bound by `segment_set(matching_row_dot_centers)`. Annotation is a `segment_set`; each segment is two `[x, y]` pixel points formatted `[[x0, y0], [x1, y1]]` and connects the two colored dot centers for one matching dumbbell row. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `series_a_greater_threshold_count`, `series_b_greater_threshold_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

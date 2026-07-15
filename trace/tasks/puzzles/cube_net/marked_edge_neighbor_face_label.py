@@ -38,6 +38,7 @@ class PuzzlesCubeNetMarkedEdgeNeighborFaceLabelTask:
     """Select the option matching the face across the red marked net edge."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'transformation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

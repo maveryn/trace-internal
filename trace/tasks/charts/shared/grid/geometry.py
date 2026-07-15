@@ -8,7 +8,7 @@ BBox = list[float]
 
 
 def round_bbox(box: Sequence[float]) -> BBox:
-    """Return one bbox rounded to TRACE's standard three decimal places."""
+    """Return one bbox rounded to Trace's standard three decimal places."""
 
     if len(box) < 4:
         raise ValueError("bbox must contain at least four values")

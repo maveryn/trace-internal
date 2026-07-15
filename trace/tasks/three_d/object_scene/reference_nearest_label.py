@@ -399,6 +399,7 @@ class ThreeDSpatialReferenceNearestLabelTask:
     """Choose the lettered 3D object closest to a named reference object."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True

@@ -17,6 +17,10 @@
 8. Query arguments: `interval_relation=between|outside`.
 9. Render arguments: month/year, event count, scene variant, style variant, accent color, render dimensions, and post-render noise.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `logical_composition`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_timeline_v1`
 2. Scene key: `milestone_timeline`

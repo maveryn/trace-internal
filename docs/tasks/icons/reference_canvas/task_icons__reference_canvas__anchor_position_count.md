@@ -18,6 +18,10 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annota
 Annotation schema: `bbox_set`.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Notes
 The Reference and Anchor boxes are retained in trace metadata but are not part
 of user-facing annotation. The Anchor icon itself is not part of the counted

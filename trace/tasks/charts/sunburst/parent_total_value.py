@@ -17,6 +17,7 @@ class ChartsSunburstParentTotalValueTask:
     """Compute a parent total from outer leaf values in a sunburst hierarchy."""
 
     task_id = "task_charts__sunburst__parent_total_value"
+    reasoning_operations = ('aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "parent_total_value"
     supported_query_ids = (SINGLE_QUERY_ID,)

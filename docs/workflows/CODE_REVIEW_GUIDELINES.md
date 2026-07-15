@@ -1,4 +1,4 @@
-# TRACE Code Review Guidelines
+# Trace Code Review Guidelines
 
 Use this checklist for implementation, refactor, and pre-commit reviews. The
 goal is to verify the source design, not to chase tests while hiding stale

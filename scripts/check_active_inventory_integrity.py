@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check active TRACE inventory integrity across registry, docs, configs, and imports.
+"""Check active Trace inventory integrity across registry, docs, configs, and imports.
 
 This is a read-only guard for the current public task surface. Generated review
 outputs under ``review/`` are intentionally out of scope; this script checks
@@ -240,7 +240,7 @@ def collect_inventory_integrity_failures(*, include_local_cache: bool = False) -
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Check active TRACE inventory integrity")
+    parser = argparse.ArgumentParser(description="Check active Trace inventory integrity")
     parser.add_argument(
         "--include-local-cache",
         action="store_true",

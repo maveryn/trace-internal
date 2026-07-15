@@ -11,6 +11,10 @@
 ## Program Contract
 - `label(select_panel(candidate_coordinate_primitive_pairs, requested_intersection_condition)); scene=function_panels; scope=intersection_property_label`
 
+## Reasoning Operations
+
+Families: `spatial_relations`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_analytical_intersection_property_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

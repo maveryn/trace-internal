@@ -40,6 +40,7 @@ class GraphPhylogenyTreeMrcaCladeMembershipCountTask:
     """Count terminal taxa under the most recent common ancestor of two leaves."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'topology')
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

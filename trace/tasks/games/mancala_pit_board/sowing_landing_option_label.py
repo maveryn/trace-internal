@@ -196,6 +196,7 @@ class GamesMancalaPitBoardSowingLandingOptionLabelTask(MancalaSingleQueryTaskBas
     """Select the option marking the final Mancala landing pit after one sowing move."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'state_update')
     _namespace = f"{SCENE_ID}.landing"
     _prepare_objective = staticmethod(_prepare_landing_objective)
 

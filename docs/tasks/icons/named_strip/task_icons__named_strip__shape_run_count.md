@@ -21,6 +21,10 @@ Annotation schema: `bbox_set`.
 Annotation witnesses: `annotation` contains the icon-object bbox for the first icon in each counted target-shape run, sorted in reading order.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `topology`
+
 ## Contract
 
 - The image contains one horizontal row of boxed procedural named icons.

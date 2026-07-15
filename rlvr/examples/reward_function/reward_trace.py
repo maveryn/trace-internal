@@ -138,7 +138,7 @@ def _build_single_reward_input(
 
 
 def compute_score(*args, **kwargs):
-    """TRACE reward adapter supporting both legacy batch and Vero per-sample reward-manager calls."""
+    """Trace reward adapter supporting both legacy batch and Vero per-sample reward-manager calls."""
     if kwargs.get("reward_inputs") is not None:
         reward_inputs = kwargs.pop("reward_inputs")
         return [compute_score(reward_input=reward_input, **kwargs) for reward_input in reward_inputs]
@@ -153,7 +153,7 @@ def compute_score(*args, **kwargs):
         ground_truths = list(kwargs.pop("ground_truths", [None] * len(solution_strs)))
         extra_infos = list(kwargs.pop("extra_infos", [{} for _ in solution_strs]))
         if not (len(data_sources) == len(solution_strs) == len(ground_truths) == len(extra_infos)):
-            raise ValueError("Batched TRACE reward inputs must have matching lengths")
+            raise ValueError("Batched Trace reward inputs must have matching lengths")
         return [
             compute_score(
                 data_source=data_source,

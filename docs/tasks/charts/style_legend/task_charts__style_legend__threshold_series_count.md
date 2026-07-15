@@ -29,6 +29,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set`. Annotation marks each counted plotted marker at the queried x-axis label; use an empty array when the count is zero. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `above_threshold_series_count`, `below_threshold_series_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

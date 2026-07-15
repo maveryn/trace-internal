@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI entrypoint for TRACE dataset builds."""
+"""CLI entrypoint for Trace dataset builds."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from trace.core.config import load_build_config
 
 def main() -> int:
     """Parse CLI args and run one dataset build."""
-    parser = argparse.ArgumentParser(description="Build TRACE dataset from YAML config")
+    parser = argparse.ArgumentParser(description="Build Trace dataset from YAML config")
     parser.add_argument("--config", required=True, help="Path to build config YAML")
     parser.add_argument("--code-hash", default="local", help="Code provenance hash")
     parser.add_argument(

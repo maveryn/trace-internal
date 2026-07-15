@@ -18,6 +18,10 @@
 ## Program Contract
 - `workspace_context_control_count(context_row, visible_control_state); output=integer_count; annotation=bbox_set(matching_controls); scene=workspace; scope=one professional application workspace`
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_workspace_v1`
 2. Scene key: `workspace`

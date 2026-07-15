@@ -1,4 +1,4 @@
-"""FastAPI server for browsing TRACE task-review artifacts."""
+"""FastAPI server for browsing Trace task-review artifacts."""
 
 from __future__ import annotations
 
@@ -396,7 +396,7 @@ def create_app(
     # Do not set FastAPI.root_path here. Jupyter Server Proxy strips the
     # external /proxy/<port> prefix before forwarding requests, while templates
     # still need to emit that prefix for browser-facing links.
-    app = FastAPI(title="TRACE Task Review")
+    app = FastAPI(title="Trace Task Review")
     app.state.review = state
     app.state.auth_token = str(token or "").strip()
     app.state.base_url = resolved_base_url
@@ -2947,7 +2947,7 @@ def _transient_error_response(request: Request, *, status_code: int, detail: str
         return JSONResponse({"detail": detail}, status_code=int(status_code))
     return HTMLResponse(
         (
-            "<!doctype html><title>TRACE Review unavailable</title>"
+            "<!doctype html><title>Trace Review unavailable</title>"
             "<main style='font-family: sans-serif; max-width: 720px; margin: 48px auto;'>"
             f"<h1>{int(status_code)} Review app unavailable</h1>"
             f"<p>{detail}</p>"

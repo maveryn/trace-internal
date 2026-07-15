@@ -18,6 +18,10 @@
 ## Program Contract
 - `section_arithmetic_value(section=resolved_section, operands=[first_amount, second_amount], operators=[add|subtract]); output=currency_string; annotation=bbox_map(first_operand_field, second_operand_field); scene=form_section; scope=one structured document page`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_form_section_v1`
 2. Scene key: `structured_document_sections`

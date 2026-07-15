@@ -17,6 +17,10 @@ Output binding: `answer` is the option label whose card shows the resulting zero
 Annotation witnesses: the scalar `bbox` of the selected answer card.
 Query ids: `minutes_after`, `minutes_before`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## 2) Scene + Task Contract
 1. Public branch metadata: `query_id`
 2. Supported public `query_id`: `minutes_after`, `minutes_before`

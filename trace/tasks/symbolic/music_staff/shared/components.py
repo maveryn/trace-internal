@@ -457,7 +457,7 @@ def _duration_visual_style(
     filled: bool = True,
     dotted: bool = False,
 ) -> _DurationVisualStyle:
-    """Map TRACE duration units to the simplified note glyph we render."""
+    """Map Trace duration units to the simplified note glyph we render."""
 
     units = int(duration_units)
     if units == 1:

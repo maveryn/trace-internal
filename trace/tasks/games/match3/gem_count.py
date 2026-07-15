@@ -182,6 +182,7 @@ class GamesMatch3GemCountTask:
     """Count canonical named-color gems in the grid or one numbered row/column."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

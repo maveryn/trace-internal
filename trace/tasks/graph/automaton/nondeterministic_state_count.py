@@ -268,6 +268,7 @@ def _json_transition_function(transition_function: Mapping[str, Mapping[str, Seq
 class GraphRelationAutomatonNondeterministicStateCountTask:
     """Count states with nondeterministic outgoing transitions."""
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'topology')
     domain = 'graph'
     supported_query_ids = (QUERY_ID,)
 

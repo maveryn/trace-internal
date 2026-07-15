@@ -38,7 +38,7 @@ PROBE_COLUMNS = [
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Filter a TRACE RLVR training parquet using empirical per-instance solve rates from "
+            "Filter a Trace RLVR training parquet using empirical per-instance solve rates from "
             "trace_curriculum_probe.py, then export a retained subset parquet for training."
         )
     )
@@ -46,7 +46,7 @@ def parse_args() -> argparse.Namespace:
         "--source-parquet",
         type=Path,
         default=DEFAULT_SOURCE_PARQUET,
-        help="Original TRACE RLVR train parquet.",
+        help="Original Trace RLVR train parquet.",
     )
     parser.add_argument(
         "--probe-jsonl",

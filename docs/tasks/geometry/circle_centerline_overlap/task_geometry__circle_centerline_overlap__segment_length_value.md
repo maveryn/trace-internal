@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_collinear_circle_overlap_measurements, unknown_role=target_centerline_segment, formula_schema=circle_centerline_overlap_segment_length); scene=circle_centerline_overlap; scope=segment_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_circle_centerline_overlap_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

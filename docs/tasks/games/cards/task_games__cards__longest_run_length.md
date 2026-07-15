@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `topology`
+
 ## Generation Notes
 2. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.
 3. Annotation is projected from the same generated game state used for answer verification.

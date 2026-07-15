@@ -18,10 +18,14 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `shape_and_not_color_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## Scene And Query
 The task renders one panel containing procedurally generated
 named shape icons. Each icon has a semantic procedural `shape_id` and a semantic
-`color_name` sampled from the shared TRACE named-color palette. Icons may also
+`color_name` sampled from the shared Trace named-color palette. Icons may also
 render with non-semantic fill patterns (`solid`, `striped`, or `dotted`) as
 visual variation, but fill style is not queried by this task.
 

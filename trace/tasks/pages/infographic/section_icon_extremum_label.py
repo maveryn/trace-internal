@@ -43,6 +43,7 @@ class PagesInfographicSectionIconExtremumLabelTask:
     """Identify a section by an icon-filtered aggregate extremum."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'ranking', 'aggregation')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

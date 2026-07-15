@@ -131,6 +131,7 @@ class ChartsDumbbellGapRankRowLabelTask:
     """Return the row label at a requested absolute gap rank."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (LARGEST_GAP_QUERY_ID, SMALLEST_GAP_QUERY_ID)

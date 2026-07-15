@@ -18,6 +18,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(target_mark)`. Annotation is one [x,y] pixel point at the center of the answer series scatter mark at the requested x-axis label. Axes, legends, titles, readout numbers, and distractor text are metadata.
 Query ids: `x_highest_series_label`, `x_lowest_series_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_readout.x_value_rank_series_label.ChartsScatterXValueRankSeriesLabelTask`
 2. Prompt bundle: `prompts/charts/scatter_readout/charts_scatter_readout_v1.json`

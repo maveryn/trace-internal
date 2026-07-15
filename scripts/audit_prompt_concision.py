@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Audit rendered TRACE prompts for verbosity and repeated scaffolding."""
+"""Audit rendered Trace prompts for verbosity and repeated scaffolding."""
 
 from __future__ import annotations
 

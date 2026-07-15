@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(extremum_bar)`. The annotation marks the full start or contribution bar where the requested cumulative extremum is reached. The summary final bar is not a candidate because it duplicates the last contribution's running total.
 Query ids: `maximum_running_total`, `minimum_running_total`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Query Details
 
 | Query id | Program contract | Answer schema | Annotation schema |

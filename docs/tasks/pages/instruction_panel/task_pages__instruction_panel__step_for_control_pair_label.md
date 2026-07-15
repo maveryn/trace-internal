@@ -17,6 +17,10 @@
 8. Query arguments: referenced control-label pair and the unique step containing both controls.
 9. Render arguments: step count, control count, controls per step, target control pair, target step, and scene layout variant.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_instruction_panel_v1`
 2. Scene key: `instruction_panel`

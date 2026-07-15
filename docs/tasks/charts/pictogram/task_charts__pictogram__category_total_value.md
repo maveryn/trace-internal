@@ -26,3 +26,7 @@ Operation: evaluate `value` over the candidate set using the filters, comparison
 Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(target_category_row)`. Annotation marks the requested category row as one `[x0, y0, x1, y1]` pixel box.
 Query ids: `single`.
+
+## Reasoning Operations
+
+Families: `filtering`, `formula_evaluation`

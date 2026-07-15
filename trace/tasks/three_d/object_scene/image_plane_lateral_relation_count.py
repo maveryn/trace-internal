@@ -22,6 +22,7 @@ class ThreeDObjectSceneImagePlaneLateralRelationCountTask(_ThreeDSpatialViewRela
     """Count objects left or right of a named reference in the image plane."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

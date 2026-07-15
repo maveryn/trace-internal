@@ -40,6 +40,7 @@ class IllustrationsPixelVillageRiverSideObjectCountTask:
     """Count target objects strictly on one side of the pixel-village river."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'spatial_relations')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -13,6 +13,10 @@
 ## Program Contract
 - `solve_formula(visible_solid_revolution_measurements, formula_schema=cylinder_volume_from_rectangle_diagonal, target=volume); scene=solid_revolution; scope=revolution_cylinder_volume_from_diagonal_value`
 
+## Reasoning Operations
+
+Families: `transformation`, `formula_evaluation`
+
 ## Query IDs
 - `single`: a rectangle is rotated 360 degrees around the marked axis; derive the cylinder diameter from the visible rectangle diagonal and height, then solve the resulting cylinder volume.
 

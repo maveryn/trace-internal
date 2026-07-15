@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; the correct option lab
 Annotation witnesses: `annotation` uses the `bbox_sequence` schema; the ordered sequence of grid-cell bounding boxes for the found.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `topology`, `matching`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the correct option label.

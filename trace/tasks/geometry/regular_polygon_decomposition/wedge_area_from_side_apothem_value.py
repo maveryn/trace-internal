@@ -52,6 +52,7 @@ class GeometryRegularPolygonDecompositionWedgeAreaFromSideApothemTask:
     """Find a regular-polygon wedge area from side length and apothem."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

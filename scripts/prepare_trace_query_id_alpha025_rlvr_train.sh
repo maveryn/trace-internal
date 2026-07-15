@@ -10,7 +10,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 Usage:
   scripts/prepare_trace_query_id_alpha025_rlvr_train.sh [cpu_count]
 
-Builds the 200k TRACE answer-mode RLVR parquet with query-id-aware task sampling
+Builds the 200k Trace answer-mode RLVR parquet with query-id-aware task sampling
 at alpha=0.25.
 
 Default cpu_count is 120 so this can run alongside staged GPU probes. Pass 180

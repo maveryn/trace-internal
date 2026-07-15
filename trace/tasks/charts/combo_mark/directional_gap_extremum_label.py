@@ -44,6 +44,7 @@ class ChartsComboDirectionalGapExtremumLabelTask:
     """Find the category with the largest directional gap between the two encodings."""
 
     task_id = "task_charts__combo_mark__directional_gap_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "directional_gap_extremum_label"
     supported_query_ids = (PRIMARY_OVER_LINE_QUERY_ID, LINE_OVER_PRIMARY_QUERY_ID)

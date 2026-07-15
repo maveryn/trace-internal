@@ -54,6 +54,7 @@ def _prepare_lane_note_count_objective(instance_seed, params, _query_probabiliti
 @register_task
 class GamesRhythmLaneNoteCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = (DEFAULT_QUERY_ID,)

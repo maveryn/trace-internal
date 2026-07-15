@@ -214,6 +214,7 @@ class ChartsDumbbellAbsoluteGapThresholdCountTask:
     """Count rows whose absolute pairwise gap satisfies a threshold."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (AT_LEAST_QUERY_ID, AT_MOST_QUERY_ID)

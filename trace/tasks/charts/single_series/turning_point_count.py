@@ -15,6 +15,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsTrendTurningPointCountTask:
     task_id = T
+    reasoning_operations = ('counting',)
     domain = DOMAIN
     objective_contract = "turning_point_count"
     supported_query_ids = tuple(Q)

@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`, `spatial_relations`, `topology`
+
 ## Generation Notes
 1. The task samples a marked black or white connected group and asks for opponent stones touching it orthogonally.
 2. `query_id=single` is the public no-branch query id; the prompt query key remains the semantic prompt template.

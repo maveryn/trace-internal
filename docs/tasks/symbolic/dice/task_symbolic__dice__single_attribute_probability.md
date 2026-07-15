@@ -17,6 +17,10 @@ Annotation schema: `bbox`.
 Annotation witnesses: the scalar bbox of the single visible dice tray.
 Query ids: `single_parity_probability`, `single_value_set_probability`, `single_color_and_value_probability`, `single_color_or_value_probability`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`, `formula_evaluation`
+
 ## Generation And Trace
 1. The task samples one semantic predicate branch and asks for the probability that a uniformly selected die from the tray satisfies it.
 2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.

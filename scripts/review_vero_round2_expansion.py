@@ -32,7 +32,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "callout_annotation",
         "support_configs": ["chart_ocr-arxivqa_formatted", "chart_ocr-reachqa", "chart_ocr-ecd_vqa"],
         "pattern": r"\b(figure|panel|subplot|arrow|label|annotat|highlight|marked|shown)\b",
-        "rationale": "Vero scientific/chart OCR examples often ask about annotated figure panels. TRACE has scientific multipanel charts, but no scene where callouts/arrows are the primary visual grammar.",
+        "rationale": "Vero scientific/chart OCR examples often ask about annotated figure panels. Trace has scientific multipanel charts, but no scene where callouts/arrows are the primary visual grammar.",
         "annotation_contract": "panel bboxes, callout arrow polylines, mark ids, label bboxes",
         "overlap_risk": "Medium with `curve_panels`; keep this scene only if callouts/arrows are rendered as first-class queried objects.",
         "tasks": [
@@ -58,7 +58,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "table_combo",
         "support_configs": ["chart_ocr-CoSyn_400k_table", "chart_ocr-arxivqa_formatted", "chart_ocr-reachqa"],
         "pattern": r"\b(table|row|column|cell|figure|panel|chart)\b",
-        "rationale": "Several Vero chart/OCR sources mix chart panels with tables. TRACE has data-table grids and chart dashboards separately, but not a coupled table+chart figure scene.",
+        "rationale": "Several Vero chart/OCR sources mix chart panels with tables. Trace has data-table grids and chart dashboards separately, but not a coupled table+chart figure scene.",
         "annotation_contract": "table cell bboxes, chart panel ids, shared category/series ids",
         "overlap_risk": "Medium with `table` and `dashboard`; require questions to use both subpanels.",
         "tasks": [
@@ -84,7 +84,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "minesweeper",
         "support_configs": ["spatial_action-game_QA"],
         "pattern": r"\b(minesweeper|mines?|flagged|adjacent)\b",
-        "rationale": "Vero game_QA includes explicit Minesweeper boards. This is a compact rule-based game scene absent from TRACE's current board-game set.",
+        "rationale": "Vero game_QA includes explicit Minesweeper boards. This is a compact rule-based game scene absent from Trace's current board-game set.",
         "annotation_contract": "cell grid, revealed numbers, flags, hidden cells, adjacency neighborhoods",
         "overlap_risk": "Low; current games do not use hidden-neighbor numeric constraints.",
         "tasks": [
@@ -136,7 +136,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "solitaire",
         "support_configs": ["spatial_action-game_QA"],
         "pattern": r"\b(klondike|solitaire|tableau|foundation|playing card)\b",
-        "rationale": "Vero game_QA has card-tableau interfaces distinct from TRACE's flat card-hand scene.",
+        "rationale": "Vero game_QA has card-tableau interfaces distinct from Trace's flat card-hand scene.",
         "annotation_contract": "card bboxes, stack ids, visible ranks/suits, tableau/foundation zones",
         "overlap_risk": "Medium with `cards`; require tableau stacks and move legality rather than hand counting.",
         "tasks": [
@@ -162,7 +162,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "composite_measurement",
         "support_configs": ["stem-geo170k", "stem-geomverse", "stem-geoqa_plus", "stem-wemath20_pro", "stem-wemath20_standard", "stem-CoSyn_400k_math"],
         "pattern": r"\b(angle|triangle|circle|area|perimeter|length|radius|diameter|parallel|similar|geometry)\b",
-        "rationale": "Vero STEM geometry/math configs have many multi-constraint composite measurement diagrams. TRACE has geometry primitives, but fewer composite measurement diagrams combining several constraints.",
+        "rationale": "Vero STEM geometry/math configs have many multi-constraint composite measurement diagrams. Trace has geometry primitives, but fewer composite measurement diagrams combining several constraints.",
         "annotation_contract": "points, segments, regions, angle arcs, length labels, constraint refs",
         "overlap_risk": "Medium with existing geometry scenes; require multi-object or multi-constraint composition.",
         "tasks": [
@@ -240,7 +240,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "probability_widget",
         "support_configs": ["knowledge_recognition-iconqa"],
         "pattern": r"\b(spinner|marble|likely|unlikely|probable|certain|impossible|pick)\b",
-        "rationale": "Vero IconQA has repeated elementary probability scenes. TRACE icons has pattern/counting scenes, but not probability widgets.",
+        "rationale": "Vero IconQA has repeated elementary probability scenes. Trace icons has pattern/counting scenes, but not probability widgets.",
         "annotation_contract": "spinner sectors or marble bboxes, color/type labels, option labels",
         "overlap_risk": "Low if answer is probability/category rather than raw count.",
         "tasks": [
@@ -292,7 +292,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "science_process",
         "support_configs": ["stem-ai2d_merged", "stem-tqa", "stem-mmk12", "chart_ocr-CoSyn_400k_diagram", "stem-visualwebinstruct"],
         "pattern": r"\b(diagram|arrow|process|cycle|flow|stage|system|food chain|label)\b",
-        "rationale": "Vero has large AI2D/TQA/MMK12/diagram coverage. TRACE pages has cycle/hierarchy scenes but lacks a general science/process diagram grammar.",
+        "rationale": "Vero has large AI2D/TQA/MMK12/diagram coverage. Trace pages has cycle/hierarchy scenes but lacks a general science/process diagram grammar.",
         "annotation_contract": "node bboxes, arrow polylines, typed labels, branch ids",
         "overlap_risk": "Medium with graph and page cycle/hierarchy scenes; use for semantic/process diagrams with visible labels.",
         "tasks": [
@@ -318,7 +318,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "aerial_map",
         "support_configs": ["counting_grounding_search-aerialvg", "counting_grounding_search-osatlas"],
         "pattern": r"\b(map|aerial|satellite|road|building|north|south|east|west|route|locate)\b",
-        "rationale": "Vero contains aerial/map/UI-location grounding. TRACE has a static map, but not an aerial/atlas-style grid with landmarks/roads/zones.",
+        "rationale": "Vero contains aerial/map/UI-location grounding. Trace has a static map, but not an aerial/atlas-style grid with landmarks/roads/zones.",
         "annotation_contract": "map regions, road polylines, landmark bboxes, route trace, compass metadata",
         "overlap_risk": "Medium with `map`; require aerial/road/landmark grammar rather than zone-only maps.",
         "tasks": [
@@ -396,7 +396,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "strip_reconstruction",
         "support_configs": ["spatial_action-spatial_ssrl", "spatial_action-visual_jigsaw_2d"],
         "pattern": r"\b(shuffled|strip|patch|restore|reassemble|missing part|alignment|continuity)\b",
-        "rationale": "Vero spatial_ssl and jigsaw examples repeatedly ask for strip/patch reconstruction. TRACE keeps generic cutout mechanics as shared helpers, but not strip/region ordering as a first-class active scene.",
+        "rationale": "Vero spatial_ssl and jigsaw examples repeatedly ask for strip/patch reconstruction. Trace keeps generic cutout mechanics as shared helpers, but not strip/region ordering as a first-class active scene.",
         "annotation_contract": "strip/patch ids, option ids, edge-continuity refs, position slots",
         "overlap_risk": "Medium with future source-scene-owned reconstruction tasks; require ordered reconstruction output.",
         "tasks": [
@@ -422,7 +422,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "voxel_projection",
         "support_configs": ["spatial_action-game_QA"],
         "pattern": r"\b(voxel|3d reconstruction|projection|minecraft|cubes|structure)\b",
-        "rationale": "Vero game_QA includes 3D reconstruction and cube-building puzzles. TRACE has cube-count scenes, but not projection-constrained reconstruction.",
+        "rationale": "Vero game_QA includes 3D reconstruction and cube-building puzzles. Trace has cube-count scenes, but not projection-constrained reconstruction.",
         "annotation_contract": "voxel coordinates, visible projections, candidate additions, face visibility",
         "overlap_risk": "Medium with cube/3D puzzle scenes; require projection constraints.",
         "tasks": [
@@ -500,7 +500,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "rubiks_net",
         "support_configs": ["spatial_action-game_QA"],
         "pattern": r"\b(rubik|unfolded|cube.*view|3d views)\b",
-        "rationale": "Vero game_QA has Rubik/unfolded cube view reasoning. TRACE has cube projections, but not colored cube-net face correspondence.",
+        "rationale": "Vero game_QA has Rubik/unfolded cube view reasoning. Trace has cube projections, but not colored cube-net face correspondence.",
         "annotation_contract": "cube faces, net cells, colors, view-camera mapping",
         "overlap_risk": "Medium with cube projection scenes; require cube-net/color mapping.",
         "tasks": [
@@ -526,7 +526,7 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
         "scene_id": "clock_collection",
         "support_configs": ["knowledge_recognition-iconqa", "stem-mmk12"],
         "pattern": r"\b(clock|time|earlier|later|first|last|schedule|calendar|date)\b",
-        "rationale": "Vero/IconQA includes elementary time comparison questions. TRACE has clocks and schedules, so this is a lower-priority scene unless examples combine named events with clocks.",
+        "rationale": "Vero/IconQA includes elementary time comparison questions. Trace has clocks and schedules, so this is a lower-priority scene unless examples combine named events with clocks.",
         "annotation_contract": "clock faces, event labels, date/schedule rows",
         "overlap_risk": "High with `clock_collection` and `day_schedule_layout`; prefer adding tasks to existing scenes first.",
         "tasks": [
@@ -736,12 +736,12 @@ EXCLUSIONS: list[dict[str, str]] = [
     {
         "source": "spatial_action-robo2vlm",
         "domain": "-",
-        "reason": "Embodied robotics/natural-scene action. Defer unless TRACE adds a synthetic robotics domain.",
+        "reason": "Embodied robotics/natural-scene action. Defer unless Trace adds a synthetic robotics domain.",
     },
     {
         "source": "stem-pathvqa and stem-vqarad",
         "domain": "-",
-        "reason": "Medical/radiology content outside current synthetic TRACE scope.",
+        "reason": "Medical/radiology content outside current synthetic Trace scope.",
     },
     {
         "source": "OCR-only value lookup in chart/table/page examples",
@@ -756,7 +756,7 @@ NEW_DOMAIN_CANDIDATES: list[dict[str, str]] = [
         "candidate_domain": "natural_images",
         "recommendation": "defer",
         "support_source": "captioning_IF, knowledge_recognition, counting_grounding_search natural-image subsets",
-        "reason": "Large Vero support but conflicts with current fully synthetic TRACE scope.",
+        "reason": "Large Vero support but conflicts with current fully synthetic Trace scope.",
     },
     {
         "candidate_domain": "robotics",
@@ -952,7 +952,7 @@ def write_round2_markdown(
         "",
         f"Generated: {dt.datetime.now(dt.UTC).isoformat(timespec='seconds')}",
         "",
-        "This pass reinterprets Vero-600k at the scene/task level instead of only mapping whole configs to one TRACE scene. It is intentionally analysis-only: no task/config/taxonomy code is changed.",
+        "This pass reinterprets Vero-600k at the scene/task level instead of only mapping whole configs to one Trace scene. It is intentionally analysis-only: no task/config/taxonomy code is changed.",
         "",
         "## Summary",
         "",
@@ -966,8 +966,8 @@ def write_round2_markdown(
         "",
         "## Inclusion Rule",
         "",
-        "- Keep TRACE fully synthetic: Vero supplies coverage pressure and visual/task patterns, not images to ingest.",
-        "- Recommend a new scene only when the visual grammar is distinct from current TRACE scenes or when existing scenes would obscure a materially different annotation contract.",
+        "- Keep Trace fully synthetic: Vero supplies coverage pressure and visual/task patterns, not images to ingest.",
+        "- Recommend a new scene only when the visual grammar is distinct from current Trace scenes or when existing scenes would obscure a materially different annotation contract.",
         "- Recommend a new task in an existing scene when the renderer/annotation contract can stay the same and only the reasoning changes.",
         "- Treat config-level row counts as upper bounds; `estimated_hits` are based on first-pass sampled rows and should be validated by image inspection before implementation.",
         "",
@@ -986,7 +986,7 @@ def write_round2_markdown(
     for domain in ACTIVE_DOMAIN_NAMES:
         lines.extend([f"## {domain.title()}", ""])
         scenes = scenes_by_domain.get(domain, [])
-        lines.append("Current TRACE scenes:")
+        lines.append("Current Trace scenes:")
         lines.append(
             ", ".join(f"`{scene}` ({count})" for scene, count in scenes) if scenes else "-"
         )
@@ -1045,7 +1045,7 @@ def write_round2_markdown(
         [
             "## New Domain Assessment",
             "",
-            "No new domain is recommended for the current fully synthetic TRACE scope.",
+            "No new domain is recommended for the current fully synthetic Trace scope.",
             "",
             md_table(
                 ["candidate domain", "recommendation", "support source", "reason"],
@@ -1093,7 +1093,7 @@ The second-pass scene/task expansion analysis is in `round2_domain_expansion.md`
 
 This pass is domain-by-domain and includes the current public domains:
 {", ".join(f"`{domain}`" for domain in ACTIVE_DOMAIN_NAMES)}. It also records
-that no new domain is recommended while TRACE remains fully synthetic.
+that no new domain is recommended while Trace remains fully synthetic.
 """
     if "## Important Caveat" in text:
         text = text.replace("## Important Caveat", insertion.strip() + "\n\n## Important Caveat", 1)

@@ -19,6 +19,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`, `matching`
+
 ## Generation Notes
 1. The scene shows exactly four labeled hidden cells, `A` through `D`.
 2. Exactly one labeled hidden cell is guaranteed to be a mine by the visible clue information.

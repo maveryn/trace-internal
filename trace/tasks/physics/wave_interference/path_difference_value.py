@@ -34,6 +34,7 @@ class PhysicsWavesPathDifferenceValueTask:
     """Compute the source-to-point path difference in half-wavelength steps."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'formula_evaluation')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `point_map` witnesses from the finalized render. Annotation role keys are `Q1`, `Q2`, and `zero_point`; each maps to the final-image pixel point at the center of the corresponding marker. Annotation must mark the charge markers and selected zero-field point, not all candidate points, answer labels, option letters, or decorative chrome.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

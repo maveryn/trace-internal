@@ -89,6 +89,7 @@ class GamesSlidingBlockOrientationCountTask:
     """Count rectangular sliding blocks by horizontal or vertical orientation."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -112,6 +112,7 @@ class GamesBattleshipRemainingShipShapeLabelTask:
     """Select the answer-choice fleet shape for the only untouched ship."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = REMAINING_SHIP_SHAPE_LABEL_QUERY_IDS

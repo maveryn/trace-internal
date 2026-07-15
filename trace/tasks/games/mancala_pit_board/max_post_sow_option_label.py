@@ -169,6 +169,7 @@ class GamesMancalaPitBoardMaxPostSowOptionLabelTask(MancalaSingleQueryTaskBase):
     """Select the marked option pit with the largest count after sowing."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'state_update')
     _namespace = f"{SCENE_ID}.max_post_sow_option"
     _prepare_objective = staticmethod(_prepare_max_post_sow_option_objective)
 

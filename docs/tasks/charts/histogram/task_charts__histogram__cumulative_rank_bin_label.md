@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_bin)`. Annotation marks the single histogram bar containing the requested cumulative item rank. Renderer context such as axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

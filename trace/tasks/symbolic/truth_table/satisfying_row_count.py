@@ -46,6 +46,7 @@ def _true_row_ids(dataset):
 @register_task
 class SymbolicTruthTableSatisfyingRowCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'formula_evaluation')
     domain = "symbolic"
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True

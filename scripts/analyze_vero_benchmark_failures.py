@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize sampled VERO failures and map question patterns to TRACE coverage."""
+"""Summarize sampled VERO failures and map question patterns to Trace coverage."""
 
 from __future__ import annotations
 
@@ -353,7 +353,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
         return {
             "status": status,
             "closest": tasks,
-            "suggestion": "Synthetic spatial and correspondence tasks cover the reasoning form; natural-image appearance matching is outside current TRACE scope.",
+            "suggestion": "Synthetic spatial and correspondence tasks cover the reasoning form; natural-image appearance matching is outside current Trace scope.",
         }
     if benchmark_key == "game_qa_lite":
         tasks = existing_tasks(
@@ -430,7 +430,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
         return {
             "status": "out_of_scope",
             "closest": [],
-            "suggestion": "This is mostly open visual knowledge and recognition; only structured visual-reasoning subsets should become TRACE tasks.",
+            "suggestion": "This is mostly open visual knowledge and recognition; only structured visual-reasoning subsets should become Trace tasks.",
         }
     return {"status": "gap", "closest": [], "suggestion": "Needs manual taxonomy triage."}
 
@@ -553,7 +553,7 @@ def markdown_for_benchmark(
         lines.append(f"- Rule-based accuracy: {accuracy:.3f}")
     if summary.get("judge_deferred"):
         lines.append("- Judge status: deferred. Patterns below summarize generated items pending later Qwen3-32B judging, not confirmed failures.")
-    lines.extend(["", "## Top Patterns", "", "| Rank | Pattern | Count | TRACE Status | Closest TRACE Tasks | Suggested Action |", "|---:|---|---:|---|---|---|"])
+    lines.extend(["", "## Top Patterns", "", "| Rank | Pattern | Count | Trace Status | Closest Trace Tasks | Suggested Action |", "|---:|---|---:|---|---|---|"])
     if not patterns:
         lines.append("| 1 | No parsed failures | 0 | n/a | n/a | n/a |")
     for index, pattern in enumerate(patterns, start=1):
@@ -570,7 +570,7 @@ def markdown_for_benchmark(
         lines.append("")
     lines.append("## Files")
     lines.append("")
-    lines.append("- `normalized_items.jsonl` contains per-sample responses, scores, inferred pattern labels, and TRACE mapping fields.")
+    lines.append("- `normalized_items.jsonl` contains per-sample responses, scores, inferred pattern labels, and Trace mapping fields.")
     lines.append("- `failure_patterns.jsonl` contains the pattern rows used for this markdown.")
     lines.append("")
     lines.append(f"Raw VERO sample files: {len(summary.get('sample_files', []))}")

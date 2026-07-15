@@ -1,4 +1,4 @@
-"""Canonical named object resources for TRACE 3D scenes.
+"""Canonical named object resources for Trace 3D scenes.
 
 This module is the ownership point for object pools, display names, base
 dimensions, and scene-role profiles used by the three_d domain. Scene modules

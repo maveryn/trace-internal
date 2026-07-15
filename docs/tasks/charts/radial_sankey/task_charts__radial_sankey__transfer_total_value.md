@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_set` witnesses bound by `see_annotation_contract`. Annotation marks the printed value-label boxes for every flow included in the sum. Source/target node boxes, unselected flow labels, the flow curves, title, panel frame, and ring are context unless explicitly referenced by the task.
 Query ids: `source_to_targets_total`, `sources_to_target_total`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `topology`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.radial_sankey.transfer_total_value.ChartsRadialSankeyTransferTotalValueTask`
 2. Prompt bundle: `charts_radial_sankey_v1`

@@ -98,6 +98,7 @@ class GamesChessTargetSquareAttackerCountTask:
     """Count pieces attacking the marked king or marked target square."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'spatial_relations')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

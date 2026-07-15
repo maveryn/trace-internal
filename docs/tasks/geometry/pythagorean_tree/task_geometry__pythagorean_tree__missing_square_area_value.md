@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(attached_square_areas_on_right_triangle, unknown_role=square_area, formula_schema=pythagorean_square_area_sum); scene=pythagorean_tree; scope=missing_square_area_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `hypotenuse_square_area` asks for the area of the square attached to the hypotenuse when both leg-square areas are visible.
 - `leg_square_area` asks for one missing leg-square area when the hypotenuse-square area and the other leg-square area are visible.

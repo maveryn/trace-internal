@@ -18,6 +18,10 @@
 ## Program Contract
 - `section_ranked_amount_label(section=resolved_section, rank_from=highest|lowest, rank_position=2); output=selected_field_label_string; annotation=bbox(selected_field_row); scene=form_section; scope=one structured document page`
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_form_section_v1`
 2. Scene key: `structured_document_sections`

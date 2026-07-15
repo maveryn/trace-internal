@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is an
 Annotation witnesses: `bbox_set` witnesses from the finalized render. Annotation is an unordered set of final-image pixel boxes around every weight block on the queried side. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

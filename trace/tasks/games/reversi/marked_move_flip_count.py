@@ -58,6 +58,7 @@ def _prepare_marked_move_objective(
 @register_task
 class GamesReversiMarkedMoveFlipCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = (DEFAULT_QUERY_ID,)

@@ -25,6 +25,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point_map` witnesses bound by `point_map(start_mark,end_mark)`. Annotation maps `start_mark` and `end_mark` to the two endpoint mark points named by the prompt. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `absolute_endpoint_change_value`, `signed_endpoint_change_value`, `percent_endpoint_change_value`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Annotation Contract
 1. Answer schema: `integer_value`.
 2. Annotation schema: `point_map`.

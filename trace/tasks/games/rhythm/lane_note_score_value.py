@@ -84,6 +84,7 @@ def _prepare_lane_note_score_objective(
 @register_task
 class GamesRhythmLaneNoteScoreValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'aggregation', 'formula_evaluation')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = (DEFAULT_QUERY_ID,)

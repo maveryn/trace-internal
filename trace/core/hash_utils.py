@@ -1,4 +1,4 @@
-"""Hash helpers used by TRACE identity and integrity checks."""
+"""Hash helpers used by Trace identity and integrity checks."""
 
 from __future__ import annotations
 

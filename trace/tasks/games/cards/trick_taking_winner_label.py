@@ -93,6 +93,7 @@ class GamesCardsTrickTakingWinnerLabelTask:
     """Generate the trick-taking winner label task."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'comparison', 'ranking')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

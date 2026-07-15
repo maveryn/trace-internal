@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; one image-pixel cell bbox for every reachable light passable cell, including the start cell.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular board with dark wall cells, light passable cells, disconnected light distractor regions, and a green start cell marked `S`.
 2. Supported `query_id` values: `single`

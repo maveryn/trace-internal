@@ -82,6 +82,7 @@ class GamesTetrisActivePieceShapeLabelTask:
     """Identify the tetromino shape of the shown falling piece."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

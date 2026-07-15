@@ -185,6 +185,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
 @register_task
 class ChartsPopulationPyramidAgeGroupThresholdCountTask:
     task_id = "task_charts__population_pyramid__age_group_threshold_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "age_group_threshold_count"
     supported_query_ids = THRESHOLD_QUERY_IDS

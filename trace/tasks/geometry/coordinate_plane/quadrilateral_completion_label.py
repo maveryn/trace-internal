@@ -722,6 +722,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
     """Choose the candidate point that completes a coordinate quadrilateral."""
 
     task_id = COMPLETION_TASK_ID
+    reasoning_operations = ('spatial_relations', 'matching')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = COMPLETION_QUERY_IDS

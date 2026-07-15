@@ -31,6 +31,7 @@ class PagesTimelineRelativePositionEventLabelTask:
     """Identify the event label at a fixed offset from a dated event card."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

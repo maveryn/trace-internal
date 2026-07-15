@@ -14,6 +14,7 @@ def _build_task_output(materialized):
 class ChartsThreeDBarCategoryExtremumGapValueTask:
     """Compute the highest-minus-lowest series-bar gap within one category."""
     task_id = 'task_charts__bar_3d__category_extremum_gap_value'
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = 'category_extremum_gap_value'
     supported_query_ids = ('category_extremum_gap_value',)

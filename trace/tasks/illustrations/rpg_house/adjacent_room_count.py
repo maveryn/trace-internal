@@ -30,6 +30,7 @@ class IllustrationsRpgHouseAdjacentRoomCountTask:
     """Count rooms that directly share a doorway with the player's room."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'topology')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

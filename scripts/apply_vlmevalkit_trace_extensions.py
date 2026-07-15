@@ -98,11 +98,11 @@ def apply_extensions(vlmeval_root: Path) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Install TRACE local VLMEvalKit dataset extensions.")
+    parser = argparse.ArgumentParser(description="Install Trace local VLMEvalKit dataset extensions.")
     parser.add_argument("--vlmeval-root", type=Path, default=DEFAULT_VLMEVAL_ROOT)
     args = parser.parse_args()
     apply_extensions(args.vlmeval_root.resolve())
-    print(f"Installed TRACE VLMEvalKit extensions into {args.vlmeval_root}")
+    print(f"Installed Trace VLMEvalKit extensions into {args.vlmeval_root}")
 
 
 if __name__ == "__main__":

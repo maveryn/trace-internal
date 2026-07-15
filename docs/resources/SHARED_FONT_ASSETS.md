@@ -1,15 +1,15 @@
 # Shared Font Assets
 
-TRACE keeps repo-wide reusable font assets under `assets/fonts/`. Use this
+Trace keeps repo-wide reusable font assets under `assets/fonts/`. Use this
 layer when a renderer draws visible text and has access to a deterministic
 instance seed.
 
 ## Source Policy
 
-The current TRACE font subset is vendored from the Google Fonts GitHub
+The current Trace font subset is vendored from the Google Fonts GitHub
 repository. Google Fonts stores font families under top-level license
 directories, and each family directory carries the font files, metadata, and
-the applicable license file. The current TRACE subset uses 500 Latin-capable
+the applicable license file. The current Trace subset uses 500 Latin-capable
 OFL/Apache families with family-local license files and metadata recorded in
 `assets/fonts/sources.json`.
 

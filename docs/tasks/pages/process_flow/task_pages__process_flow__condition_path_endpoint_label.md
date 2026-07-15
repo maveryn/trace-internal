@@ -18,6 +18,10 @@
 ## Program Contract
 - `process_flow_condition_path_endpoint_label(decision_label_sequence); output=visible_step_label; annotation=bbox_map(path_witnesses); scene=process_flow; scope=one process-flow diagram`
 
+## Reasoning Operations
+
+Families: `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_process_flow_v1`
 2. Scene key: `process_flow_diagram`

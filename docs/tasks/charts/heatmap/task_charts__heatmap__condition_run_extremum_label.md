@@ -25,6 +25,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(winning_consecutive_run_cells)`. Annotation marks rendered bboxes for the winning consecutive run cells from left to right. Axes, legend, title, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `ranking`
+
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `bbox_set`.

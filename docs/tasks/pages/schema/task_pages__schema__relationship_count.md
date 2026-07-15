@@ -19,3 +19,7 @@
 Each annotation segment is the visible endpoint-to-endpoint line witness for one
 counted relationship. Relationship labels and cardinality markers are context,
 not separate count witnesses.
+
+## Reasoning Operations
+
+Families: `counting`, `topology`

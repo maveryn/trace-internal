@@ -19,3 +19,7 @@
 The `all_field_count` branch counts every visible field row in the named table.
 The `attribute_field_count` branch counts only rows without `PK` or `FK` badges.
 Annotation boxes mark the counted field rows only.
+
+## Reasoning Operations
+
+Families: `filtering`, `counting`

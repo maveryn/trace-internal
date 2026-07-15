@@ -45,6 +45,7 @@ class GamesSolitaireMoveLegalityLabelTask(SolitaireLifecycleTask):
     """Choose the one visible move option that is legal now."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

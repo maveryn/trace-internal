@@ -1,0 +1,114 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Controlled visual task generation.}
+CLEVR established synthetic scene graphs and executable question programs as a
+way to control compositional visual reasoning; GQA extended structured
+programs to questions over real-image scene graphs
+\citep{johnson2017clevr,hudson2019gqa}. PuzzleVQA procedurally generates
+abstract patterns for diagnosing perceptual, inductive, and deductive failures
+\citep{chia2024puzzlevqa}. Task Me Anything instead organizes programmatic
+multimodal evaluation around an extensible taxonomy of assets, attributes,
+relations, and task plans \citep{zhang2024taskmeanything}. WorldBench takes a
+real-image route, using a broad concept taxonomy to curate questions that
+require knowledge and reasoning beyond recognition \citep{yin2026worldbench}.
+These systems demonstrate the value of explicit structure for generation and
+coverage analysis; \trace additionally makes the executable task contract the
+stable unit of generation, sampling, verification, and analysis.
+
+\paragraph{Executable generator--verifier environments.}
+Reasoning Gym and Enigmata show how programmatic generators and exact
+verifiers can produce scalable reasoning curricula
+\citep{stojanovski2025reasoninggym,chen2025enigmata}. OpenThoughts likewise
+emphasizes systematic choices about sources, filtering, mixing, and teacher
+generation rather than treating a training corpus as an opaque collection
+\citep{guha2025openthoughts}. The former systems center executable textual
+reasoning, whereas the latter emphasizes transparent corpus construction and
+mixture design. Together they motivate training environments whose data and
+verification decisions remain inspectable rather than being fixed only in a
+static corpus. \trace brings this generator--verifier model to rendered
+visual scenes while retaining stable task identities across regenerated data.
+
+\paragraph{Open data for multimodal reinforcement learning.}
+Recent visual RL systems pair heterogeneous training collections with
+rule-based or task-specific rewards. Visual-RFT introduced rewards for visual
+classification, detection, and spatial tasks; Vision-R1 and LMM-R1 constructed
+cold-start and RL data for multimodal reasoning; and MM-Eureka, R1-Onevision,
+Reason-RFT, and VLM-R1 cover visual mathematics, counting, structure
+perception, spatial transformation, and referring expressions
+\citep{liu2025visualrft,huang2025visionr1,peng2025lmmr1,
+meng2025mmeureka,yang2025r1onevision,tan2025reasonrft,shen2025vlmr1}.
+Vero scales this direction to a 600K-example mixture from 59 datasets with
+task-routed rewards and controlled mixture analysis \citep{sarch2026vero}.
+Collectively, these works establish that broad multimodal RL can benefit from
+specialized rewards and carefully designed mixtures. Their task identities and
+granularity are generally inherited from source datasets, however, so a source
+weight need not correspond to a uniform reasoning unit. \trace instead builds
+the mixture from explicit task programs and balances sampling over objective
+contracts.
+
+\paragraph{Mixture selection and curricula.}
+Beyond constructing RL examples, several systems study which examples to use
+and in what order. Curr-ReFT combines difficulty-aware progression with
+rejected-sampling self-improvement, while SoTA with Less and RAP select compact
+or high-value subsets for multimodal post-training
+\citep{deng2025currreft,wang2025sotawithless,li2025rap}. MoDoMoDo formulates
+multidomain RLVR as a data-mixture optimization problem
+\citep{liang2025modomodo}, and Vision-G1 combines influence-based filtering
+across 46 sources with a multi-round curriculum \citep{zha2026visiong1}.
+WeThink and DeepVision-103K further broaden RL-ready data through scalable
+synthesis, curation, verification, and difficulty stratification
+\citep{yang2025wethink,sun2026deepvision}. These approaches show that coverage
+alone is insufficient: source interaction, difficulty, and example quality
+also shape learning. \trace is complementary in providing stable task
+contracts as a finer-grained unit for such sampling and curriculum methods.
+
+\paragraph{Synthetic and verifiable visual RL data.}
+The closest systems construct new visual experience specifically for
+reinforcement learning. Jigsaw-R1 uses controlled jigsaw puzzles to study
+rule-based visual RL, while VisualSphinx expands seed puzzle rules into a
+large rule-to-image corpus of visual logic problems
+\citep{wang2025jigsawr1,feng2025visualsphinx}. Game-RL adapts executable game
+code into verifiable multimodal tasks, and COGS decomposes and recomposes
+perception and reasoning factors for charts and webpages
+\citep{tong2025gamerl,gu2025cogs}. SynthRL produces verified harder variants
+of visual-mathematics questions, whereas ViCrit injects localized,
+exactly-checkable errors into image descriptions as a visual-perception proxy
+task \citep{wu2025synthrl,wang2025vicrit}. Sphinx procedurally generates 25
+visual reasoning task families with deterministic answers and demonstrates
+transfer from RLVR training \citep{alam2026sphinx}. Concurrent TRON is the
+closest environment-level system: it provides 520 online generator--verifier
+environments in five ability buckets, with difficulty-controlled rollouts and
+audits of generation reliability, diversity, and difficulty
+\citep{yang2026tron}.
+
+\begin{table}[h]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{2.5pt}
+  \renewcommand{\arraystretch}{1.08}
+  \caption{Reported structural scale of procedural visual RL systems. Counts
+  follow each work's authored units; generated examples and LLM-expanded rules
+  are not counted as objectives.}
+  \label{tab:environment-comparison}
+  \begin{tabular}{@{}l l c l r l@{}}
+    \toprule
+    System & Scope & Groups & Visual units & Objectives & Relation \\
+    \midrule
+    Jigsaw-R1    & Jigsaw       & 1  & 1 grammar    & 2 forms & joint \\
+    VisualSphinx & Logic puzzle & 8  & --           & 1       & joint \\
+    GameQA       & Games        & 4  & 30 games     & 158     & game$\to$task \\
+    Sphinx       & Abstract     & 5  & 25 renderers & 25      & 1:1 \\
+    TRON         & Multiskill   & 5  & 520 envs     & 520     & joint \\
+    \textbf{\trace} & Multidomain & \textbf{11} & \textbf{277 scenes}
+      & \textbf{1,000} & scene$\to$task \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+VisualSphinx's 41,287 retained LLM-generated rules instantiate one completion
+objective, and its RL run samples 10,000 examples. \trace is distinguished by
+both its 11-domain breadth and its explicit 277-scene/1,000-task split. GameQA
+also separates games from tasks within one domain, while TRON couples generation
+and verification in 520 joint environments; COGS and SynthRL do not report
+fixed task inventories.

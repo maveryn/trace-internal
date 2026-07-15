@@ -485,6 +485,7 @@ class IconsRelationNamedReferenceDistanceRankLabelTask:
     """Select the labeled named icon nearest/farthest/second-nearest to a unique reference."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     domain = "icons"
     supported_query_ids = QUERY_IDS
 

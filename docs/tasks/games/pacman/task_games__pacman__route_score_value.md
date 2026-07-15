@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `topology`, `formula_evaluation`
+
 ## Generation Notes
 1. Normal pellets on the highlighted route score 1.
 2. Printed-value bonus items on the highlighted route score their printed value, sampled from `2, 3, 4`.

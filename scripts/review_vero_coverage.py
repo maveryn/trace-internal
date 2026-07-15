@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a first-pass Vero-600k coverage review against TRACE taxonomy.
+"""Build a first-pass Vero-600k coverage review against Trace taxonomy.
 
 The script intentionally uses the Hugging Face dataset-server API instead of
 `datasets.load_dataset` because the Vero rows include large image payloads in
@@ -46,7 +46,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         "annotation": "cell grid, revealed numbers, flags, hidden cells, adjacency neighborhoods",
         "why": (
             "Vero game_QA includes explicit Minesweeper-style board states and "
-            "rules. TRACE games has many board games, but not numerical "
+            "rules. Trace games has many board games, but not numerical "
             "constraint games over hidden cells."
         ),
     },
@@ -67,7 +67,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         "annotation": "strip ids, option ids, region ids, adjacency/continuity refs, depth order",
         "why": (
             "Vero spatial/action data has repeated shuffled-strip, missing-region, "
-            "and marked-region depth-order patterns. TRACE has jigsaw and missing "
+            "and marked-region depth-order patterns. Trace has jigsaw and missing "
             "patch tasks, but not a dedicated strip/region reconstruction scene."
         ),
     },
@@ -90,7 +90,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         ],
         "annotation": "node bboxes, arrow polylines, branch ids, label bboxes",
         "why": (
-            "Vero has large AI2D/TQA/MMK12/diagram coverage; TRACE pages has "
+            "Vero has large AI2D/TQA/MMK12/diagram coverage; Trace pages has "
             "cycle and hierarchy diagrams, but lacks general science/process "
             "diagrams with typed arrows and explicit component-state reasoning."
         ),
@@ -139,7 +139,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         "why": (
             "Vero game_QA includes synthetic arcade-like grid games such as Space "
             "Invaders and Zuma-style targeting. These are visually and "
-            "algorithmically different from TRACE's current classic board games."
+            "algorithmically different from Trace's current classic board games."
         ),
     },
     {
@@ -158,7 +158,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         ],
         "annotation": "piece ids, face ids, 2D/3D placement transforms",
         "why": (
-            "Vero includes large 2D and 3D visual-jigsaw subsets. TRACE has a "
+            "Vero includes large 2D and 3D visual-jigsaw subsets. Trace has a "
             "2D jigsaw scene, but no explicit 3D assembly scene."
         ),
     },
@@ -177,7 +177,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         ],
         "annotation": "grid cells, start/goal, obstacles, valid path cells, instruction trace",
         "why": (
-            "Vero game_QA includes maze mini-games. TRACE already has maze exit "
+            "Vero game_QA includes maze mini-games. Trace already has maze exit "
             "reachability/count tasks, but Vero coverage suggests richer path "
             "length and route-following tasks."
         ),
@@ -198,7 +198,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         "annotation": "voxel coords, projections, candidate additions, visible face refs",
         "why": (
             "Vero game_QA includes 3D reconstruction puzzles with voxel/projection "
-            "rules. TRACE has cube and 3D point scenes, but no projection-based "
+            "rules. Trace has cube and 3D point scenes, but no projection-based "
             "voxel reconstruction game."
         ),
     },
@@ -217,7 +217,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         ],
         "annotation": "matrix cell ids, option ids, visual attributes, row/column rule refs",
         "why": (
-            "Vero has a substantial Raven subset. TRACE already has Raven tasks, "
+            "Vero has a substantial Raven subset. Trace already has Raven tasks, "
             "but this should be explicitly listed as a puzzle expansion/coverage "
             "validation target, not only an existing-task note."
         ),
@@ -261,7 +261,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         ],
         "annotation": "control bboxes, roles, labels, states, action target id",
         "why": (
-            "Vero has substantial UI/action data. TRACE pages already has GUI "
+            "Vero has substantial UI/action data. Trace pages already has GUI "
             "scenes, so the main gap is richer target/action and state-filtered "
             "control tasks."
         ),
@@ -286,7 +286,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         ],
         "annotation": "points, segments, regions, angle arcs, constraint refs",
         "why": (
-            "The STEM geometry/math configs are large. TRACE has many geometry "
+            "The STEM geometry/math configs are large. Trace has many geometry "
             "scenes, but Vero-style multi-constraint composite measurement diagrams support "
             "more composite measurement tasks."
         ),
@@ -310,7 +310,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         "annotation": "panel ids, plotted marks, legends, selected value refs",
         "why": (
             "ArxivQA/ReachQA examples emphasize figure panels and legends. "
-            "TRACE has scientific multipanel charts, but can add more "
+            "Trace has scientific multipanel charts, but can add more "
             "cross-panel tasks."
         ),
     },
@@ -333,7 +333,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         "annotation": "card/section bboxes, icon arrays, metric ids",
         "why": (
             "Vero has frequent infographic VQA, but simple value lookup is too "
-            "easy. The useful TRACE expansion is synthetic infographic "
+            "easy. The useful Trace expansion is synthetic infographic "
             "arithmetic and ranking."
         ),
     },
@@ -356,7 +356,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
         "why": (
             "Only include if all required science rules are printed in-scene. "
             "Otherwise these examples become external-knowledge tasks and "
-            "should stay out of TRACE."
+            "should stay out of Trace."
         ),
     },
 ]
@@ -532,7 +532,7 @@ def review_action(disposition: str) -> str:
     if disposition == "conditional_new_scene":
         return "Only include if rules/annotation can be made explicit in-scene."
     if disposition == "exclude":
-        return "Exclude from TRACE task backlog."
+        return "Exclude from Trace task backlog."
     return "Manual inspection before deciding."
 
 
@@ -779,7 +779,7 @@ Source dataset: <https://huggingface.co/datasets/zlab-princeton/Vero-600k/>
 - Pulled config and row counts from the Hugging Face dataset-server `size` endpoint.
 - Sampled non-image rows from the `rows` endpoint and saved question/answer/image-dimension metadata only.
 - Did not download image bytes into the repo.
-- Mapped Vero configs and sampled template clusters against the current TRACE public taxonomy.
+- Mapped Vero configs and sampled template clusters against the current Trace public taxonomy.
 - Recommended only synthetic, metadata-verifiable additions. Natural-image and free-form-only sources are excluded or marked as proxy inspiration.
 
 ## Inventory Summary
@@ -789,7 +789,7 @@ Source dataset: <https://huggingface.co/datasets/zlab-princeton/Vero-600k/>
 - Sampled non-image rows: {len(samples):,}
 - Sampling errors: {len(errors)}
 - Template clusters mined: {len(clusters):,}
-- TRACE active scenes in audit: {len(trace_scenes)}
+- Trace active scenes in audit: {len(trace_scenes)}
 
 ### Disposition Counts
 
@@ -810,12 +810,12 @@ row counts are upper bounds until a deeper image-level split is done.
 
 ## Files
 
-- `config_inventory.csv`: Vero config-level mapping to TRACE domains/scenes.
+- `config_inventory.csv`: Vero config-level mapping to Trace domains/scenes.
 - `template_clusters.csv`: sampled normalized question-template clusters.
 - `sample_questions.jsonl`: sampled rows without image bytes or signed image URLs.
 - `sampling_errors.csv`: configs/offsets that the public dataset-server failed to return.
-- `trace_scene_inventory.csv`: current TRACE scene/task counts.
-- `trace_task_inventory.csv`: current TRACE active task inventory.
+- `trace_scene_inventory.csv`: current Trace scene/task counts.
+- `trace_task_inventory.csv`: current Trace active task inventory.
 - `trace_gap_matrix.md`: config-level gap/reuse matrix.
 - `candidate_scene_task_backlog.md`: ranked candidate scenes/tasks to implement.
 - `excluded_clusters.md`: excluded source families and reasons.
@@ -847,7 +847,7 @@ def write_gap_matrix(output_dir: Path, inventory: list[dict[str, Any]], clusters
                 row["review_action"],
             ]
         )
-    text = "# Vero to TRACE Gap Matrix\n\n"
+    text = "# Vero to Trace Gap Matrix\n\n"
     text += md_table(
         [
             "Vero config",
@@ -915,7 +915,7 @@ def write_exclusions(output_dir: Path, inventory: list[dict[str, Any]], clusters
     lines = [
         "# Excluded Vero Sources",
         "",
-        "These are excluded from the TRACE task backlog unless the project explicitly changes scope.",
+        "These are excluded from the Trace task backlog unless the project explicitly changes scope.",
         "",
         "## Rules",
         "",

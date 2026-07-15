@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `left_of_directed_line`, `right_of_directed_line`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`
+
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with one or more large context props, several uniquely named small objects, and six lettered point markers. Each marked point is rendered as a visible point glyph with a nearby letter label. The prompt names two unique reference objects and asks for the marked point on the requested side of the directed line from the first named object to the second.
 

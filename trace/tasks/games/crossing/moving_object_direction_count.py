@@ -74,6 +74,7 @@ class GamesCrossingMovingObjectDirectionCountTask:
     """Count moving objects by whether their visible arrows point left or right."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -22,6 +22,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is the scalar bounding box around the single selected candidate board.

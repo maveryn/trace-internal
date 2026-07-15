@@ -17,6 +17,10 @@ Annotation schema: `bbox`.
 Annotation witnesses: the scalar bbox of the full spinner panel.
 Query ids: `single_color_probability`, `single_shape_probability`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Query Contract
 - `single_color_probability`: target predicate is one resolved sector color.
 - `single_shape_probability`: target predicate is one resolved sector shape marker.

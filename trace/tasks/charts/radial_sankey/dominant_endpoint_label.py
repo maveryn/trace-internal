@@ -142,6 +142,7 @@ class ChartsRadialSankeyDominantEndpointLabelTask:
     """Return a dominant source or target endpoint from a radial Sankey chart."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'topology')
     domain = DOMAIN
     objective_contract = "dominant_endpoint_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

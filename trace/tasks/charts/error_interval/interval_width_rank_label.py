@@ -29,6 +29,7 @@ class ChartsErrorIntervalRelationLabelTask:
     """Identify a category by ranked interval width."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (

@@ -95,6 +95,7 @@ class GeometryMissingWidthFromSemicircleAreaTask:
     """Infer a missing rectangle width from cap or cutout total area."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

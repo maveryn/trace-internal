@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare fixed manifest-only external benchmark subsets for TRACE RLVR eval."""
+"""Prepare fixed manifest-only external benchmark subsets for Trace RLVR eval."""
 
 from __future__ import annotations
 
@@ -309,9 +309,9 @@ def _write_readme(path: Path, manifest: dict[str, Any], *, overwrite: bool) -> N
         "- benchmark-subsets",
         "---",
         "",
-        "# TRACE External Eval Subsets v1",
+        "# Trace External Eval Subsets v1",
         "",
-        "Manifest-only fixed subsets for TRACE RLVR checkpoint evaluation.",
+        "Manifest-only fixed subsets for Trace RLVR checkpoint evaluation.",
         "",
         "These files contain source dataset indices and hashes only. They do not",
         "redistribute benchmark images or media.",

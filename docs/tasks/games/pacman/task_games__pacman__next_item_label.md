@@ -19,6 +19,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`, `topology`
+
 ## Generation Notes
 1. The highlighted route starts at the visible Pac-Man marker.
 2. The answer is the label of the first visible labeled bonus item reached along the highlighted route.

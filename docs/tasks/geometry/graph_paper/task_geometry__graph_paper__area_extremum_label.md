@@ -12,6 +12,10 @@
 - `select_shape_area_extremum(extremum={largest|smallest}, shape_family={rectangle|right_triangle}, output_role=shape_label); scene=graph_paper; scope=labeled_shape_set`
 - Labeled shapes use integer graph-paper vertices and are placed with non-overlapping graph-unit bounding boxes.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

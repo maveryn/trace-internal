@@ -48,6 +48,7 @@ class PagesInfographicGlobalMetricRankedItemLabelTask:
     """Identify a metric card by global rank of its printed value."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

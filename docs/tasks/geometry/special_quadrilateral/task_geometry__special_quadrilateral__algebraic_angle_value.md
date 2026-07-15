@@ -11,6 +11,10 @@
 ## Program Contract
 - `formula.solve_unknown(visible_quadrilateral=parallelogram|rhombus|kite, visible_expressions=two_marked_angle_expressions, relation=opposite_angles_equal|consecutive_angles_supplementary|diagonal_bisects_angle, target=marked_angle_measure); scene=special_quadrilateral; scope=algebraic_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_special_quadrilateral_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

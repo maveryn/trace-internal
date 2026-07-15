@@ -54,6 +54,7 @@ class PhysicsElectromagneticInductionDirectionCountTask:
     """Count mini-panels by induced-current direction from visible flux-change cues."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'formula_evaluation')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

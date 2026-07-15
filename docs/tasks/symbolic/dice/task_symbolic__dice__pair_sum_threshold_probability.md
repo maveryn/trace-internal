@@ -17,6 +17,10 @@ Annotation schema: `bbox_map`.
 Annotation witnesses: a `bbox_map` with `tray_a` and `tray_b` bboxes.
 Query ids: `pair_sum_at_least_probability`, `pair_sum_at_most_probability`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `formula_evaluation`
+
 ## Generation And Trace
 1. The task asks for the probability that one uniformly selected die from each tray satisfies a sampled sum threshold; `query_id` selects at-least versus at-most semantics.
 2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.

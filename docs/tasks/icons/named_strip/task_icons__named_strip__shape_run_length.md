@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `longest_shape_run_length`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `topology`
+
 ## Identity
 
 - Domain: `icons`

@@ -190,6 +190,7 @@ class IllustrationsLibraryBooksInSectionCountTask:
     """Count all books in one named library shelf section."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "illustrations"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True

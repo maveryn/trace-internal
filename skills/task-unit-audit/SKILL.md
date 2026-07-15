@@ -1,12 +1,12 @@
 ---
 name: task-unit-audit
-description: Use when auditing TRACE task boundaries, query ids, program schemas, answer schemas, or annotation schemas against the current task-unit contract.
+description: Use when auditing Trace task boundaries, query ids, program schemas, answer schemas, or annotation schemas against the current task-unit contract.
 ---
 
 # Task-Unit Audit
 
 Use this when reviewing whether a task contract, query branch, split, merge, or
-rename follows the current TRACE taxonomy rules.
+rename follows the current Trace taxonomy rules.
 
 ## Read first
 1. `docs/contracts/TAXONOMY.md`

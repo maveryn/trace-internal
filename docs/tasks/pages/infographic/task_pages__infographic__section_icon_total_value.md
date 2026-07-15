@@ -15,6 +15,10 @@
 6. Query argument axes: target section and icon filter.
 7. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `aggregation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_infographic_v1`
 2. Scene key: `infographic_metric_arithmetic`

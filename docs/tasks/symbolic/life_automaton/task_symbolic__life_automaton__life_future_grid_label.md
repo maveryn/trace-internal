@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: a `bbox_map` with `source_grid` and `selected_option` roles.
 Query ids: `one_step_future_grid`, `two_step_future_grid`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Contract
 1. Query ids: `one_step_future_grid|two_step_future_grid`
 2. Answer type: `option_letter`

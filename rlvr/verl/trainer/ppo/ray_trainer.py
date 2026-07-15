@@ -1430,7 +1430,7 @@ class RayPPOTrainer:
                             batch.non_tensor_batch.update({k: np.array(v) for k, v in reward_extra_infos_dict.items()})
                             metrics.update(reduce_numeric_reward_metrics(reward_extra_infos_dict))
                         if "uid" in batch.non_tensor_batch:
-                            # TRACE solve-rate metrics should reflect task correctness, not
+                            # Trace solve-rate metrics should reflect task correctness, not
                             # optional format-weighted overall reward. If format reward is
                             # enabled, a wrong-but-well-formed answer can still earn a
                             # positive sequence score, which would make zero_solve_* look

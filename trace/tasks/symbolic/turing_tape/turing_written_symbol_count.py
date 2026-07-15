@@ -29,6 +29,7 @@ class SymbolicTuringTapeWrittenSymbolCountTask:
     """Count the queried tape symbol after fixed-step Turing-style transitions."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

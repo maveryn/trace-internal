@@ -34,6 +34,7 @@ class PhysicsLeverMissingWeightBalanceValueTask:
     """Return the missing weight needed to balance a lever."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

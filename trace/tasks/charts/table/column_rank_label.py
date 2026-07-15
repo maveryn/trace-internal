@@ -43,6 +43,7 @@ class ChartsTableKthRankInColumnLabelTask:
     """Return the row label at a selected rank in one numeric table column."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "column_rank_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

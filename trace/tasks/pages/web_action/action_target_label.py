@@ -20,6 +20,7 @@ class PagesWebActionActionTargetLabelTask:
     """Identify the candidate-labeled web control described by the visible instruction."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = "pages"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

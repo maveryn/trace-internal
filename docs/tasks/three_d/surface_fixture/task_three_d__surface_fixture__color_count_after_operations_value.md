@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `aggregation`, `state_update`, `formula_evaluation`
+
 ## Contract
 The image shows one projected fixture surface with repeated colored elements.
 The prompt gives exactly three hypothetical add/remove operations over the same

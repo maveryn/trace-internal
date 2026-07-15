@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(answer_interval_mass_curve_point)`. Annotation should mark a point on the answer curve inside the marked interval, not the legend label, title, interval label, or full interval region. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `greatest_interval_mass_label`, `least_interval_mass_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

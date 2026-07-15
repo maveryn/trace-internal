@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `string_label`.
 Annotation witnesses: `unspecified` witnesses bound by `bbox(selected_violin)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `widest_support`, `narrowest_support`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Review Notes
 
 This task uses the current source layout. The public task file owns support-width direction selection, answer binding, annotation binding, prompt branch selection, and task-specific trace fields; scene-local shared code only provides violin sampling, rendering, prompt, and annotation primitives.

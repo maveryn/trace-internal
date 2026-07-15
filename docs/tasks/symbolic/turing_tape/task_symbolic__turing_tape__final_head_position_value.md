@@ -16,6 +16,10 @@ Output binding: `answer` is the final cell number as an integer.
 Annotation witnesses: a `bbox_map` with `machine_panel` and `transition_table` roles.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Query Contract
 1. Public `query_id`: `single`
 2. Internal prompt/event key: `final_head_position_value`

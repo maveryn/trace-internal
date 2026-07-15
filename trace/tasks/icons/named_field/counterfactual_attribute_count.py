@@ -46,6 +46,7 @@ class IconsNamedFieldCounterfactualAttributeCountTask:
     """Count target-shape icons after a hypothetical shape replacement."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'state_update')
     domain = "icons"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

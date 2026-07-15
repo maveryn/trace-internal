@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `sunk_ship_count`, `partial_ship_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation maps each counted ship name to the hit-cell boxes on that ship, projected from the same generated game state used for answer verification.

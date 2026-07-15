@@ -161,6 +161,7 @@ class ChartsFlowSankeyNodeSideTotalValuePublicTask:
     """Return a one-sided total for a source or target Sankey node."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "node_side_total_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

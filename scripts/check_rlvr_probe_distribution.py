@@ -31,7 +31,7 @@ def _parse_cli() -> argparse.Namespace:
         "--dataset-root",
         action="append",
         default=[],
-        help="Optional TRACE dataset root used to resolve trace_ref -> query_id. Repeat in parquet order.",
+        help="Optional Trace dataset root used to resolve trace_ref -> query_id. Repeat in parquet order.",
     )
     parser.add_argument(
         "--out",

@@ -621,7 +621,7 @@ def render_procedural_named_icon_field_scene(
 
 
 def serialize_named_icon_instance(instance: RenderedNamedIconInstance) -> Dict[str, Any]:
-    """Serialize one rendered named icon for TRACE payloads."""
+    """Serialize one rendered named icon for Trace payloads."""
 
     return {
         "entity_kind": "procedural_named_icon",

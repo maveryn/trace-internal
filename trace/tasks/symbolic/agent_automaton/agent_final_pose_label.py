@@ -76,6 +76,7 @@ class SymbolicAutomatonAgentFinalPoseLabelTask:
     """Choose the final agent pose after simulating a turning automaton."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     domain = "symbolic"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

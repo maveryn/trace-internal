@@ -20,6 +20,10 @@ Output binding: `answer` uses the `number` schema; Answer precision: `one_decima
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation marks one bounding box around the floating object. The waterline, density label, and fraction marker remain visible context in the image and trace metadata, but they are not public annotation witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

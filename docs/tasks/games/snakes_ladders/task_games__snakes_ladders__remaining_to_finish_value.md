@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Generation Notes
 1. Use the numbered board only; do not roll dice or follow snakes/ladders.
 2. Annotation is a bbox map with `token_square` and `finish_square` roles.

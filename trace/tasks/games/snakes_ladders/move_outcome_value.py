@@ -89,6 +89,7 @@ def _prepare_objective(
 @register_task
 class GamesSnakesLaddersMoveOutcomeValueTask(SnakesLaddersLifecycleTask):
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

@@ -33,6 +33,7 @@ class ThreeDObjectClusterObjectTypeCountArithmeticTask:
     """Compute arithmetic over two object-type operand counts."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'formula_evaluation')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

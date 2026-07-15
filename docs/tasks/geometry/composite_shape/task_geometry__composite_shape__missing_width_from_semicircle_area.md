@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_composite_shape_measurements, unknown_role=width_length, formula_schema=semicircle_composite_area_inverse); scene=composite_shape; scope=missing_width_from_semicircle_area`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

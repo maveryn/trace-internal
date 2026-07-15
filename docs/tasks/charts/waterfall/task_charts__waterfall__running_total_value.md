@@ -29,6 +29,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(running_bars_through_target)`. The annotation contains full waterfall bar boxes from the start bar through the requested step, including the target contribution bar.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`
+
 ## Query Details
 
 | Query id | Program contract | Answer schema | Annotation schema |

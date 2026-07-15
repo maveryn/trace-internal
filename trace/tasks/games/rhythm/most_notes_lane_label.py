@@ -54,6 +54,7 @@ def _prepare_most_notes_objective(instance_seed, params, _query_probabilities, q
 @register_task
 class GamesRhythmMostNotesLaneLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = (DEFAULT_QUERY_ID,)

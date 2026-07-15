@@ -29,6 +29,7 @@ def _prepare_destination_objective(instance_seed, task_params, query_id):
 class GamesBackgammonDestinationCountTask:
     """Count legal, hit, or blocked destination points for the shown dice."""
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'state_update')
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

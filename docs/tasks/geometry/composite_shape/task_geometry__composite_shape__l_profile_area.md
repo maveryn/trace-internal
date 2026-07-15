@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_composite_shape_measurements, unknown_role=area_measure, formula_schema=outer_rectangle_minus_corner_rectangle); scene=composite_shape; scope=l_profile_area`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -512,6 +512,7 @@ class IconsIconFieldFrequencyExtremeTypeLabelTask:
     """Select the marked type with the unique maximum or minimum frequency."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'ranking')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

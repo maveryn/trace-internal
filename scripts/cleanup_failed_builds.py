@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cleanup helper for failed TRACE builds (dry-run by default)."""
+"""Cleanup helper for failed Trace builds (dry-run by default)."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ def _collect_targets(output_root: Path) -> List[Path]:
 
 def main() -> int:
     """Parse CLI args and run dry-run or applied cleanup."""
-    parser = argparse.ArgumentParser(description="Cleanup failed TRACE build artifacts")
+    parser = argparse.ArgumentParser(description="Cleanup failed Trace build artifacts")
     parser.add_argument("--output-root", default="./out", help="Build output root")
     parser.add_argument("--apply", action="store_true", help="Actually delete targets")
     args = parser.parse_args()

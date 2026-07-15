@@ -1,4 +1,4 @@
-"""Shared curated icon asset helpers for TRACE icon tasks."""
+"""Shared curated icon asset helpers for Trace icon tasks."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def _svg_index_by_manifest_id() -> dict[str, Path]:
 
 
 def icon_asset_root() -> Path:
-    """Return the TRACE-side curated icon asset root."""
+    """Return the Trace-side curated icon asset root."""
 
     return _ASSET_ROOT
 
@@ -122,7 +122,7 @@ def render_icon_rgba(
 ) -> Image.Image:
     """Render one cropped/tinted/rotated icon as RGBA.
 
-    TRACE icon tasks use icons as silhouettes. We preserve that here by
+    Trace icon tasks use icons as silhouettes. We preserve that here by
     using the rendered alpha channel and filling it with one deterministic tint.
     """
 

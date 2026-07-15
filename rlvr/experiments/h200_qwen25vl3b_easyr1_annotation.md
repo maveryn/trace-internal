@@ -1,13 +1,13 @@
 # 8x H200 Qwen2.5-VL-3B EasyR1 Annotation Profile
 
-This profile records the 8x H200 configuration used for the TRACE
+This profile records the 8x H200 configuration used for the Trace
 Qwen2.5-VL-3B answer-and-annotation EasyR1 ablation on 2026-07-12. Use it as
 the starting point for similar fully NVLinked 8x H200 hosts.
 
 The active runbook remains the source of truth for the launch workflow:
 
 ```text
-docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md
+docs/workflows/ANNOTATION_ABLATION_RUNBOOK.md
 ```
 
 ## Machine Profile

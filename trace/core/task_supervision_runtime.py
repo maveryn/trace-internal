@@ -1,4 +1,4 @@
-"""Resolve TRACE run-level supervision policies to concrete row contracts."""
+"""Resolve Trace run-level supervision policies to concrete row contracts."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def normalize_trace_output_mode(trace_output_mode: str | None) -> str:
     normalized_mode = _TRACE_OUTPUT_MODE_ALIASES.get(raw_mode)
     if normalized_mode is None:
         raise ValueError(
-            "TRACE output mode must be one of "
+            "Trace output mode must be one of "
             "{'answer', 'answer_and_annotation', 'task_conditioned'}; "
             "legacy alias 'answer_only' and shorthand alias 'annotation' are also accepted. "
             f"got {trace_output_mode!r}"
@@ -47,7 +47,7 @@ def normalize_trace_supervision_mode(trace_supervision_mode: str | None) -> str:
     normalized_mode = str(trace_supervision_mode or "").strip().lower()
     if normalized_mode not in TRACE_SUPERVISION_MODES:
         raise ValueError(
-            "TRACE task-conditioned rows require trace_supervision_mode to be one of "
+            "Trace task-conditioned rows require trace_supervision_mode to be one of "
             f"{sorted(TRACE_SUPERVISION_MODES)!r}; got {trace_supervision_mode!r}"
         )
     return normalized_mode

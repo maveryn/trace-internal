@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`, `state_update`
+
 ## Generation Notes
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.
 2. Annotation maps `board` and `next_piece` to the rendered board and NEXT-piece preview boxes.

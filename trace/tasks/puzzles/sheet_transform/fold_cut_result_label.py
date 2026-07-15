@@ -28,6 +28,7 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = (
 class PuzzlesSheetTransformFoldCutResultLabelTask:
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = (SINGLE_QUERY_ID,)

@@ -19,6 +19,10 @@ Output binding: `answer` uses the `option_letter` schema; the selected overlay-r
 Annotation witnesses: `annotation` uses the `bbox` schema; exactly one image-pixel bbox around the selected option panel.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `logical_composition`, `transformation`
+
 ## Contract
 1. The scene shows two aligned source sheets and exactly four labeled result options.
 2. Selection rule: the selected option's marked cells equal the union of the two source-sheet marked cell sets.

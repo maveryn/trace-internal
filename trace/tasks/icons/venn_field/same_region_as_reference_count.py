@@ -233,6 +233,7 @@ class IconsVennFieldSameRegionAsReferenceCountTask:
     """Count target icons in the marked reference icon's Venn region."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `white_piece_reaches_target_count`, `black_piece_reaches_target_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `state_update`
+
 ## Generation Notes
 1. The blue marker identifies the target cell.
 2. Pawns, check, checkmate, castling, en passant, and promotion are intentionally out of scope.

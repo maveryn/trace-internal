@@ -37,6 +37,7 @@ class GeometryCircleIntersectingChordsArcMeasureValueTask:
     """Solve a missing arc measure from intersecting chords."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

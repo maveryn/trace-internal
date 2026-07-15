@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Generation Notes
 1. The reference cell is filled green in the rendered board and is not counted.
 2. The target neighbor state is sampled with `neighbor_target_state` (`red`, `blue`, or `empty`).

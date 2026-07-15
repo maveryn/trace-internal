@@ -35,6 +35,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point_sequence` schema; an ordered list of pixel-space state-center points, starting at the start state and ending at the answer state.
 Query ids: `final_state_label`, `transition_step_state_label`.
 
+## Reasoning Operations
+
+Families: `topology`, `state_update`
+
 ## 3) Prompt Contract
 1. Bundle: `automaton_v1`
 2. `scene_key`: `automaton`

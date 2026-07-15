@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_option(candidate_shapes, shape_relation(shape, reference_shape)=congruent_to_reference)); scene=shape_reference; scope=congruent_match`
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `shape_reference`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

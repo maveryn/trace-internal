@@ -76,6 +76,7 @@ class GeometryCoordinatePanelPointSetTransformMatchLabelTask:
     """Choose the coordinate panel whose candidate point set matches a transform."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

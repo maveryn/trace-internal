@@ -36,6 +36,7 @@ class GeometryFunctionPanelsXAxisSymmetryLabelTask:
     """Choose the only panel symmetric about the x-axis."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

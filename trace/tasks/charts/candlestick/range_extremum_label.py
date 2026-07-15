@@ -102,6 +102,7 @@ class ChartsCandlestickRangeExtremumLabelTask:
     """Return the period label with an extremal wick or body range."""
 
     task_id = "task_charts__candlestick__range_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "range_extremum_label"
     supported_query_ids = (

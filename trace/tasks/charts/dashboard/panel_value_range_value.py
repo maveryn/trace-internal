@@ -28,6 +28,7 @@ class ChartsDashboardPanelValueRangeValueTask:
     """Compute the value range inside one named dashboard panel."""
 
     task_id = "task_charts__dashboard__panel_value_range_value"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "panel_value_range_value"
     supported_query_ids = (SINGLE_QUERY_ID,)

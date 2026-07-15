@@ -21,3 +21,7 @@ Annotation marks only the target table named by the answer. The source table and
 relationship label are prompt/context witnesses retained in the trace payload,
 not public annotation. The selected relationship is unique for the sampled
 source table and relationship label.
+
+## Reasoning Operations
+
+Families: `topology`

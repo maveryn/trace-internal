@@ -24,6 +24,7 @@ class ThreeDCarouselColorTransferTotalCountTask:
     """Compute destination total after moving matching source-belt colors."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'state_update', 'formula_evaluation')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

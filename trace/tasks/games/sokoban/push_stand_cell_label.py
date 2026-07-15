@@ -69,6 +69,7 @@ class GamesSokobanPushStandCellLabelTask(SokobanLifecycleTask):
     """Select where the player stands to push a box straight to its goal."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'state_update')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

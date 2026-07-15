@@ -43,6 +43,7 @@ class PagesInfographicSectionRankedTotalLabelTask:
     """Identify a section by rank of its total metric value."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

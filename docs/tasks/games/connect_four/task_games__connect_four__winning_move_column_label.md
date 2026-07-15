@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. Column labels are rendered below the board; annotation marks the center of the selected column's landing cell, not the label text.
 2. The answer landing cell is not visibly highlighted in the rendered image.

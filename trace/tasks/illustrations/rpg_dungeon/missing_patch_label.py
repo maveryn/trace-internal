@@ -272,6 +272,7 @@ class IllustrationsRpgDungeonMissingPatchLabelTask:
     """Select the patch option that restores a missing RPG dungeon region."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

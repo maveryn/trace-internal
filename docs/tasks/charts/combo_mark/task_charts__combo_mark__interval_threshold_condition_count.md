@@ -31,6 +31,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `segment_set` witnesses bound by `segment_set(matching_primary_line_marks)`. Annotation is a `segment_set`; each segment is two `[x, y]` pixel points formatted `[[x0, y0], [x1, y1]]` and connects the primary-series mark point to the overlaid line mark point for one matching category. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `primary_between_and_line_above`, `line_between_and_primary_above`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `logical_composition`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -210,7 +210,7 @@ def _write_collection_readme(path: Path, *, title: str, records: Sequence[Mappin
     lines = [
         f"# {title}",
         "",
-        "Generated review resource spritesheets for the TRACE review app.",
+        "Generated review resource spritesheets for the Trace review app.",
         "",
         "| File | Items | Rendered |",
         "|---|---:|---:|",

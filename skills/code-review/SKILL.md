@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Use when reviewing TRACE changes for helper placement, duplication, contract drift, doc sync, or validation gaps before commit or merge.
+description: Use when reviewing Trace changes for helper placement, duplication, contract drift, doc sync, or validation gaps before commit or merge.
 ---
 
 # Code Review

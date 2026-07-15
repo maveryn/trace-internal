@@ -27,6 +27,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(matching_category_rows)`. Annotation marks every matching category row as an unordered set of row bboxes.
 Query ids: `greater_than_threshold`, `less_than_threshold`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Comparator | Answer schema | Annotation schema |

@@ -18,6 +18,10 @@
 ## Program Contract
 - `profile_card_grid_field_ranked_profile_label(field_label, rank_direction, rank_position); output=profile_name_string; annotation=bbox(selected_profile_card); scene=profile_card_grid; scope=one profile-card grid page`
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_profile_card_grid_v1`
 2. Scene key: `profile_card_grid`

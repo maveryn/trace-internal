@@ -61,6 +61,7 @@ class PhysicsRayOpticsRayBounceCountTask:
     """Count reflection events along the solved hidden ray path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'spatial_relations', 'transformation')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

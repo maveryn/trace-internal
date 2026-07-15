@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point` witnesses bound by `point(comparison_mark)`. Annotation is one [x,y] pixel point at the center of the comparison-series scatter mark that gives the answer. Axes, legends, titles, readout numbers, and distractor text are metadata.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_readout.series_y_anchor_other_series_value.ChartsScatterSeriesYAnchorOtherSeriesValueTask`
 2. Prompt bundle: `prompts/charts/scatter_readout/charts_scatter_readout_v1.json`

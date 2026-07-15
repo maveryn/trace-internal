@@ -462,6 +462,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
     """Match a red-boxed object across two camera views of the same 3D scene."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True

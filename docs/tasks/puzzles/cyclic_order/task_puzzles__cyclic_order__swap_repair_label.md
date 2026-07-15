@@ -23,6 +23,10 @@ Output binding: `answer` uses the `option_letter` schema; the unique swap option
 Annotation witnesses: `annotation` uses the `bbox` schema; one image-pixel bounding box around the selected swap option card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `state_update`, `matching`
+
 ## Query Contract
 
 - Supported public `query_id`: `single`

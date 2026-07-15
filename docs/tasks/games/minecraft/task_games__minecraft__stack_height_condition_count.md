@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `exact_height_count`, `at_least_height_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Generation Notes
 1. The scene contains visible cube columns with contiguous block levels from the ground upward.
 2. `exact_height_count` asks for stacks exactly the target height.

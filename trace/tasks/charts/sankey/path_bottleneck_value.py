@@ -58,6 +58,7 @@ class ChartsFlowSankeyPathBottleneckValuePublicTask:
     """Return the bottleneck value on one two-band Sankey path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'topology')
     domain = DOMAIN
     objective_contract = "path_bottleneck_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

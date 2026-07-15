@@ -206,6 +206,7 @@ class SymbolicLogicGateGateTypeCountTask:
     """Count visible standard gate symbols whose type matches a requested gate type."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

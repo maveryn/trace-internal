@@ -129,6 +129,7 @@ class GamesBubbleShooterPopColorLabelTask:
     """Choose the color option that would pop bubbles at the marked landing target."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -43,6 +43,7 @@ class PagesInfographicSectionExtremaArithmeticValueTask:
     """Compute arithmetic using extrema-selected infographic metric values."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'formula_evaluation')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -16,6 +16,10 @@ Output binding: `answer` is the matching gate count as an integer.
 Annotation witnesses: a homogeneous `bbox_set` of matching gate-symbol bboxes.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## 2) Scene + task contract
 1. Entities/relations: one fanout-free expression-tree circuit with labeled inputs, standard gate symbols, wires, and a final `OUT` node.
 2. Supported `query_id` values: `single`

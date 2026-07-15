@@ -11,6 +11,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_cone_net_measurements, derivation_rule=base_radius_from_sector_angle, output_role=radius_length); scene=cone_net; scope=base_radius_from_sector_angle`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `cone_net`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -17,6 +17,10 @@ Output binding: `answer` is the selected option label.
 Annotation witnesses: a `bbox_map` with `reference` and `correct_option` roles.
 Query ids: `analog_reference_digital_options`, `digital_reference_analog_options`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`, `matching`
+
 ## 2) Scene + Task Contract
 1. Public branch metadata: `query_id`
 2. Supported public `query_id`: `analog_reference_digital_options`, `digital_reference_analog_options`

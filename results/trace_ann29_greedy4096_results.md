@@ -1,4 +1,4 @@
-# TRACE Annotation Additive 0.50 Step500 Ann29 greedy4096 Benchmark Results
+# Trace Annotation Additive 0.50 Step500 Ann29 greedy4096 Benchmark Results
 
 Subset manifest root: `trace_candidate24_full minus chartqa/visiongraph_q3 plus full extra7`
 

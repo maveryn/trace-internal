@@ -13,6 +13,10 @@
 ## Program Contract
 - `solve_formula(visible_solid_revolution_measurements, formula_schema=double_cone_volume_from_triangle, target=volume); scene=solid_revolution; scope=revolution_double_cone_volume_value`
 
+## Reasoning Operations
+
+Families: `transformation`, `formula_evaluation`
+
 ## Query IDs
 - `single`: an isosceles triangle is rotated 360 degrees around its marked base axis; solve the resulting double-cone volume from the visible radius and half-height.
 

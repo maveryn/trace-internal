@@ -21,6 +21,7 @@ def _build_task_output(materialized):
 class ChartsThreeDBarCategoryThresholdCountTask:
     """Count series within one category whose bars satisfy a threshold."""
     task_id = 'task_charts__bar_3d__category_threshold_count'
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = 'category_threshold_count'
     supported_query_ids = ('category_threshold_count',)

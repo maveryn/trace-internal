@@ -17,6 +17,10 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annota
 Annotation schema: `bbox_set`.
 Query ids: `clockwise_arc_shape_count`, `counterclockwise_arc_shape_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Contract
 1. The image shows one visible ring of procedural named icons.
 2. Two endpoint icons are marked with visible labels `A` and `B`.

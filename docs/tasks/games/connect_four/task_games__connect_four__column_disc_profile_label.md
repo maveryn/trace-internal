@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## Generation Notes
 1. Column labels are rendered below the board, and a unique column matches the requested red/yellow count profile.
 2. Annotation contains bboxes for every occupied disc cell in the selected column, not the column label text.

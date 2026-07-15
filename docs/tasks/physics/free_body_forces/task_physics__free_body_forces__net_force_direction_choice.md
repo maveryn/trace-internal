@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys: `force_diagram`: box around the object, applied force arrows, and magnitude labels.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -23,6 +23,7 @@ class ThreeDObjectClusterMultiAttributeXorCountTask:
     """Count clustered objects matching exactly one of object type and semantic color."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

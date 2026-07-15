@@ -24,6 +24,10 @@ Output binding: `answer` uses the `option_letter` schema; the capital-letter lab
 Annotation witnesses: `annotation` uses the `bbox` schema; one bbox around the correct option cell.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `logical_composition`, `matching`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the capital-letter label on the correct option cell.

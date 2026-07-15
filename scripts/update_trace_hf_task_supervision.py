@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Append task supervision modes to the published TRACE RLVR parquet files."""
+"""Append task supervision modes to the published Trace RLVR parquet files."""
 
 from __future__ import annotations
 
@@ -181,7 +181,7 @@ def _update_dataset_card(source: Path, destination: Path) -> None:
 
     old_training_text = (
         "For EasyR1 training, use `data.prompt_key=prompt_answer` for answer-only runs and "
-        "`data.prompt_key=prompt_answer_and_annotation` for annotation runs. The current TRACE "
+        "`data.prompt_key=prompt_answer_and_annotation` for annotation runs. The current Trace "
         "repo loader synthesizes `uid` from `instance_id` internally when needed."
     )
     new_training_text = (
@@ -189,7 +189,7 @@ def _update_dataset_card(source: Path, destination: Path) -> None:
         "`data.prompt_key=prompt_answer` for answer-only runs and "
         "`data.prompt_key=prompt_answer_and_annotation` for answer-plus-annotation runs. The new "
         "`task_conditioned` mode reads `trace_supervision_mode` per row and selects the matching "
-        "prompt, system prompt, and reward. The TRACE loader synthesizes `uid` from `instance_id` "
+        "prompt, system prompt, and reward. The Trace loader synthesizes `uid` from `instance_id` "
         "internally when needed."
     )
     if old_training_text not in text:
@@ -357,7 +357,7 @@ def upload_update(
         revision=revision,
         parent_commit=parent_commit,
         operations=operations,
-        commit_message="Add task-conditioned supervision modes to TRACE RLVR",
+        commit_message="Add task-conditioned supervision modes to Trace RLVR",
         commit_description=(
             "Appends trace_supervision_mode while preserving all existing rows, images, prompts, "
             "answers, annotations, reward contracts, identities, and row ordering."

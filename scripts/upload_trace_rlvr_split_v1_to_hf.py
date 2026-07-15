@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Upload TRACE RLVR split-v1 parquet datasets to Hugging Face Hub."""
+"""Upload Trace RLVR split-v1 parquet datasets to Hugging Face Hub."""
 
 from __future__ import annotations
 
@@ -141,7 +141,7 @@ def _validate_manifest(path: Path, manifest_path: Path) -> None:
 def _write_dataset_card(path: Path) -> None:
     path.write_text(
         """---
-pretty_name: TRACE RLVR
+pretty_name: Trace RLVR
 language:
 - en
 license: other
@@ -154,9 +154,9 @@ tags:
 - trace
 ---
 
-# TRACE RLVR
+# Trace RLVR
 
-Private TRACE RLVR task-split-v1 parquet export.
+Private Trace RLVR task-split-v1 parquet export.
 
 ## Files
 
@@ -173,7 +173,7 @@ Each row stores both answer-only and answer-plus-annotation prompt fields,
 ground-truth answer and annotation payloads, reward contract metadata, embedded
 image bytes, image size metadata, and `trace_ref`.
 
-The split is documented in `docs/RLVR_TASK_SPLIT_PLAN.md` in the TRACE repo.
+The split is documented in `docs/RLVR_TASK_SPLIT_PLAN.md` in the Trace repo.
 """,
         encoding="utf-8",
     )
@@ -211,7 +211,7 @@ def main() -> int:
     parser.add_argument("--skip-readme", action="store_true")
     parser.add_argument(
         "--commit-message",
-        default="Upload TRACE RLVR task split v1 train and validation parquet",
+        default="Upload Trace RLVR task split v1 train and validation parquet",
     )
     args = parser.parse_args()
 

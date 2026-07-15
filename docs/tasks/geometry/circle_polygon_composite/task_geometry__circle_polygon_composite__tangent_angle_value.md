@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(circle_polygon_tangent_angle_construction, unknown_role=target_angle, formula_schema=tangent_radius_perpendicular_angle_transfer); scene=circle_polygon_composite; scope=tangent_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_circle_polygon_composite_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

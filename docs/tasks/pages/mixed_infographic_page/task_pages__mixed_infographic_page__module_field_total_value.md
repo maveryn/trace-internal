@@ -18,6 +18,10 @@
 ## Program Contract
 - `module_field_total(module_title, field_label); output=integer_sum; annotation=bbox_set(summed_value_cells); scene=mixed_infographic_page; scope=one titled module within one dense mixed infographic page`
 
+## Reasoning Operations
+
+Families: `aggregation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`

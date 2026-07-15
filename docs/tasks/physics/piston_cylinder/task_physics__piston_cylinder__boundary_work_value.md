@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the sign
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys: `pressure_readout`, `initial_cylinder`, `final_cylinder` Annotation must mark the pressure readout and the visible initial and final cylinder states. It must not mark decorative background grid lines, panel framing, or derived answer text.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

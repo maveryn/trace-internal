@@ -12,6 +12,10 @@
 ## Program Contract
 - `compute_segment_slope_from_grid_rise_run(target=line_segment, output_role=slope_number); scene=graph_paper; scope=single_segment`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -10,6 +10,10 @@
 ## Program Contract
 - `count(filter(function_graph_feature_points, feature_type=local_extremum, extremum_kind=minimum|maximum)); scene=function_graph; scope=extremum_count_local_extremum_count`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `function_graph`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

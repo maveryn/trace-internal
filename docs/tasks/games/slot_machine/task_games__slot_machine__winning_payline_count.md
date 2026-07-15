@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `segment_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `matching`
+
 ## Generation Notes
 1. The scene renders a front-view toy slot machine with a 3x3 visible reel window.
 2. Paylines are the three full rows plus the two long diagonals; columns are not paylines.

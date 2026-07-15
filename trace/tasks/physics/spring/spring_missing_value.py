@@ -53,6 +53,7 @@ class PhysicsSpringMissingValueTask:
     """Return the missing weight or extension from identical spring measurements."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

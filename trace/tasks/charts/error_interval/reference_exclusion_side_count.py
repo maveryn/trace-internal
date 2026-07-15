@@ -25,6 +25,7 @@ class ChartsErrorIntervalReferenceExclusionSideCountTask:
     """Count intervals entirely above or below a displayed reference value."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (ABOVE_QUERY_ID, BELOW_QUERY_ID)

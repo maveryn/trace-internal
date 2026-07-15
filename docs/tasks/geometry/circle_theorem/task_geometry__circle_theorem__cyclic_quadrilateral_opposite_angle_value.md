@@ -10,6 +10,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_cyclic_quadrilateral_angles, derivation_rule=opposite_angles_supplementary, output_role=angle_measure); scene=circle_theorem; scope=cyclic_quadrilateral_opposite_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `circle_theorem`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

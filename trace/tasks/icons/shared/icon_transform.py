@@ -1,4 +1,4 @@
-"""Canonical icon-transform helpers for TRACE icon tasks."""
+"""Canonical icon-transform helpers for Trace icon tasks."""
 
 from __future__ import annotations
 

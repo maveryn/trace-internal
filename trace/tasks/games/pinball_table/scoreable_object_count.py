@@ -180,6 +180,7 @@ class GamesPinballScoreableObjectCountTask:
     """Count objects that display numeric score labels on the pinball table."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `segment` witnesses bound by `segment(answer_row_dot_centers)`. Annotation is one `segment`: two `[x, y]` pixel points formatted `[[x0, y0], [x1, y1]]`, connecting the two colored dot centers for the selected dumbbell row. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_gap_rank_row_label`, `smallest_gap_rank_row_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

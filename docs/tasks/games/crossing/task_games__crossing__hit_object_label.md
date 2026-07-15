@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `topology`
+
 ## Generation Notes
 1. Exactly four moving objects are labeled `A` through `D`; the answer is one of those labels.
 2. Start pads use numeric labels so they do not conflict with moving-object option labels.

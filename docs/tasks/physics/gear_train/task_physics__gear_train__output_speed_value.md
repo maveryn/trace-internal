@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the mark
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys: `input_gear`, `output_gear` Scalar annotation checked: not scalar, because role-bound boxes mark multiple distinct gear-train witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -26,6 +26,7 @@ DEFAULT_QUERY_ID = SUPPORTED_QUERY_IDS[0]
 @register_task
 class ChartsMatrixThresholdCellCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "charts"
     objective_contract = "threshold_cell_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

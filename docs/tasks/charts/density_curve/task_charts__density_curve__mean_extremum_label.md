@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(answer_mean_marker)`. Annotation should mark the center point of the visible mean marker for the answer curve, not the legend label, title, or axis text. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `highest_mean_label`, `lowest_mean_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -115,6 +115,7 @@ def _speed_query_params(axes):
 class PhysicsCollisionStickyCollisionSpeedValueTask:
     domain = "physics"
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True
 

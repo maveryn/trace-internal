@@ -23,6 +23,10 @@ Output binding: `answer` uses the `option_letter` schema; the capital-letter lab
 Annotation witnesses: `annotation` uses the `bbox` schema; one bbox around the selected option panel.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the capital-letter label on the correct swatch option panel.

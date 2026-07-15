@@ -143,7 +143,7 @@ def generate_previews(*, out_dir: Path, count: int, seed: int, width: int, heigh
         "The raised terrace samples an elevation depth of one or two level units above the lower field.",
         "The object vocabulary matches the top-down pixel farm prototype: barn, chicken coop, hay bales, crates, troughs, trees, flowers, people, and domestic animals.",
         "Hay bales, crates, troughs, trees, flowers, people, and domestic animals render through the shared illustration object renderer and expose normalized object records.",
-        "No public TRACE task is registered for this prototype yet.",
+        "No public Trace task is registered for this prototype yet.",
     ]
     (out_dir / "README.md").write_text("\n".join(readme) + "\n", encoding="utf-8")
     print(f"[done] wrote {count} isometric-farmstead previews to {out_dir}")

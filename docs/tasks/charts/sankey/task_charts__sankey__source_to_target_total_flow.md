@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point_set` witnesses bound by `see_annotation_contract`. Annotation marks the set of printed value-label centers for the selected route bottlenecks included in the sum. Node boxes, non-bottleneck labels on selected routes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `topology`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.sankey.source_to_target_total_flow.ChartsFlowSankeySourceToTargetTotalFlowPublicTask`
 2. Prompt bundle: `charts_sankey_v1`

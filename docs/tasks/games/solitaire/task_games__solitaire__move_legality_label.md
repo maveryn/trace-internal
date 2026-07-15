@@ -21,6 +21,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. The scene shows tableau columns, four foundation piles, and move options.
 2. Exactly four visible options are shown, using `Col N -> target` text, and exactly one option is legal by solitaire tableau/foundation rules.

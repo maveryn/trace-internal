@@ -16,6 +16,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsTrendEndpointChangeValueTask:
     task_id = T
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     objective_contract = "endpoint_change_value"
     supported_query_ids = tuple(Q)

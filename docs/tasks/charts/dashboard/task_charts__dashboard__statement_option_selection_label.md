@@ -31,6 +31,10 @@ Output binding: `answer` is the `option_letter` value bound by `option_letter`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(verifying_marks)`. The rendered statement-option panel uses either `4` options (`A..D`) or `6` options (`A..F`) by construction. Annotation should mark the two chart marks that verify the selected rendered statement option, not the option text itself. Renderer context such as legends, axes, decorative labels, titles, distractor text, and statement-option text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 1. The scene renders a visible dots-and-boxes board with completed boxes marked by player `A` or player `B`.
 2. The target owner mark is sampled with `target_owner` (`A` or `B`).

@@ -415,6 +415,7 @@ class ThreeDSpatialObjectRelationLabelTask:
     """Choose the small lettered 3D object in a relation to a named prop."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True

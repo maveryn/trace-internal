@@ -18,6 +18,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `state_update`, `formula_evaluation`
+
 ## Annotation Contract
 Annotation is a `bbox_set_map` with keys `source_moved_objects` and `destination_existing_objects`, each containing `[x0, y0, x1, y1]` boxes before the move.
 

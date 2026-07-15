@@ -18,6 +18,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Contract
 The scene has inner and outer elliptical conveyor belts. The prompt selects one belt and one canonical named color. Target color is a sampled operand, not a query id.
 

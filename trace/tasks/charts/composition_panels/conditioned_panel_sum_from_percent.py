@@ -114,6 +114,7 @@ def _build_plan(params, seed, _query_id, _probs):
 @register_task
 class ChartsCompositionPanelsConditionedPanelSumFromPercentTask:
     task_id = T
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "conditioned_panel_sum_from_percent"
     supported_query_ids = (SINGLE_QUERY_ID,)

@@ -106,6 +106,7 @@ class GeometryCompositeShapeTabbedRectilinearPerimeterTask:
     """Compute the perimeter of a tabbed rectilinear composite shape."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

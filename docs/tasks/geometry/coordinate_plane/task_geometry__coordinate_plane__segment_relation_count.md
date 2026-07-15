@@ -10,6 +10,10 @@
 ## Program Contract
 - `count(filter(coordinate_plane_segment_pairs, segment_relation(pair)=target_segment_relation)); scene=coordinate_plane; scope=segment_relation_count`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

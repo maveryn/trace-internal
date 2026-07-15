@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_candidate_point(candidate_points, quadrilateral_completion_rule=quadrilateral_type)); scene=coordinate_plane; scope=quadrilateral_completion_label`
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

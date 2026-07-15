@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `segment_set` schema; one image-pixel segment from each counted-side violating cell center to its mirror-cell center.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `transformation`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular colored cell board with a sampled vertical or horizontal mirror check.
 2. Supported `query_id` values: `single`

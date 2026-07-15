@@ -1,4 +1,0 @@
-TRACE synthetic context text templates.
-
-These template strings were authored for TRACE synthetic task generation
-and combined with permissively licensed source word/category pools.

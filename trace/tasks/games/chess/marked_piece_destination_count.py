@@ -53,6 +53,7 @@ class GamesChessMarkedPieceDestinationCountTask:
     """Count empty one-move destinations for the marked chess piece."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -15,6 +15,10 @@
 - Branch `supplement_from_sector_area`: derive the sector angle from visible radius and sector area, then compute the marked supplementary angle.
 - Branch `remaining_from_arc_length`: derive the sector angle from visible radius and arc length, then compute the marked remaining angle around the circle.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_sector_formula_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

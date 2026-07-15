@@ -67,11 +67,11 @@ class DataConfig:
         self.system_prompt_file = get_abs_path(self.system_prompt_file, prompt="System prompt file")
         self.trace_answer_system_prompt_file = get_abs_path(
             self.trace_answer_system_prompt_file,
-            prompt="TRACE answer system prompt file",
+            prompt="Trace answer system prompt file",
         )
         self.trace_annotation_system_prompt_file = get_abs_path(
             self.trace_annotation_system_prompt_file,
-            prompt="TRACE annotation system prompt file",
+            prompt="Trace annotation system prompt file",
         )
         self.override_chat_template = get_abs_path(self.override_chat_template, prompt="Chat template file")
 

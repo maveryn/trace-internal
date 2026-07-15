@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_source_target_container_transfer, unknown_role=full_pour_count, formula_schema=container_volume_transfer_fill_count); scene=container_volume_transfer; scope=fill_count_value`
 
+## Reasoning Operations
+
+Families: `counting`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_container_volume_transfer_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

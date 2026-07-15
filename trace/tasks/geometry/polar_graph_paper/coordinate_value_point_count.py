@@ -36,6 +36,7 @@ def _prepare_coordinate_value_point_count_plan() -> PolarCoordinateValuePointCou
 @register_task
 class PolarGraphPaperCoordinateValuePointCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'formula_evaluation')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

@@ -25,6 +25,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(selected_target_cell)`. Annotation marks the rendered bbox of the selected target cell only. Axes, legend, title, and distractor text are context unless the task explicitly asks for them as annotation. The selected target cell is guaranteed answerable and visible.
 Query ids: `row_hottest_column_label`, `row_coolest_column_label`, `column_hottest_row_label`, `column_coolest_row_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `bbox`.

@@ -18,6 +18,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `see_annotation_contract`. Annotation marks the single answer widget card bbox. Titles, tick marks, card decorations, and non-answer widgets are context, not annotation.
 Query ids: `highest_remaining_label`, `lowest_remaining_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.radial_progress.extremum_remaining_label.ChartsRadialProgressExtremumRemainingLabelTask`
 2. Prompt bundle: `charts_radial_progress_v1`

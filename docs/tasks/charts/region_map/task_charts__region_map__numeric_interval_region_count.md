@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(matching_regions)`. Annotation contains center points for every counted map region; legend, title, and context text are not annotation targets. Geographic variants use only selected regions whose largest projected connected component is at least `400 px^2`; only that largest component is colored and annotated.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

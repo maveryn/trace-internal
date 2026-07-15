@@ -23,6 +23,10 @@ Output binding: `answer` uses the `option_letter` schema; the selected option la
 Annotation witnesses: `annotation` uses the `bbox` schema; one image-pixel bbox around the selected option card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Query Contract
 
 - Supported public `query_id`: `single`

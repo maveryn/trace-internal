@@ -65,6 +65,7 @@ class GeometryBearingRouteFinalBearingValueTask:
     """Compute the compass bearing from the start point to the final point."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'formula_evaluation')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

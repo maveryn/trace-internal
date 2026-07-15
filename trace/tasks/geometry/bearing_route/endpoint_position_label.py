@@ -34,6 +34,7 @@ class GeometryBearingRouteEndpointPositionLabelTask:
     """Select the candidate endpoint reached from the start point."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'state_update')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

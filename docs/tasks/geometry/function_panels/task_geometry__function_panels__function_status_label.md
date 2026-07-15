@@ -11,6 +11,10 @@
 ## Program Contract
 - `label(select_panel(candidate_coordinate_relations, relation_passes_vertical_line_test)); scene=function_panels; scope=function_status_label`
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_analytical_function_property_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

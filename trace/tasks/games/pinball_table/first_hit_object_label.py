@@ -143,6 +143,7 @@ class GamesPinballFirstHitObjectLabelTask:
     """Identify the first labeled object hit by the straight launch cue."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

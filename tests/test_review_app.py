@@ -752,7 +752,7 @@ def test_review_app_requires_token_and_serves_index(tmp_path: Path) -> None:
 
     page = client.get("/", headers={"Authorization": "Bearer secret"})
     assert page.status_code == 200
-    assert "TRACE Review" in page.text
+    assert "Trace Review" in page.text
 
 
 def test_scene_page_shows_task_supervision_schema(tmp_path: Path) -> None:

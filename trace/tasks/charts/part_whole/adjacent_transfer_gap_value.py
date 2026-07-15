@@ -56,6 +56,7 @@ def _build_plan(params, instance_seed: int, selected: str, _probabilities):
 @register_task
 class ChartsCompositionChartAdjacentTransferGapValueTask:
     task_id = "task_charts__part_whole__adjacent_transfer_gap_value"
+    reasoning_operations = ('spatial_relations', 'state_update', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "adjacent_transfer_gap_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

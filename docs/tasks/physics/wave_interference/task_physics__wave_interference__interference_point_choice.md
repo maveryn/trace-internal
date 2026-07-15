@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `point` witnesses from the finalized render. Annotation is one final-image pixel point at the center of the selected candidate point. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `constructive_interference_point_choice`, `destructive_interference_point_choice`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

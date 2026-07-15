@@ -11,6 +11,10 @@
 ## Program Contract
 - `formula.solve_unknown(visible_quadrilateral=parallelogram|rhombus|kite, visible_expressions=two_marked_side_or_diagonal_segment_expressions, relation=opposite_sides_equal|all_sides_equal|adjacent_kite_sides_equal|diagonals_bisect, target=marked_segment_length); scene=special_quadrilateral; scope=segment_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_special_quadrilateral_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

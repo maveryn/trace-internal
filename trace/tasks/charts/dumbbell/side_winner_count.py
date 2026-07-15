@@ -217,6 +217,7 @@ class ChartsDumbbellSideWinnerCountTask:
     """Count rows where one legend series exceeds the other by a threshold."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (SERIES_A_GREATER_QUERY_ID, SERIES_B_GREATER_QUERY_ID)

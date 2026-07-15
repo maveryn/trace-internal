@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `segment_set` witnesses from the finalized render. Annotation marks the two incoming velocity-arrow segments for puck A and puck B. The selected answer option remains answer context; it is not the public annotation witness.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

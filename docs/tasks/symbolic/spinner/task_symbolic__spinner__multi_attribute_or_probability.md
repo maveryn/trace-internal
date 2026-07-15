@@ -17,6 +17,10 @@ Annotation schema: `bbox`.
 Annotation witnesses: the scalar bbox of the full spinner panel.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`, `formula_evaluation`
+
 ## Generation And Trace
 1. The task samples one color-shape disjunction with a nontrivial favorable count.
 2. The execution trace records sector specs, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.

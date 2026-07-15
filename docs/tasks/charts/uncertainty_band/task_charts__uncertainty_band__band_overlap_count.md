@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `integer_value`.
 Annotation witnesses: `unspecified` witnesses bound by `point_set(overlap_region_centers)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Review Notes
 
 This task uses the current source layout. The public task file owns overlap construction, answer binding, annotation binding, query metadata, and prompt slots; scene-local shared code only provides uncertainty-band data structures, rendering, prompt, and projection primitives.

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_label` schema; generation binds a uniq
 Annotation witnesses: `annotation` uses the `bbox` schema; one pixel-space bounding box marks the selected answer choice.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Generation Notes
 1. The Battleship scene uses five fleet shapes: `Line 5`, `Line 4`, `Line 3`, `Square 2x2`, and `L 3`.
 2. This task renders a hidden-ship tracking grid: red hit markers, gray miss markers, and five labeled answer choices.

@@ -1,4 +1,4 @@
-"""Task registry for TRACE generation."""
+"""Task registry for Trace generation."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from typing import Any, Dict, Mapping, Sequence, Type
 
 from ..core.source_layout_policy import is_scene_package_task, parse_public_task_id
 from ..core.query_ids import LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID
+from ..core.reasoning_operations import validate_task_reasoning_operations
 from ..core.taxonomy import resolve_task_query_id
 from .base import Task, TaskOutput
 from .shared.font_assets import font_role_trace, get_font_family_record, sample_font_family
@@ -420,6 +421,10 @@ def register_task(cls: Type[Task]) -> Type[Task]:
     """Register task class under `task_id`."""
     task_id = str(getattr(cls, "task_id"))
     _validate_task_id_contract(cls, task_id)
+    validate_task_reasoning_operations(
+        getattr(cls, "reasoning_operations", None),
+        task_id=task_id,
+    )
     if dict.__contains__(TASK_REGISTRY, task_id):
         raise KeyError(f"duplicate task_id: {task_id}")
     v0_match = _V0_TASK_ID_PATTERN.match(task_id)
@@ -568,6 +573,19 @@ def create_task(task_id: str) -> Task:
     if not dict.__contains__(TASK_REGISTRY, str(task_id)):
         raise KeyError(task_id)
     return dict.__getitem__(TASK_REGISTRY, str(task_id))()
+
+
+def task_reasoning_operations(task_id: str) -> tuple[str, ...]:
+    """Return one public task's validated code-authoritative operation tuple."""
+
+    ensure_task_registered(str(task_id))
+    if not dict.__contains__(TASK_REGISTRY, str(task_id)):
+        raise KeyError(task_id)
+    task_cls = dict.__getitem__(TASK_REGISTRY, str(task_id))
+    return validate_task_reasoning_operations(
+        getattr(task_cls, "reasoning_operations", None),
+        task_id=str(task_id),
+    )
 
 
 def is_default_dataset_task(task_id: str) -> bool:

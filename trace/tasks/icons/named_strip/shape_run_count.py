@@ -194,6 +194,7 @@ class IconsNamedStripShapeRunCountTask:
     """Ask for the number of separate consecutive runs of a named icon shape."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'topology')
     domain = DOMAIN
     supported_query_ids = QUERY_IDS
     default_dataset_enabled = True

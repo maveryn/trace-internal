@@ -18,6 +18,10 @@
 ## Program Contract
 - `category_grid_item_count(category_label, subcategory_label); output=integer_value; annotation=bbox_set(counted_item_rows); scene=category_grid; scope=one category-grid page`
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_category_grid_v1`
 2. Scene key: `category_grid`

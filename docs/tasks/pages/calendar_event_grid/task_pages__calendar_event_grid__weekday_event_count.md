@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_event_grid_weekday_event_count(weekday_label); output=integer_value; annotation=bbox_set(weekday_event_chips); scene=calendar_event_grid; scope=one month calendar with Top/Mid/Bottom event slots`
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_event_grid_v1`
 2. Scene key: `calendar_event_grid`

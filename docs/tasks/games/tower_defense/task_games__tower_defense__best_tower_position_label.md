@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `spatial_relations`, `topology`, `state_update`
+
 ## Generation Notes
 1. The path is drawn with small visible enemy markers along a winding or switchback route.
 2. Four candidate tower positions are labeled `A`, `B`, `C`, and `D`, each with a circular range ring.

@@ -39,6 +39,7 @@ class PhysicsWavesInterferencePointChoiceTask:
     """Choose a point where two-source wave interference has the requested condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'formula_evaluation')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

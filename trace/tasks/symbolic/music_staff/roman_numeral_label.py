@@ -99,6 +99,7 @@ class SymbolicRomanNumeralLabelTask:
     """Read one numbered chord's roman numeral in a key."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

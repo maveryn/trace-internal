@@ -35,6 +35,7 @@ def _build_objective_plan() -> NodeLinkObjectivePlan:
 class GraphOrderTopologicalEndpointNodeLabelTask:
     """Public owner for the node-link topological-order endpoint objective."""
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

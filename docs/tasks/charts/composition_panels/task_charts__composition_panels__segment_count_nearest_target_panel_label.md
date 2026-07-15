@@ -28,6 +28,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_panel)`. Annotation marks the full answer panel.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -133,6 +133,7 @@ def _build_task_output(*, instance: LastShipCellInstance, rendered_context: Any,
 class GamesBattleshipLastShipCellLabelTask:
     """Select the labeled candidate cell that completes the remaining ship."""
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = LAST_SHIP_CELL_LABEL_QUERY_IDS

@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_set_map` witnesses bound by `bbox_set_map(reference_item,counted_items)`. Annotation maps `reference_item` to a one-box set for the reference item and `counted_items` to boxes for the counted same-category items. Renderer context such as legends, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `larger_than_reference_in_category_count`, `smaller_than_reference_in_category_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

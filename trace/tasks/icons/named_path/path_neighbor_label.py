@@ -331,6 +331,7 @@ class IconsNamedPathPathNeighborLabelTask:
     """Select the labeled icon immediately before/after a named shape along a path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'topology')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

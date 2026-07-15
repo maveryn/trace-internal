@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(answer_panel_category_marks)`. Annotation points to every category mark in the answer panel. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_panel_total_label`, `smallest_panel_total_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

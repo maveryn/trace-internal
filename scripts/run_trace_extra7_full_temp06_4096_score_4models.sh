@@ -150,7 +150,7 @@ python /home/shadeform/trace/scripts/summarize_trace_candidate37_200_results.py 
   --run-root "${RUN_ROOT}" \
   --suite-name trace_extra7_full_temp06_4096 \
   --subset-label "${SUBSET_LABEL}" \
-  --title "Qwen2.5-VL TRACE Extra7 Full Temp0.6-4096 Benchmark Results" \
+  --title "Qwen2.5-VL Trace Extra7 Full Temp0.6-4096 Benchmark Results" \
   --markdown "${RESULTS_ROOT}/trace_extra7_full_temp06_4096_results.md" \
   --excel "${RESULTS_ROOT}/trace_extra7_full_temp06_4096_results.xlsx" \
   --models \

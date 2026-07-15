@@ -63,6 +63,7 @@ class ChartsCompositionSubsetDenominatorShareValueTask:
     """Return a category's percentage within a visible category subset."""
 
     task_id = "task_charts__part_whole__subset_denominator_share_value"
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "subset_denominator_share_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

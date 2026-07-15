@@ -12,6 +12,10 @@
 - `count_angle_class(query_id={acute_angle_count|right_angle_count|obtuse_angle_count}, target_class={acute|right|obtuse}, output_role=count); scene=graph_paper; scope=angle_set`
 - Count objects are placed using their actual graph-unit bounds so independent angle drawings do not overlap.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

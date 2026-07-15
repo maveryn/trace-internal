@@ -25,6 +25,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(selected_mark)`. Annotation marks the selected ranked-statistic mark point only. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `median_order_statistic_label`, `nth_highest_order_statistic_label`, `nth_lowest_order_statistic_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `point`.

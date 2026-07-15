@@ -51,6 +51,7 @@ class GeometryRegularPolygonDecompositionSideLengthTask:
     """Find a regular-polygon side length."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'formula_evaluation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

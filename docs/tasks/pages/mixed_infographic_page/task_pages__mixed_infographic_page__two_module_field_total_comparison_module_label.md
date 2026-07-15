@@ -18,6 +18,10 @@
 ## Program Contract
 - `two_module_field_total_comparison(module_a_title, module_b_title, field_label); output=string_visible_module_title; annotation=bbox(winning_module_panel); scene=mixed_infographic_page; scope=two titled modules within one dense mixed infographic page`
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`

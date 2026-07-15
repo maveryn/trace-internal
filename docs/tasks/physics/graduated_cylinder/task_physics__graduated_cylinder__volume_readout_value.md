@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is th
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one box around the graduated-cylinder readout, including the cylinder body, liquid level, tick marks, numeric scale labels, and mL unit. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## Query Branches
 
 | Query id | Program schema |

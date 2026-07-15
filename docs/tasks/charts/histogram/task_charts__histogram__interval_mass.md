@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(included_bins)`. Annotation marks the histogram bars included in the requested inside interval total. Renderer context such as axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

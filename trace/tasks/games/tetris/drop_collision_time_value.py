@@ -112,6 +112,7 @@ class GamesTetrisDropCollisionTimeValueTask:
     """Count successful downward moves after the requested horizontal shift."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

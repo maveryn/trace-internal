@@ -17,6 +17,10 @@ Annotation schema: `bbox_map`.
 Annotation witnesses: a `bbox_map` with `spinner_a` and `spinner_b` panel bboxes.
 Query ids: `pair_both_target_color_probability`, `pair_at_least_one_target_color_probability`, `pair_same_color_probability`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `formula_evaluation`
+
 ## Query Contract
 - `pair_both_target_color_probability`: both spinners must land on the same resolved target color.
 - `pair_at_least_one_target_color_probability`: at least one spinner must land on the resolved target color.

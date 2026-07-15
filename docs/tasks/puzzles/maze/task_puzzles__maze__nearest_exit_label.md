@@ -23,6 +23,10 @@ Output binding: `answer` uses the `string` schema; the selected nearest exit lab
 Annotation witnesses: `annotation` uses the `point` schema; one image-pixel point centered on the selected nearest exit marker.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`, `topology`
+
 ## Query Contract
 
 - Supported public `query_id`: `single`

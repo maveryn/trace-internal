@@ -232,6 +232,7 @@ class PagesProfileCardGridFilteredRankedProfileLabelTask:
     """Find the ranked profile after applying a visible categorical filter."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'ranking')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

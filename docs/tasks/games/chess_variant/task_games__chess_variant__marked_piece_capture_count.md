@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema with one square bbox for each capturable opponent piece.
 Query ids: `single` public query; internal prompt key `marked_piece_capture_count`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generation Notes
 1. The visible rule card defines the movement geometry for every piece.
 2. Capture count is sampled independently from scene style and clutter axes.

@@ -148,6 +148,7 @@ class GamesMarbleChainShotEffectValueTask(MarbleSingleQueryTaskBase):
     """Compute the numeric effect of the marked marble-chain shot."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'topology', 'state_update')
     _namespace = f"{SCENE_ID}.shot_effect"
     _prepare_objective = staticmethod(_prepare_shot_effect_objective)
 

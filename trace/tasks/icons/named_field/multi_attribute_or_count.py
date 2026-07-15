@@ -60,6 +60,7 @@ class IconsNamedFieldMultiAttributeOrCountTask:
     """Count icons satisfying a shape OR visual-attribute predicate."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "icons"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -77,6 +77,7 @@ def _bind_answer_annotation(scene_payload, frequency_spec) -> tuple[int, dict[st
 @register_task
 class IconsIconFieldMostFrequentTypeCountTask(IconFieldFrequencyTaskLifecycle):
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

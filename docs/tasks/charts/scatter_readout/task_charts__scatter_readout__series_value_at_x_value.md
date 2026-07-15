@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point` witnesses bound by `point(target_mark)`. Annotation is one [x,y] pixel point at the center of the selected scatter mark. Axes, legends, titles, readout numbers, and distractor text are metadata.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `direct_retrieval`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_readout.series_value_at_x_value.ChartsScatterSeriesValueAtXValueTask`
 2. Prompt bundle: `prompts/charts/scatter_readout/charts_scatter_readout_v1.json`

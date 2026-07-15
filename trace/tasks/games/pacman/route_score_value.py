@@ -227,6 +227,7 @@ class GamesPacmanRouteScoreValueTask:
     """Compute the score of collectibles on the highlighted route."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'topology', 'formula_evaluation')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

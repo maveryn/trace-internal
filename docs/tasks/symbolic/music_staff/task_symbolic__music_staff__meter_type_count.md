@@ -16,6 +16,10 @@ Output binding: `answer` is the matching range count as an integer.
 Annotation witnesses: a homogeneous `bbox_set` of measure range boxes whose signature has the requested meter type.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## 2) Scene + task contract
 1. Entities/relations: a rendered music-staff notation panel with marked notes, chords, measure ranges, option cards, or key signatures depending on the task objective.
 2. Supported `query_id` values: `single`

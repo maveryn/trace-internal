@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one pixel box around the selected labeled light-source option. Annotation must mark the selected visible lamp option from the final rendered diagram. Object and shadow boxes remain trace metadata for derivation context.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`
+
 ## Query Branches
 
 | Query id | Program schema |

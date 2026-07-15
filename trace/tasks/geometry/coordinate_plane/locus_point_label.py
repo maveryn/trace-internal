@@ -51,6 +51,7 @@ class GeometryCoordinateLocusPointLabelTask:
     """Choose the candidate point that lies in the shaded coordinate locus."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     domain = "geometry"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the disp
 Annotation witnesses: `segment` witnesses from the finalized render. Annotation value: `[[x0, y0], [x1, y1]]` for the marked velocity-time graph segment, where each endpoint is a `[x, y]` pixel point. Annotation must mark the minimal visual segment witness for the marked interval. It must not mark derived displacement text, prompt-only formulas, decorative panel chrome, broad axis-scale regions, or unrelated graph segments.
 Query ids: `constant_velocity_interval_displacement`, `constant_acceleration_interval_displacement`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

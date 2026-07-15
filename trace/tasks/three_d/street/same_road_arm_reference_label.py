@@ -546,6 +546,7 @@ class ThreeDStreetSameRoadArmReferenceLabelTask:
     """Choose the option-panel street object on the same road arm as a reference."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

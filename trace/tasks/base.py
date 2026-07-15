@@ -1,4 +1,4 @@
-"""Base task interface for TRACE generators."""
+"""Base task interface for Trace generators."""
 
 from __future__ import annotations
 
@@ -52,11 +52,12 @@ class TaskOutput:
 
 
 class Task(Protocol):
-    """Protocol that every registered TRACE task must satisfy."""
+    """Protocol that every registered Trace task must satisfy."""
 
     task_id: str
     domain: str
     scene_id: str | None
+    reasoning_operations: tuple[str, ...]
     default_dataset_enabled: bool
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:

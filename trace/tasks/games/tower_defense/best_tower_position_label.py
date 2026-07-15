@@ -73,6 +73,7 @@ class GamesTowerDefenseBestTowerPositionLabelTask:
     """Choose the candidate tower position covering the most path enemies."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'spatial_relations', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

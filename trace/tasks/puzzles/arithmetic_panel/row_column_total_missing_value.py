@@ -55,6 +55,7 @@ class PuzzlesArithmeticRowColumnTotalMissingValueTask:
     """Solve one hidden grid cell from row and column totals."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

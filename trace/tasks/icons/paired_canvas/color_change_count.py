@@ -24,6 +24,7 @@ class IconsPairedCanvasColorChangeCountTask(IconsPanelAttributeChangeCountTaskBa
     """Count Right-panel icons whose color changed from the Left panel."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "icons"
     supported_query_ids = (SINGLE_QUERY_ID,)
     query_ids = _resolve_color_change_query_ids()

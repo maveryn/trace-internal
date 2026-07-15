@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`
+
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with context objects and exactly three marked floor points. The image includes a visual option panel with all six possible orders of the three point labels.
 

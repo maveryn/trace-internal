@@ -18,6 +18,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `total_count`, `difference_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Contract
 The scene has three straight conveyor lanes. The prompt selects two lanes and one object type, then asks for either the total or absolute difference across the two lanes. Object type is a sampled operand; arithmetic operator is the query id.
 

@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(named_region_set)`. Annotation contains pixel boxes around every map region included in the total; legend, title, and context text are not annotation targets. This task uses the synthetic region-map variant only; geographic map variants are intentionally unsupported for this objective.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

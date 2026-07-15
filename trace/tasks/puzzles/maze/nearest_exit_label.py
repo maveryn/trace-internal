@@ -36,6 +36,7 @@ class PuzzlesMazeNearestExitLabelTask:
     """Return the reachable exit with the shortest corridor path from START."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'topology')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

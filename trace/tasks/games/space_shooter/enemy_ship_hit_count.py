@@ -58,6 +58,7 @@ class GamesSpaceShooterEnemyShipHitCountTask(SpaceShooterLifecycleTask):
     """Count enemy ships that can be destroyed by current blue shots."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'aggregation')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

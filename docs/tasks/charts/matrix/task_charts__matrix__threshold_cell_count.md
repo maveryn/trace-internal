@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(counted_cells)`. Annotation marks exactly the cells in the selected row or column that satisfy the threshold condition. Matrix headers, legends, titles, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `row_at_least_threshold_cell_count`, `row_at_most_threshold_cell_count`, `column_at_least_threshold_cell_count`, `column_at_most_threshold_cell_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

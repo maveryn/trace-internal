@@ -55,6 +55,7 @@ class GeometrySimilarFigureMeasureTransferVariableValueTask:
     """Solve for a variable in similar figures with expression-labeled sides."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

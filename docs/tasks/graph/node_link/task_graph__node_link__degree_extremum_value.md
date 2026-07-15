@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the queried extreme degree v
 Annotation witnesses: `annotation` uses the `point` schema; one point at the node center whose branch-specific degree value equals the requested maximum or minimum.
 Query ids: `undirected_max_degree_value`, `undirected_min_degree_value`, `directed_max_in_degree_value`, `directed_max_out_degree_value`.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `comparison`

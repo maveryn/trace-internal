@@ -103,7 +103,7 @@ class PageVisualAssetSelection:
 
 
 def page_visual_asset_root() -> Path:
-    """Return the TRACE-side page visual asset root."""
+    """Return the Trace-side page visual asset root."""
 
     return _ASSET_ROOT
 

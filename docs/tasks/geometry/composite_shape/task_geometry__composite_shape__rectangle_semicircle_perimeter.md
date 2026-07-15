@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_composite_shape_measurements, unknown_role=perimeter_measure, formula_schema=rectangle_semicircle_boundary_with_side_remainders); scene=composite_shape; scope=rectangle_semicircle_perimeter`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `composite_shape`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

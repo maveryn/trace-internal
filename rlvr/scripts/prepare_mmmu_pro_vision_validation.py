@@ -148,7 +148,7 @@ def _write_manifest_sidecar(output_path: Path, *, rows: list[dict[str, Any]], ar
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build a TRACE-style MMMU-Pro vision validation parquet.")
+    parser = argparse.ArgumentParser(description="Build a Trace-style MMMU-Pro vision validation parquet.")
     parser.add_argument("--sample-size", type=int, default=DEFAULT_SAMPLE_SIZE, help="Use <=0 to keep all rows.")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)

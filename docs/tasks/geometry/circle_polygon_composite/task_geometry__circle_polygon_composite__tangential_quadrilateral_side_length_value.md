@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(tangential_quadrilateral, unknown_role=missing_side_length, formula_schema=pitot_theorem); scene=circle_polygon_composite; scope=tangential_quadrilateral_side_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_circle_polygon_composite_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

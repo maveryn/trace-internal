@@ -54,6 +54,7 @@ class GeometryFunctionPanelsIntersectionPropertyLabelTask:
     """Choose the only panel matching the requested intersection condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

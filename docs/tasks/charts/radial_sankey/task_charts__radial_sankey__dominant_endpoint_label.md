@@ -18,6 +18,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `see_annotation_contract`. Annotation marks the selected source or target endpoint node box. The flow curves, title, panel frame, ring, and unrelated nodes are context unless explicitly referenced by the task.
 Query ids: `largest_target_for_source`, `largest_source_for_target`.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.radial_sankey.dominant_endpoint_label.ChartsRadialSankeyDominantEndpointLabelTask`
 2. Prompt bundle: `charts_radial_sankey_v1`

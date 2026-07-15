@@ -28,6 +28,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(selected_panels)`. Annotation marks the full selected panels included in the sum.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `aggregation`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

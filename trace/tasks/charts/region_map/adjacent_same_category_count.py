@@ -21,6 +21,7 @@ class ChartsMapAdjacentSameCategoryCountTask:
     """Count neighboring regions with the same category as a labeled reference region."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = "charts"
     objective_contract = "adjacent_same_category_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

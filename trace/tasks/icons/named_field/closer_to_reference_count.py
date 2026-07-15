@@ -395,6 +395,7 @@ class IconsCountingNamedShapeCloserToReferenceCountTask:
     """Count target-shape icons closer to one of two prompt-named references."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = "icons"
     supported_query_ids = QUERY_IDS
 

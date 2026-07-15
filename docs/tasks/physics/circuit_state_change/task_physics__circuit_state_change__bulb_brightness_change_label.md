@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; The answer value is the selec
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed by `changed_switch` and visible bulb labels `B1` through `B5`. Annotation marks the switch-action cue and bulb symbols with their resistance labels. It does not mark wires, battery terminals, decorative parts, inferred current paths, or derived brightness values.
 Query ids: `brightens_after_switch_change`, `dims_after_switch_change`, `turns_on_after_switch_change`, `turns_off_after_switch_change`.
 
+## Reasoning Operations
+
+Families: `topology`, `state_update`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

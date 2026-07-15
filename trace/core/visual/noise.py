@@ -1,4 +1,4 @@
-"""Deterministic post-image noise augmentation helpers for TRACE tasks.
+"""Deterministic post-image noise augmentation helpers for Trace tasks.
 
 This module applies coordinate-preserving post-render noise edits with
 deterministic sampling. Scenes provide their own default config; this

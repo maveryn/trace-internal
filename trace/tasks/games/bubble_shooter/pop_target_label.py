@@ -90,6 +90,7 @@ class GamesBubbleShooterPopTargetLabelTask:
     """Choose the labeled landing target that would pop bubbles."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

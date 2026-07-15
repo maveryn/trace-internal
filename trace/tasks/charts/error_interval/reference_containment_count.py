@@ -22,6 +22,7 @@ class ChartsErrorIntervalReferenceContainmentCountTask:
     """Count intervals that contain a displayed reference value."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (DEFAULT_QUERY_ID,)

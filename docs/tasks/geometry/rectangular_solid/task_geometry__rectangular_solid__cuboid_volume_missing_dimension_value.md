@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(cuboid_volume_measurements, unknown_role=length|width|height, formula_schema=cuboid_volume_missing_dimension); scene=rectangular_solid; scope=cuboid_volume_missing_dimension_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `missing_length_from_volume` asks for the cuboid length `L` from visible volume, width, and height labels.
 - `missing_width_from_volume` asks for the cuboid width `W` from visible volume, length, and height labels.

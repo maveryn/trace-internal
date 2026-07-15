@@ -160,6 +160,7 @@ class ChartsStyleLegendThresholdSeriesCountTask:
     """Count styled legend series satisfying a threshold at one x position."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "threshold_series_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

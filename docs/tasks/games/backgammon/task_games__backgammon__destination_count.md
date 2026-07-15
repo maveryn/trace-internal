@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `legal_move_count`, `hit_move_count`, `blocked_destination_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `state_update`
+
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.
 3. Annotation is projected from numbered destination point bboxes, not individual checker bboxes.

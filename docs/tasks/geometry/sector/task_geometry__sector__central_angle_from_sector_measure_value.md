@@ -14,6 +14,10 @@
 - Branch `from_arc_length`: derive the sector central angle from visible radius and arc length.
 - Branch `from_sector_area`: derive the sector central angle from visible radius and sector area.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_sector_formula_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

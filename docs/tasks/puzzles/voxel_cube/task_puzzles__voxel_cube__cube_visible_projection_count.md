@@ -22,6 +22,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; all filled cells in the target projection grid.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `transformation`
+
 ## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `annotation_gt.type = bbox_set`

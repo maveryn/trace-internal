@@ -1,6 +1,6 @@
-# TRACE External Validation Pack
+# Trace External Validation Pack
 
-This folder is the active TRACE-style benchmark validation pack for the new `rlvr/` stack.
+This folder is the active Trace-style benchmark validation pack for the new `rlvr/` stack.
 
 Current scope:
 
@@ -16,7 +16,7 @@ Excluded for now:
 - `mathverse_mini`
 
 These parquet files are symlinked to the archived source assets under `rlvr_legacy/dataset/validation/`.
-The new PPO trainer can run TRACE-style validation by setting:
+The new PPO trainer can run Trace-style validation by setting:
 
 - `data.validation_style=trace_benchmark`
 - `data.val_files=[...]`
@@ -27,10 +27,10 @@ The new PPO trainer can run TRACE-style validation by setting:
 - `data.max_prompt_length=1536`
 - `data.max_response_length=1536`
 
-Legacy external benchmark rows still carry `prompt`/`ground_truth` columns, and the TRACE dataset loader
+Legacy external benchmark rows still carry `prompt`/`ground_truth` columns, and the Trace dataset loader
 falls back to those when `prompt_answer`/`answer_gt` are absent. Prepared rows such as MMMU-Pro Vision
 and CountQA carry both column pairs and are evaluated with the same answer-mode JSON system prompt used
-during TRACE RLVR training.
+during Trace RLVR training.
 
 When this mode is enabled, validation runs one dataloader per benchmark and reports metrics under:
 

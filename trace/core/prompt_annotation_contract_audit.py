@@ -1,4 +1,4 @@
-"""Audit rendered prompts and public annotation contracts for TRACE tasks."""
+"""Audit rendered prompts and public annotation contracts for Trace tasks."""
 
 from __future__ import annotations
 

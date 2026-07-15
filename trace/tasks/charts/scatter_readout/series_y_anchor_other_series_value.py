@@ -56,6 +56,7 @@ class ChartsScatterSeriesYAnchorOtherSeriesValueTask:
     """Use a value in one series to find the same-x value in a second series."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     objective_contract = "series_y_anchor_other_series_value"
     supported_query_ids = QUERY_IDS

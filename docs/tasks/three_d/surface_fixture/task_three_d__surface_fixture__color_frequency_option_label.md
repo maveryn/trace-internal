@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `most_frequent_color`, `absent_color`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`
+
 ## Contract
 The image shows one projected fixture surface containing repeated colored
 surface elements, plus six labeled text option cards `A` through `F`. Each

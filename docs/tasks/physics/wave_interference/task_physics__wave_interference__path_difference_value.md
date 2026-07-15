@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is an exact
 Annotation witnesses: `segment_set` witnesses from the finalized render. Annotation is the unordered pair of final-image pixel line segments from S1 to P and from S2 to P. Segment endpoint order is not semantic. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -18,6 +18,10 @@
 ## Program Contract
 - `aggregate_matched_row_delta(match_key=item_code, predicate=ordered_quantity!=received_quantity, term=abs(ordered_quantity-received_quantity)*unit_value, aggregate=sum); output=integer; annotation=bbox_set(receiving_mismatch_rows); scene=paired_forms; scope=two side-by-side matched business forms`
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`, `matching`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_paired_forms_v1`
 2. Scene key: `paired_forms_reconciliation`

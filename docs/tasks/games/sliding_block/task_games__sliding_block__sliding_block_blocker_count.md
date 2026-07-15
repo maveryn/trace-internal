@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `topology`
+
 ## Generation Notes
 1. The red target block labeled `T` and exit arrow define the straight exit path.
 2. The answer is the number of non-target blocks occupying cells on that path; supported counts include `0`.

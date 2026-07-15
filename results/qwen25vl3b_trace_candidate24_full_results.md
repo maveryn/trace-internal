@@ -1,4 +1,4 @@
-# Qwen2.5-VL-3B TRACE Candidate24 Full Benchmark Results
+# Qwen2.5-VL-3B Trace Candidate24 Full Benchmark Results
 
 This full stage carries forward the 1000-row candidate23 stage, adds all remaining rows for those 23 benchmarks, and adds regular `ChartQA_TEST` as the 24th benchmark.
 

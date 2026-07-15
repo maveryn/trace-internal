@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the miss
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation marks the question-mark target resistor. The zero meter reading and known resistor labels remain visible context in the image and trace metadata, but they are not public annotation witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

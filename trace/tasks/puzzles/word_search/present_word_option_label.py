@@ -66,6 +66,7 @@ def _bind_present_word_option_output(dataset, visual):
 @register_task
 class PuzzlesWordSearchPresentWordOptionLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = (SINGLE_QUERY_ID,)

@@ -190,6 +190,7 @@ class ChartsRadialSankeyTransferTotalValueTask:
     """Return a grouped transfer total from a radial Sankey chart."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "transfer_total_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

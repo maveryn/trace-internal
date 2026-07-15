@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer_value` schema; The answer value is th
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys are `reference_weight`, `reference_extension`, `query_weight`, and `query_extension`. Annotation must mark the corresponding visible or marked weight blocks and extension markers in the final rendered image. Extension-marker boxes are vertically padded around the marker so the annotation target is not too thin.
 Query ids: `missing_weight_for_extension`, `missing_extension_for_weight`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

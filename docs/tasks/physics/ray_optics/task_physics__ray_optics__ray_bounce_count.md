@@ -16,6 +16,10 @@ Output binding: `answer` uses the `integer_count` schema; The answer value is th
 Annotation witnesses: `point_set` witnesses from the finalized render. Annotation is an unordered set of final-image pixel points at the mirror-bounce centers. Annotation and answer must come from the same generated execution trace.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `spatial_relations`, `transformation`
+
 ## Query Branches
 
 Supported `query_id`s: `single`

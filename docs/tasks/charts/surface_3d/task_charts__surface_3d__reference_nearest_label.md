@@ -32,6 +32,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `see_annotation_contract`. Annotation marks one [x,y] pixel point at the center of the selected point marker. The renderer may draw floor-projection guides and a y-reference guide to make the 3D y-axis readout visible; these guide marks are not annotation targets. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

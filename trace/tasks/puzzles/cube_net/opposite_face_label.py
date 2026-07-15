@@ -38,6 +38,7 @@ class PuzzlesCubeNetOppositeFaceLabelTask:
     """Select the option matching the face opposite the marked cube-net face."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

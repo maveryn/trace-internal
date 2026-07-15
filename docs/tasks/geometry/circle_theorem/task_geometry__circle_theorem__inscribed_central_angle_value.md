@@ -10,6 +10,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_circle_theorem_measurements, derivation_rule=central_inscribed_angle_relation, output_role=angle_measure); scene=circle_theorem; scope=inscribed_central_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 - `inscribed_angle_from_central`: given the central angle over an arc, solve the inscribed angle over the same arc.
 - `central_angle_from_inscribed`: given the inscribed angle over an arc, solve the central angle over the same arc.

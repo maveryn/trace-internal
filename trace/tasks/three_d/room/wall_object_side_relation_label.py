@@ -102,6 +102,7 @@ class ThreeDRoomWallObjectSideRelationLabelTask:
     """Choose the option-panel wall object on the requested side of a TV."""
 
     task_id = TASK_ID
+    reasoning_operations = ('logical_composition', 'spatial_relations')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

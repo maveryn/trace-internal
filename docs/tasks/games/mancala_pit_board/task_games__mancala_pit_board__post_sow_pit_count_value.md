@@ -24,6 +24,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generator
 
 - Implementation: `trace/tasks/games/mancala_pit_board/post_sow_pit_count_value.py`

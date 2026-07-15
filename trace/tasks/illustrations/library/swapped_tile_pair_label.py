@@ -189,6 +189,7 @@ class IllustrationsLibrarySwappedTilePairLabelTask:
     """Select the option naming the two swapped numbered library cells."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = "illustrations"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True

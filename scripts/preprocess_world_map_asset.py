@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess Natural Earth country polygons into a compact TRACE map asset."""
+"""Preprocess Natural Earth country polygons into a compact Trace map asset."""
 
 from __future__ import annotations
 
@@ -146,7 +146,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         default="assets/charts/maps/natural_earth_admin0_world_110m_v0.json",
-        help="Output TRACE asset JSON path.",
+        help="Output Trace asset JSON path.",
     )
     args = parser.parse_args()
     with urlopen(SOURCE_URL, timeout=30) as response:

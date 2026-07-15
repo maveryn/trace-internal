@@ -25,6 +25,7 @@ class PagesStepListRelativeOffsetStepLabelTask:
     """Return the visible title reached by moving a few steps before or after a named source step."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'topology')
     domain = _lifecycle.DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

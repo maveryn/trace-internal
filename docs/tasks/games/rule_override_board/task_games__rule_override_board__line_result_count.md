@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema for every counted mini-board panel.
 Query ids: `line_override_win_count`, `line_override_loss_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 
 - The prompt states the anti-line rule: a full row, column, or diagonal is a loss for the target player.

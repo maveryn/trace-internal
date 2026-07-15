@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; the number of directed edges
 Annotation witnesses: `annotation` uses the `point_sequence` schema; the ordered `point_sequence` of node-center pixel points along the unique longest directed path.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `topology`
+
 ## 1) Identity
 1. Domain: `graph`
 2. Scene: `path`

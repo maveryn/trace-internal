@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `integer_value`.
 Annotation witnesses: `unspecified` witnesses bound by `bbox_set_map(filter_cells,target_cells)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `above_threshold_filtered_mean`, `below_threshold_filtered_mean`, `interval_filtered_mean`.
 
+## Reasoning Operations
+
+Families: `filtering`, `comparison`, `aggregation`
+
 ## Review Notes
 
 This task uses the current source layout. Scene-local reusable code lives under `trace/tasks/charts/table/shared/`; public task files own objective logic, query selection, answer binding, and annotation binding.

@@ -1,1 +1,1 @@
-"""TRACE reward adapters for the Vero-derived RLVR stack."""
+"""Trace reward adapters for the Vero-derived RLVR stack."""

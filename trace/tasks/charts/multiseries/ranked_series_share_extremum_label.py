@@ -73,6 +73,7 @@ class ChartsMultiseriesRankedSeriesShareExtremumTask:
     """Return the category label ranked by one series' share of category total."""
 
     task_id = "task_charts__multiseries__ranked_series_share_extremum_label"
+    reasoning_operations = ('ranking', 'aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "ranked_series_share_extremum_label"
     supported_query_ids = SERIES_SHARE_QUERY_IDS

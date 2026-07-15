@@ -136,6 +136,7 @@ class GeometryCoordinateCompositeRegionMembershipLabelTask:
     """Select the marked candidate point satisfying a non-numeric region predicate."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

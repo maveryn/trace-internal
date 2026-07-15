@@ -1,4 +1,4 @@
-"""Shared loader and deterministic sampler for vendored TRACE font assets."""
+"""Shared loader and deterministic sampler for vendored Trace font assets."""
 
 from __future__ import annotations
 

@@ -59,6 +59,7 @@ class ChartsCompositionChartContiguousOrderSumTask:
     """Return the sum of a contiguous circular chart-order span."""
 
     task_id = "task_charts__part_whole__contiguous_chart_order_sum"
+    reasoning_operations = ('aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "contiguous_chart_order_sum"
     supported_query_ids = SUPPORTED_QUERY_IDS

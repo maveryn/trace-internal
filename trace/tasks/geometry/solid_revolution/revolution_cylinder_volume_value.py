@@ -26,6 +26,7 @@ CYLINDER_ANNOTATION_KEYS = (
 @register_geometry_task
 class GeometrySolidRevolutionCylinderVolumeValueTask:
     task_id = CYLINDER_TASK_ID
+    reasoning_operations = ('transformation', 'formula_evaluation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = CYLINDER_QUERY_IDS

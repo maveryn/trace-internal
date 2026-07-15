@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: a `bbox_map` with `start_marker` and `selected_option` roles.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Contract
 1. Query ids: `single`
 2. Rule variant metadata: `binary_rule|three_state_rule`

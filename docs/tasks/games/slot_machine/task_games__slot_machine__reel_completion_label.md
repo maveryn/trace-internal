@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `formula_evaluation`, `matching`
+
 ## Generation Notes
 1. The scene renders the first two visible reels of a 3x3 slot machine and four labeled candidate third reels.
 2. Paylines are the three full rows plus the two long diagonals; columns are not paylines.

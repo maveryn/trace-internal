@@ -1,4 +1,4 @@
-"""TRACE dataset export helpers for the local RLVR stack."""
+"""Trace dataset export helpers for the local RLVR stack."""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ _ANSWER_AND_ANNOTATION_SCHEMA_LINE_RE = re.compile(
 
 @dataclass(frozen=True)
 class RLVRExportResult:
-    """Summary for one TRACE-to-RLVR export run."""
+    """Summary for one Trace-to-RLVR export run."""
 
     source_dataset_root: Path
     train_instances_path: Path
@@ -146,7 +146,7 @@ def _resolve_parquet_row_worker_count(parquet_cpu_count: int | None) -> int:
 
 
 def resolve_train_instances_source(path: str | Path) -> tuple[Path, Path]:
-    """Resolve a TRACE dataset root plus its train-instances file."""
+    """Resolve a Trace dataset root plus its train-instances file."""
 
     candidate = Path(path).expanduser().resolve()
     if candidate.is_dir():
@@ -157,10 +157,10 @@ def resolve_train_instances_source(path: str | Path) -> tuple[Path, Path]:
         dataset_root = candidate.parent
 
     if not train_instances_path.exists():
-        raise FileNotFoundError(f"TRACE train-instances file not found: {train_instances_path}")
+        raise FileNotFoundError(f"Trace train-instances file not found: {train_instances_path}")
     if train_instances_path.name != "train_instances.jsonl":
         raise ValueError(
-            "TRACE RLVR export expects a dataset root or a file named "
+            "Trace RLVR export expects a dataset root or a file named "
             f"'train_instances.jsonl', got: {train_instances_path.name}"
         )
     return dataset_root, train_instances_path
@@ -211,7 +211,7 @@ def _read_jsonl_records(path: Path) -> list[dict[str, Any]]:
         path.open("r", encoding="utf-8") as handle,
         tqdm(
             total=total_bytes,
-            desc="Read TRACE JSONL",
+            desc="Read Trace JSONL",
             unit="B",
             unit_scale=True,
             dynamic_ncols=True,
@@ -250,7 +250,7 @@ def _normalize_multimodal_prompt(prompt: str, *, image_count: int) -> str:
     """Prefix RLVR image placeholders so exported multimodal rows match their image payload.
 
     vLLM's multimodal replacement expects prompt tokens to contain one `<image>` marker
-    per image item. TRACE prompts intentionally avoid transport-specific placeholders, so
+    per image item. Trace prompts intentionally avoid transport-specific placeholders, so
     RLVR export normalizes them into the local RLVR multimodal convention.
     """
 
@@ -284,7 +284,7 @@ def _strip_redundant_rlvr_output_contract(prompt: str, *, prompt_variant: Prompt
 
 
 def _build_prompt_columns(record: Mapping[str, Any], *, image_count: int) -> dict[str, str]:
-    """Export both public TRACE prompt variants so one parquet can drive multiple ablations."""
+    """Export both public Trace prompt variants so one parquet can drive multiple ablations."""
 
     prompt_answer = _normalize_multimodal_prompt(
         _strip_redundant_rlvr_output_contract(
@@ -310,7 +310,7 @@ def _build_prompt_columns(record: Mapping[str, Any], *, image_count: int) -> dic
 def _iter_image_paths(record: Mapping[str, Any], dataset_root: Path) -> Iterable[Path]:
     images = record.get("images")
     if not isinstance(images, list):
-        raise ValueError("TRACE RLVR export requires images to be a list")
+        raise ValueError("Trace RLVR export requires images to be a list")
 
     for image in images:
         if isinstance(image, Mapping):
@@ -543,10 +543,10 @@ def _build_curriculum_assignments(records: list[Mapping[str, Any]]) -> dict[str,
     for record in records:
         instance_id = str(record.get("instance_id", "")).strip()
         if not instance_id:
-            raise ValueError("TRACE RLVR export requires instance_id")
+            raise ValueError("Trace RLVR export requires instance_id")
         task = str(record.get("task", "")).strip()
         if not task:
-            raise ValueError(f"TRACE RLVR export requires task on {instance_id}")
+            raise ValueError(f"Trace RLVR export requires task on {instance_id}")
         task_rows.setdefault(task, []).append(instance_id)
 
     assignments: dict[str, dict[str, Any]] = {}
@@ -580,7 +580,7 @@ def _trace_shard_path(dataset_root: Path, shard_id: str) -> Path:
         zstd_candidate = traces_root / f"{shard_id}.zst"
         if zstd_candidate.exists():
             return zstd_candidate
-    raise FileNotFoundError(f"TRACE sidecar shard not found: {candidate}")
+    raise FileNotFoundError(f"Trace sidecar shard not found: {candidate}")
 
 
 def _iter_trace_shard_records(path: Path) -> Iterable[dict[str, Any]]:
@@ -614,7 +614,7 @@ def _query_fields_from_trace_record(trace_record: Mapping[str, Any]) -> dict[str
     if query_query_id is not None and execution_query_id is not None:
         if str(query_query_id) != str(execution_query_id):
             raise ValueError(
-                "TRACE sidecar query_id mismatch: "
+                "Trace sidecar query_id mismatch: "
                 f"query_spec={query_query_id!r} execution_trace={execution_query_id!r}"
             )
 
@@ -678,7 +678,7 @@ def _build_query_field_assignments(
         shard_id = str(trace_ref.get("shard_id", "")).strip()
         line_index = trace_ref.get("line_index")
         if not shard_id or line_index is None:
-            raise ValueError(f"TRACE trace_ref for {instance_id} is missing shard_id/line_index")
+            raise ValueError(f"Trace trace_ref for {instance_id} is missing shard_id/line_index")
         parsed_line_index = int(line_index)
         instance_to_ref[instance_id] = (shard_id, parsed_line_index)
         line_refs_by_shard[shard_id][parsed_line_index].append(instance_id)
@@ -712,7 +712,7 @@ def _build_query_field_assignments(
     missing = sorted(set(instance_to_ref) - set(assignments))
     if missing:
         sample = ", ".join(missing[:5])
-        raise ValueError(f"failed to recover TRACE query fields for {len(missing)} rows, sample: {sample}")
+        raise ValueError(f"failed to recover Trace query fields for {len(missing)} rows, sample: {sample}")
     return assignments
 
 
@@ -726,23 +726,23 @@ def build_rlvr_row(
     image_storage_mode: ImageStorageMode = "path_dict",
     max_embedded_image_pixels: int | None = None,
 ) -> dict[str, Any]:
-    """Convert one TRACE train record into an RLVR-ready row."""
+    """Convert one Trace train record into an RLVR-ready row."""
 
     prompt_variant = _normalize_prompt_variant(prompt_variant)
 
     instance_id = str(train_record.get("instance_id", "")).strip()
     if not instance_id:
-        raise ValueError("TRACE RLVR export requires instance_id")
+        raise ValueError("Trace RLVR export requires instance_id")
 
     answer_gt = train_record.get("answer_gt")
     annotation_gt = train_record.get("annotation_gt")
     reward_contract = train_record.get("reward_contract")
     if not isinstance(answer_gt, Mapping):
-        raise ValueError(f"TRACE RLVR export requires answer_gt on {instance_id}")
+        raise ValueError(f"Trace RLVR export requires answer_gt on {instance_id}")
     if not isinstance(annotation_gt, Mapping):
-        raise ValueError(f"TRACE RLVR export requires annotation_gt on {instance_id}")
+        raise ValueError(f"Trace RLVR export requires annotation_gt on {instance_id}")
     if not isinstance(reward_contract, Mapping):
-        raise ValueError(f"TRACE RLVR export requires reward_contract on {instance_id}")
+        raise ValueError(f"Trace RLVR export requires reward_contract on {instance_id}")
     exported_images, image_infos = _build_exported_images(
         train_record,
         dataset_root=dataset_root,
@@ -979,7 +979,7 @@ def export_trace_dataset_to_rlvr(
     parquet_cpu_count: int | None = None,
     max_embedded_image_pixels: int | None = None,
 ) -> RLVRExportResult:
-    """Export one TRACE dataset to an RLVR-ready JSONL or parquet file."""
+    """Export one Trace dataset to an RLVR-ready JSONL or parquet file."""
 
     prompt_variant = _normalize_prompt_variant(prompt_variant)
     if image_path_mode not in {"relative", "absolute", "dataset_relative"}:

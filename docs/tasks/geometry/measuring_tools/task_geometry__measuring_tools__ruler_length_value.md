@@ -10,6 +10,10 @@
 ## Program Contract
 - `read_visible_measurement_tool(tool=ruler, candidate=marked_length_on_carrier_shape, unit=centimeters, operation=read_ruler_span, output_role=length_measure_integer, annotation_witness=measured_segment); scene=measuring_tools; scope=ruler_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `measuring_tools`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

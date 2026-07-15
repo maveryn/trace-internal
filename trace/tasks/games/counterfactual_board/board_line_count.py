@@ -65,6 +65,7 @@ class GamesCounterfactualBoardLineCountTask:
     """Count visible horizontal or vertical board lines."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

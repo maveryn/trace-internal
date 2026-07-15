@@ -118,6 +118,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
 @register_task
 class ChartsRadarProfileAdvantageCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = DOMAIN
     objective_contract = "profile_advantage_count"
     supported_query_ids = (QUERY_ID,)

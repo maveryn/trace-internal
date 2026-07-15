@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses `bbox_set`, one board-square box for each capturable opponent piece.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generation Notes
 1. The red outlined square contains the marked piece.
 2. Friendly pieces block movement.

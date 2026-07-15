@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `row_label`.
 Annotation witnesses: `unspecified` witnesses bound by `bbox(answer_value_cell)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `highest_rank_in_column`, `lowest_rank_in_column`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Review Notes
 
 This task uses the current source layout. Scene-local reusable code lives under `trace/tasks/charts/table/shared/`; public task files own objective logic, query selection, answer binding, and annotation binding.

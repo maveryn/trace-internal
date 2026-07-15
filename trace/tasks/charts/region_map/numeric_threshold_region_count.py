@@ -28,6 +28,7 @@ def _threshold_direction_probabilities(query_probabilities):
 @register_task
 class ChartsMapNumericThresholdRegionCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "charts"
     objective_contract = "numeric_threshold_region_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

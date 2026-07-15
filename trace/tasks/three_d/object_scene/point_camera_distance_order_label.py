@@ -26,6 +26,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 @register_task
 class ThreeDObjectScenePointCameraDistanceOrderLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True

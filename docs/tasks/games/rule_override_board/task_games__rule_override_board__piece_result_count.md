@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema for every counted mini-board panel.
 Query ids: `piece_override_win_count`, `piece_override_loss_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Generation Notes
 
 - The prompt states the fewer-pieces rule: the target player wins by having fewer pieces than the other player.

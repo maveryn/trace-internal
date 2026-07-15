@@ -58,6 +58,7 @@ class GamesTowerDraughtsBoardControlledStackCountTask:
     """Count stacks controlled by one player, using top-disk ownership."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

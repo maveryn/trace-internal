@@ -14,6 +14,10 @@ Annotation schema: `point_map`.
 Annotation witnesses: `annotation` marks the moving token center and the selected destination-cell center.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `state_update`
+
 ## Generator
 
 - Implementation: `trace/tasks/games/ludo_board/move_result_option_label.py`

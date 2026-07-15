@@ -221,6 +221,7 @@ class GamesPoolGroupBallCountTask:
     """Count visible balls in the current player's pool group."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

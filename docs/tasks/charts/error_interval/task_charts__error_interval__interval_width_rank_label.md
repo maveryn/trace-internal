@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `segment` witnesses bound by `segment(selected_interval_lower_upper_span)`. Annotation marks the selected interval's lower-to-upper visual span as one segment, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `narrowest_interval_label`, `second_narrowest_interval_label`, `second_widest_interval_label`, `widest_interval_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

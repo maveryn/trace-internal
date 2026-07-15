@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_item)`. Annotation marks the single displayed item with the global extremal size; the answer is that item's category label. Renderer context such as legends, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_overall_size_category_label`, `smallest_overall_size_category_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

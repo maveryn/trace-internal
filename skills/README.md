@@ -1,4 +1,4 @@
-# TRACE Skills
+# Trace Skills
 
 Repo-local skills are workflow overlays for Codex agents. They route the agent
 to the right source-of-truth docs, enforce a short execution sequence, and

@@ -176,6 +176,7 @@ class GeometryConeNetHeightFromSectorAngleTask:
     """Return the cone height after deriving radius from the sector arc."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

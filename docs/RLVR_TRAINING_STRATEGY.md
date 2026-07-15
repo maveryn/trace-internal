@@ -1,6 +1,6 @@
 # Tentative RLVR Training Strategy
 
-This note records the TRACE RLVR training strategy. It explains why the current
+This note records the Trace RLVR training strategy. It explains why the current
 run is staged and what signals matter. Operational commands live in
 `docs/workflows/RLVR_TRAINING_RUNBOOK.md`.
 
@@ -37,14 +37,14 @@ The paper also reports useful partial-scale signals:
 - task-routed rewards outperform a generic `math_verify` reward;
 - open-ended instruction-following data is needed to avoid degrading visual chat.
 
-TRACE should borrow these high-level lessons, not copy Vero's exact data or
-response-length settings. TRACE has programmatic generators, typed answers,
+Trace should borrow these high-level lessons, not copy Vero's exact data or
+response-length settings. Trace has programmatic generators, typed answers,
 typed annotation contracts, and task-specific verifiers, so its data can be
 sampled online or materialized deterministically from seeds.
 
-## TRACE Training Objective
+## Trace Training Objective
 
-TRACE responses should include reasoning plus the structured payload selected
+Trace responses should include reasoning plus the structured payload selected
 for that task by
 `docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`. Answer-only tasks end with:
 
@@ -85,7 +85,7 @@ Reward components should be logged separately:
 - response length statistics
 
 Do not use training reward alone to choose the recipe. Use a fixed held-out
-TRACE evaluation set and compare answer accuracy, annotation score, invalid
+Trace evaluation set and compare answer accuracy, annotation score, invalid
 output rate, and per-domain regressions.
 
 ## Initial Reward Ablation
@@ -106,7 +106,7 @@ Annotation-only can be added later as a diagnostic, but it is unlikely to be a
 final recipe and should not consume the first ablation budget unless there is a
 specific failure mode to investigate.
 
-The ablation should use the full intended TRACE task distribution if possible.
+The ablation should use the full intended Trace task distribution if possible.
 Reducing task scope or rollouts can make the selected reward recipe fail to
 transfer to the real run.
 
@@ -205,7 +205,7 @@ from `chartqapro`, `charxivreason`, `mathvista`, `mmmu_pro_vision`, `countqa`,
 
 ## Data Sampling
 
-TRACE can sample from programmatic generators instead of relying only on a fixed
+Trace can sample from programmatic generators instead of relying only on a fixed
 static dataset. The clean default sampler is:
 
 ```text

@@ -1,4 +1,4 @@
-# TRACE System Architecture
+# Trace System Architecture
 
 Implementation map for the contracts in `docs/contracts/BLUEPRINT.md`.
 
@@ -52,8 +52,8 @@ All active task work uses the current source layout described in
 8. `trace/core/builder.py` — build orchestration.
 9. `trace/core/build_presets.py` — reusable build recipes.
 10. `trace/core/reward_contracts.py` — public reward-contract resolver.
-11. `trace/core/reward_scoring.py` — shared TRACE answer/annotation scoring.
-12. `trace/core/rlvr_export.py` — TRACE-to-RLVR export helpers.
+11. `trace/core/reward_scoring.py` — shared Trace answer/annotation scoring.
+12. `trace/core/rlvr_export.py` — Trace-to-RLVR export helpers.
 13. `trace/core/taxonomy.py` — public taxonomy and implementation/source
     routing metadata.
 14. `trace/core/strict_repro.py` — strict reproducibility comparisons.

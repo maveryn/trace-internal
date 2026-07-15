@@ -64,6 +64,7 @@ class GeometryCoordinatePanelSegmentRelationMatchLabelTask:
     """Choose the coordinate panel whose two segments satisfy a requested relation."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'matching')
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

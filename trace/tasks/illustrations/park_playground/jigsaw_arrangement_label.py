@@ -190,6 +190,7 @@ class IllustrationsParkPlaygroundJigsawArrangementLabelTask:
     """Select the option that correctly arranges profile-aware park-scene tiles."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = "illustrations"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True

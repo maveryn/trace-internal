@@ -40,6 +40,7 @@ class ChartsTableIntervalValueCountTask:
     """Count rows whose value in one table column lies inside an inclusive interval."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "interval_value_count"
     supported_query_ids = (SINGLE_QUERY_ID,)

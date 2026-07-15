@@ -18,6 +18,10 @@
 ## Program Contract
 - `module_field_ranked_item(module_title, field_label, rank_direction, rank_position); output=string_visible_item_label; annotation=bbox(ranked_item_container); scene=mixed_infographic_page; scope=one titled module within one dense mixed infographic page`
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`

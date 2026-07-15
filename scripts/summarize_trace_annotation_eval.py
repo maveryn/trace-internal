@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize TRACE answer+annotation rollout diagnostics."""
+"""Summarize Trace answer+annotation rollout diagnostics."""
 
 from __future__ import annotations
 
@@ -227,7 +227,7 @@ def _summary_columns() -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Summarize TRACE annotation diagnostic rollouts.")
+    parser = argparse.ArgumentParser(description="Summarize Trace annotation diagnostic rollouts.")
     parser.add_argument("--per-rollout", type=Path, required=True, help="per_rollout.jsonl or per_rollout.jsonl.gz")
     parser.add_argument("--output-dir", type=Path, required=True, help="Directory for JSON summaries and workbook.")
     parser.add_argument("--label", default="trace_annotation_eval", help="Output filename label.")

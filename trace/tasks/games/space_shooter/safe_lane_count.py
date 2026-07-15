@@ -58,6 +58,7 @@ class GamesSpaceShooterSafeLaneCountTask(SpaceShooterLifecycleTask):
     """Count bottom lane pads not threatened by enemy shots."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `topology`
+
 ## Generation Notes
 1. `query_id=single` is the public no-branch query id; the prompt uses the Hex connection-gap template.
 2. The generator rejects boards with multiple distinct minimum gap sets so annotation has a unique witness set.

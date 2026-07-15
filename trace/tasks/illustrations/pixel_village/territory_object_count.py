@@ -40,6 +40,7 @@ class IllustrationsPixelVillageTerritoryObjectCountTask:
     """Count target entities inside a semantic pixel-village territory."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -26,6 +26,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(matching_cells_in_winning_axis)`. Annotation marks rendered bboxes for matching cells in the winning row or column. Axes, legend, title, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `row_condition_extremum_label`, `column_condition_extremum_label`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`
+
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `bbox_set`.

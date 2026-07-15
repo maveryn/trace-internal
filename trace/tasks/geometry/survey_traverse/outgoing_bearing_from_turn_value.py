@@ -116,6 +116,7 @@ class GeometrySurveyTraverseOutgoingBearingFromTurnValueTask:
     """Compute an outgoing bearing from the shown traverse turn."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'formula_evaluation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

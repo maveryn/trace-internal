@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `integer_value`.
 Annotation witnesses: `unspecified` witnesses bound by `bbox_map(row_interval_span_by_row_label)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `formula_evaluation`
+
 ## Review Notes
 
 This task uses the current source layout. Scene-local reusable code lives under `trace/tasks/charts/table/shared/`; public task files own objective logic, query selection, answer binding, and annotation binding.

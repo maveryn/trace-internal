@@ -117,6 +117,7 @@ def _build_plan(params, seed, selected_query_id, _probs):
 @register_task
 class ChartsCompositionPanelsSegmentCountExtremumPanelLabelTask:
     task_id = T
+    reasoning_operations = ('filtering', 'counting', 'ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "segment_count_extremum_panel_label"
     supported_query_ids = QUERY_IDS

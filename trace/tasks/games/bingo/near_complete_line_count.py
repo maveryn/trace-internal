@@ -24,6 +24,7 @@ def _prepare_near_complete_objective(instance_seed, task_params, query_id, query
 @register_task
 class GamesBingoNearCompleteLineCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

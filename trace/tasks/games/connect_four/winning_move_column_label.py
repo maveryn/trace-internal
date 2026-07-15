@@ -53,6 +53,7 @@ class GamesConnectFourWinningMoveColumnLabelTask:
     """Return the visible column label for the immediate winning drop."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

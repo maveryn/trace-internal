@@ -21,6 +21,7 @@ class ChartsMapGroupCategoryRegionCountTask:
     """Count visible countries in one continent and category."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "charts"
     objective_contract = "group_category_region_count"
     supported_query_ids = SUPPORTED_QUERY_IDS

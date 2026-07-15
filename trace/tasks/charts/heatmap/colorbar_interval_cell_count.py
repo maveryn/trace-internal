@@ -15,6 +15,7 @@ DEFAULT_QUERY_ID = "single"
 @register_task
 class ChartsHeatmapColorbarIntervalCellCountTask:
     task_id = "task_charts__heatmap__colorbar_interval_cell_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "colorbar_interval_cell_count"
     supported_query_ids = QUERY_IDS

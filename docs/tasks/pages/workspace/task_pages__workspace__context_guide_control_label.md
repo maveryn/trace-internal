@@ -18,6 +18,10 @@
 ## Program Contract
 - `workspace_context_guide_control_label(context_cue, key_column); output=option_letter; annotation=bbox(target_control); scene=workspace; scope=one professional application workspace`
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_workspace_v1`
 2. Scene key: `workspace`

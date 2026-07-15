@@ -1,4 +1,4 @@
-"""Reusable build-config presets for common TRACE dataset recipes."""
+"""Reusable build-config presets for common Trace dataset recipes."""
 
 from __future__ import annotations
 

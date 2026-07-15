@@ -1,1 +1,1 @@
-"""Core TRACE infrastructure."""
+"""Core Trace infrastructure."""

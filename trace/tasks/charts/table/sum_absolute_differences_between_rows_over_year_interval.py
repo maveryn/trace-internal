@@ -40,6 +40,7 @@ class ChartsTableSumAbsoluteDifferencesBetweenRowsOverYearIntervalTask:
     """Compute the sum of year-by-year absolute differences between two rows."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "sum_absolute_differences_between_rows_over_year_interval"
     supported_query_ids = (SINGLE_QUERY_ID,)

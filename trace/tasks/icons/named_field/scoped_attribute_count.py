@@ -395,6 +395,7 @@ class IconsCountingNamedShapeRegionCountTask:
     """Count named procedural icon shapes satisfying a visible region filter."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "icons"
     supported_query_ids = QUERY_IDS
 

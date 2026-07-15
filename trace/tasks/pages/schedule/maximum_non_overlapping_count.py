@@ -21,6 +21,7 @@ class PagesScheduleMaximumNonOverlappingCountTask:
   """Find the maximum number of mutually non-overlapping scheduled events."""
 
   task_id = TASK_ID
+  reasoning_operations = ('counting', 'ranking', 'spatial_relations')
   domain = _lifecycle.DOMAIN
   supported_query_ids = SUPPORTED_QUERY_IDS
   default_dataset_enabled = True

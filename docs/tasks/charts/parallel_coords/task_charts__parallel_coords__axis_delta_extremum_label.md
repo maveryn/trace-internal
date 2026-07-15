@@ -24,6 +24,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `segment` witnesses bound by `segment(answer_profile_segment)`. Annotation marks the answer profile segment between the adjacent named axes as `[[x0,y0],[x1,y1]]`. Axes, labels, threshold text, and decorative context are renderer context unless explicitly requested.
 Query ids: `largest_increase_between_axes`, `largest_decrease_between_axes`, `largest_absolute_change_between_axes`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Annotation Contract
 1. Answer schema: `string_label`.
 2. Annotation schema: `segment`.

@@ -21,6 +21,7 @@ class ThreeDCarouselScopedColorTypeCountTask:
     """Count objects matching a target color and object type on one carousel belt."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

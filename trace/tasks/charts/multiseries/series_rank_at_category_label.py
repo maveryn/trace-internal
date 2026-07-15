@@ -76,6 +76,7 @@ class ChartsMultiseriesSeriesRankAtCategoryLabelTask:
     """Return the ranked series label within one selected category."""
 
     task_id = "task_charts__multiseries__series_rank_at_category_label"
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "series_rank_at_category_label"
     supported_query_ids = SERIES_RANK_AT_CATEGORY_QUERY_IDS

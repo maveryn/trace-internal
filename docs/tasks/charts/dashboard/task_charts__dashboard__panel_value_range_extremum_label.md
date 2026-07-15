@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point_map` witnesses bound by `point_map(largest_value, smallest_value)`. Annotation keys are `largest_value` and `smallest_value`, each pointing to the category mark that defines the answer panel's range. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_panel_value_range_label`, `smallest_panel_value_range_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

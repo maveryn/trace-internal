@@ -21,6 +21,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `topology`, `state_update`
+
 ## Generation Notes
 1. `query_id=single` is the public no-branch query id; the prompt uses the Hex winning-move template.
 2. Candidate labels are rendered in the image and the answer is the one label that wins immediately.

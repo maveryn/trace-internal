@@ -18,6 +18,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `matching`
+
 ## Query IDs
 1. Supported `query_id`: `single`.
 2. The prompt objective key is `topology_outlier_label`; it is trace metadata, not a public query branch.

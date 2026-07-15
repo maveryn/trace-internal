@@ -181,7 +181,7 @@ python /home/shadeform/trace/scripts/summarize_trace_candidate37_200_results.py 
   --run-root "${RUN_ROOT}" \
   --suite-name trace_candidate24_full_greedy4096 \
   --subset-root "${SUBSET_ROOT}" \
-  --title "Qwen2.5-VL TRACE Candidate24 Full Greedy-4096 Benchmark Results" \
+  --title "Qwen2.5-VL Trace Candidate24 Full Greedy-4096 Benchmark Results" \
   --markdown "${RESULTS_ROOT}/trace_candidate24_full_greedy4096_results.md" \
   --excel "${RESULTS_ROOT}/trace_candidate24_full_greedy4096_results.xlsx" \
   --models \

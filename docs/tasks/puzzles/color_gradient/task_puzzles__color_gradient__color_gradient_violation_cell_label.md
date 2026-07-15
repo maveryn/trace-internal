@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; the violating swatch l
 Annotation witnesses: `annotation` uses the `bbox` schema; the image-pixel bounding box of the violating swatch cell.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the violating swatch label.

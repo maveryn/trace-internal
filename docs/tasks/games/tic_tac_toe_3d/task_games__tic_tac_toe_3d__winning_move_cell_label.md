@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `x_winning_move_label`, `o_winning_move_label`.
 
+## Reasoning Operations
+
+Families: `state_update`
+
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.
 2. The board is a 3 by 3 by 3 Tic-Tac-Toe state with one correct labeled empty-cell option by construction.

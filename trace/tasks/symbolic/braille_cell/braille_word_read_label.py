@@ -32,6 +32,7 @@ class SymbolicBrailleWordReadLabelTask:
     """Choose the word encoded by a multi-cell Braille plate."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = "symbolic"
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True

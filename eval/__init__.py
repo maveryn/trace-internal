@@ -1,1 +1,1 @@
-"""Evaluation setup and vendored benchmark assets for TRACE."""
+"""Evaluation setup and vendored benchmark assets for Trace."""

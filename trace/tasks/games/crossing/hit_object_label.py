@@ -74,6 +74,7 @@ class GamesCrossingHitObjectLabelTask:
     """Identify which labeled moving object collides with the marked route."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

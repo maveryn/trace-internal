@@ -88,6 +88,7 @@ def _trace_payload(
 @register_task
 class PolarGraphPaperReadoutValueTask(Task):
     task_id = TASK_ID
+    reasoning_operations = ('direct_retrieval',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

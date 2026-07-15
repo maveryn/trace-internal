@@ -18,6 +18,10 @@
 ## Program Contract
 - `map_destination_after_directions(start_label, direction_sequence); output=string_visible_landmark_label; annotation=bbox_sequence(route_landmarks_ordered); scene=map; scope=one printed campus map`
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `topology`, `state_update`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_map_v1`
 2. Scene key: `printed_map`

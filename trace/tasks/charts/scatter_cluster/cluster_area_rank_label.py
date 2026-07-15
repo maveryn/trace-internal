@@ -68,6 +68,7 @@ class ChartsScatterClusterAreaRankLabelTask:
     """Return the cluster label at a requested shaded-footprint area rank."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "cluster_area_rank_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

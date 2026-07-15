@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_triangle_relations_measurements, unknown_role=length_measure, formula_schema=chained_rectangle_diagonal_length); scene=triangle_relations; scope=pythagorean_length_value_chained_rectangle_diagonal_length`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

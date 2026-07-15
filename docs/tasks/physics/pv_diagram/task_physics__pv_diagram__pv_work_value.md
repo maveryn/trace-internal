@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is an exact
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one final-image pixel box around the highlighted PV path and shaded work region. Annotation must mark the visual path/area used for the work calculation, not the answer label, decorative chrome, or unrelated axes text.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

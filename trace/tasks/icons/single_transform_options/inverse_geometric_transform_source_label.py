@@ -106,6 +106,7 @@ class IconsSingleTransformOptionsInverseGeometricTransformSourceLabelTask:
     """Select the option that would become the Reference after the shown operation."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

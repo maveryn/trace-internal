@@ -20,6 +20,7 @@ def _build_task_output(materialized):
 class ChartsThreeDBarSeriesTotalGapValueTask:
     """Compute the absolute gap between totals for two series."""
     task_id = 'task_charts__bar_3d__series_total_gap_value'
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = 'series_total_gap_value'
     supported_query_ids = ('series_total_gap_value',)

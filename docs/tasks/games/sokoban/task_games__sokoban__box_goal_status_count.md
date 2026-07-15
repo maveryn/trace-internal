@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `box_on_goal_count`, `box_off_goal_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `matching`
+
 ## Generation Notes
 1. The board shows paired colored boxes and matching colored goal dots.
 2. A box on its matching goal has the goal dot drawn on top of the box so the covered goal remains visible.

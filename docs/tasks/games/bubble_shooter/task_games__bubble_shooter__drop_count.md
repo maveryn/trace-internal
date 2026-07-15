@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `topology`, `state_update`
+
 ## Generation Notes
 1. This task is owned by the current-layout public file `trace/tasks/games/bubble_shooter/drop_count.py`.
 2. The public task id selects the objective; `query_id` is `single`.

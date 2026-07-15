@@ -115,7 +115,7 @@ def main() -> int:
     parser.add_argument("--subset-root", type=Path, default=TRACE_GROUNDING_SUBSET_ROOT)
     parser.add_argument("--only", nargs="*", default=list(TRACE_GROUNDING_BENCHMARKS))
     parser.add_argument("--run-set", default="trace_grounding")
-    parser.add_argument("--title", default="TRACE Grounding 3B Base / Answer / Annotation Results")
+    parser.add_argument("--title", default="Trace Grounding 3B Base / Answer / Annotation Results")
     args = parser.parse_args()
 
     greedy, greedy_details, greedy_generation = _score_sheet(

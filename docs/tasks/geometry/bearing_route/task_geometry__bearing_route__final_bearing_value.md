@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula_then_select_visual_option(visible_bearing_route_measurements, visible_bearing_options, unknown_role=direct_bearing_option, formula_schema=final_bearing_value); scene=bearing_route; scope=final_bearing_value`
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the geometry prompt bundle configured for this scene/task override.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

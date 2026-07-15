@@ -18,6 +18,10 @@
 ## Program Contract
 - `record_table_value_threshold_in_group_count(section_name, size_threshold_mb); output=integer_value; annotation=bbox_set(counted_rows); scene=record_table; scope=one sectioned record-table page`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_record_table_v1`
 2. Scene key: `record_table`

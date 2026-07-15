@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the aver
 Annotation witnesses: `segment` witnesses from the finalized render. Annotation value: `[[x0, y0], [x1, y1]]` for the marked distance-time graph segment, where each endpoint is a `[x, y]` pixel point. Annotation must mark the minimal visual segment witness for the marked interval. It must not mark option boxes, decorative graph chrome, broad axis-scale regions, or derived answer text.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

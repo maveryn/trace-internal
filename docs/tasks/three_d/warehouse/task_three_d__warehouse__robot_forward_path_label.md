@@ -19,6 +19,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`, `topology`
+
 ## Prompt And Trace
 The prompt bundle is `three_d_warehouse_v1` under `prompts/three_d/warehouse/`. The trace records camera pose, projection frame, scene variant, robot heading/design/color metadata, travel direction vector, path corridor polygon, candidate object types by label, forward/lateral path coordinates by label, first-reached flags by label, selected object id/type, projected bboxes, and option-panel descriptors/bboxes.
 

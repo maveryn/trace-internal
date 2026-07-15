@@ -98,6 +98,7 @@ def _build_plan(params, seed, _query_id, _probs):
 @register_task
 class ChartsCompositionPanelsTopKBySegmentThenSumOtherSegmentCountTask:
     task_id = T
+    reasoning_operations = ('counting', 'ranking', 'aggregation', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "top_k_by_segment_then_sum_other_segment_count"
     supported_query_ids = (Q,)

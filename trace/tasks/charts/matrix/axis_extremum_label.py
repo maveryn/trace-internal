@@ -30,6 +30,7 @@ class ChartsMatrixAxisExtremumLabelTask:
     """Return a matrix row/column label selected by a second-extremum cell query."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "axis_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

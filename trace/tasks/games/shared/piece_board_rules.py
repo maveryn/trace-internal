@@ -583,7 +583,7 @@ def is_king_in_check(board: Sequence[Sequence[ChessPiece | None]], color: str) -
 
 
 def legal_chess_moves_for_color(board: Sequence[Sequence[ChessPiece | None]], color: str) -> Tuple[Tuple[Coord, Coord], ...]:
-    """Return legal normal moves for one color under TRACE's simplified chess rules."""
+    """Return legal normal moves for one color under Trace's simplified chess rules."""
 
     moves: List[Tuple[Coord, Coord]] = []
     for source in occupied_coords(board):

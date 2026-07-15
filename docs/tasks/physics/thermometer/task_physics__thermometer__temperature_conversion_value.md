@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the inte
 Annotation witnesses: `segment` witnesses from the finalized render. Annotation is the visible liquid-level segment on the thermometer tube. Annotation must not mark the whole scale, source-unit label, derived answer text, hidden conversion result, or decorative thermometer casing alone.
 Query ids: `celsius_to_fahrenheit_value`, `fahrenheit_to_celsius_value`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

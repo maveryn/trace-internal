@@ -22,6 +22,10 @@ target icons.
 Annotation schema: `bbox_set`.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `logical_composition`, `spatial_relations`
+
 ## Contract
 1. The image shows one visible ring of procedural named icons.
 2. Two endpoint icons are marked with visible labels `A` and `B`.

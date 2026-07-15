@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_candidate_point(candidate_points, coordinate_rule=rotation_about_marked_center, rotation_rule)); scene=coordinate_plane; scope=rotated_point_label`
 
+## Reasoning Operations
+
+Families: `transformation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

@@ -204,6 +204,7 @@ class SymbolicLogicGateInternalOutputCountTask:
     """Count gates whose evaluated intermediate output equals the requested bit."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'topology', 'formula_evaluation')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

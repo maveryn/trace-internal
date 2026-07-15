@@ -76,6 +76,7 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
     """Choose the option-panel wall-mounted object closest to the camera."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

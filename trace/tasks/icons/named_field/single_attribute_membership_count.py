@@ -47,6 +47,7 @@ class IconsCountingNamedShapeCountTask:
     """Count procedural named icon shapes in a single field."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "icons"
     supported_query_ids = SUPPORTED_QUERY_IDS
 

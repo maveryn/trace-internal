@@ -14,7 +14,7 @@ from run_task_review import build_scene_review_workbooks  # noqa: E402
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build scene-level TRACE task-review workbooks")
+    parser = argparse.ArgumentParser(description="Build scene-level Trace task-review workbooks")
     parser.add_argument(
         "--out-root",
         default="review/task-reviews",

@@ -28,6 +28,7 @@ class PuzzlesColorGradientViolationCellLabelTask:
     """Identify the labeled swatch that breaks a smooth color progression."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

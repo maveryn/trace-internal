@@ -17,6 +17,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(counted_point_centers)`. Annotation marks the centers of the counted scatter points only. Axes, legends, threshold guides, titles, and distractor text are not annotation targets.
 Query ids: `x_above_threshold_count`, `x_below_threshold_count`, `y_above_threshold_count`, `y_below_threshold_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_points.axis_threshold_point_count.ChartsScatterPointsAxisThresholdPointCountTask`
 2. Prompt bundle: `prompts/charts/scatter_points/charts_scatter_points_v1.json`

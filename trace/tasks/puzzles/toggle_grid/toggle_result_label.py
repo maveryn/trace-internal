@@ -70,6 +70,7 @@ class PuzzlesToggleGridToggleResultLabelTask(ToggleGridSceneTask):
     """Choose the result grid after pressing the red marked toggle switch."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     supported_query_ids = SUPPORTED_QUERY_IDS
     prompt_task_key = PROMPT_TASK_KEY
     prompt_query_key = PROMPT_QUERY_KEY

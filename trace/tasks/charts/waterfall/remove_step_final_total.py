@@ -33,6 +33,7 @@ def _build_plan(params, instance_seed, selected_branch, query_probabilities):
 
 class ChartsWaterfallRemoveStepFinalTotalTask:
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'state_update', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = SUPPORTED_QUERY_IDS

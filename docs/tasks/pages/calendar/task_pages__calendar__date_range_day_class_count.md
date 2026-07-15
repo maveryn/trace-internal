@@ -18,6 +18,10 @@
 ## Program Contract
 - `calendar_month_date_range_day_class_count(day_class={weekday,weekend}, inclusive_boundary_dates); output=integer_value; annotation=bbox_set(matching_date_cells_in_range); scene=calendar; scope=one Gregorian month-view calendar`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_v1`
 2. Scene key: `month_calendar`

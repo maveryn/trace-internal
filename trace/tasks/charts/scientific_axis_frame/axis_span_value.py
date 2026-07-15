@@ -66,6 +66,7 @@ class ChartsScientificAxisFrameAxisSpanValueTask:
     """Compute the visible numeric span of one axis."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     objective_contract = "axis_span_value"
     supported_query_ids = AXIS_SPAN_QUERY_IDS

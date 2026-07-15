@@ -18,6 +18,10 @@
 ## Program Contract
 - `page_field_extremum_module(field_label, rank_direction); output=string_visible_module_title; annotation=bbox(winning_module_panel); scene=mixed_infographic_page; scope=all modules on one dense mixed infographic page that show the shared field`
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`

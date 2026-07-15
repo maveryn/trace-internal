@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(corner_cut_open_box_net, unknown_role=base_dimension, formula_schema=open_box_corner_cut_dimensions); scene=rectangular_solid; scope=open_box_net_dimension_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `single` asks for one marked resulting base dimension after equal corner squares are removed and the sides fold up.
 - The sampled target base dimension role, sheet dimensions, cut size, style, font, and layout jitter are internal replay metadata.

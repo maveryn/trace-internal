@@ -45,6 +45,7 @@ class GeometryGraphPaperAngleTypeCountTask:
     """Count how many rendered angles have the requested type."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'formula_evaluation')
     domain = "geometry"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

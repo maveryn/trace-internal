@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the bbox set of counted legal cells only.
 Query ids: `remaining_valid_cells_in_marked_row_count`, `remaining_valid_cells_in_marked_column_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `matching`
+
 ## Behavior
 
 The task renders a partial Star Battle board with visible fixed stars and one highlighted row or column. The prompt names the highlighted row index from the top or column index from the left. The model counts empty cells in that highlighted scope where another star could legally be placed under the Star Battle rules. The annotation is the bbox set of counted legal cells only.

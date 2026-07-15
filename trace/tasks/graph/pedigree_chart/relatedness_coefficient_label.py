@@ -40,6 +40,7 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
     """Select the visual option for the coefficient of relatedness between two people."""
 
     task_id = RELATEDNESS_TASK_ID
+    reasoning_operations = ('topology', 'formula_evaluation')
     domain = "graph"
     default_dataset_enabled = True
     supported_query_ids = (SINGLE_QUERY_ID,)

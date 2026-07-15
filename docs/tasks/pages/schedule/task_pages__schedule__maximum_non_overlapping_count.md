@@ -23,6 +23,10 @@ instances with exactly one maximum-cardinality non-overlapping event set. Lane
 assignment is separately randomized so the answer set cannot be read off from a
 single schedule column.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `spatial_relations`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_schedule_v1`
 2. Scene key: `day_schedule`

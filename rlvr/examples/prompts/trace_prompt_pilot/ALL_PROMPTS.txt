@@ -1,4 +1,4 @@
-TRACE SYSTEM PROMPT PILOT VARIANTS
+Trace SYSTEM PROMPT PILOT VARIANTS
 
 These prompts are inactive pilot assets. They do not change the active default
 prompt wiring.

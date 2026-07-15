@@ -35,6 +35,7 @@ def _component_for_query(query_id: str) -> ReadoutComponent:
 @register_task
 class PolarGraphPaperCoordinateDifferenceValueTask(Task):
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

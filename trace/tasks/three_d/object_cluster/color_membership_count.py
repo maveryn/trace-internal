@@ -23,6 +23,7 @@ class ThreeDObjectClusterColorMembershipCountTask:
     """Count clustered objects matching one semantic color."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

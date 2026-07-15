@@ -222,6 +222,7 @@ class GamesLaneRunnerSafePathLabelTask:
     """Select the only displayed lane-runner route that avoids hazards."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

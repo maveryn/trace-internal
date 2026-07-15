@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: a `point_map` with `inner_ring_symbol`, `middle_ring_symbol`, and `outer_ring_symbol` centers for the selected code.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations:
    - one three-ring radial code wheel with symbols `A|B|C|D`;

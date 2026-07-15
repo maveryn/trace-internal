@@ -77,6 +77,7 @@ def _resolve_edge_weight_bounds(task_params: Mapping[str, Any]) -> tuple[int, in
 class GraphOptimizationAdjacencyMatrixMSTWeightTask:
     """Return the unique minimum-spanning-tree weight from a weighted adjacency matrix."""
     task_id = 'task_graph__adjacency__mst_weight'
+    reasoning_operations = ('ranking', 'aggregation', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_ADJACENCY_MATRIX_MST_QUERY_IDS
 

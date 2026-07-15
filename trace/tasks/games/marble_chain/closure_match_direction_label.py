@@ -76,6 +76,7 @@ class GamesMarbleChainClosureMatchDirectionLabelTask(MarbleSingleQueryTaskBase):
     """Choose the marble-chain shot direction that creates a same-color closure."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'topology', 'state_update', 'matching')
     _namespace = f"{SCENE_ID}.closure_match_direction"
     _prepare_objective = staticmethod(_prepare_closure_match_objective)
 

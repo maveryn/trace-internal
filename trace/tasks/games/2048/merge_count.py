@@ -21,6 +21,7 @@ def _prepare_merge_count_objective(instance_seed: int, params: Dict[str, Any], _
 class Games2048MergeCountTask:
     """Count merges made by one shown 2048 move."""
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     domain = 'games'
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

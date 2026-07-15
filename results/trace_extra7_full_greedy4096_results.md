@@ -1,4 +1,4 @@
-# Qwen2.5-VL TRACE Extra7 Full Greedy-4096 Benchmark Results
+# Qwen2.5-VL Trace Extra7 Full Greedy-4096 Benchmark Results
 
 Subset manifest root: `full VLMEvalKit datasets; no subset manifest`
 

@@ -44,6 +44,7 @@ class GeometryCoordinateLocusPanelMatchLabelTask:
     """Choose the panel matching the shown coordinate locus condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('comparison', 'logical_composition', 'spatial_relations', 'matching')
     domain = "geometry"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

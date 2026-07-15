@@ -115,6 +115,7 @@ class ChartsCandlestickCounterfactualCloseValueTask:
     """Compute a counterfactual close after changing one candle body size."""
 
     task_id = "task_charts__candlestick__counterfactual_close_value"
+    reasoning_operations = ('state_update', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "counterfactual_close_value"
     supported_query_ids = (INCREASE_BODY_QUERY_ID, DECREASE_BODY_QUERY_ID)

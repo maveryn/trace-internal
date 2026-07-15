@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; the selected option la
 Annotation witnesses: `annotation` uses the `bbox` schema; the image-pixel bounding box of the selected option swatch.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`, `matching`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the selected option label.

@@ -17,3 +17,7 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Annotation schema: `bbox_set`.
 Query ids: `single`.
+
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `matching`

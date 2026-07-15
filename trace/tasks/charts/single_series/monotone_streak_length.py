@@ -15,6 +15,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsTrendMonotoneStreakLengthTask:
     task_id = T
+    reasoning_operations = ('filtering', 'counting', 'ranking')
     domain = DOMAIN
     objective_contract = "monotone_streak_length"
     supported_query_ids = tuple(Q)

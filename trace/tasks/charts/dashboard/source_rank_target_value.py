@@ -110,6 +110,7 @@ class ChartsDashboardSourceRankTargetValueTask:
     """Use a ranked category in one panel to read the same category in another panel."""
 
     task_id = "task_charts__dashboard__source_rank_target_value"
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "source_rank_target_value"
     supported_query_ids = (LARGEST_SOURCE_QUERY_ID, SMALLEST_SOURCE_QUERY_ID)

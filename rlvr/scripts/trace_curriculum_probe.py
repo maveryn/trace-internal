@@ -52,7 +52,7 @@ def _maybe_parse_json_mapping(value: Any) -> dict[str, Any]:
             parsed = json.loads(stripped)
             if isinstance(parsed, dict):
                 return parsed
-    raise TypeError(f"Expected a mapping-like TRACE metadata value, got {type(value).__name__}")
+    raise TypeError(f"Expected a mapping-like Trace metadata value, got {type(value).__name__}")
 
 
 def _as_float(value: Any) -> float | None:
@@ -1371,14 +1371,14 @@ def _run_sharded_probe(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Probe a TRACE RLVR parquet with sampled base-model rollouts, then emit "
+            "Probe a Trace RLVR parquet with sampled base-model rollouts, then emit "
             "per-instance and aggregated solve statistics for curriculum construction."
         )
     )
     parser.add_argument(
         "--parquet",
         default="rlvr/dataset/train/trace_rlvr_train_128k_all_tasks_verojson.parquet",
-        help="TRACE RLVR parquet to probe.",
+        help="Trace RLVR parquet to probe.",
     )
     parser.add_argument("--output-dir", type=Path, required=True, help="Directory for per-instance and summary outputs.")
     parser.add_argument("--model", default="Qwen/Qwen3-VL-8B-Instruct")

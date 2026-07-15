@@ -39,6 +39,7 @@ class GeometryCoordinateTranslatedPointLabelTask:
     """Choose the candidate image point after the requested translation."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = "geometry"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

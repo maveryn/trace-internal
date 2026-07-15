@@ -46,6 +46,7 @@ class GamesSolitaireColumnCardCountValueTask(SolitaireLifecycleTask):
     """Count visible cards in a specified tableau column."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting',)
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

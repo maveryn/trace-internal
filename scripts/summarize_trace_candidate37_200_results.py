@@ -369,7 +369,7 @@ def main() -> int:
     parser.add_argument("--exclude", nargs="*", default=[])
     parser.add_argument("--markdown", type=Path, default=REPO_ROOT / "results/qwen25vl3b_trace_candidate37_200_results.md")
     parser.add_argument("--excel", type=Path, default=REPO_ROOT / "results/qwen25vl3b_trace_candidate37_200_results.xlsx")
-    parser.add_argument("--title", default="Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results")
+    parser.add_argument("--title", default="Qwen2.5-VL-3B Trace Candidate37 200-Row Benchmark Results")
     parser.add_argument("--suite-name", default="trace_candidate37_200")
     parser.add_argument("--run-set", default="trace_candidate37_200")
     parser.add_argument("--subset-root", type=Path, default=None)

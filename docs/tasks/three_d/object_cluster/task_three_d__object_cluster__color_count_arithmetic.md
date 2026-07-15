@@ -18,6 +18,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `total_count`, `difference_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `formula_evaluation`
+
 ## Contract
 The image shows many small 3D objects arranged in one cluster. The prompt names two canonical semantic colors and asks for either the combined count or the absolute difference between their counts. Color names are sampled operands inside this one task; the visual reasoning channel is fixed to color.
 

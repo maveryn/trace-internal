@@ -116,6 +116,7 @@ class IconsMirrorGridMissingMirrorCellLabelTask:
     """Select the option icon that completes a mirror-symmetric grid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

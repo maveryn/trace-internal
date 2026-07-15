@@ -113,6 +113,7 @@ class IllustrationsIsometricQuarryWorkerSameLevelTileLabelTask:
     """Choose the lettered terrain tile matching the quarry worker's elevation."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -95,6 +95,7 @@ class PhysicsStackStabilityStatusLabelTask:
     """Choose the stack whose COM projection has the queried stability status."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'spatial_relations', 'formula_evaluation')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

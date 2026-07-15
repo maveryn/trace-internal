@@ -1,4 +1,4 @@
-"""Shared TRACE answer/annotation reward scoring."""
+"""Shared Trace answer/annotation reward scoring."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ def _normalize_trace_output_mode(trace_output_mode: str | None) -> str:
     normalized_mode = _TRACE_OUTPUT_MODE_ALIASES.get(raw_mode)
     if normalized_mode is None:
         raise ValueError(
-            "TRACE output mode must be one of {'answer', 'answer_only', 'answer_and_annotation'}; "
+            "Trace output mode must be one of {'answer', 'answer_only', 'answer_and_annotation'}; "
             "shorthand alias 'annotation' is also accepted. "
             f"got {trace_output_mode!r}"
         )
@@ -188,7 +188,7 @@ def _normalize_trace_answer_scoring(trace_answer_scoring: str | None) -> str:
     resolved = aliases.get(normalized)
     if resolved is None:
         raise ValueError(
-            f"TRACE answer scoring must be one of {sorted(_TRACE_ANSWER_SCORING_MODES)!r}; "
+            f"Trace answer scoring must be one of {sorted(_TRACE_ANSWER_SCORING_MODES)!r}; "
             f"aliases {sorted(aliases)!r} are accepted. got {trace_answer_scoring!r}"
         )
     return resolved
@@ -207,7 +207,7 @@ def _normalize_trace_annotation_reward_formula(trace_annotation_reward_formula: 
     resolved = aliases.get(normalized)
     if resolved is None:
         raise ValueError(
-            "TRACE annotation reward formula must be one of "
+            "Trace annotation reward formula must be one of "
             f"{sorted(_TRACE_ANNOTATION_REWARD_FORMULAS)!r}; aliases {sorted(aliases)!r} are accepted. "
             f"got {trace_annotation_reward_formula!r}"
         )
@@ -346,7 +346,7 @@ def _resolve_point_half_life_px(
     if point_half_life_px is not None:
         resolved = float(point_half_life_px)
         if resolved <= 0.0:
-            raise ValueError(f"TRACE point_half_life_px must be positive, got {point_half_life_px}")
+            raise ValueError(f"Trace point_half_life_px must be positive, got {point_half_life_px}")
         return resolved
 
     for candidate in (image_size, image_sizes, metadata, extra_info):
@@ -931,7 +931,7 @@ def _score_trace_answer(
     normalized_scoring = _normalize_trace_answer_scoring(trace_answer_scoring)
     if normalized_scoring == "legacy_strict":
         if legacy_strict_scorer is None:
-            raise ValueError("TRACE legacy_strict answer scoring requires a legacy_strict_scorer callback")
+            raise ValueError("Trace legacy_strict answer scoring requires a legacy_strict_scorer callback")
         answer_text = _serialize_candidate(answer_value)
         score, extracted, _, _ = legacy_strict_scorer(response=answer_text, ground_truth=answer_gt.get("value"))
         return float(score), bool(extracted)
@@ -1221,7 +1221,7 @@ def score_trace_response(
     legacy_strict_scorer: Callable[..., tuple[Any, ...]] | None = None,
 ) -> dict[str, float]:
     if format_weight < 0.0 or format_weight > 1.0:
-        raise ValueError(f"TRACE format_weight must be in [0, 1], got {format_weight}")
+        raise ValueError(f"Trace format_weight must be in [0, 1], got {format_weight}")
     resolved_point_half_life_px = _resolve_point_half_life_px(
         point_half_life_px=point_half_life_px,
         image_size=image_size,
@@ -1266,7 +1266,7 @@ def score_trace_response(
 
     total_weight = float(answer_weight + annotation_weight)
     if total_weight <= 0.0:
-        raise ValueError("TRACE reward weights must sum to a positive value")
+        raise ValueError("Trace reward weights must sum to a positive value")
     normalized_answer_weight = float(answer_weight / total_weight)
     normalized_annotation_weight = float(annotation_weight / total_weight)
     if normalized_mode == "answer":

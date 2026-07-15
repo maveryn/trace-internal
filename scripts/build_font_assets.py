@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build shared TRACE font assets from permissively licensed font sources."""
+"""Build shared Trace font assets from permissively licensed font sources."""
 
 from __future__ import annotations
 
@@ -362,7 +362,7 @@ def _auto_tags_for_record(record: Mapping[str, object]) -> tuple[str, ...]:
 
 
 def _resolve_font_family_specs() -> tuple[FontFamilySpec, ...]:
-    """Return the deterministic TRACE font subset to vendor.
+    """Return the deterministic Trace font subset to vendor.
 
     The first families are the hand-curated stable core. The remainder are
     filled from the live Google Fonts catalog using conservative filters:
@@ -497,7 +497,7 @@ def _download_license_file(*, license_dir: str, family_dir: str, dest_dir: Path)
 def _write_readme() -> None:
     (FONT_ROOT / "README.md").write_text(
         "# Shared Font Assets\n\n"
-        "This directory stores a curated TRACE-vendored subset of permissively\n"
+        "This directory stores a curated Trace-vendored subset of permissively\n"
         "licensed fonts for deterministic visual variation in generated tasks.\n"
         "The current subset is downloaded from the Google Fonts GitHub repository\n"
         "and uses family-local license files recorded in `sources.json`.\n\n"
@@ -526,7 +526,7 @@ def _source_metadata(family_records: Mapping[str, Mapping[str, object]]) -> dict
                 "description": "Google Fonts repository containing binary font files served by Google Fonts.",
                 "repository_url": "https://github.com/google/fonts",
                 "metadata_url": "https://github.com/google/fonts",
-                "license_policy": "Each family directory contains its own license file; selected TRACE families use SIL Open Font License 1.1.",
+                "license_policy": "Each family directory contains its own license file; selected Trace families use SIL Open Font License 1.1.",
             }
         },
         "families": dict(sorted(family_records.items())),

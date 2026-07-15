@@ -10,6 +10,10 @@
 ## Program Contract
 - `derive_geometry_metric(visible_parallel_line_opposite_triangle_base_angles, derivation_rule=triangle_sum_then_vertical_opposite_angle, output_role=angle_measure); scene=angle_relations; scope=parallel_transversal_triangle_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `angle_relations`.
 - Prompt schema: external prompt bundle

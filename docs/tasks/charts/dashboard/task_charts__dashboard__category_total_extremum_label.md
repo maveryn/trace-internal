@@ -32,6 +32,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label|unan
 Annotation witnesses: `point_set` witnesses bound by `point_set(answer_category_marks_across_panels)|empty_set`. Answerable instances annotate the answer category mark in every dashboard panel. Unanswerable instances use an empty annotation array because at least one category is not shown in every dashboard panel. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_category_total_label`, `smallest_category_total_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

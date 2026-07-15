@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `matching`
+
 ## Generation Notes
 2. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.
 3. Annotation is the selected candidate-card bbox projected from the same generated card state used for answer verification.

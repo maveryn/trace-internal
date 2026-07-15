@@ -130,6 +130,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
 @register_task
 class ChartsPopulationPyramidDominantSideCountTask:
     task_id = "task_charts__population_pyramid__dominant_side_count"
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "dominant_side_count"
     supported_query_ids = DOMINANT_SIDE_COUNT_QUERY_IDS

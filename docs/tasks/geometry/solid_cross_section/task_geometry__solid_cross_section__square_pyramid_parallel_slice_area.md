@@ -13,6 +13,10 @@
 ## Program Contract
 - `solve_formula(visible_solid_cross_section_measurements, unknown_role=area_measure, formula_schema=square_pyramid_parallel_slice_area); scene=solid_cross_section; scope=square_pyramid_parallel_slice_area`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/solid_cross_section/geometry_solid_cross_section_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

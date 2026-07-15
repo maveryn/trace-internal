@@ -1,0 +1,72 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Reinforcement learning with verifiable rewards (RLVR) has become an effective
+route to stronger reasoning in language models because mathematical and
+programmatic tasks admit inexpensive, objective feedback
+\citep{shao2024deepseekmath,deepseekai2025deepseekr1}. Extending this recipe to
+vision-language models is more difficult. A useful visual example must support
+both exact verification and genuine dependence on the image, while also
+varying enough in content and presentation to avoid training on a narrow visual
+template. Recent multimodal RL methods demonstrate progress on mathematics,
+counting, spatial reasoning, and general visual understanding
+\citep{liu2025visualrft,huang2025visionr1,peng2025lmmr1,meng2025mmeureka}, but
+the data needed to train broadly transferable visual reasoning remains a
+central constraint.
+
+Two complementary directions expose this limitation. Large mixtures provide
+coverage by combining many existing datasets and task-specific rewards
+\citep{sarch2026vero}, but their sampling units and reasoning boundaries are
+inherited from heterogeneous sources. Procedural systems provide exact labels
+and controlled generation, yet typically concentrate on one visual grammar or
+a small family of related objectives, including jigsaws, logic puzzles, games,
+and abstract perception tasks
+\citep{wang2025jigsawr1,feng2025visualsphinx,tong2025gamerl,
+alam2026sphinx,yang2026tron}. Consequently, breadth, controllability, and
+verifiability are rarely represented within one coherent task organization.
+
+\trace addresses this gap through a program-centered taxonomy. A scene defines
+the visible grammar---its objects, relations, and layout family---whereas a
+task defines the reasoning program, answer type, and verifier semantics. A
+bounded query changes a meaningful program argument, such as extremum
+direction, without creating another task. This distinction extends the use of
+structured scene representations and executable question programs in systems
+such as CLEVR and Task Me Anything
+\citep{johnson2017clevr,zhang2024taskmeanything}: the taxonomy determines not
+only generation, but also sampling, verification, and cross-domain analysis.
+
+The resulting environment contains 1,000 tasks across 277 scenes and 11 visual
+domains. Each image and answer is derived from the same latent scene state, so
+verification evaluates a known program result rather than inferring a label
+from pixels. Seeded generation supports deterministic replay, while
+scene-compatible controls vary object populations, values, layout, palette,
+typography, contextual text, and bounded raster effects. Figure~\ref{fig:domain-montage}
+illustrates the resulting visual breadth.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/domain_montage.pdf}
+  \caption{Representative generated instances from the 11 visual domains in
+  \trace. The visual grammars range from charts and diagrams to games, pages,
+  puzzles, and object scenes; the executable contracts beneath these images
+  are developed in Sections~\ref{sec:design} and~\ref{sec:taxonomy}.}
+  \label{fig:domain-montage}
+\end{figure*}
+
+We use this environment to test a direct empirical question: whether
+answer-based RLVR over a broad procedural distribution improves reasoning on
+external visual benchmarks rather than only on regenerated instances from the
+same task families. The experiments compare base and \trace-trained
+vision-language models under matched evaluation protocols and report both
+aggregate transfer and benchmark-level variation.
+
+Our contributions are:
+\begin{itemize}
+  \item a program-centered taxonomy that separates visual scene grammar from
+        executable reasoning task and bounded query variation across 1,000
+        tasks, 277 scenes, and 11 domains;
+  \item a deterministic generator--renderer--verifier formulation with typed
+        answers, replayable traces, and answer-preserving visual variation; and
+  \item a controlled answer-based RLVR study of transfer from this procedural
+        task distribution to external visual-reasoning benchmarks.
+\end{itemize}

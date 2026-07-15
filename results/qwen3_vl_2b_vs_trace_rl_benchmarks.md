@@ -1,4 +1,4 @@
-# Qwen3-VL-2B vs TRACE RL Benchmark Results
+# Qwen3-VL-2B vs Trace RL Benchmark Results
 
 Models compared:
 

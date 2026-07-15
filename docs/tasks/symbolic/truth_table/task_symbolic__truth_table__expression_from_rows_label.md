@@ -17,6 +17,10 @@ Output binding: `answer` is the selected candidate label.
 Annotation witnesses: a scalar `bbox` around the selected expression option card.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `logical_composition`, `formula_evaluation`, `matching`
+
 ## 2) Scene + Task Contract
 1. The table uses variables `A`, `B`, and `C` with fixed row order `000..111`.
 2. The `P` column shows completed truth values for all rows.

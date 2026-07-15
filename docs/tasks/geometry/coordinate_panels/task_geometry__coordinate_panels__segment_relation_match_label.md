@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_panel(candidate_coordinate_panels_6, segment_relation)); scene=coordinate_panels; scope=segment_relation_match_label`
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_panels`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

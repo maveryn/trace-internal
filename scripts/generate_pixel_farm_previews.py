@@ -1025,7 +1025,7 @@ def generate_previews(*, out_dir: Path, object_out_dir: Path, count: int, seed: 
         "The renderer uses no external sprites. Kenney and OpenGameArt animal packs are visual references only.",
         "Each scene samples its own grid dimensions and renders logical tiles at 32px by default.",
         "Pen regions and each animal's `inside_pen` / `region_id` metadata are recorded for future region-count tasks.",
-        "No public TRACE task is registered for this prototype yet.",
+        "No public Trace task is registered for this prototype yet.",
     ]
     (out_dir / "README.md").write_text("\n".join(readme) + "\n", encoding="utf-8")
     generate_object_template_sheet(out_dir=object_out_dir)

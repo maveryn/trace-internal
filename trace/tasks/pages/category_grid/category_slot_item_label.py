@@ -45,6 +45,7 @@ class PagesCategoryGridCategorySlotItemLabelTask:
     """Read an ordinal item label from a category/subcategory grid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('direct_retrieval',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -91,6 +91,7 @@ class ChartsContourDensitySpreadExtremumRegionLabelTask:
     """Return the region label with the widest or narrowest visible footprint."""
 
     task_id = "task_charts__contour_density__spread_extremum_region_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "spread_extremum_region_label"
     supported_query_ids = (WIDEST_QUERY_ID, NARROWEST_QUERY_ID)

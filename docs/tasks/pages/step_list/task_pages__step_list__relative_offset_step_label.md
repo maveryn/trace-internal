@@ -17,6 +17,10 @@
 8. Query arguments: visible source step title, before/after relation, and integer step offset.
 9. Render arguments: step count, scene layout variant, source step index, offset count, compact card fields, visual style, and post-render noise.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_step_list_v1`
 2. Scene key: `step_list`

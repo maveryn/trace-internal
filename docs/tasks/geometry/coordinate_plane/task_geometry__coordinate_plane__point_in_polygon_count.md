@@ -10,6 +10,10 @@
 ## Program Contract
 - `count(filter(candidate_points, inside_polygon(point, target_polygon))); scene=coordinate_plane; scope=point_in_polygon_count`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

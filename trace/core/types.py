@@ -1,4 +1,4 @@
-"""Typed core ABI records for TRACE datasets."""
+"""Typed core ABI records for Trace datasets."""
 
 from __future__ import annotations
 

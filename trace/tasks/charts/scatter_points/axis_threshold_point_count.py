@@ -62,6 +62,7 @@ def _build_axis_threshold_plan(
 @register_task
 class ChartsScatterPointsAxisThresholdPointCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     objective_contract = "axis_threshold_point_count"
     supported_query_ids = QUERY_IDS

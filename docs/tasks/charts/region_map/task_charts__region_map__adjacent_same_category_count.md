@@ -31,6 +31,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(matching_neighbor_regions)`. Annotation marks the counted or summed map-region boxes only; legend, title, and context text are not annotation targets. Adjacent-region tasks identify the reference region by its short in-map marker label: a letter or compact alphanumeric code capped at 4 characters; pure-number marker labels are not used. Annotation marks matching neighbors and excludes the labeled reference region.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `spatial_relations`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

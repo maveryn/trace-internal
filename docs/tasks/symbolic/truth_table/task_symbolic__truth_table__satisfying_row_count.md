@@ -19,6 +19,10 @@ Output binding: `answer` is the integer count.
 Annotation witnesses: a `bbox_set` containing full table-row boxes for rows where expression `P` evaluates to `1`.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`, `formula_evaluation`
+
 ## 2) Scene + Task Contract
 1. The table uses three variables `A`, `B`, and `C`.
 2. Row order is fixed from `000` through `111`.

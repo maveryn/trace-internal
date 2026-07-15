@@ -58,6 +58,7 @@ class GeometryCircleTangentSecantLengthValueTask:
     """Solve a missing length from one tangent and one secant."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

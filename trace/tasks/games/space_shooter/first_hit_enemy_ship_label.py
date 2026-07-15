@@ -258,6 +258,7 @@ class GamesSpaceShooterFirstHitEnemyShipLabelTask(SpaceShooterLifecycleTask):
     """Choose which labeled enemy ship is hit first."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations', 'state_update')
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

@@ -74,6 +74,7 @@ class GamesMinecraftStackHeightConditionCountTask:
     """Count visible cube stacks satisfying a sampled height condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

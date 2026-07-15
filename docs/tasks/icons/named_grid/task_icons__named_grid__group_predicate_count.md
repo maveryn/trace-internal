@@ -17,6 +17,10 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annota
 Annotation schema: `bbox_set`.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query IDs
 - `row_at_least_shape_count`
 - `column_at_least_shape_count`

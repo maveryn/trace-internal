@@ -1,4 +1,4 @@
-"""Deterministic identity helpers for TRACE records."""
+"""Deterministic identity helpers for Trace records."""
 
 from __future__ import annotations
 

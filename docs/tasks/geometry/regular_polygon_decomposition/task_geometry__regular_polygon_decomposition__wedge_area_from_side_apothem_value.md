@@ -13,6 +13,10 @@
 ## Program Contract
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=single_wedge_area, formula_schema=side_length_times_apothem_divided_by_two); scene=regular_polygon_decomposition; scope=wedge_area_from_side_apothem_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `single` asks for the area of one regular-polygon triangular center wedge from its visible side-length and apothem labels.
 - The semantic prompt branch uses `wedge_area_from_side_and_apothem`; the public query id remains `single`.

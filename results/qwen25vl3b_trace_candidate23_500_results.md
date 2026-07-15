@@ -1,10 +1,10 @@
-# Qwen2.5-VL-3B TRACE Candidate-23 500-Row Stage Results
+# Qwen2.5-VL-3B Trace Candidate-23 500-Row Stage Results
 
 Generated on 2026-07-12 UTC.
 
 Models:
 - Base: `Qwen/Qwen2.5-VL-3B-Instruct` (`qwen25vl3b-base`)
-- TRACE RLVR step 500: `trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500`
+- Trace RLVR step 500: `trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500`
 
 Artifacts:
 - Cumulative subset manifests: `benchmark/subsets/trace_candidate23_500/`

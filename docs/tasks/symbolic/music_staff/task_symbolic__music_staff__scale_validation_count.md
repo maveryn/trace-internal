@@ -16,6 +16,10 @@ Output binding: `answer` is the matching fragment count as an integer.
 Annotation witnesses: a homogeneous `bbox_set` of scale-fragment range boxes that fit the target key.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations: a rendered music-staff notation panel with marked notes, chords, measure ranges, option cards, or key signatures depending on the task objective.
 2. Supported `query_id` values: `single`

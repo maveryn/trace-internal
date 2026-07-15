@@ -1,4 +1,4 @@
-# TRACE Prompt System
+# Trace Prompt System
 
 Prompt text is externalized, deterministic, and traceable.
 

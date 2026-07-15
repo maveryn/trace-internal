@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Generation Notes
 1. Renders the chain/tableau layout with the final chain tile marked `REF`.
 2. The answer is the number of loose dominoes in the unique longest one-sided extension from `REF`, not counting `REF`.

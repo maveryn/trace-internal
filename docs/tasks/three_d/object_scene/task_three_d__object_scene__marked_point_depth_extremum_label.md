@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`
+
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects and lettered point markers placed on the floor plane. Each marked point is rendered as a visible point glyph with a nearby letter label. The public task id defines the stable objective contract; query ids select closest vs farthest marked floor point. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 

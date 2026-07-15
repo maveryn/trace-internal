@@ -12,6 +12,10 @@
 ## Program Contract
 - `inverse_curvilinear_gap_measure(container=circle, packed_shape=square, given=shaded_area, target=square_side); scene=tangent_packing; scope=square_in_circle_side_from_gap_area`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the v1 scene prompt bundle configured for `tangent_packing`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

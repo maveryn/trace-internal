@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `comparison`, `ranking`
+
 ## Notes
 - The sampled scene has one uniquely earliest hitting note by construction.
 - Annotation is the scalar bbox around that earliest note.

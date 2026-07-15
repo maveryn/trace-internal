@@ -121,6 +121,7 @@ class GeometryCylinderWrapWrappedMarkPositionLabelTask:
     """Match a mark on an unwrapped strip to a labeled rim position."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

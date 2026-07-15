@@ -15,6 +15,10 @@
 - Triangles use class-preserving variation in scale, orientation, and side ratios; repeated instances of the same class are not required to be congruent.
 - Count objects are placed using their actual graph-unit bounds so independent triangles do not overlap.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

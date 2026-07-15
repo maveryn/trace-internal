@@ -15,6 +15,10 @@
 - The image shows a rectangular prism with a pyramid cap. The prism height is unknown, while base length, base width, pyramid height, and volume are labeled.
 - Annotation witness: one bbox around the prism-pyramid solid.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/solid_formula/geometry_solid_formula_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

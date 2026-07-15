@@ -13,6 +13,10 @@
 ## Program Contract
 - `solve_formula(visible_solid_revolution_measurements, formula_schema=cone_volume_from_right_triangle, target=volume); scene=solid_revolution; scope=revolution_cone_volume_value`
 
+## Reasoning Operations
+
+Families: `transformation`, `formula_evaluation`
+
 ## Query IDs
 - `single`: a right triangle is rotated 360 degrees around the marked leg; solve the resulting cone volume from the visible height and slant height.
 

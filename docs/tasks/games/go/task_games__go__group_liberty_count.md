@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `marked_group_liberty_count`, `marked_group_shared_liberty_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `topology`
+
 ## Generation Notes
 1. `marked_group_liberty_count` counts all empty orthogonal liberties of the marked group.
 2. `marked_group_shared_liberty_count` counts marked-group liberties that also touch an opponent stone.

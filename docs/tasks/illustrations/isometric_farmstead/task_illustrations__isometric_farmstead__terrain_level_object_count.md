@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `highest_terrain_object_count`, `lowest_terrain_object_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`, `logical_composition`
+
 ## Query Branches
 
 | Query id | Program schema |

@@ -192,6 +192,7 @@ class IllustrationsIndoorRoomSurfaceObjectCountTask:
     """Count objects of one type on a named indoor surface."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'spatial_relations')
     domain = "illustrations"
     supported_query_ids = (QUERY_ID,)
     default_dataset_enabled = True

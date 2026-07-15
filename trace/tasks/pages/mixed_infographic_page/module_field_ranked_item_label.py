@@ -62,6 +62,7 @@ class PagesMixedInfographicModuleFieldRankedItemLabelTask:
     """Find the item at a requested numeric rank in one module field."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

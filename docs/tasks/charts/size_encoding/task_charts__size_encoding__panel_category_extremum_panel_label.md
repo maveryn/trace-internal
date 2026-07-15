@@ -30,6 +30,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `bbox` witnesses bound by `bbox(answer_item)`. Annotation marks the single displayed item whose panel is the answer. Renderer context such as legends, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `largest_category_item_panel_label`, `smallest_category_item_panel_label`.
 
+## Reasoning Operations
+
+Families: `filtering`, `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

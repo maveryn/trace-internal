@@ -41,6 +41,7 @@ class GeometryCircleRadiusFromExternalDistanceAndAngleValueTask:
     """Compute the radius using the exterior distance and tangent angle."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

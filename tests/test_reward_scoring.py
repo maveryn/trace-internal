@@ -1,4 +1,4 @@
-"""TRACE core reward-scoring tests."""
+"""Trace core reward-scoring tests."""
 
 from __future__ import annotations
 

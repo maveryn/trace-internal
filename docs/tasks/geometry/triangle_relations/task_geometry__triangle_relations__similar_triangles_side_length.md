@@ -12,6 +12,10 @@
 - `solve_formula(visible_triangle_relations_measurements, unknown_role=length_measure, formula_schema=similar_triangles_side_length); scene=triangle_relations; scope=similar_triangles_side_length`
 - The visible construction marks and prompt state that `DE` is parallel to `BC`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

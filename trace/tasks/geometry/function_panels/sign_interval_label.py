@@ -38,6 +38,7 @@ class GeometryFunctionPanelsSignIntervalLabelTask:
     """Choose the only panel with the requested sign over the target interval."""
 
     task_id = TASK_ID
+    reasoning_operations = ('comparison',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

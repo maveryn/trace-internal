@@ -64,6 +64,7 @@ class ThreeDSurfaceFixtureRecolorBoardMatchLabelTask:
     """Select the candidate fixture board matching one source-to-destination recolor."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation', 'state_update', 'matching')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

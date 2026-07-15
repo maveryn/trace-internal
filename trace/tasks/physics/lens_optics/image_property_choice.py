@@ -265,6 +265,7 @@ class PhysicsLensOpticsImagePropertyChoiceTask:
     """Choose the image property implied by a converging-lens object position."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

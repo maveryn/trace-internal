@@ -18,6 +18,10 @@ Annotation schema: `bbox_set`.
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Notes
 The scene enforces the requested singleton count by construction, while
 repeated icon types serve as distractors.

@@ -24,6 +24,10 @@ Output binding: `answer` is the `unspecified` value bound by `unspecified`.
 Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `clockwise_sector_angle`, `counterclockwise_sector_angle`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `topology`, `formula_evaluation`
+
 ## Annotation Contract
 Annotation maps each included category label to the `[x,y]` pixel point at the center of its chart segment.
 

@@ -70,6 +70,7 @@ class GamesCardsLongestRunLengthTask:
     """Return the longest consecutive rank run length in display order."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'topology')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

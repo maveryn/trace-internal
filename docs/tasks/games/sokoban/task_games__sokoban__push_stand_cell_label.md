@@ -21,6 +21,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `state_update`
+
 ## Generation Notes
 1. The board shows a player, colored boxes, matching colored goal dots, and four labeled candidate standing cells around one target box.
 2. The prompt names the target box by a canonical safe color label from `trace.tasks.shared.named_colors`.

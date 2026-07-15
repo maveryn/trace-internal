@@ -84,6 +84,7 @@ class GamesBubbleShooterPopCountTask:
     """Count existing board bubbles popped by the shown same-color shot."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'topology', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

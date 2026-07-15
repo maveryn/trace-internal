@@ -1,6 +1,6 @@
 # Program Schema Catalog
 
-This catalog defines reusable program-schema names for TRACE task contracts.
+This catalog defines reusable program-schema names for Trace task contracts.
 It is guidance for writing and reviewing objective contracts; it is not a task
 inventory and does not merge public tasks by itself.
 
@@ -89,6 +89,63 @@ operation.
 | `simulation.discrete_state_update` | Simulate a discrete state-update system under visible rules. | Static lookup or single-step counterfactual edits. |
 | `probability.event_fraction` | Compute a reduced fraction from a visible finite sample space. | Different sample-space product or conditioning schemas. |
 
+## Analysis-Level Reasoning Operations
+
+Every active public task class declares one or more reasoning-operation
+families in a literal `reasoning_operations` tuple. That executable declaration
+is authoritative. Each task doc mirrors it in a machine-readable
+`## Reasoning Operations` section. These families summarize the meaningful
+operations that determine the answer. They support coverage analysis and paper
+figures; they are not public taxonomy nodes, task ids, query ids, or sampling
+units.
+
+Use only these keys, in this order:
+
+| Key | Include When |
+| --- | --- |
+| `direct_retrieval` | The answer is obtained by a terminal localized lookup or readout, with no symbolic decoding, transformation, or other meaningful operation. This is an exclusive fallback and cannot be combined with another family. |
+| `filtering` | The program constructs an answer-determining subset using a predicate, relation, or named scope. Do not add it for ordinary candidate access before ranking, matching, or arithmetic. |
+| `counting` | The program returns or materially uses the cardinality of a set, sequence, path, component, or group. |
+| `comparison` | The program evaluates equality, scalar order, a threshold, an interval, or another answer-determining comparison relation. |
+| `ranking` | The program orders candidates by a metric or sequence position, or selects an extremum, rank, nearest, farthest, earliest, or latest candidate. A field or card named "rank" and generic MCQ choice do not qualify. |
+| `aggregation` | The program reduces a peer collection using sum, mean, median, cumulative total, share, mass, or an equivalent aggregate. Fixed-arity theorem arithmetic belongs to `formula_evaluation`, not aggregation. |
+| `logical_composition` | The program combines predicates or sets using AND, OR, XOR, NOT, exclusion, union, intersection, or difference. |
+| `spatial_relations` | The program infers or tests a geometric, positional, directional, overlap, containment, occlusion, or metric-spatial relation. Merely reading labeled dimensions is not spatial reasoning; path/link connectivity belongs to `topology`, and projection/folding belongs to `transformation`. |
+| `topology` | Connectivity, paths, components, cycles, trees, graph traversal, reachability, or another topological relation materially determines the answer. |
+| `transformation` | The program applies or infers a geometric, symbolic-decoding, representational, folding, projection, overlay, or reconstruction transform. |
+| `state_update` | The program simulates, applies, or reasons over a move, action, counterfactual edit, or discrete state transition. |
+| `formula_evaluation` | Arithmetic, algebra, a domain formula, a derived metric, or a numeric difference/ratio/rate materially determines the answer. |
+| `matching` | The program tests substantive equivalence, correspondence, consistency, completion, rule satisfaction, or candidate-to-reference matching. Merely binding a computed result to an MCQ letter is not matching. |
+
+Assignments are multi-label when the answer genuinely requires multiple
+operations. For example, a thresholded count uses `filtering`, `counting`, and
+`comparison`; a conjunctive attribute count additionally uses
+`logical_composition`; selecting the category with the largest sum uses
+`ranking` and `aggregation`. Do not label primitive visual access, answer
+serialization, annotation construction, or MCQ letter binding as reasoning
+operations.
+
+The canonical source and task-doc forms are:
+
+```python
+reasoning_operations = ("filtering", "counting", "comparison")
+```
+
+```markdown
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+```
+
+The order must follow the table above. `direct_retrieval` must appear alone.
+Assignments must be reviewed against the complete Program Contract, including
+all internal query branches; filename keywords are not sufficient.
+
+Run `PYTHONPATH=. python scripts/audit_task_reasoning_operations.py` to verify
+the source declarations and mirrors. During a code-first review, use
+`--allow-doc-drift`; after review, use `--sync-docs` and rerun without that
+exception. Do not manually maintain an independent operation mapping.
+
 ## Review Guidance
 
 When reviewing a task contract:
@@ -99,5 +156,7 @@ When reviewing a task contract:
    reasoning skeleton.
 4. Reuse of a schema across domains normalizes terminology only; it is never
    enough to merge public task ids.
-5. If two branches need different rows in this catalog, they normally need
-   separate public tasks.
+5. Record the union of meaningful families used by a task's supported query
+   branches. Different families do not by themselves force a split when the
+   reviewed outer objective, candidate type, answer binding, annotation roles,
+   and visible scaffold remain stable.

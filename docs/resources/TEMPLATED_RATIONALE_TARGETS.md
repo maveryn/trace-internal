@@ -1,7 +1,7 @@
 # Templated Rationale Target Guidelines
 
 This document defines the standard for adding metadata-generated rationale
-targets to TRACE. Rationale targets are optional synthetic response targets for
+targets to Trace. Rationale targets are optional synthetic response targets for
 review, distillation, or later supervised/RLVR variants. They are not a
 replacement for verifiers, annotation payloads, or final JSON answer contracts.
 

@@ -337,6 +337,7 @@ class ThreeDSpatialMarkedPointDepthExtremumLabelTask:
     """Choose the marked point closest to or farthest from the camera."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     supported_query_ids = SUPPORTED_QUERY_IDS
     domain = "three_d"
     default_dataset_enabled = True

@@ -67,6 +67,7 @@ class PuzzlesSudokuMarkedCellValueTask:
     """Find the unique digit for a marked empty Sudoku cell."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = (SINGLE_QUERY_ID,)

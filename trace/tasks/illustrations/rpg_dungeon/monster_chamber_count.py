@@ -72,6 +72,7 @@ def _bind_witnesses(scene, target, _scene_kwargs):
 @register_task
 class IllustrationsRpgDungeonMonsterChamberCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

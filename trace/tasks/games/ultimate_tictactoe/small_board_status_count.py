@@ -70,6 +70,7 @@ def _prepare_status_payload(
 @register_task
 class GamesUltimateTicTacToeSmallBoardStatusCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

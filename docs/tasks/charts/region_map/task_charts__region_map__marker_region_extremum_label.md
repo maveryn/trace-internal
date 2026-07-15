@@ -31,6 +31,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `point` witnesses bound by `point(center(marker_bubble(selected_region)))`. Annotation marks the center point of the single marker bubble for the region whose visible label is the answer. Renderer context such as map outlines, legends, titles, and distractor text is metadata unless the task explicitly asks for it as annotation. The extremum marker layer shows at most ten labeled marker bubbles, using visible labels `A` through `J`; additional map regions may be present without marker bubbles.
 Query ids: `largest_marker_region_extremum_label`, `smallest_marker_region_extremum_label`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

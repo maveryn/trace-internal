@@ -21,6 +21,7 @@ def _build_objective_plan() -> NodeLinkObjectivePlan:
 class GraphOptimizationMinimumSpanningTreeWeightTask:
     """Public owner for the node-link minimum-spanning-tree weight objective."""
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

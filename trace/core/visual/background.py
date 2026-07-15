@@ -1,4 +1,4 @@
-"""Deterministic scene background-style helpers for TRACE tasks."""
+"""Deterministic scene background-style helpers for Trace tasks."""
 
 from __future__ import annotations
 

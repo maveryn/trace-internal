@@ -78,6 +78,7 @@ class ChartsDashboardPanelValueRangeExtremumLabelTask:
     """Find which dashboard panel has the largest or smallest category-value range."""
 
     task_id = "task_charts__dashboard__panel_value_range_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "panel_value_range_extremum_label"
     supported_query_ids = (LARGEST_RANGE_QUERY_ID, SMALLEST_RANGE_QUERY_ID)

@@ -77,6 +77,7 @@ class ChartsScientificEndpointRankPanelLabelTask:
     """Select the subplot where one method's start/end marker ranks highest/lowest."""
 
     task_id = "task_charts__curve_panels__endpoint_rank_panel_label"
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "endpoint_rank_panel_label"
     supported_query_ids = (

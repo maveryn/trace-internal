@@ -1,4 +1,4 @@
-# TRACE TODO
+# Trace TODO
 
 ## Now
 1. Keep `docs/ACTIVE_TASK_INVENTORY.md` as the only exhaustive active task and scene inventory.

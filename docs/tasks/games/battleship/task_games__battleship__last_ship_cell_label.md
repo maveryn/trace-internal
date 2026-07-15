@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Generation Notes
 1. The Battleship scene uses five fleet shapes: `Line 5`, `Line 4`, `Line 3`, `Square 2x2`, and `L 3`.
 2. This task renders a hidden-ship tracking grid: red hit markers, gray miss markers, fleet-shape panel, and six labeled candidate cells `A-F`.

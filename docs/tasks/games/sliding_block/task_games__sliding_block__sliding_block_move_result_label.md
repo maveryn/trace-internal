@@ -21,6 +21,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `state_update`, `matching`
+
 ## Generation Notes
 1. The prompt gives a short ordered slide sequence on a neutral board with no target block.
 2. The image always shows exactly four visual option boards.

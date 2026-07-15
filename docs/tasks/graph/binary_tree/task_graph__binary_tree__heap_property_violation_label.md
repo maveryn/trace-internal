@@ -11,6 +11,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `point_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `matching`
+
 ## Summary
 1. Domain: `graph`
 2. Scene: `binary_tree`

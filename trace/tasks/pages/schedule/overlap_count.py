@@ -21,6 +21,7 @@ class PagesScheduleOverlapCountTask:
   """Count scheduled events that overlap the highlighted reference event."""
 
   task_id = TASK_ID
+  reasoning_operations = ('filtering', 'counting', 'spatial_relations')
   domain = _lifecycle.DOMAIN
   supported_query_ids = SUPPORTED_QUERY_IDS
   default_dataset_enabled = True

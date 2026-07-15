@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze CharXiv chart coverage gaps against TRACE chart tasks.
+"""Analyze CharXiv chart coverage gaps against Trace chart tasks.
 
 CharXiv data, machine-readable summaries, and local markdown reports are written
 under external/, which is ignored by the repository.
@@ -480,7 +480,7 @@ def _make_report(summary: Mapping[str, Any]) -> str:
             "new scene",
             "scientific_axis_metadata",
             "axis label lookup, tick extremum, tick spacing, total tick count, subplot title lookup.",
-            "TRACE mostly asks data reasoning over marks; CharXiv descriptive questions heavily test chart-frame metadata and tick OCR.",
+            "Trace mostly asks data reasoning over marks; CharXiv descriptive questions heavily test chart-frame metadata and tick OCR.",
         ],
         [
             "P0",
@@ -508,7 +508,7 @@ def _make_report(summary: Mapping[str, Any]) -> str:
             "existing scene expansion",
             "error_interval / uncertainty_band",
             "scientific errorbar point predicate count, interval overlap at x, line-with-errorbar extremum.",
-            "CharXiv scientific plots often combine markers/lines with error bars; TRACE has interval scenes but not arXiv-style marker-series integration.",
+            "CharXiv scientific plots often combine markers/lines with error bars; Trace has interval scenes but not arXiv-style marker-series integration.",
         ],
         [
             "P1",
@@ -529,7 +529,7 @@ def _make_report(summary: Mapping[str, Any]) -> str:
     caution_rows = [
         [
             "Licensing",
-            "Use CharXiv images only for analysis/inspection. Do not copy arXiv chart images into TRACE assets or training data; synthesize styles/tasks instead.",
+            "Use CharXiv images only for analysis/inspection. Do not copy arXiv chart images into Trace assets or training data; synthesize styles/tasks instead.",
         ],
         [
             "Answer format",
@@ -537,7 +537,7 @@ def _make_report(summary: Mapping[str, Any]) -> str:
         ],
         [
             "Not Applicable",
-            "CharXiv frequently uses Not Applicable. TRACE should add explicit unanswerable branches only where distribution and verifier semantics are clean.",
+            "CharXiv frequently uses Not Applicable. Trace should add explicit unanswerable branches only where distribution and verifier semantics are clean.",
         ],
         [
             "Prompt options",
@@ -551,7 +551,7 @@ def _make_report(summary: Mapping[str, Any]) -> str:
         "## Inputs reviewed",
         "",
         f"- Hugging Face dataset: `{DATASET_ID}`.",
-        "- Linked split focus: `test`; validation is also loaded to align with existing judged TRACE benchmark artifacts.",
+        "- Linked split focus: `test`; validation is also loaded to align with existing judged Trace benchmark artifacts.",
         "- Dataset card metadata: 2.32k total rows, validation 1k, test 1.32k, license `cc-by-sa-4.0`.",
         f"- Local cache root: `{hf.get('cache_root', DEFAULT_CACHE_ROOT)}`.",
         f"- Existing descriptive judged sheet: `{desc.get('path')}`.",
@@ -561,7 +561,7 @@ def _make_report(summary: Mapping[str, Any]) -> str:
         "",
         _markdown_table(["Split", "Rows", "Top categories", "Top subplot counts"], split_rows),
         "",
-        "## Current TRACE chart inventory",
+        "## Current Trace chart inventory",
         "",
         f"- Active chart tasks: {trace.get('chart_tasks', 0)}.",
         f"- Active chart scenes: {trace.get('scene_count', 0)}.",
@@ -589,9 +589,9 @@ def _make_report(summary: Mapping[str, Any]) -> str:
         "",
         "## Coverage interpretation",
         "",
-        "- TRACE already has broad chart coverage and an existing `curve_panels` scientific multipanel line-grid implementation.",
+        "- Trace already has broad chart coverage and an existing `curve_panels` scientific multipanel line-grid implementation.",
         "- The main unsupported CharXiv capability is not generic line/bar/scatter charts; it is scientific-paper rendering plus chart-frame metadata and subplot-local reasoning.",
-        "- Axis labels, tick values, tick spacing, total tick counts, legend entry order/count, colorbar ticks, and subplot titles are underrepresented because TRACE mostly asks data-mark reasoning.",
+        "- Axis labels, tick values, tick spacing, total tick counts, legend entry order/count, colorbar ticks, and subplot titles are underrepresented because Trace mostly asks data-mark reasoning.",
         "- CharXiv also pressures dense scientific styles: MATLAB-like colors, black/gray line styles, markers, dashed/dotted curves, outside legends, tight grids, small fonts, and colorbars.",
         "",
         "## Recommended expansions",

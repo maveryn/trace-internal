@@ -62,6 +62,7 @@ class GeometryTriangleRelationsLegProjectionLengthValueTask:
     """Solve leg or projection lengths from the right-triangle altitude theorem."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

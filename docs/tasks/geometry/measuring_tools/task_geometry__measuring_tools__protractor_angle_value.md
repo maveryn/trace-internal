@@ -10,6 +10,10 @@
 ## Program Contract
 - `read_visible_measurement_tool(tool=protractor, candidate=marked_angle_on_carrier_shape, unit=degrees, operation=read_protractor_tick, output_role=angle_measure_integer, annotation_witness={angle_vertex,protractor_reading_tick}); scene=measuring_tools; scope=protractor_angle_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `measuring_tools`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

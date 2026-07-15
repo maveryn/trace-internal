@@ -1,4 +1,4 @@
-# TRACE Annotation Ablation Summary, 2026-07-13
+# Trace Annotation Ablation Summary, 2026-07-13
 
 This report summarizes the 8x H200 Qwen2.5-VL-3B EasyR1 answer-and-annotation
 ablations run around 2026-07-12 and 2026-07-13. The H200 machine and base

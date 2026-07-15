@@ -18,6 +18,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `closest_to_named_reference_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`
+
 ## Scene And Query
 The task renders one panel with exactly one unique named
 reference icon, six option icons labeled `A`..`F`, and `4..8` other icons.

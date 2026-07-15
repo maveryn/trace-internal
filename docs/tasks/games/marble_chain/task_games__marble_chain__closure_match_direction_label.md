@@ -22,6 +22,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `topology`, `state_update`, `matching`
+
 ## Generator
 
 - Implementation: `trace/tasks/games/marble_chain/closure_match_direction_label.py`

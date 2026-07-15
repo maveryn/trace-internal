@@ -105,6 +105,7 @@ class IconsCountingNamedGridLineConditionCountTask:
     """Count numbered rows or columns satisfying a target-shape count condition."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     supported_query_ids = QUERY_IDS
     default_dataset_enabled = True

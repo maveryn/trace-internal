@@ -91,6 +91,7 @@ class GeometryCirclePairTangentsExternalTangentSegmentLengthValueTask:
     """Solve AB or CD from the external common tangent right-triangle relation."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

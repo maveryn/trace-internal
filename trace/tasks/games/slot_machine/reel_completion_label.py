@@ -126,6 +126,7 @@ class GamesSlotMachineReelCompletionLabelTask:
     """Choose the third-reel option that creates one row or diagonal payline."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'formula_evaluation', 'matching')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

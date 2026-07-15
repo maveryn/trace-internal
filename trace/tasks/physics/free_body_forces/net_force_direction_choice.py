@@ -47,6 +47,7 @@ class PhysicsFreeBodyForcesNetForceDirectionChoiceTask:
     """Choose the candidate arrow showing the resultant of visible applied forces."""
 
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'formula_evaluation')
     domain = "physics"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

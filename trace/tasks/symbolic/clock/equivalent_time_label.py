@@ -679,6 +679,7 @@ class SymbolicClockMatchPanelTask:
   """Match one analog/digital reference clock to the equivalent visual option."""
 
   task_id = TASK_ID
+  reasoning_operations = ('formula_evaluation', 'matching')
   domain = DOMAIN
   supported_query_ids = SUPPORTED_QUERY_IDS
   default_dataset_enabled = True

@@ -12,6 +12,7 @@ def _build_task_output(materialized):
 @register_task
 class ChartsThreeDBarPairwiseComparisonCountTask:
     task_id = 'task_charts__bar_3d__pairwise_comparison_count'
+    reasoning_operations = ('filtering', 'counting', 'comparison')
     domain = DOMAIN
     supported_query_ids = ('series_comparison_count',)
     default_dataset_enabled = True

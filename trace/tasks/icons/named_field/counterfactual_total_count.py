@@ -46,6 +46,7 @@ class IconsNamedFieldCounterfactualTotalCountTask:
     """Count icons remaining after a hypothetical shape removal."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'state_update')
     domain = "icons"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

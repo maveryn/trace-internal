@@ -69,6 +69,7 @@ class GamesSlidingBlockMoveResultLabelTask:
     """Choose the option panel matching the board after applying the shown slides."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

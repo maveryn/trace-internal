@@ -15,6 +15,10 @@
 6. Query argument axes: section pair, extremum kind per section, and arithmetic operator.
 7. scalar_annotation_checked=true
 
+## Reasoning Operations
+
+Families: `ranking`, `aggregation`, `formula_evaluation`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_infographic_v1`
 2. Scene key: `infographic_metric_arithmetic`

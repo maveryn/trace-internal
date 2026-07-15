@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; a non-negative integer deriv
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `left_side`, `right_side`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`, `spatial_relations`
+
 ## Query Branches
 
 | Query id | Program schema |

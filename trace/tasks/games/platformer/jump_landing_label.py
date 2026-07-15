@@ -38,6 +38,7 @@ class GamesPlatformerJumpLandingLabelTask:
     """Identify the labeled platform reached by a jump arc."""
 
     task_id = TASK_ID
+    reasoning_operations = ('spatial_relations',)
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI wrapper for TRACE prompt/annotation contract audits."""
+"""CLI wrapper for Trace prompt/annotation contract audits."""
 
 from __future__ import annotations
 

@@ -63,6 +63,7 @@ def _build_category_threshold_plan(
 @register_task
 class ChartsScatterPointsCategoryThresholdPointCountTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'comparison', 'logical_composition')
     domain = DOMAIN
     objective_contract = "category_threshold_point_count"
     supported_query_ids = QUERY_IDS

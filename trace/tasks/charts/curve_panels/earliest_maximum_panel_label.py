@@ -35,6 +35,7 @@ class ChartsScientificEarliestMaximumPanelLabelTask:
     """Select the panel where one method reaches its maximum earliest."""
 
     task_id = "task_charts__curve_panels__earliest_maximum_panel_label"
+    reasoning_operations = ('ranking',)
     domain = "charts"
     objective_contract = "earliest_maximum_panel_label"
     supported_query_ids = (QUERY_ID,)

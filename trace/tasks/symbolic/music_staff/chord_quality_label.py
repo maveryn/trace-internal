@@ -52,6 +52,7 @@ _RUNTIME = MusicStaffRuntime(TASK_ID, SUPPORTED_QUERY_IDS, PROMPT_KEY, "bbox", _
 @register_task
 class SymbolicChordQualityLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

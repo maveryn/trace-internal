@@ -34,6 +34,7 @@ class ChartsDashboardGlobalValueExtremumCategoryLabelTask:
     """Find the category label of the single global value extremum in the dashboard."""
 
     task_id = "task_charts__dashboard__global_value_extremum_category_label"
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "global_value_extremum_category_label"
     supported_query_ids = (GLOBAL_MAXIMUM_QUERY_ID, GLOBAL_MINIMUM_QUERY_ID)

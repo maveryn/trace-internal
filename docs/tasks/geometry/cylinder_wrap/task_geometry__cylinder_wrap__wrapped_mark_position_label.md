@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_rim_candidate(rim_positions, unwrap_mapping(strip_mark)), output_role=matching_candidate_label); scene=cylinder_wrap; scope=wrapped_mark_position_label`
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `cylinder_wrap`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

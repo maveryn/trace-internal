@@ -1,4 +1,4 @@
-"""Dataset build pipeline for TRACE."""
+"""Dataset build pipeline for Trace."""
 
 from __future__ import annotations
 
@@ -812,7 +812,7 @@ def _build_staging(
     total_target = sum(target_counts_by_task.values())
     overall_bar = tqdm(
         total=total_target,
-        desc="TRACE build",
+        desc="Trace build",
         unit="inst",
         dynamic_ncols=True,
         disable=not progress_enabled,

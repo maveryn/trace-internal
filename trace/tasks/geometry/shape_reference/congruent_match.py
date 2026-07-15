@@ -38,6 +38,7 @@ class GeometryShapeReferenceCongruentMatchTask:
     """Choose the candidate polygon congruent to a reference polygon."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

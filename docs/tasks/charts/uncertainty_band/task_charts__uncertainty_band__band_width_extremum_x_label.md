@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `string_label`.
 Annotation witnesses: `unspecified` witnesses bound by `segment(answer_band_lower_upper_span)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `narrowest_band_x_label`, `widest_band_x_label`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Review Notes
 
 This task uses the current source layout. The public task file owns target-series selection, extremum direction, answer binding, annotation binding, query metadata, and prompt slots; scene-local shared code only provides uncertainty-band data structures, rendering, prompt, and projection primitives.

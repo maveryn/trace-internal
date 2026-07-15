@@ -18,5 +18,9 @@ Annotation schema: `bbox_set`.
 Annotation witnesses: `annotation` contains one icon-object bbox for every icon of the selected marked type, including the marked representative.
 Query ids: `most_frequent_type_label`, `least_frequent_type_label`.
 
+## Reasoning Operations
+
+Families: `filtering`, `ranking`
+
 ## Notes
 All icons in a generated instance share one rendered color, so color is not a counting cue. The candidate letters are drawn directly on representative icons in the main canvas; there is no separate option panel.

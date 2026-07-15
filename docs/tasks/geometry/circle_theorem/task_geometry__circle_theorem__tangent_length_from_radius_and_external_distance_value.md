@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_tangent_radius_right_triangle, unknown_role=tangent_length, formula_schema=tangent_length_from_radius_and_external_distance); scene=circle_theorem; scope=tangent_length_from_radius_and_external_distance_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 - `single`: given the radius and center-to-exterior distance, solve the tangent segment length.
 

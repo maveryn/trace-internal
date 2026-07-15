@@ -22,6 +22,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsTrendIntervalRateValueTask:
     task_id = T
+    reasoning_operations = ('counting', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "interval_rate_value"
     supported_query_ids = (SINGLE_QUERY_ID,)

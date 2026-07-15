@@ -24,6 +24,7 @@ class ChartsSunburstParentTotalExtremumLabelTask:
     """Find the parent category with the highest or lowest computed total."""
 
     task_id = "task_charts__sunburst__parent_total_extremum_label"
+    reasoning_operations = ('ranking', 'aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "parent_total_extremum_label"
     supported_query_ids = ("highest_parent_total_label", "lowest_parent_total_label")

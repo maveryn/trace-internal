@@ -1,4 +1,4 @@
-# TRACE Docs
+# Trace Docs
 
 This folder is the source of truth for contracts, architecture, workflows, and active task/domain specs.
 
@@ -10,6 +10,8 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 - `docs/workflows/README.md` — authoring, build, review, benchmark, and
   documentation-maintenance procedures. Documentation placement rules live in
   `docs/workflows/DOC_STRUCTURE.md`.
+- `docs/workflows/PUBLIC_RELEASE/README.md` — public-release workstream briefs,
+  ownership boundaries, and integration order.
 - `docs/resources/README.md` — shared fonts, labels, context text, and
   rationale-target resources.
 - `docs/domains/README.md` — domain-specific contract docs.
@@ -29,15 +31,15 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 3. Contracts: `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md` and `docs/contracts/PROMPT_SYSTEM.md`.
 4. Export/eval:
    - active Vero-derived RLVR port lives under `../rlvr/README.md`
-   - tentative TRACE RLVR training strategy lives in
+   - tentative Trace RLVR training strategy lives in
      `docs/RLVR_TRAINING_STRATEGY.md`
    - task-conditioned answer/annotation selection policy lives in
      `docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`
    - retained legacy split-v1 training commands live in
      `docs/workflows/RLVR_TRAINING_RUNBOOK.md`
    - current EasyR1 all1000 global and task-conditioned commands live in
-     `docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md`
-   - frozen TRACE RLVR train/test task split lives in
+     `docs/workflows/ANNOTATION_ABLATION_RUNBOOK.md`
+   - frozen Trace RLVR train/test task split lives in
      `docs/RLVR_TASK_SPLIT_PLAN.md`
    - generated task-review artifacts live under `../review/task-reviews/`
    - sampled external benchmark failure analysis lives in
@@ -63,8 +65,10 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 7. Quality/process: `docs/workflows/DOC_STRUCTURE.md`,
    `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`, and
    `docs/workflows/CODE_REVIEW_GUIDELINES.md`.
-8. Project backlog and active surface: `docs/TODO.md` and `docs/ACTIVE_TASK_INVENTORY.md`.
-9. Task reviews: the browser app in `docs/workflows/TASK_REVIEW_WEB_APP.md`
+8. Public release: `docs/workflows/PUBLIC_RELEASE/README.md` and the assigned
+   workstream brief under that folder.
+9. Project backlog and active surface: `docs/TODO.md` and `docs/ACTIVE_TASK_INVENTORY.md`.
+10. Task reviews: the browser app in `docs/workflows/TASK_REVIEW_WEB_APP.md`
    is the default task inspection surface, with generated artifacts under
    `../review/task-reviews/`. External benchmark model-response inspection
    uses `docs/workflows/BENCHMARK_REVIEW_WEB_APP.md`.

@@ -18,6 +18,10 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annota
 Annotation schema: `bbox_set`.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Notes
 The concrete Reference size, per-icon nominal sizes, and minimum size delta are
 retained in trace metadata. Annotation covers only the counted Scene icons.

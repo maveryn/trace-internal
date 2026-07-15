@@ -21,6 +21,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`
+
 ## Generation Notes
 1. The prompt names a 1-based tableau column and a visible depth counted from the top of that column.
 2. The visual options show card faces, and exactly one option matches the target tableau card.

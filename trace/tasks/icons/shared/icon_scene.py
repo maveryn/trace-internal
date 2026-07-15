@@ -1,4 +1,4 @@
-"""Reusable two-panel icon scene rendering for TRACE icon tasks."""
+"""Reusable two-panel icon scene rendering for Trace icon tasks."""
 
 from __future__ import annotations
 

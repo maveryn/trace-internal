@@ -22,6 +22,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the reference structure and the changed structure.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `matching`
+
 ## Answer And Annotation
 1. `answer_gt.type = integer`
 2. `annotation_gt.type = bbox_set`

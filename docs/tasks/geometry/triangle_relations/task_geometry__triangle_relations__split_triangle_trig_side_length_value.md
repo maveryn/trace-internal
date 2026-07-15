@@ -12,6 +12,10 @@
 ## Program Contract
 - `solve_formula(shared_altitude_right_triangle_trig, unknown_role=target_side_length, formula_schema=shared_altitude_right_triangle_trig); scene=triangle_relations; scope=split_triangle_trig_side_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

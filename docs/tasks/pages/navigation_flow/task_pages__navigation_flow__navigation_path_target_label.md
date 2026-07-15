@@ -18,6 +18,10 @@
 ## Program Contract
 - `lookup_candidate_label(surface={menu_path,sidebar_tree,ribbon_group}, path); output=option_letter; annotation=bbox(target_control); scene=navigation_flow; scope=one desktop application navigation screen`
 
+## Reasoning Operations
+
+Families: `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_navigation_flow_v1`
 2. Scene key: `navigation_flow`

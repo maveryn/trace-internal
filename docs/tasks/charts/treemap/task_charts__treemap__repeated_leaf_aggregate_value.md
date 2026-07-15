@@ -19,6 +19,10 @@ Output binding: `answer` is the `unspecified` value bound by `integer_value`.
 Annotation witnesses: `unspecified` witnesses bound by `bbox_set(repeated_child_rectangles)`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `treemap_repeated_leaf_sum_value`, `treemap_repeated_leaf_average_value`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `topology`
+
 ## Review Notes
 
 This task uses the current source layout. Query ids select the aggregate operation; target child-label sampling remains objective-owned in the public task file and is recorded in trace params.

@@ -79,6 +79,7 @@ class GeometryAngleRelationsParallelSupplementAngleTask:
     """Return the unknown angle supplementary to the shown transversal angle."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

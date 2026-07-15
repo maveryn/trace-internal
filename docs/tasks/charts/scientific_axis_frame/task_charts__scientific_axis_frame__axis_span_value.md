@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `segment` witnesses bound by `segment(axis_visible_span)`. Annotation is the segment from the smallest visible tick mark to the largest visible tick mark on the requested axis. Decorative plotted data, axis labels, and distractor text are metadata unless explicitly queried. Annotation marks the visible span on the requested axis as one segment between the minimum and maximum tick marks.
 Query ids: `x_axis_span_value`, `y_axis_span_value`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scientific_axis_frame.axis_span_value.ChartsScientificAxisFrameAxisSpanValueTask`
 2. Prompt lookup domain/scene: `charts/scientific_axis_frame`

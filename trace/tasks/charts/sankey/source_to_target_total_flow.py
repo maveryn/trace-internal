@@ -89,6 +89,7 @@ class ChartsFlowSankeySourceToTargetTotalFlowPublicTask:
     """Return the total bottleneck flow across routes from one source to one target."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "source_to_target_total_flow"
     supported_query_ids = SUPPORTED_QUERY_IDS

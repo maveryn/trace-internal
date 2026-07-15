@@ -93,6 +93,7 @@ class IllustrationsRpgTacticalMapMovementReachableTileCountTask:
     """Count all tiles the blue unit can reach within a small movement budget."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'topology')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

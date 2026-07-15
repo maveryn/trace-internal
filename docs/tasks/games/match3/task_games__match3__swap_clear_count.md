@@ -19,6 +19,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; boxes cover exactly the gems that clear immediately after the marked swap. If no gems clear, the box set is empty.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `state_update`
+
 ## Generation Notes
 1. The board is fixed at 5 by 5 with five gem colors for this task.
 2. The board has no pre-existing horizontal or vertical run before the marked swap.

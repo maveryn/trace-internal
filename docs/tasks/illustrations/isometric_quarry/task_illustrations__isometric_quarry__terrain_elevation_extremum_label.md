@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `highest_terrain_tile`, `lowest_terrain_tile`.
 
+## Reasoning Operations
+
+Families: `ranking`
+
 ## Query Branches
 
 | Query id | Program schema |

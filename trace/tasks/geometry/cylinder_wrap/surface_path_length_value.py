@@ -130,6 +130,7 @@ class GeometryCylinderWrapSurfacePathLengthValueTask:
     """Compute a marked path length on an unwrapped cylinder side."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'transformation', 'formula_evaluation')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

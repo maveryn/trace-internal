@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Package and upload the TRACE all1000 IID RLVR dataset to Hugging Face."""
+"""Package and upload the Trace all1000 IID RLVR dataset to Hugging Face."""
 
 from __future__ import annotations
 
@@ -229,7 +229,7 @@ def _build_viewer_parquet(
 def _write_readme(path: Path) -> None:
     path.write_text(
         """---
-pretty_name: TRACE RLVR
+pretty_name: Trace RLVR
 language:
 - en
 license: other
@@ -249,9 +249,9 @@ configs:
     path: data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet
 ---
 
-# TRACE RLVR
+# Trace RLVR
 
-Private TRACE RLVR all1000 IID parquet export for Qwen2.5-VL RLVR training.
+Private Trace RLVR all1000 IID parquet export for Qwen2.5-VL RLVR training.
 
 ## Files
 
@@ -294,14 +294,14 @@ The previous viewer-noisy compatibility columns were removed from the main parqu
 
 ## Sidecars
 
-Non-image TRACE sidecars are uploaded under `sidecars/`.
+Non-image Trace sidecars are uploaded under `sidecars/`.
 
 - `sidecars/train/`
 - `sidecars/validation_iid/`
 
 Each sidecar directory includes build reports, curriculum indices, train-instance records, compressed execution trace shards, and a `sidecar_manifest.json`. Raw image directories are intentionally not uploaded as sidecars because the main parquet embeds image bytes.
 
-For EasyR1 training, use `data.prompt_key=prompt_answer` for answer-only runs and `data.prompt_key=prompt_answer_and_annotation` for annotation runs. The current TRACE repo loader synthesizes `uid` from `instance_id` internally when needed.
+For EasyR1 training, use `data.prompt_key=prompt_answer` for answer-only runs and `data.prompt_key=prompt_answer_and_annotation` for annotation runs. The current Trace repo loader synthesizes `uid` from `instance_id` internally when needed.
 """,
         encoding="utf-8",
     )
@@ -377,7 +377,7 @@ def main() -> int:
         folder_path=str(args.output_dir),
         path_in_repo="",
         revision=args.revision,
-        commit_message="Upload TRACE all1000 IID viewer parquet and sidecars",
+        commit_message="Upload Trace all1000 IID viewer parquet and sidecars",
         delete_patterns=[
             "data/train/*.parquet",
             "data/train/*.manifest.json",

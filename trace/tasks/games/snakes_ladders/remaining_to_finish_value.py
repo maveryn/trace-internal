@@ -130,6 +130,7 @@ def _prepare_objective(
 @register_task
 class GamesSnakesLaddersRemainingToFinishValueTask(SnakesLaddersLifecycleTask):
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

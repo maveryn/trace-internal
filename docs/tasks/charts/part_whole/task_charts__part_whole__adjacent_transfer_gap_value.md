@@ -24,6 +24,10 @@ Output binding: `answer` is the `unspecified` value bound by `unspecified`.
 Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
 Query ids: `clockwise_adjacent_transfer`, `counterclockwise_adjacent_transfer`.
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `state_update`, `formula_evaluation`
+
 ## Annotation Contract
 Annotation maps the source category label and adjacent target category label to `[x,y]` pixel points at the centers of their chart segments.
 

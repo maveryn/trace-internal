@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `ranking`, `spatial_relations`, `state_update`
+
 ## Generation Notes
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.
 2. Exactly four enemy ships are visibly labeled `A` through `D`.

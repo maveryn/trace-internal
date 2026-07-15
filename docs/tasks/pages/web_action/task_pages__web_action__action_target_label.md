@@ -18,6 +18,10 @@
 ## Program Contract
 - `web_action_target_control_label(control_family={click_button,input_field,select_option}, instruction_guide_code, page_context); output=option_letter; annotation=bbox(target_control_with_candidate_marker); scene=web_action; scope=one browser-style action-target page`
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_web_action_v1`
 2. Scene key: `web_action`

@@ -19,6 +19,7 @@ LINE_EXTREMUM_BY_QUERY = {MAX_QUERY_ID: "max", MIN_QUERY_ID: "min"}
 @register_task
 class ChartsComboConditionedLineExtremumLabelTask:
     task_id = "task_charts__combo_mark__conditioned_line_extremum_label"
+    reasoning_operations = ('filtering', 'comparison', 'ranking')
     domain = DOMAIN
     objective_contract = "conditioned_line_extremum_label"
     supported_query_ids = (MAX_QUERY_ID, MIN_QUERY_ID)

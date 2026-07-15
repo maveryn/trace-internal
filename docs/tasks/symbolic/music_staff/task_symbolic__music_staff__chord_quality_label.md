@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: the scalar bbox of the target numbered chord.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`, `matching`
+
 ## 2) Scene + task contract
 1. Entities/relations: a rendered music-staff notation panel with numbered chords and visible text option cards.
 2. Supported `query_id` values: `single`

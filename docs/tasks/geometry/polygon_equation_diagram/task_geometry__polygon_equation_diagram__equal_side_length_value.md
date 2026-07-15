@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_equal_side_polygon_equation, unknown_role=target_side_length, formula_schema=equal_side_expression_side_length_value); scene=polygon_equation_diagram; scope=equal_side_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Internal Construction Families
 The public task has no semantic query branch. The sampled polygon side count is recorded as trace metadata:
 

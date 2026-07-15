@@ -388,6 +388,7 @@ class GeometryCoordinateCompositeIntersectionPointCountTask:
     """Count visible intersection points in a composite coordinate scene."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'spatial_relations')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = QUERY_IDS

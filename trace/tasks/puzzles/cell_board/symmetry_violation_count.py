@@ -135,6 +135,7 @@ class PuzzlesCellBoardSymmetryViolationCountTask:
     """Count mismatching cells on one side of a mirror-symmetry check."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'transformation', 'matching')
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

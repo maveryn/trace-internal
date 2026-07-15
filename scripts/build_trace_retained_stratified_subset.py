@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a retained TRACE RLVR train subset from a staged curriculum probe.
+"""Build a retained Trace RLVR train subset from a staged curriculum probe.
 
 The source RLVR parquet currently does not store query_id directly. This
 script recovers query_id/scene_variant from sidecar traces through trace_ref,
@@ -31,12 +31,12 @@ class RowTraceRef:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True, help="Source TRACE RLVR parquet.")
+    parser.add_argument("--source", required=True, help="Source Trace RLVR parquet.")
     parser.add_argument("--probe-jsonl", required=True, help="Staged probe per_instance_staged.jsonl.")
     parser.add_argument(
         "--trace-root",
         required=True,
-        help="TRACE dataset root containing traces/<shard>.jsonl.zst.",
+        help="Trace dataset root containing traces/<shard>.jsonl.zst.",
     )
     parser.add_argument("--output", required=True, help="Output subset parquet.")
     parser.add_argument("--target-rows", type=int, default=102400)
@@ -461,7 +461,7 @@ def main() -> None:
     summary_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(
-        "Built retained TRACE subset:",
+        "Built retained Trace subset:",
         f"source={source}",
         f"output={output}",
         f"rows={written}",

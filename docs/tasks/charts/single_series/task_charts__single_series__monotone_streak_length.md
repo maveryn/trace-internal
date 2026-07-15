@@ -25,6 +25,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(run_marks)`. Annotation marks every visible mark in the unique longest monotone run. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 Query ids: `longest_increasing_streak_length`, `longest_decreasing_streak_length`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `ranking`
+
 ## Annotation Contract
 1. Answer schema: `integer_value`.
 2. Annotation schema: `point_set`.

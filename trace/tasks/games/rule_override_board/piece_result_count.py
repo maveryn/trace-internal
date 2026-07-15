@@ -66,6 +66,7 @@ class GamesRuleOverridePieceResultCountTask:
     """Count wins or losses on fewer-pieces mini-boards."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

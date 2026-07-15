@@ -10,6 +10,10 @@
 ## Program Contract
 - `count(intersection_points(filter_pairs(objects, pair_filter))); scene=coordinate_composite; scope=intersection_point_count`
 
+## Reasoning Operations
+
+Families: `counting`, `spatial_relations`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_coordinate_composite_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

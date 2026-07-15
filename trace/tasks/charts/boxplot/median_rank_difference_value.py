@@ -247,6 +247,7 @@ class ChartsDistributionBoxplotMedianRankDifferenceValueTask:
     """Compute the difference between two ranked boxplot medians."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = (TOP_SECOND_QUERY_ID, TOP_THIRD_QUERY_ID, TOP_BOTTOM_QUERY_ID)

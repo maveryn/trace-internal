@@ -59,6 +59,7 @@ class GamesConnectFourWinningMoveCountTask:
     """Count legal Connect Four drop columns that win immediately."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'state_update')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -1,6 +1,6 @@
-# TRACE
+# Trace
 
-TRACE is a grounded visual reasoning task environment for RLVR.
+Trace is a grounded visual reasoning task environment for RLVR.
 
 ## Docs
 

@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(right_triangle_altitude_to_hypotenuse, target=altitude_or_projection_length, formula_schema=altitude_geometric_mean); scene=triangle_relations; scope=altitude_to_hypotenuse_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Semantics
 - `altitude_from_split_hypotenuse` asks for the altitude length from the two visible hypotenuse projections.
 - `missing_projection_from_altitude` asks for one hypotenuse projection from the altitude and the other projection.

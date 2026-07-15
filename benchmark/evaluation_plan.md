@@ -1,4 +1,4 @@
-# TRACE External Benchmark Evaluation Plan
+# Trace External Benchmark Evaluation Plan
 
 This document tracks the paper-facing evaluation protocol for Qwen3-VL-4B-Instruct and follow-up trained checkpoints.
 
@@ -9,9 +9,9 @@ This document tracks the paper-facing evaluation protocol for Qwen3-VL-4B-Instru
 - Queue execution: run generation and scoring in separate phases. Generation workers keep one VLM loaded per GPU and claim one dataset at a time; local-judge scoring workers keep one `Qwen/Qwen3-32B` judge loaded per GPU and run only after generation artifacts exist.
 - GPU assignment:
   - base `Qwen/Qwen3-VL-4B-Instruct`: GPUs `6,7`
-  - TRACE alpha0 ablation: GPUs `0,1`
-  - TRACE alpha0.5 ablation: GPUs `2,3`
-  - TRACE alpha1 ablation: GPUs `4,5`
+  - Trace alpha0 ablation: GPUs `0,1`
+  - Trace alpha0.5 ablation: GPUs `2,3`
+  - Trace alpha1 ablation: GPUs `4,5`
 - Default model setup: VLMEvalKit's `Qwen3-VL-4B-Instruct` generation defaults:
   - `temperature=0.7`
   - `top_p=0.8`

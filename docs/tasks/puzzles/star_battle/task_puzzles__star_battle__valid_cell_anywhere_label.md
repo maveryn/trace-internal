@@ -11,6 +11,10 @@ Output binding: `answer` uses the `option_letter` schema; the label of that lega
 Annotation witnesses: `annotation` uses the `bbox` schema; the selected candidate cell bbox.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Behavior
 
 The task renders a partial Star Battle board with visible fixed stars and labeled candidate cells. Exactly one candidate cell is legal under the rules: each row, column, and colored region has exactly one star, and stars may not touch by edge or corner. The answer is the label of that legal candidate. The annotation is the selected candidate cell bbox.

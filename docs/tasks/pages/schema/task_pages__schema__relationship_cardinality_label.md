@@ -20,3 +20,7 @@
 Annotation marks only the two endpoint cardinality markers used to derive the
 answer. Source and target table boxes are prompt/context witnesses retained in
 the trace payload, not public annotation.
+
+## Reasoning Operations
+
+Families: `topology`

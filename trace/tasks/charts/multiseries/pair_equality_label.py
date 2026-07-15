@@ -39,6 +39,7 @@ class ChartsMultiseriesPairEqualityLabelTask:
     """Return the unique category where two queried series match exactly."""
 
     task_id = "task_charts__multiseries__pair_equality_label"
+    reasoning_operations = ('comparison', 'matching')
     domain = DOMAIN
     objective_contract = "pair_equality_label"
     supported_query_ids = (SINGLE_QUERY_ID,)

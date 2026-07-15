@@ -1,6 +1,6 @@
 # External Benchmark Evaluation
 
-This workflow runs fixed external benchmark subsets for TRACE checkpoint
+This workflow runs fixed external benchmark subsets for Trace checkpoint
 comparison and coverage analysis.
 
 ## Scope
@@ -54,7 +54,7 @@ and let the task utils read `SCREENSPOTPRO_ROOT`. AerialVG is gated on Hugging
 Face, so the token in use must be authorized for `IPEC-COMMUNITY/AerialVG`
 before the runner can download annotations/images.
 
-## TRACE RLVR Subset v1
+## Trace RLVR Subset v1
 
 The current checkpoint-comparison subset is:
 
@@ -282,7 +282,7 @@ and `run_summary.json`.
 
 ## Analyze
 
-After generation, build TRACE coverage summaries:
+After generation, build Trace coverage summaries:
 
 ```bash
 python scripts/analyze_vero_benchmark_failures.py \
@@ -298,7 +298,7 @@ review/external_benchmark_failure_analysis/qwen25vl7b/<run_id>/
 For each benchmark, the analyzer writes:
 
 - `normalized_items.jsonl`: per-sample prompt, target, response, score, inferred
-  failure intent, and TRACE mapping.
+  failure intent, and Trace mapping.
 - `failure_patterns.jsonl`: at most 20 grouped patterns.
 - `<benchmark>.md`: short human-readable summary.
 

@@ -154,6 +154,7 @@ class ChartsUncertaintyBandOverlapCountTask:
     """Count x-axis positions where two uncertainty bands overlap."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = DOMAIN
     objective_contract = OBJECTIVE_CONTRACT
     supported_query_ids = SUPPORTED_QUERY_IDS

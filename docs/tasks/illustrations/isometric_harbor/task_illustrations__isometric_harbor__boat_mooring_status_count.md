@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `moored_boat_count`, `open_water_boat_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`
+
 ## Query Branches
 
 | Query id | Program schema |

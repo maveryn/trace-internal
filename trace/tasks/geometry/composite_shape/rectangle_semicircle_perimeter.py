@@ -76,6 +76,7 @@ class GeometryRectangleSemicirclePerimeterTask:
     """Compute the perimeter of a rectangle with a semicircle cap or cutout."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

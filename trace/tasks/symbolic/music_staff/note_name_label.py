@@ -77,6 +77,7 @@ class SymbolicNoteNameLabelTask:
     """Read the note name of a marked staff note."""
 
     task_id = TASK_ID
+    reasoning_operations = ('transformation',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

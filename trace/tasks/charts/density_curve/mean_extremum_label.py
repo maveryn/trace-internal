@@ -41,6 +41,7 @@ class ChartsDistributionDensityCurveMeanExtremumLabelTask:
     """Return the density-curve label with the highest or lowest mean."""
 
     task_id = "task_charts__density_curve__mean_extremum_label"
+    reasoning_operations = ('ranking', 'aggregation')
     domain = "charts"
     objective_contract = "mean_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

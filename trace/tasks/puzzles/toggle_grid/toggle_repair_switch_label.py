@@ -72,6 +72,7 @@ class PuzzlesToggleGridToggleRepairSwitchLabelTask(ToggleGridSceneTask):
     """Choose the switch press that transforms the start grid into the target grid."""
 
     task_id = TASK_ID
+    reasoning_operations = ('state_update',)
     supported_query_ids = SUPPORTED_QUERY_IDS
     prompt_task_key = PROMPT_TASK_KEY
     prompt_query_key = PROMPT_QUERY_KEY

@@ -33,6 +33,7 @@ class ThreeDConveyorLaneObjectTypeCountArithmeticValueTask:
     """Compute sum or absolute difference of two lane object-type counts."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'formula_evaluation')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

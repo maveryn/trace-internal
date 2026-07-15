@@ -21,6 +21,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `ladder_count`, `snake_count`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## Generation Notes
 1. Count every visible ladder start or every visible snake head, depending on the query.
 2. Annotation is the bbox set for all counted ladder-start or snake-head squares.

@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_similar_figure_side_relation, unknown_role=target_corresponding_side_length, formula_schema=linear_scale_transfer); scene=similar_figure_measure_transfer; scope=corresponding_side_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_similar_figure_measure_transfer_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

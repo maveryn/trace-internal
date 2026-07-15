@@ -1,4 +1,4 @@
-"""Contract smoke tests for every active default TRACE task."""
+"""Contract smoke tests for every active default Trace task."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 # RLVR Task Supervision Policy
 
-This document defines how TRACE tasks choose their RLVR output and reward
+This document defines how Trace tasks choose their RLVR output and reward
 mode. It is a training policy, not a public task, prompt, answer, or annotation
 contract.
 

@@ -34,6 +34,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `highest_element_count`, `lowest_element_count`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`
+
 ## Annotation Contract
 Annotation is the pixel box around the selected option panel. Individual
 repeated elements and the option label badge are trace metadata but are not

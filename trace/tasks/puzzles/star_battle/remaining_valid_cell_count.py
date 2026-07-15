@@ -70,6 +70,7 @@ class PuzzlesStarBattleRemainingValidCellCountTask:
     """Count legal remaining Star Battle cells in a marked row or column."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'matching')
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

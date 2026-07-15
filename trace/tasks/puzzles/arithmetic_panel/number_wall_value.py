@@ -85,6 +85,7 @@ class PuzzlesArithmeticNumberWallValueTask:
     """Solve one hidden brick in an addition number wall."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "puzzles"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

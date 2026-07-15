@@ -18,6 +18,10 @@
 ## Program Contract
 - `map_landmark_after_route_step(route_start_label, route_end_label, step_ordinal); output=string_visible_landmark_label; annotation=bbox_sequence(route_landmarks_ordered_to_answer); scene=map; scope=one printed campus map`
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_map_v1`
 2. Scene key: `printed_map`

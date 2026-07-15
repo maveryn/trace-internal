@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `segment_set` schema; image-pixel line segments for all counted visible board lines; segment-set cardinality equals answer.
 Query ids: `horizontal_line_count`, `vertical_line_count`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## 2) Scene + task contract
 1. Entities/relations: A visible Xiangqi-like line board with horizontal and vertical grid lines.
 2. Supported `query_id` values: `horizontal_line_count`, `vertical_line_count`

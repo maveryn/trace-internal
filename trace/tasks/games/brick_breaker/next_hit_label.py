@@ -73,6 +73,7 @@ class GamesBrickBreakerNextHitLabelTask:
     """Identify the labeled brick hit first by the visible ball path."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'spatial_relations')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

@@ -47,6 +47,7 @@ def _prepare_earliest_hit_objective(
 @register_task
 class GamesRhythmEarliestHitLaneLabelTask:
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'comparison', 'ranking')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = (DEFAULT_QUERY_ID,)

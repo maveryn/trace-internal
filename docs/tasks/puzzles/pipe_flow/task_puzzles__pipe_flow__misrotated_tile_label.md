@@ -29,6 +29,10 @@ Output binding: `answer` uses the `option_letter` schema; the capital-letter lab
 Annotation witnesses: `annotation` uses the `bbox` schema; the image-pixel bbox around the labeled tile that should be rotated.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `transformation`
+
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
 2. `answer_gt.value` is the capital-letter label drawn inside the tile that should be rotated.

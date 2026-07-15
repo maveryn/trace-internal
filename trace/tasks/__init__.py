@@ -1,4 +1,4 @@
-"""TRACE task registry exports.
+"""Trace task registry exports.
 
 Task modules are registered lazily. Importing :mod:`trace.tasks` should not
 import every task in the repository because scene-scoped review and migration

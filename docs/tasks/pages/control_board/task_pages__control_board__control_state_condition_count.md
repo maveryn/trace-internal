@@ -18,6 +18,10 @@
 ## Program Contract
 - `count(filter(gui_controls, group_name=target_group and state_condition in {enabled=false, selected=true and enabled=true})); output=integer_value; annotation=bbox_set(counted_controls); scene=control_board; scope=one grouped control-board screen`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_control_board_v1`
 2. Scene key: `control_board`

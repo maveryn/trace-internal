@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_option(candidate_shapes, transform_rule=translation_match)); scene=shape_reference; scope=translation_match`
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `shape_reference`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

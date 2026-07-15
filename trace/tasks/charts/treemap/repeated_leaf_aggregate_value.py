@@ -114,6 +114,7 @@ def _build_repeated_leaf_plan(instance_seed: int, params: Mapping[str, Any], sel
 @register_task
 class ChartsCompositionTreemapRepeatedLeafAggregateValueTask:
     task_id = TASK_ID
+    reasoning_operations = ('aggregation', 'topology')
     domain = DOMAIN
     objective_contract = "repeated_leaf_aggregate_value"
     supported_query_ids = SUPPORTED_QUERY_IDS

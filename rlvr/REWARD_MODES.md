@@ -1,6 +1,6 @@
-# TRACE EasyR1 Reward Modes
+# Trace EasyR1 Reward Modes
 
-This document describes the TRACE reward modes used by the active EasyR1
+This document describes the Trace reward modes used by the active EasyR1
 training backend under `rlvr/easyr1_backend/`.
 
 The active reward adapter is:
@@ -9,7 +9,7 @@ The active reward adapter is:
 rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py
 ```
 
-It calls the shared TRACE scorer:
+It calls the shared Trace scorer:
 
 ```text
 trace/core/reward_scoring.py

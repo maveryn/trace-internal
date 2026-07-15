@@ -40,6 +40,7 @@ class IllustrationsPixelVillageObjectTypeCountTask:
     """Count approved public object categories in a top-down pixel village."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

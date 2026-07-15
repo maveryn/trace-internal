@@ -88,7 +88,7 @@ def create_app(
     )
     templates.env.globals["static_version"] = _static_version(package_dir / "static")
 
-    app = FastAPI(title="TRACE Benchmark Review")
+    app = FastAPI(title="Trace Benchmark Review")
     app.state.benchmark_review = state
     app.state.auth_token = str(token or "").strip()
     app.state.base_url = resolved_base_url

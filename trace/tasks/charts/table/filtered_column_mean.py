@@ -46,6 +46,7 @@ class ChartsTableFilteredColumnMeanTask:
     """Compute the mean of one target column over rows selected by another column."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'comparison', 'aggregation')
     domain = DOMAIN
     objective_contract = "filtered_column_mean"
     supported_query_ids = SUPPORTED_QUERY_IDS

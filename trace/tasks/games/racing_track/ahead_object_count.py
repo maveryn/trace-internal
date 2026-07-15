@@ -282,6 +282,7 @@ class GamesRacingTrackAheadObjectCountTask:
     """Count cars ahead of a marked car before the finish line."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

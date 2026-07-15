@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_circle_theorem_measurements, unknown_role=length_measure, formula_schema=diameter_perpendicular_chord_length); scene=circle_theorem; scope=diameter_perpendicular_chord_length_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `circle_theorem`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

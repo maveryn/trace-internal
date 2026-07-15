@@ -33,6 +33,7 @@ class PagesHeroCalloutCompositeMetricExtremumLabelTask:
     """Find the callout title with the highest or lowest two-field sum."""
 
     task_id = TASK_ID
+    reasoning_operations = ('ranking', 'aggregation')
     domain = "pages"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

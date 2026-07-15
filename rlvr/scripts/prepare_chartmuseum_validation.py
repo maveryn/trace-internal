@@ -164,7 +164,7 @@ def _write_manifest_sidecar(output_path: Path, *, rows: list[dict[str, Any]], ar
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build a TRACE-style ChartMuseum validation parquet.")
+    parser = argparse.ArgumentParser(description="Build a Trace-style ChartMuseum validation parquet.")
     parser.add_argument("--sample-size", type=int, default=DEFAULT_SAMPLE_SIZE)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--splits", nargs="+", default=["test", "dev"])

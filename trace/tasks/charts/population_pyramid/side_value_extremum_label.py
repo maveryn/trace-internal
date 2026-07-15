@@ -146,6 +146,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
 @register_task
 class ChartsPopulationPyramidSideValueExtremumLabelTask:
     task_id = "task_charts__population_pyramid__side_value_extremum_label"
+    reasoning_operations = ('ranking',)
     domain = DOMAIN
     objective_contract = "side_value_extremum_label"
     supported_query_ids = SIDE_VALUE_EXTREMUM_QUERY_IDS

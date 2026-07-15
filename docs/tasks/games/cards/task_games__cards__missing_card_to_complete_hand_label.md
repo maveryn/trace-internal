@@ -20,6 +20,10 @@ Output binding: `answer` uses the `string` schema; generation binds a unique fin
 Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `missing_flush_card_label`, `missing_straight_card_label`, `missing_full_house_card_label`, `missing_three_of_kind_card_label`.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Generation Notes
 2. Query ids are internal pattern branches inside the same public task contract.
 3. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.

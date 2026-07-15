@@ -1,4 +1,4 @@
-"""Public TRACE taxonomy helpers.
+"""Public Trace taxonomy helpers.
 
 This module resolves the active public task surface:
 ``domain -> scene_id -> task_id``.

@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the miss
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is the final-image pixel bbox around the visible missing speed label, such as `v1 = ?` or `v2 = ?`. Annotation must mark the queried missing-value slot, not the full station regions, flow path, decorative background grid lines, panel framing, or derived answer text.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

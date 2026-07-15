@@ -261,6 +261,7 @@ class IllustrationsCountingEquipmentInZoneCountTask:
     """Count construction vehicles placed in one zone."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations')
     domain = "illustrations"
     supported_queries = QUERY_IDS
     supported_query_ids = QUERY_IDS

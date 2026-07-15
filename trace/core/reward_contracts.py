@@ -1,4 +1,4 @@
-"""Public RLVR reward-contract metadata for TRACE instances."""
+"""Public RLVR reward-contract metadata for Trace instances."""
 
 from __future__ import annotations
 
@@ -55,7 +55,7 @@ class RewardMatcherSpec:
 
 @dataclass(frozen=True)
 class RewardContract:
-    """Portable reward metadata stored with TRACE instances."""
+    """Portable reward metadata stored with Trace instances."""
 
     reward_contract_version: str
     answer: RewardMatcherSpec
@@ -82,7 +82,7 @@ def resolve_annotation_reward_contract_id(annotation_type: str) -> str:
 
 
 def resolve_reward_contract(*, answer_type: str, annotation_type: str) -> RewardContract:
-    """Resolve the public reward contract for one TRACE instance."""
+    """Resolve the public reward contract for one Trace instance."""
 
     normalized_answer_type = str(answer_type).strip()
     normalized_annotation_type = str(annotation_type).strip()

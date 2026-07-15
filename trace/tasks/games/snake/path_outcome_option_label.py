@@ -166,6 +166,7 @@ def _prepare_path_outcome_objective(
 @register_task
 class GamesSnakePathOutcomeTask(SnakeLifecycleTask):
     task_id = TASK_ID
+    reasoning_operations = ('topology', 'state_update', 'matching')
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
         return run_snake_task(self, instance_seed, params, max_attempts, _prepare_path_outcome_objective)

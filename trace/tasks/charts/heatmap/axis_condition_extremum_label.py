@@ -16,6 +16,7 @@ QUERY_AXIS_BY_ID = {
 @register_task
 class ChartsHeatmapAxisConditionExtremumLabelTask:
     task_id = "task_charts__heatmap__axis_condition_extremum_label"
+    reasoning_operations = ('filtering', 'counting', 'ranking')
     domain = DOMAIN
     objective_contract = "axis_condition_extremum_label"
     supported_query_ids = tuple(QUERY_AXIS_BY_ID)

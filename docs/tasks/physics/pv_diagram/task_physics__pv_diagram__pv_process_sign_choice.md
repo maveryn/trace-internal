@@ -17,6 +17,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one final-image pixel box around the process arrow in the correct mini diagram. Annotation must mark the selected visual process arrow, not the option label alone, decorative chrome, or unrelated candidates.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

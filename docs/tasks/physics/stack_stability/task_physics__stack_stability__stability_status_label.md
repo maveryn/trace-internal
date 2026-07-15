@@ -27,6 +27,10 @@ Output binding: `answer` uses the `option_letter` schema; The answer value is th
 Annotation witnesses: `bbox` witnesses from the finalized render. Annotation must mark a single box around the selected stack region in the final rendered image, including the brick stack, red center-of-mass marker, dashed projection line, and support-footprint bracket. Annotation must not mark option letters, unrelated candidate stacks, decorative cell panels, background grid, prompt text, or answer labels.
 Query ids: `stable_stack_label`, `tipping_stack_label`.
 
+## Reasoning Operations
+
+Families: `aggregation`, `spatial_relations`, `formula_evaluation`
+
 ## Program Metadata
 - Program signatures: `physics.stability_status_label`
 - Base program contract: `option_letter(select(brick_stacks, center_of_mass_projection_inside_support_base=status_predicate)); scene=stack_stability; scope=stability_status_label`

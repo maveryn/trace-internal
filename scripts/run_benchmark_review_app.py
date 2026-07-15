@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the TRACE benchmark-review web app."""
+"""Run the Trace benchmark-review web app."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import sys
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the TRACE benchmark-review browser app")
+    parser = argparse.ArgumentParser(description="Run the Trace benchmark-review browser app")
     parser.add_argument("--host", default="127.0.0.1", help="Bind host. Use 0.0.0.0 for remote access.")
     parser.add_argument("--port", type=int, default=7861, help="Preferred bind port")
     parser.add_argument(

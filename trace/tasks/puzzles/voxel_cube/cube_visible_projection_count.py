@@ -73,6 +73,7 @@ class PuzzlesVoxelCubeCubeVisibleProjectionCountTask(VoxelCubeSceneTask):
     """Count cells filled by one orthographic projection."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'transformation')
     supported_query_ids = SUPPORTED_QUERY_IDS
     prompt_task_key = PROMPT_TASK_KEY
     namespace = _NAMESPACE_BASE

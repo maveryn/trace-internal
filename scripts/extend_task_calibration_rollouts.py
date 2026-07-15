@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Legacy helper to extend existing TRACE calibration rollouts.
+"""Legacy helper to extend existing Trace calibration rollouts.
 
 The current calibration baseline should use ``run_task_calibration_sweep.py``
 to generate fresh ``100x24`` artifacts directly. This runner remains only for

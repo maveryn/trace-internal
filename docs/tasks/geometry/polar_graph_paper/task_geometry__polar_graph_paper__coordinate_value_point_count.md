@@ -10,6 +10,10 @@
 ## Program Contract
 - `count(marked_points where polar_coordinate_component(point, component={radius|angle_degrees}) equals prompted_value); scene=polar_graph_paper; scope=coordinate_value_point_count`
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`, `formula_evaluation`
+
 ## Task Summary
 - Scene: `polar_graph_paper`
 - Objective contract: `coordinate_value_point_count`

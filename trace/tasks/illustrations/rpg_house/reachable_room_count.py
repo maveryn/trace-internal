@@ -144,6 +144,7 @@ class IllustrationsRpgHouseReachableRoomCountTask:
     """Count rooms reachable from the player's room through open doors."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'logical_composition', 'topology')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

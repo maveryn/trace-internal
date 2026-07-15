@@ -17,6 +17,10 @@ Output binding: `answer` uses the `integer` schema; The answer value is the abso
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation keys: `height_difference`, `fluid_density_label` Annotation must mark the visible height-difference marker and the visible conversion label needed to compute the pressure difference. It must not mark the A/B pressure point labels, decorative glass, background grid lines, or derived answer text.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Query Branches
 
 | Query id | Program schema |

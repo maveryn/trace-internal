@@ -14,6 +14,7 @@ def _build_task_output(materialized):
 class ChartsThreeDBarCategoryTotalValueTask:
     """Compute the total for one x-axis category across series in a 3D bar chart."""
     task_id = 'task_charts__bar_3d__category_total_value'
+    reasoning_operations = ('aggregation',)
     domain = DOMAIN
     objective_contract = 'category_total_value'
     supported_query_ids = ('category_total_value',)

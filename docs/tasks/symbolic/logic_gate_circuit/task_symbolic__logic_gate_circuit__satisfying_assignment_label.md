@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: a `bbox_map` with `source_circuit` and `selected_option` roles.
 Query ids: `assignment_outputs_one_label`, `assignment_outputs_zero_label`.
 
+## Reasoning Operations
+
+Families: `logical_composition`, `topology`, `formula_evaluation`, `matching`
+
 ## Query Contract
 1. Query metadata: `query_id`
 2. Supported `query_id` values:

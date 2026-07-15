@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `marked_piece_move_count`, `marked_piece_capture_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `state_update`
+
 ## Generation Notes
 1. The scene uses a four-ring by sixteen-sector circular board with sector wraparound.
 2. Pawns, check, checkmate, castling, en passant, and promotion are intentionally out of scope.

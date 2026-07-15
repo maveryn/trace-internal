@@ -23,6 +23,10 @@ Output binding: `answer` uses the `string` schema; the selected exit label.
 Annotation witnesses: `annotation` uses the `point` schema; one image-pixel point centered on the selected exit marker.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`
+
 ## Query Contract
 
 - Supported public `query_id`: `single`

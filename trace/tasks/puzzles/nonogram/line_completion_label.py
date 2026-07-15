@@ -31,6 +31,7 @@ class PuzzlesNonogramLineCompletionLabelTask:
     """Select the visual strip option that completes the marked row."""
 
     task_id = TASK_ID
+    reasoning_operations = ('matching',)
     domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

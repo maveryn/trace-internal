@@ -1,4 +1,4 @@
-"""Core TRACE regression tests for determinism and build contracts."""
+"""Core Trace regression tests for determinism and build contracts."""
 
 from __future__ import annotations
 
@@ -32,7 +32,9 @@ from trace.core.types import TypedValue
 from trace.tasks import create_task
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import TASK_REGISTRY, list_default_task_ids, list_task_ids, register_task
-from trace.tasks.puzzles.cell_board.path_shortest_path import TileShortestPathTask
+from trace.tasks.puzzles.cell_board.shortest_path_length_value import (
+    PuzzlesCellBoardShortestPathLengthValueTask,
+)
 from tests.helpers import read_jsonl
 
 
@@ -71,6 +73,7 @@ def _register_dummy_tasks() -> None:
         @register_task
         class DummyWeightedTaskA:
             task_id = "task_dummy__weights__weighted_a"
+            reasoning_operations = ("direct_retrieval",)
             domain = "dummy"
             scene_id = "weights"
             default_dataset_enabled = False
@@ -128,6 +131,7 @@ def _register_dummy_tasks() -> None:
         @register_task
         class DummyWeightedTaskB:
             task_id = "task_dummy__weights__weighted_b"
+            reasoning_operations = ("direct_retrieval",)
             domain = "dummy"
             scene_id = "weights"
             default_dataset_enabled = False
@@ -185,6 +189,7 @@ def _register_dummy_tasks() -> None:
         @register_task
         class DummyWeightedQueryVariantSupport:
             task_id = "task_dummy__weights__variant_support"
+            reasoning_operations = ("direct_retrieval",)
             domain = "dummy"
             scene_id = "weights"
             default_dataset_enabled = False
@@ -254,7 +259,7 @@ def test_canonical_json_normalizes_tuples_as_arrays() -> None:
 
 
 def test_cell_board_shortest_path_deterministic() -> None:
-    task = TileShortestPathTask()
+    task = PuzzlesCellBoardShortestPathLengthValueTask()
     params = {
         "rows": 7,
         "cols": 7,
@@ -269,8 +274,11 @@ def test_cell_board_shortest_path_deterministic() -> None:
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
     assert out_a.trace_payload["witness_symbolic"] == out_b.trace_payload["witness_symbolic"]
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
-    assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "puzzles_cell_board_path_v0"
-    assert out_a.trace_payload["execution_trace"]["target_shortest_len"] == out_b.trace_payload["execution_trace"]["target_shortest_len"]
+    assert out_a.trace_payload["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "puzzles_cell_board_v1"
+    path_a = out_a.trace_payload["execution_trace"]["shortest_path_cells"]
+    path_b = out_b.trace_payload["execution_trace"]["shortest_path_cells"]
+    assert path_a == path_b
+    assert len(path_a) - 1 == out_a.answer_gt.value
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.image.tobytes() == out_b.image.tobytes()
@@ -675,6 +683,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
         @register_task
         class DummyPromptMissingTask:
             task_id = "task_dummy__query__prompt_missing"
+            reasoning_operations = ("direct_retrieval",)
             domain = "dummy"
             scene_id = "query"
 
@@ -711,6 +720,7 @@ def test_prompt_validation_error_codes(tmp_path: Path, monkeypatch: pytest.Monke
         @register_task
         class DummyPromptUnresolvedTask:
             task_id = "task_dummy__weights__prompt_unresolved"
+            reasoning_operations = ("direct_retrieval",)
             domain = "dummy"
             scene_id = "weights"
 

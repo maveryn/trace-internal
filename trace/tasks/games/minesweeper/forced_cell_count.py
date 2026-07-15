@@ -79,6 +79,7 @@ class GamesMinesweeperForcedCellCountTask:
     """Count hidden cells forced by visible Minesweeper clues."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting')
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

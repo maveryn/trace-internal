@@ -103,6 +103,7 @@ class GeometrySectorAngleValueTask:
     """Compute a sector central angle from arc length or sector area."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

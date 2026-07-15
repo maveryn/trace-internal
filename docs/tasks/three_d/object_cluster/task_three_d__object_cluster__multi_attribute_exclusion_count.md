@@ -20,6 +20,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `logical_composition`
+
 ## Contract
 The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks for a count under one positive attribute while excluding a second attribute: either named type but not named color, or named color but not named type. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`.
 

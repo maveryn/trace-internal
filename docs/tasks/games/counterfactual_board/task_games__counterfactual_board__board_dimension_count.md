@@ -11,6 +11,10 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique fi
 Annotation witnesses: `annotation` uses the `bbox_set` schema; image-pixel row or column bboxes for all counted visible board units; bbox-set cardinality equals answer.
 Query ids: `row_count`, `column_count`.
 
+## Reasoning Operations
+
+Families: `counting`
+
 ## 2) Scene + task contract
 1. Entities/relations: A visible board grid rendered in a chess/checkers or Sudoku-like style.
 2. Supported `query_id` values: `row_count`, `column_count`

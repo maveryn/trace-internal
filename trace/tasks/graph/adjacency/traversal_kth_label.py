@@ -98,6 +98,7 @@ def _ordered_visit_labels(sample: Any, source_label: str, query_id: str) -> tupl
 class GraphOrderAdjacencyTraversalLabelTask:
     """Return the label at a requested BFS or DFS visit position."""
     task_id = 'task_graph__adjacency__traversal_kth_label'
+    reasoning_operations = ('ranking', 'topology')
     domain = 'graph'
     supported_query_ids = SUPPORTED_ADJACENCY_TRAVERSAL_QUERY_IDS
 

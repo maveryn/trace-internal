@@ -1,56 +1,56 @@
 # RLVR Vero Port
 
-This directory is the staged Vero-derived RLVR stack inside the TRACE repo.
+This directory is the staged Vero-derived RLVR stack inside the Trace repo.
 
 Purpose:
 
 - keep a Vero-derived RLVR stack at the canonical `rlvr/` path
-- integrate TRACE-specific pieces into a Vero-shaped execution path
-- preserve the previous TRACE RLVR stack under `rlvr_legacy/`
+- integrate Trace-specific pieces into a Vero-shaped execution path
+- preserve the previous Trace RLVR stack under `rlvr_legacy/`
 
 Current scope:
 
 - vendored Vero training stack under `rlvr/verl/`
 - vendored Vero reward code under `rlvr/vero_reward/`
 - vendored prompt/config assets under `rlvr/examples/`
-- TRACE dataset adapter under `rlvr/verl/utils/dataset/trace_rl_dataset.py`
-- TRACE reward adapter under `rlvr/examples/reward_function/reward_trace.py`
-- TRACE JSON system prompts under `rlvr/examples/prompts/`
-- TRACE grouped solve metrics wired into the Vero PPO trainer path
-- TRACE-style benchmark validation ported into the Vero PPO trainer path
+- Trace dataset adapter under `rlvr/verl/utils/dataset/trace_rl_dataset.py`
+- Trace reward adapter under `rlvr/examples/reward_function/reward_trace.py`
+- Trace JSON system prompts under `rlvr/examples/prompts/`
+- Trace grouped solve metrics wired into the Vero PPO trainer path
+- Trace-style benchmark validation ported into the Vero PPO trainer path
 - draft task-conditioned supervision decisions under
   `task_supervision/trace_supervision_policy_v1.json`; assignment rules live in
   `docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`
 
-TRACE-specific behavior now integrated on top of the Vero stack:
+Trace-specific behavior now integrated on top of the Vero stack:
 
-- `data.dataset_mode=trace` automatically selects the TRACE dataset adapter
-- TRACE row reward modes are `answer` and `answer_and_annotation`; the
+- `data.dataset_mode=trace` automatically selects the Trace dataset adapter
+- Trace row reward modes are `answer` and `answer_and_annotation`; the
   `task_conditioned` run policy selects between them per row
 - `TRACE_OUTPUT_MODE` is the common mode selector for prompt key, reward mode, and default system prompt
 - `TRACE_OUTPUT_MODE=annotation` is accepted as a shorthand alias for `answer_and_annotation`
-- TRACE outputs should end with a TRACE JSON object; reasoning may appear before that final object
-- TRACE training metrics include grouped `zero_solve_*` and `perfect_solve_*`
-- numeric TRACE reward breakdowns are surfaced as `reward/*` metrics in training
+- Trace outputs should end with a Trace JSON object; reasoning may appear before that final object
+- Trace training metrics include grouped `zero_solve_*` and `perfect_solve_*`
+- numeric Trace reward breakdowns are surfaced as `reward/*` metrics in training
 
 Temporary boundary:
 
 - training-stack port work should happen here first
-- the previous TRACE stack now lives in `rlvr_legacy/`
-- TRACE benchmark-style validation assets and older launchers should be pulled over selectively as needed
-- TRACE benchmark validation remains available through
-  `data.validation_style=trace_benchmark`, but the default TRACE launcher now
-  validates on the held-out TRACE split-v1 validation parquet.
+- the previous Trace stack now lives in `rlvr_legacy/`
+- Trace benchmark-style validation assets and older launchers should be pulled over selectively as needed
+- Trace benchmark validation remains available through
+  `data.validation_style=trace_benchmark`, but the default Trace launcher now
+  validates on the held-out Trace split-v1 validation parquet.
 
 Current EasyR1 paper-training path:
 
 - active backend: `rlvr/easyr1_backend/`
 - active reward adapter:
   `rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py`
-- shared TRACE scorer: `trace/core/reward_scoring.py`
-- reward-mode reference: `rlvr/TRACE_REWARD_MODES.md`
+- shared Trace scorer: `trace/core/reward_scoring.py`
+- reward-mode reference: `rlvr/REWARD_MODES.md`
 - annotation ablation handoff runbook:
-  `docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md`
+  `docs/workflows/ANNOTATION_ABLATION_RUNBOOK.md`
   - agents must report `nvidia-smi topo -m` first and state whether the host is
     suitable for the intended 4-GPU or 8-GPU EasyR1/FSDP run
 - concrete experiment/machine profiles:
@@ -140,7 +140,7 @@ scripts/run_trace_qwen25vl7b_easyr1_answer_nokl_tmpfs.sh
 
 Legacy Vero/split-v1 launchers remain available for reference only:
 
-- generic TRACE VL RLVR launcher: `rlvr/examples/model_runs/run_trace_vl_rlvr.sh`
+- generic Trace VL RLVR launcher: `rlvr/examples/model_runs/run_trace_vl_rlvr.sh`
 - experiment-plan wrapper: `scripts/run_trace_rlvr_experiment.sh`
 - default Qwen2.5-VL-3B answer-mode split-v1 launcher:
   `rlvr/examples/model_runs/run_trace_qwen25vl_3b_answer_split_v1.sh`
@@ -152,7 +152,7 @@ Legacy curriculum probe:
 
 - offline base-model rollout probe for curriculum construction: `rlvr/scripts/trace_curriculum_probe.py`
 - legacy intended use: run the base Qwen3-VL-2B model over an older local
-  TRACE train parquet with sampled rollouts, then use the emitted
+  Trace train parquet with sampled rollouts, then use the emitted
   per-instance/per-task solve statistics to define task-wise or global
   curriculum bins
 - defaults match the older curriculum answer-mode setup:
@@ -201,7 +201,7 @@ python rlvr/scripts/export_curriculum_subset.py \
   --max-solve-rate 0.75
 ```
 
-The exported parquet keeps the original TRACE training rows plus probe metadata such as `solve_rate` and `positive_rollout_count`. The standard RLVR launcher already uses random dataloader sampling (`data.shuffle=true`), so pointing `TRAIN_FILES` at this retained parquet gives uniform random sampling inside the selected empirical range.
+The exported parquet keeps the original Trace training rows plus probe metadata such as `solve_rate` and `positive_rollout_count`. The standard RLVR launcher already uses random dataloader sampling (`data.shuffle=true`), so pointing `TRAIN_FILES` at this retained parquet gives uniform random sampling inside the selected empirical range.
 
 For the legacy retained-subset curriculum answer-mode setup, use:
 
@@ -218,7 +218,7 @@ That launcher defaults to:
 - `TRACE_ANSWER_SCORING=legacy_strict`
 - `MAX_RESPONSE_LENGTH=4096`
 
-Minimal TRACE knobs on the legacy Vero stack:
+Minimal Trace knobs on the legacy Vero stack:
 
 - `data.dataset_mode=trace`
 - `data.prompt_key=prompt_answer` or `data.prompt_key=prompt_answer_and_annotation`
@@ -228,21 +228,21 @@ Minimal TRACE knobs on the legacy Vero stack:
 - `custom_reward_function.name=compute_score`
 - `custom_reward_function.reward_kwargs.trace_output_mode=answer` or `answer_and_annotation`
 - `custom_reward_function.reward_kwargs.trace_reward_mode=auto` follows `trace_output_mode` by default
-- `custom_reward_function.reward_kwargs.trace_answer_scoring=exact_json` by default; set `legacy_strict` to recover the older TRACE answer-matching semantics used by `strict_score_response(...)`
+- `custom_reward_function.reward_kwargs.trace_answer_scoring=exact_json` by default; set `legacy_strict` to recover the older Trace answer-matching semantics used by `strict_score_response(...)`
 - `custom_reward_function.reward_kwargs.trace_format_weight=0.05` by default; set `TRACE_FORMAT_WEIGHT` to override it for both answer and answer-and-annotation modes
 - RLVR export now strips the generic JSON-schema boilerplate line from `prompt_answer` and `prompt_answer_and_annotation`; the mode-specific system prompt carries the schema contract, while task-specific hints and examples stay in the user prompt
 - The default answer-and-annotation system prompt asks the response to include reasoning before the requested annotation and answer, then end with `{"answer": ..., "annotation": ...}`.
 - RLVR export includes `query_id` and `scene_variant` when trace sidecars are available; retained curriculum parquets also keep per-question staged probe counts and solve rates
-- TRACE format reward is binary: it is `1.0` only when the response ends with a JSON object whose keys match the expected mode-specific contract, otherwise `0.0`; it does not require `<think>` or `<answer>` tags.
+- Trace format reward is binary: it is `1.0` only when the response ends with a JSON object whose keys match the expected mode-specific contract, otherwise `0.0`; it does not require `<think>` or `<answer>` tags.
 - `reward/zero_reward` and grouped `rlvr_stats/zero_solve_*` / `perfect_solve_*` track task reward correctness, so a wrong but well-formed JSON answer does not count as a solve.
 - `data.validation_style=standard`
 - `data.val_files=maveryn/trace@validation`
 - the default trace launcher config uses model-aware `data.max_prompt_length`
-  and `data.max_response_length=4096` for TRACE training unless overridden
+  and `data.max_response_length=4096` for Trace training unless overridden
 - external benchmark validation can still be enabled explicitly with
   `VALIDATION_STYLE=trace_benchmark` and benchmark parquet `VAL_FILES`.
 - external benchmark validation uses the same answer-mode JSON system prompt as
-  TRACE RLVR training: `data.val_prompt_key=prompt_answer`,
+  Trace RLVR training: `data.val_prompt_key=prompt_answer`,
   `data.val_answer_key=answer_gt`, `data.val_disable_system_prompt=false`, and
   `data.val_format_prompt=null`; legacy rows still load through the dataset
   adapter's `prompt`/`ground_truth` fallback

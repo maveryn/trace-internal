@@ -14,6 +14,7 @@ def _build_plan(params, seed, query_id, _):
 @register_task
 class ChartsHypotheticalRemainingMeanAfterRemovalPublicTask:
     task_id = T
+    reasoning_operations = ('aggregation', 'state_update')
     domain = DOMAIN
     objective_contract = "remaining_mean_after_removal"
     supported_query_ids = (SINGLE_QUERY_ID,)

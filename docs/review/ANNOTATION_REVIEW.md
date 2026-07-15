@@ -2,7 +2,7 @@
 
 Use this procedure when auditing task annotation quality across tasks, scenes,
 or domains. The goal is to decide whether each task's annotation contract is
-good, bad, or needs human design judgment under TRACE's current annotation
+good, bad, or needs human design judgment under Trace's current annotation
 norms.
 
 This is a review guide. Do not redefine task ids, reward behavior, or program

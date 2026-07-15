@@ -19,6 +19,10 @@ Output binding: `answer` uses the `option_letter` schema; generation binds a uni
 Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `counting`, `ranking`, `state_update`
+
 ## Generation Notes
 1. The selected arrow is the only displayed option with the largest immediate clear count.
 2. The immediate clear rule counts horizontal or vertical runs of three or more after the swap; no falling, refill, special effects, or cascades are applied.

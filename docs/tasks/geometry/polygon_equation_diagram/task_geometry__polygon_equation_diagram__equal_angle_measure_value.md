@@ -10,6 +10,10 @@
 ## Program Contract
 - `solve_formula(visible_equal_angle_polygon_equation, unknown_role=target_angle_measure, formula_schema=equal_angle_expression_angle_measure_value); scene=polygon_equation_diagram; scope=equal_angle_measure_value`
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Internal Construction Families
 The public task has no semantic query branch. The sampled polygon side count is recorded as trace metadata:
 

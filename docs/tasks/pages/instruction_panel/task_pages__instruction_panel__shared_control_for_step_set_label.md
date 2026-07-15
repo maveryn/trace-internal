@@ -17,6 +17,10 @@
 8. Query arguments: referenced step-number set and the uniquely shared control label.
 9. Render arguments: step count, control count, controls per step, step-set size, target step set, target control, and scene layout variant.
 
+## Reasoning Operations
+
+Families: `matching`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_instruction_panel_v1`
 2. Scene key: `instruction_panel`

@@ -112,6 +112,7 @@ class PagesNavigationFlowSameGroupTargetLabelTask:
     """Identify the other lettered control in the same group as a named reference letter."""
 
     task_id = TASK_ID
+    reasoning_operations = ('topology',)
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

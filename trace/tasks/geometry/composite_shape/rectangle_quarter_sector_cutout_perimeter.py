@@ -55,6 +55,7 @@ class GeometryRectangleQuarterSectorCutoutPerimeterTask:
     """Compute the perimeter of a rectangle with a quarter-sector cutout."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation',)
     domain = "geometry"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

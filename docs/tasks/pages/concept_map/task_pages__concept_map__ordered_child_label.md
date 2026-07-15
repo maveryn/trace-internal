@@ -18,6 +18,10 @@
 ## Program Contract
 - `concept_map_ordered_child_label(branch_label, rank_ordinal, reading_order); output=child_label_string; annotation=bbox(answer_child); scene=concept_map; scope=one concept-map diagram`
 
+## Reasoning Operations
+
+Families: `ranking`, `topology`
+
 ## Prompt + Trace
 1. Prompt bundle: `pages_concept_map_v1`
 2. Scene key: `concept_map_diagram`

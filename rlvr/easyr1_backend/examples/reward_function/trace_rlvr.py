@@ -43,9 +43,9 @@ def _score_answer_exact(
 
     normalized_scoring = _normalize_trace_answer_scoring(trace_answer_scoring)
     if normalized_scoring != "exact_json":
-        # EasyR1 TRACE backend is intended for JSON-style TRACE rewards. Keep
+        # EasyR1 Trace backend is intended for JSON-style Trace rewards. Keep
         # legacy_strict explicit instead of silently approximating it here.
-        raise ValueError("EasyR1 TRACE reward currently supports trace_answer_scoring=exact_json")
+        raise ValueError("EasyR1 Trace reward currently supports trace_answer_scoring=exact_json")
 
     pred = _canonical_jsonable(_jsonish(candidate))
     gold = _canonical_jsonable(_normalize_ground_truth_value(ground_truth))

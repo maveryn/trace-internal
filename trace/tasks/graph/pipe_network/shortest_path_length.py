@@ -59,6 +59,7 @@ def _sample_path_network(instance_seed, _params, max_attempts, axes):
 @register_task
 class GraphPathPipeShortestPathLengthTask:
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'ranking', 'topology')
     domain = "graph"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

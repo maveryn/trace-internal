@@ -99,6 +99,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
 @register_task
 class ChartsPopulationPyramidSideGapExtremumLabelTask:
     task_id = "task_charts__population_pyramid__side_gap_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "side_gap_extremum_label"
     supported_query_ids = GAP_QUERY_IDS

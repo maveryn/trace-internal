@@ -11,6 +11,10 @@
 ## Program Contract
 - `solve_formula(visible_paper_fold_side_labels, unknown_role=folded_segment_length, formula_schema=pythagorean_leg_then_fold_correspondence, output=integer_length); scene=paper_fold; scope=folded_segment_length_value`
 
+## Reasoning Operations
+
+Families: `transformation`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `paper_fold`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

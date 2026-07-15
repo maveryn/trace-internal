@@ -14,6 +14,10 @@ Annotation schema: `point_map`.
 Annotation witnesses: `annotation` marks the moving token and target token centers.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `topology`, `state_update`
+
 ## Generator
 
 - Implementation: `trace/tasks/games/ludo_board/capture_roll_option_label.py`

@@ -40,6 +40,7 @@ class IllustrationsPixelVillagePersonPathCountTask:
     """Count people whose tile footprint intersects a visible path tile."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'spatial_relations', 'topology')
     domain = "illustrations"
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

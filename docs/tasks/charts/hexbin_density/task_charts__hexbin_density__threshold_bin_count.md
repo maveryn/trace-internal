@@ -30,6 +30,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `point_set` witnesses bound by `point_set(center(matching_bins))`. Annotation should mark the center point of every visible hex bin matching the discrete density-level threshold. Renderer context such as axes, legends, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
 Query ids: `above_threshold_bin_count`, `below_threshold_bin_count`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

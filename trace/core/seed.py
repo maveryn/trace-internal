@@ -1,4 +1,4 @@
-"""Deterministic namespace-based seed derivation for TRACE."""
+"""Deterministic namespace-based seed derivation for Trace."""
 
 from __future__ import annotations
 

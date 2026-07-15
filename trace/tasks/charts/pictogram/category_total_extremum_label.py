@@ -97,6 +97,7 @@ def _build_plan(params: dict, instance_seed: int, selected: str, probabilities: 
 @register_task
 class ChartsPictogramCategoryTotalExtremumLabelTask:
     task_id = "task_charts__pictogram__category_total_extremum_label"
+    reasoning_operations = ('filtering', 'ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "category_total_extremum_label"
     supported_query_ids = CATEGORY_TOTAL_EXTREMUM_QUERY_IDS

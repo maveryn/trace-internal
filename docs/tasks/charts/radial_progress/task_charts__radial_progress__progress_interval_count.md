@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_count` value bound by `integer_count`.
 Annotation witnesses: `bbox_set` witnesses bound by `see_annotation_contract`. Annotation marks one widget card bbox for each counted widget. Titles, tick marks, card decorations, and uncounted widgets are context, not annotation.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `filtering`, `counting`, `comparison`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.radial_progress.progress_interval_count.ChartsRadialProgressIntervalCountTask`
 2. Prompt bundle: `charts_radial_progress_v1`

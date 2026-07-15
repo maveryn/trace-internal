@@ -285,6 +285,7 @@ class SymbolicAbacusTargetValueMatchTask:
     """Select the visual abacus option matching a prompt-provided target value."""
 
     task_id = TASK_ID
+    reasoning_operations = ('formula_evaluation', 'matching')
     domain = DOMAIN
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True

@@ -31,6 +31,10 @@ Output binding: `answer` is the `string_label` value bound by `string_label`.
 Annotation witnesses: `segment` witnesses bound by `see_annotation_contract`. Annotation is one segment connecting the first and last marker centers of the answer series. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 Query ids: `increase`, `decrease`.
 
+## Reasoning Operations
+
+Families: `ranking`, `formula_evaluation`
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |

@@ -349,6 +349,7 @@ class IconsOverlapGridOcclusionOrderCountTask:
     """Count labeled scene cells that match the Reference front-to-back icon order."""
 
     task_id = TASK_ID
+    reasoning_operations = ('counting', 'spatial_relations')
     domain = DOMAIN
     supported_query_ids = (SINGLE_QUERY_ID,)
     default_dataset_enabled = True

@@ -41,6 +41,7 @@ class ChartsParallelCoordinatesAxisDeltaExtremumLabelTask:
     """Return the profile label with the greatest selected change."""
 
     task_id = "task_charts__parallel_coords__axis_delta_extremum_label"
+    reasoning_operations = ('ranking', 'formula_evaluation')
     domain = DOMAIN
     objective_contract = "axis_delta_extremum_label"
     supported_query_ids = SUPPORTED_QUERY_IDS

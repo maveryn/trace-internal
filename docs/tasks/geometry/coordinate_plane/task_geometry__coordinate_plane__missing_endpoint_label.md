@@ -10,6 +10,10 @@
 ## Program Contract
 - `label(select_candidate_point(candidate_points, coordinate_rule=midpoint_inverse_endpoint, unknown_endpoint_role=endpoint_role)); scene=coordinate_plane; scope=missing_endpoint_label`
 
+## Reasoning Operations
+
+Families: `spatial_relations`, `formula_evaluation`
+
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `coordinate_plane`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.

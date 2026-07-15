@@ -20,6 +20,10 @@ Output binding: `answer` uses the `option_letter` schema; one of the visible opt
 Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `transformation`, `matching`
+
 ## Query Branches
 
 | Query id | Program schema |

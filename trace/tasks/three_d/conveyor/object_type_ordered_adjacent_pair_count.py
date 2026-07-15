@@ -24,6 +24,7 @@ class ThreeDConveyorObjectTypeOrderedAdjacentPairCountTask:
     """Count adjacent ordered pairs matching two object types on one lane."""
 
     task_id = TASK_ID
+    reasoning_operations = ('filtering', 'counting', 'topology')
     domain = "three_d"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS

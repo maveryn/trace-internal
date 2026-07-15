@@ -18,6 +18,10 @@ Output binding: `answer` is the `integer_value` value bound by `integer_value`.
 Annotation witnesses: `segment` witnesses bound by `segment(series_a_mark,series_b_mark)`. Annotation is one segment connecting the centers of the two compared scatter marks at the requested x-axis label. Axes, legends, titles, readout numbers, and distractor text are metadata.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_readout.series_pair_value_gap_at_x.ChartsScatterSeriesPairValueGapAtXTask`
 2. Prompt bundle: `prompts/charts/scatter_readout/charts_scatter_readout_v1.json`

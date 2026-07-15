@@ -16,6 +16,10 @@ Output binding: `answer` is the selected option letter.
 Annotation witnesses: the selected option-card bounding box.
 Query ids: `single`.
 
+## Reasoning Operations
+
+Families: `formula_evaluation`
+
 ## 2) Scene + Task Contract
 1. Supported public `query_id` values: `single`
 2. `answer_gt.type`: `option_letter`

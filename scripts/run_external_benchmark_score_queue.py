@@ -910,6 +910,23 @@ def _parse_json_object(text: Any) -> dict[str, Any]:
     return {}
 
 
+def _resolve_charxiv_extracted_answer(
+    item: dict[str, Any],
+    parsed: dict[str, Any],
+    prediction: Any,
+) -> tuple[str, str]:
+    extracted = str(item.get("extract_answer", parsed.get("extract_answer", ""))).strip()
+    if extracted:
+        return extracted, "judge"
+
+    if prediction is None or (isinstance(prediction, float) and math.isnan(prediction)):
+        return "", "empty_prediction"
+    fallback, method = extract_final_answer(prediction)
+    if fallback:
+        return fallback, f"deterministic_{method}"
+    return "", "empty_prediction"
+
+
 def _parse_binary_score(value: Any) -> float | None:
     return _strict_parse_binary_score(value)
 
@@ -1289,6 +1306,7 @@ def _run_charxiv_local_judge(
         desc=f"{spec.alias} judge",
     )
     judged_map = {**existing, **raw}
+    prediction_by_index = {str(row["index"]): row.get("prediction") for _, row in data.iterrows()}
     malformed: list[str] = []
     for idx, item in list(judged_map.items()):
         output = str(item.get("judge_output", ""))
@@ -1306,12 +1324,20 @@ def _run_charxiv_local_judge(
             malformed.append(str(idx))
             continue
         parsed = runner._parse_charxiv_judge(output)
-        extract_answer = str(item.get("extract_answer", parsed.get("extract_answer", ""))).strip()
-        if not extract_answer:
+        extract_answer, extraction_method = _resolve_charxiv_extracted_answer(
+            item,
+            parsed,
+            prediction_by_index.get(str(idx)),
+        )
+        if not extract_answer and extraction_method != "empty_prediction":
+            malformed.append(str(idx))
+            continue
+        if extraction_method == "empty_prediction" and score != 0.0:
             malformed.append(str(idx))
             continue
         item["score"] = score
         item["extract_answer"] = extract_answer
+        item["extract_answer_method"] = extraction_method
         judged_map[idx] = item
     if malformed:
         raise RuntimeError(

@@ -36,6 +36,7 @@ from benchmark_queue_lib import (  # noqa: E402
 from run_external_benchmark_score_queue import (  # noqa: E402
     _parse_chartmuseum_judgement_output,
     _patch_screenspot_point_parser,
+    _resolve_charxiv_extracted_answer,
     _run_score_for_spec,
     _run_tablevqabench_local_score,
 )
@@ -283,6 +284,20 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(_parse_chartmuseum_judgement_output("**No**\n\nThe answers differ."), 0)
         self.assertEqual(_parse_chartmuseum_judgement_output("Reasoning\nFinal Answer: Yes"), 1)
         self.assertIsNone(_parse_chartmuseum_judgement_output("The answers are not equivalent"))
+
+    def test_charxiv_empty_judge_extraction_falls_back_to_canonical_prediction(self):
+        self.assertEqual(
+            _resolve_charxiv_extracted_answer(
+                {},
+                {"score": 0, "extract_answer": ""},
+                r"reasoning \boxed{RCU}",
+            ),
+            ("RCU", "deterministic_boxed"),
+        )
+        self.assertEqual(
+            _resolve_charxiv_extracted_answer({}, {"score": 0, "extract_answer": ""}, None),
+            ("", "empty_prediction"),
+        )
 
     def test_final_answer_parser_supports_all_canonical_wrappers(self):
         self.assertEqual(extract_final_answer("<answer>42</answer>"), ("42", "answer_tag"))

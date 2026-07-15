@@ -26,6 +26,7 @@ from benchmark_queue_lib import (  # noqa: E402
     claim_next_job,
     filter_benchmark_specs,
     json_default,
+    load_json,
     mark_job,
     materialize_grounding_benchmark_files,
     spec_by_key,
@@ -82,6 +83,22 @@ def _score_job(args: argparse.Namespace, job_id: str, judge: PersistentJudge) ->
     return sentinel
 
 
+def _terminal_failed_jobs(
+    queue_path: Path,
+    jobs: list[tuple[str, Path]],
+    max_attempts: int,
+) -> list[tuple[str, str]]:
+    state = load_json(queue_path, {"jobs": {}})
+    terminal = []
+    for job_id, sentinel in jobs:
+        info = (state.get("jobs") or {}).get(job_id, {})
+        if sentinel.exists() or info.get("status") == "done":
+            continue
+        if info.get("status") == "failed" and int(info.get("attempts") or 0) >= max_attempts:
+            terminal.append((job_id, str(info.get("error") or "unknown error")))
+    return terminal
+
+
 def run_worker(args: argparse.Namespace) -> None:
     if args.gpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -123,6 +140,12 @@ def run_worker(args: argparse.Namespace) -> None:
                 max_attempts=args.max_attempts,
             )
             if job_id is None:
+                terminal_failures = _terminal_failed_jobs(queue_path, jobs, args.max_attempts)
+                if terminal_failures:
+                    details = "; ".join(f"{job_id}: {error}" for job_id, error in terminal_failures[:5])
+                    raise RuntimeError(
+                        f"{len(terminal_failures)} score jobs exhausted max attempts: {details}"
+                    )
                 print("[score-multi:done] no remaining score jobs")
                 break
             try:

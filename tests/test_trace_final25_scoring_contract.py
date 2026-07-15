@@ -47,6 +47,7 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _run_tablevqabench_local_score,
     _validate_math_like_judged_table,
 )
+from run_external_benchmark_score_multi_model_queue import _terminal_failed_jobs  # noqa: E402
 from run_llm_extracted_benchmark_score_queue import (  # noqa: E402
     _legacy_raw_output_from_error,
     _inline_dot_option_columns,
@@ -398,6 +399,29 @@ class TraceFinal25ContractTests(unittest.TestCase):
             _run_score_for_spec(args, spec_by_key("mmstar"), "model", "slug", None)
         with self.assertRaisesRegex(RuntimeError, "run_mme_reasoning_eval"):
             _run_score_for_spec(args, spec_by_key("mme_reasoning"), "model", "slug", None)
+
+    def test_multi_model_queue_reports_exhausted_failed_jobs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            queue = root / "queue.json"
+            queue.write_text(
+                json.dumps(
+                    {
+                        "jobs": {
+                            "mathverse": {
+                                "status": "failed",
+                                "attempts": 2,
+                                "error": "malformed decision",
+                            }
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                _terminal_failed_jobs(queue, [("mathverse", root / "missing.json")], 2),
+                [("mathverse", "malformed decision")],
+            )
 
     def test_binary_judge_parser_rejects_fuzzy_or_negated_text(self):
         self.assertEqual(parse_binary_score('{"score": 1}'), 1.0)

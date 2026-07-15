@@ -35,6 +35,7 @@ from benchmark_queue_lib import (  # noqa: E402
 )
 from run_external_benchmark_score_queue import (  # noqa: E402
     _judge_cache_entry_needs_retry,
+    _judge_retry_token_limits,
     _parse_chartmuseum_judgement_output,
     _patch_screenspot_point_parser,
     _resolve_charxiv_extracted_answer,
@@ -310,6 +311,9 @@ class TraceFinal25ContractTests(unittest.TestCase):
         )
         self.assertTrue(_judge_cache_entry_needs_retry({"judge_output": "", "judge_finish_reason": "stop"}))
         self.assertFalse(_judge_cache_entry_needs_retry({"judge_output": "0", "judge_finish_reason": "stop"}))
+        self.assertEqual(_judge_retry_token_limits(16), [128, 256, 512, 1024])
+        self.assertEqual(_judge_retry_token_limits(256), [256, 512, 1024])
+        self.assertEqual(_judge_retry_token_limits(2048), [2048])
 
     def test_chartmuseum_parser_accepts_explicit_markdown_or_final_decision(self):
         self.assertEqual(_parse_chartmuseum_judgement_output("**Yes**"), 1)

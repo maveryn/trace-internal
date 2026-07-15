@@ -78,6 +78,15 @@ def _judge_cache_entry_needs_retry(row: dict[str, Any]) -> bool:
     return not output or finish_reason in {"length", "max_tokens"}
 
 
+def _judge_retry_token_limits(initial_max_tokens: int) -> list[int]:
+    limit = max(128, int(initial_max_tokens))
+    ceiling = max(1024, limit)
+    limits = [limit]
+    while limits[-1] < ceiling:
+        limits.append(min(ceiling, limits[-1] * 2))
+    return limits
+
+
 class PersistentJudge:
     def __init__(self, args: argparse.Namespace):
         self.args = args
@@ -250,13 +259,20 @@ class PersistentJudge:
             def run_one(pos_item: tuple[int, tuple[str, str]]) -> dict[str, Any]:
                 pos, (idx, _) = pos_item
                 endpoint = endpoints[pos % len(endpoints)]
-                result = self._call_api_completion(
-                    endpoint,
-                    rendered[str(idx)],
-                    max_tokens=effective_max_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
-                )
+                result: dict[str, Any] = {}
+                retry_count = 0
+                for token_limit in _judge_retry_token_limits(effective_max_tokens):
+                    result = self._call_api_completion(
+                        endpoint,
+                        rendered[str(idx)],
+                        max_tokens=token_limit,
+                        temperature=temperature,
+                        top_p=top_p,
+                    )
+                    if not _judge_cache_entry_needs_retry(result):
+                        break
+                    retry_count += 1
+                result["judge_retry_count"] = retry_count
                 return {"index": str(idx), **result}
 
             max_workers = int(getattr(self.args, "judge_api_parallelism", 128))

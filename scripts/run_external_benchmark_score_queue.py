@@ -744,6 +744,39 @@ def _parse_binary_score(value: Any) -> float | None:
     return float(parsed) if parsed is not None else None
 
 
+def _parse_shortqa_correctness_output(value: Any) -> tuple[float, str]:
+    text = str(value or "").strip()
+    correct_st, correct_ed = "[Begin Correctness]", "[End Correctness]"
+    reason_st, reason_ed = "[Begin Reason]", "[End Reason]"
+    reason = ""
+    if reason_st in text and reason_ed in text:
+        reason = text.split(reason_st, 1)[1].split(reason_ed, 1)[0].strip()
+    if correct_st in text and correct_ed in text:
+        correctness = text.split(correct_st, 1)[1].split(correct_ed, 1)[0].strip().lower()
+        has_yes = "yes" in correctness
+        has_no = "no" in correctness
+        if has_yes ^ has_no:
+            return (1.0 if has_yes else 0.0), reason
+
+    obj = _parse_json_object(text)
+    for key in ("correctness", "correct", "score", "judgement", "judgment", "hit"):
+        if key not in obj:
+            continue
+        parsed = _parse_binary_score(obj.get(key))
+        if parsed is not None:
+            return parsed, reason or str(obj.get("reason", "")).strip()
+
+    parsed = _parse_binary_score(text)
+    if parsed is not None:
+        return parsed, reason
+    lowered = text.lower()
+    if re.search(r"\b(correct|yes)\b", lowered) and not re.search(r"\b(incorrect|wrong|no)\b", lowered):
+        return 1.0, reason
+    if re.search(r"\b(incorrect|wrong|no)\b", lowered):
+        return 0.0, reason
+    return 0.0, reason or "Failed to parse judge correctness"
+
+
 def _truthy_score(value: Any) -> bool:
     if isinstance(value, bool):
         return value
@@ -1036,6 +1069,96 @@ def _run_evochart_local_judge(
     return summary
 
 
+def _run_mmesci_local_judge(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+    judge: PersistentJudge,
+) -> dict[str, Any]:
+    _import_vlmeval_runner()
+    from vlmeval.dataset.utils.multiple_choice import report_acc
+    from vlmeval.dataset.utils.shortqa import ShortQA_prompt
+    from vlmeval.smp import load
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = load(str(pred_table))
+    data["prediction"] = [str(x) for x in data["prediction"]]
+    data["answer"] = [str(x) for x in data["answer"]]
+
+    prompts = []
+    for _, row in data.iterrows():
+        prompts.append((str(row["index"]), ShortQA_prompt(row)))
+
+    raw = judge.run_cached(
+        output_dir=output_dir,
+        prompts=prompts,
+        cache_name="judge_qwen3_32b_shortqa.jsonl",
+        max_tokens=args.judge_max_tokens,
+        temperature=0.0,
+        top_p=1.0,
+        no_resume=False,
+        desc=f"{spec.alias} ShortQA judge",
+    )
+
+    hits = []
+    logs = []
+    judge_outputs = []
+    for _, row in data.iterrows():
+        item = raw.get(str(row["index"]), {})
+        output = str(item.get("judge_output", ""))
+        hit, log = _parse_shortqa_correctness_output(output)
+        hits.append(hit)
+        logs.append(log)
+        judge_outputs.append(output)
+    data["hit"] = hits
+    data["log"] = logs
+    data["judge_output"] = judge_outputs
+
+    judged_xlsx = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
+    data.to_excel(judged_xlsx, index=False)
+
+    acc_df = report_acc(data.copy())
+    score_csv = output_dir / f"{spec.alias}_judged_qwen3_32b_acc.csv"
+    acc_df.to_csv(score_csv, index=False)
+    overall = float(sum(hits) / len(hits) * 100.0) if hits else 0.0
+
+    breakdowns: dict[str, dict[str, float]] = {}
+    for col in ("category", "l2-category", "type"):
+        if col not in data:
+            continue
+        breakdowns[col] = {
+            str(name): float(group["hit"].mean() * 100.0)
+            for name, group in data.groupby(col, dropna=False)
+        }
+    scores_obj = {
+        "Overall": overall,
+        "table": acc_df.to_dict(orient="records"),
+        "breakdowns": breakdowns,
+    }
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "judge_model": args.judge_model,
+        "harness": "TRACE MMESCI_EN Qwen3-32B ShortQA judge",
+        "rows": len(data),
+        "score": overall,
+        "scores": scores_obj,
+        "artifacts": {
+            "prediction_table": str(pred_table),
+            "judge_jsonl": str(output_dir / "judge_qwen3_32b_shortqa.jsonl"),
+            "judged_table": str(judged_xlsx),
+            "score_csv": str(score_csv),
+        },
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
+
+
 def _run_chartmuseum_local_judge(
     args: argparse.Namespace,
     spec: BenchmarkSpec,
@@ -1295,6 +1418,8 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         summary = _run_evochart_local_judge(args, spec, model_path, output_dir, judge)
     elif mode == "charxiv_local_judge":
         summary = _run_charxiv_local_judge(args, spec, model_path, output_dir, judge)
+    elif mode == "mmesci_local_judge":
+        summary = _run_mmesci_local_judge(args, spec, model_path, output_dir, judge)
     elif mode in {"mathv_local_judge", "mathvista_local_judge", "mathverse_local_judge", "logicvista_local_judge"}:
         summary = _run_local_math_like(args, spec, model_path, output_dir, judge)
     elif mode == "wemath_local_judge":

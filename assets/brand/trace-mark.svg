@@ -23,15 +23,14 @@
   <!-- Games and puzzles -->
   <g>
     <rect class="tile" x="106" y="30" width="68" height="68" rx="8" stroke-width="2"/>
-    <rect x="114" y="38" width="52" height="52" rx="6" fill="#17242d"/>
-    <g fill="#edf0df">
+    <g fill="#3974d7">
       <path d="m122 48 5 5 5-5 4 10-9 5-9-5Z"/>
       <path d="m145 46 5 5 5-5 4 10-9 5-9-5Z"/>
     </g>
-    <path d="m131 84 9-15 9 15-6-3-3 6-3-6Z" fill="#b9d63b"/>
-    <path d="M127 68v8m13-10v-5m11 6v7" fill="none" stroke="#35a8ff" stroke-width="2.3" stroke-linecap="round"/>
-    <circle cx="121" cy="74" r="2" fill="#e85d4a"/>
-    <circle cx="160" cy="45" r="1.2" fill="#edf0df"/>
+    <path d="m131 84 9-15 9 15-6-3-3 6-3-6Z" fill="#159b91"/>
+    <path d="M127 68v8m13-10v-5m11 6v7" fill="none" stroke="#e85d4a" stroke-width="2.3" stroke-linecap="round"/>
+    <circle cx="121" cy="74" r="2" fill="#e5a62b"/>
+    <circle cx="160" cy="45" r="1.7" fill="#e5a62b"/>
   </g>
 
   <!-- Geometry -->

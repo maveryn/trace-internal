@@ -168,7 +168,13 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             run_root = Path(tmp)
             spec = BenchmarkSpec("demo_video", "Demo video", "Demo_Video_8frame", "demo")
-            row = {"index": "sample-1", "question": "What happens?", "answer": "A"}
+            row = {
+                "index": "sample-1",
+                "question": "What happens?",
+                "answer": "A",
+                "image": "data:image/png;base64,duplicated-media",
+                "image_size": "(640, 480)",
+            }
             dataset = SimpleNamespace(dataset_name="Demo_Video", data=runner.pd.DataFrame([row]))
             handle = runner.DatasetHandle(spec=spec, dataset=dataset)
             output_dir = runner.run_dir(spec, "model", run_root)
@@ -203,6 +209,7 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
                 max_image_side=1280,
                 image_jpeg_quality=85,
                 subset_root=None,
+                compact_prediction_tables=True,
             )
 
             with patch.object(runner, "_import_vlmeval_runner", return_value=(object(), object())):
@@ -212,6 +219,33 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
             self.assertTrue(expected.exists())
             self.assertFalse((output_dir / "Demo_Video_predictions.xlsx").exists())
             self.assertEqual(summary["artifacts"]["eval_file"], str(expected))
+            self.assertEqual(summary["rows"], 1)
+            persisted = runner.pd.read_excel(expected)
+            self.assertNotIn("image", persisted.columns)
+            self.assertIn("image_size", persisted.columns)
+            self.assertTrue(summary["generation"]["compact_prediction_tables"])
+
+    def test_row_identity_reuses_reordered_rows_but_not_changed_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            result_dir = output_dir / "api_row_results"
+            result_dir.mkdir()
+            original = {"index": "sample-1", "question": "Original prompt", "answer": "A"}
+            path = result_dir / "result.json"
+            runner._atomic_write_json(
+                path,
+                {
+                    "index": original["index"],
+                    "row_key": runner._row_key(original, 17),
+                    "prediction": "A",
+                },
+            )
+
+            existing = runner._load_existing_result_paths(output_dir)
+            self.assertIn(runner._row_identity(original), existing)
+
+            changed = {**original, "question": "Repaired prompt"}
+            self.assertNotIn(runner._row_identity(changed), existing)
 
 
 if __name__ == "__main__":

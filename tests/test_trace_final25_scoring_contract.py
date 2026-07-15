@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 import sys
 import tempfile
 import types
@@ -45,6 +46,10 @@ from run_llm_extracted_benchmark_score_queue import (  # noqa: E402
     build_parser as build_llm_extract_parser,
 )
 from run_mme_reasoning_eval import _validate_extraction  # noqa: E402
+from reuse_trace_final25_generation_rows import (  # noqa: E402
+    _candidate_from_summary,
+    _link_candidate,
+)
 from trace_benchmark_answer_parsing import (  # noqa: E402
     extract_click_point,
     extract_final_answer,
@@ -275,6 +280,56 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(_validate_extraction("choice_prompt", "A"), (True, "A"))
         self.assertEqual(_validate_extraction("choice_prompt", "[A, C]"), (True, "A,C"))
         self.assertEqual(_validate_extraction("choice_prompt", "The answer is A"), (False, "The answer is A"))
+
+    def test_reuse_campaign_accepts_only_matching_complete_generation_and_hardlinks_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source_dir = root / "old" / "runs" / "blink" / "qwen25vl3b-base" / "vlmevalkit_defaults"
+            row_dir = source_dir / "api_row_results"
+            row_dir.mkdir(parents=True)
+            for index in range(2):
+                (row_dir / f"{index}.json").write_text(
+                    json.dumps({"index": str(index), "row_key": f"0000000{index}:{index}:0123456789abcdef", "prediction": "A"}),
+                    encoding="utf-8",
+                )
+            summary_path = source_dir / "generation_summary.json"
+            summary_path.write_text(
+                json.dumps(
+                    {
+                        "model_slug": "qwen25vl3b-base",
+                        "rows": 2,
+                        "expected_rows": 2,
+                        "generation": {
+                            "seed": 42,
+                            "temperature": 0.6,
+                            "top_p": 1.0,
+                            "top_k": -1,
+                            "presence_penalty": 0.0,
+                            "repetition_penalty": 1.0,
+                            "max_tokens": 4096,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            candidate = _candidate_from_summary(
+                summary_path,
+                model_slugs={"qwen25vl3b-base"},
+                seeds={42},
+                temperature=0.6,
+                top_p=1.0,
+                top_k=-1,
+                presence_penalty=0.0,
+                repetition_penalty=1.0,
+                max_tokens=4096,
+            )
+            self.assertIsNotNone(candidate)
+            campaign_root = root / "campaign"
+            linked = _link_candidate(candidate, campaign_root, dry_run=False)
+            self.assertEqual(linked["linked"], 2)
+            targets = list((campaign_root / "seed_42" / "runs" / "blink" / "qwen25vl3b-base" / "vlmevalkit_defaults" / "api_row_results").glob("*.json"))
+            self.assertEqual(len(targets), 2)
+            self.assertEqual(targets[0].stat().st_ino, (row_dir / targets[0].name).stat().st_ino)
 
 
 if __name__ == "__main__":

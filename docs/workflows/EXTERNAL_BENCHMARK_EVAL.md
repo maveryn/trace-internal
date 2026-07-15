@@ -421,3 +421,44 @@ issues that the current code now rejects; a clean Final25 run must have zero
 malformed option extractions, missing binary decisions, and ground truths
 excluded from valid options or parsed choice text, with no required choice text
 missing.
+
+### Final25 three-seed comparison campaign
+
+Use `scripts/run_trace_final25_temp06_3seed_8models.sh` for the frozen
+eight-model comparison. It evaluates seeds 42, 43, and 44 for the four TRACE
+base/answer-GRPO models and the OpenMOSS Game-RL, Sphinx, PCGRPO, and Vero 7B
+baselines. The campaign is resumable and has four ordered phases:
+
+1. discover compatible historical per-row responses and hard-link them into
+   the campaign tree;
+2. load each evaluated model once across all eight GPUs and generate only
+   missing or prompt-invalidated rows for all three seeds;
+3. load eight Qwen3-32B judge endpoints once and run all direct, extraction,
+   and MME-Reasoning scoring jobs;
+4. verify all 600 model/seed/benchmark scores and write a three-seed mean/std
+   workbook and Markdown report.
+
+The default stable run root is
+`/dev/shm/trace_rlvr/trace_final25_temp06_seed42_44_8models_v1`. Re-running the
+same launcher resumes that root and skips complete model/seed phases:
+
+```bash
+bash scripts/run_trace_final25_temp06_3seed_8models.sh
+```
+
+Finalized prediction tables use `--compact-prediction-tables`: image and video
+payload columns are omitted, while indices, prompts, references, choices,
+metadata, raw model responses, token counts, and row-level atomic response
+files remain available. This prevents duplicating benchmark media for every
+model and seed. It does not alter prompts, model inputs, extraction, or
+scoring. `reuse_trace_final25_generation_rows.py` matches persisted rows by
+index and prompt-content hash, so a changed prompt such as the repaired
+TreeBench row is regenerated instead of reused even when row order changes.
+
+Campaign verification can be run independently:
+
+```bash
+python scripts/verify_trace_final25_campaign.py \
+  --campaign-root /dev/shm/trace_rlvr/trace_final25_temp06_seed42_44_8models_v1 \
+  --phase generation --model-slug qwen25vl7b-base --seeds 42 43 44
+```

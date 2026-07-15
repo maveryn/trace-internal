@@ -9,6 +9,7 @@ import io
 import json
 import os
 import queue
+import re
 import shutil
 import sys
 import threading
@@ -156,6 +157,20 @@ class DatasetHandle:
         self.lock = threading.Lock()
 
 
+COMPACT_MEDIA_COLUMNS = frozenset(
+    {
+        "image",
+        "images",
+        "image_path",
+        "image_paths",
+        "video",
+        "videos",
+        "video_path",
+        "video_paths",
+    }
+)
+
+
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -185,6 +200,28 @@ def _safe_result_name_for_row(row: dict[str, Any], rank: int) -> str:
     safe_index = "".join(ch if ch.isalnum() or ch in "._-" else "_" for ch in index)[:64]
     digest = hashlib.sha256(_row_key(row, rank).encode("utf-8")).hexdigest()[:16]
     return f"{int(rank):08d}.{safe_index}.{digest}.json"
+
+
+def _row_identity_from_key(index: Any, row_key: Any) -> str | None:
+    """Return an order-independent row identity from a persisted row key."""
+
+    text = str(row_key or "")
+    if not text or ":" not in text:
+        return None
+    row_hash = text.rsplit(":", 1)[-1]
+    if not re.fullmatch(r"[0-9a-f]{16}", row_hash):
+        return None
+    return f"identity:{index}:{row_hash}"
+
+
+def _row_identity(row: dict[str, Any]) -> str:
+    return f"identity:{row.get('index')}:{_row_hash(row)[:16]}"
+
+
+def _compact_prediction_record(record: dict[str, Any]) -> dict[str, Any]:
+    """Drop duplicated media payloads while retaining scoring metadata."""
+
+    return {key: value for key, value in record.items() if str(key).lower() not in COMPACT_MEDIA_COLUMNS}
 
 
 def _atomic_write_bytes(path: Path, payload: bytes) -> None:
@@ -419,6 +456,9 @@ def _load_existing_result_paths(output_dir: Path) -> dict[str, Path]:
             key = str(row["index"])
         if key is not None and not row.get("error"):
             out[str(key)] = path
+            identity = _row_identity_from_key(row.get("index"), row.get("row_key"))
+            if identity is not None:
+                out[identity] = path
     return out
 
 
@@ -486,7 +526,7 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
         for rank, row in enumerate(row_records):
             row_key = _row_key(row, rank)
             legacy_index = str(row["index"])
-            if row_key in existing or legacy_index in existing:
+            if row_key in existing or _row_identity(row) in existing or legacy_index in existing:
                 continue
             spec_jobs.append(
                 RowJob(
@@ -508,7 +548,8 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
         jobs_by_spec.append(spec_jobs)
         print(
             "[api-generate:prepare] "
-            f"{spec.key} rows={len(row_records)} existing={len(existing)} pending={pending} output={output_dir}"
+            f"{spec.key} rows={len(row_records)} existing={len(set(existing.values()))} "
+            f"pending={pending} output={output_dir}"
         )
     jobs: list[RowJob] = []
     max_len = max((len(spec_jobs) for spec_jobs in jobs_by_spec), default=0)
@@ -627,7 +668,18 @@ def _prediction_map_from_row_results(output_dir: Path) -> dict[str, dict[str, An
             key = str(row["index"])
         if key is not None and not row.get("error"):
             pred_map[str(key)] = row
+            identity = _row_identity_from_key(row.get("index"), row.get("row_key"))
+            if identity is not None:
+                pred_map[identity] = row
     return pred_map
+
+
+def _unique_prediction_results(pred_map: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    unique: dict[str, dict[str, Any]] = {}
+    for row in pred_map.values():
+        key = str(row.get("row_key") or f"legacy:{row.get('index')}")
+        unique[key] = row
+    return unique
 
 
 def _token_stats(pred_map: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -650,6 +702,7 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
     spec = handle.spec
     output_dir = run_dir(spec, args.model_slug, args.run_root)
     pred_map = _prediction_map_from_row_results(output_dir)
+    unique_predictions = _unique_prediction_results(pred_map)
     if spec.kind == "chartmuseum" or spec.key == "chartmuseum":
         # Keep the exact row order used when jobs were created. The row key
         # includes the per-run rank, so sorting here breaks resume/finalize for
@@ -657,7 +710,10 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
         rows = list(handle.rows or [])
         records = []
         for rank, row in enumerate(rows):
-            pred = pred_map.get(_row_key(row, rank), pred_map.get(str(row["index"]), {}))
+            pred = pred_map.get(
+                _row_key(row, rank),
+                pred_map.get(_row_identity(row), pred_map.get(str(row["index"]), {})),
+            )
             raw = pred.get("prediction", "")
             records.append(
                 {
@@ -690,7 +746,10 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
         with pred_jsonl.open("w", encoding="utf-8") as f:
             for rank, (_, row) in enumerate(handle.dataset.data.iterrows()):
                 row_dict = row.to_dict()
-                pred = pred_map.get(_row_key(row_dict, rank), pred_map.get(str(row_dict["index"]), {}))
+                pred = pred_map.get(
+                    _row_key(row_dict, rank),
+                    pred_map.get(_row_identity(row_dict), pred_map.get(str(row_dict["index"]), {})),
+                )
                 record = {
                     "index": str(row_dict["index"]),
                     "prediction": pred.get("prediction", ""),
@@ -698,7 +757,10 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
                     "output_token_count": pred.get("output_token_count"),
                     "prompt_token_count": pred.get("prompt_token_count"),
                 }
-                records.append({**row_dict, **record})
+                persisted_row = {**row_dict, **record}
+                if getattr(args, "compact_prediction_tables", False):
+                    persisted_row = _compact_prediction_record(persisted_row)
+                records.append(persisted_row)
                 f.write(json.dumps(record, ensure_ascii=False, default=json_default) + "\n")
         frame = pd.DataFrame(records)
         # VLMEvalKit's evaluator resolves the prediction table from the alias
@@ -713,13 +775,13 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
                 f.write(json.dumps(record, ensure_ascii=False, default=json_default) + "\n")
         expected_rows = len(handle.dataset.data)
 
-    finish_reasons = Counter(str(v.get("finish_reason")) for v in pred_map.values())
+    finish_reasons = Counter(str(v.get("finish_reason")) for v in unique_predictions.values())
     summary = {
         "dataset": spec.alias,
         "display": spec.display,
         "model": args.model,
         "model_slug": args.model_slug,
-        "rows": len(pred_map),
+        "rows": len(unique_predictions),
         "expected_rows": expected_rows,
         "generation": {
             "backend": "openai_compatible_vllm_endpoint_pool",
@@ -736,18 +798,19 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
             "max_image_pixels": int(args.max_image_pixels),
             "max_image_side": int(args.max_image_side),
             "image_jpeg_quality": int(args.image_jpeg_quality),
+            "compact_prediction_tables": bool(getattr(args, "compact_prediction_tables", False)),
         },
         "subset_manifest": str(_subset_manifest_path(args.subset_root, spec)) if args.subset_root else None,
         "finish_reason": dict(finish_reasons),
-        "output_token_stats": _token_stats(pred_map),
+        "output_token_stats": _token_stats(unique_predictions),
         "artifacts": {"predictions_jsonl": str(pred_jsonl), "eval_file": str(eval_file)},
     }
-    if len(pred_map) != expected_rows:
-        summary["warning"] = f"missing {expected_rows - len(pred_map)} predictions"
+    if len(unique_predictions) != expected_rows:
+        summary["warning"] = f"missing {expected_rows - len(unique_predictions)} predictions"
     write_json(output_dir / "generation_summary.json", summary)
     print(
         "[api-generate:finalize] "
-        f"{spec.key} rows={len(pred_map)}/{expected_rows} "
+        f"{spec.key} rows={len(unique_predictions)}/{expected_rows} "
         f"mean_tokens={summary['output_token_stats']['mean']:.1f} "
         f"cap_hit={summary['output_token_stats']['length_cap_fraction']:.3f}"
     )
@@ -875,6 +938,11 @@ def main() -> None:
     parser.add_argument("--repetition-penalty", type=float, default=1.0)
     parser.add_argument("--max-tokens", type=int, default=4096)
     parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument(
+        "--compact-prediction-tables",
+        action="store_true",
+        help="Exclude duplicated image/video payload columns from finalized prediction tables.",
+    )
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
     if args.trace_candidate37_200:

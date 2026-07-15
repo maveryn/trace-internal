@@ -1,0 +1,663 @@
+{
+  "schema_version": 1,
+  "experiment_id": "trace_answer_only_final25",
+  "scope": "TRACE answer-only GRPO training and full Final25 evaluation",
+  "repository": {
+    "branch": "rlvr",
+    "training_revisions": {
+      "qwen25vl3b_initial": "32977891fceba573cc856e9c3da26f93385ed4a5",
+      "qwen25vl3b_resume": "4251bcaeb0f49fe27a449e81fb40415c219821f5",
+      "qwen25vl7b": "9a65120f77b4046e8e99218b1a50382b681d28ad"
+    },
+    "evaluation_contract_revision": "92ee98fa82f068e582b03f84ff8f2481f8334c6f",
+    "paths": {
+      "training_launcher_3b": "scripts/run_trace_qwen25vl3b_easyr1_answer_nokl_tmpfs.sh",
+      "training_launcher_7b": "scripts/run_trace_qwen25vl7b_easyr1_answer_nokl_tmpfs.sh",
+      "training_launcher_shared": "scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh",
+      "system_prompt": "rlvr/examples/prompts/trace_vero_json_system_prompt_answer.txt",
+      "reward": "rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py:compute_score",
+      "grpo": "rlvr/easyr1_backend/verl/trainer/core_algos.py:compute_grpo_outcome_advantage",
+      "policy_loss": "rlvr/easyr1_backend/verl/trainer/core_algos.py:compute_policy_loss",
+      "evaluation_launcher": "scripts/run_trace_final25_temp06_3seed_8models.sh",
+      "evaluation_contract": "scripts/trace_final25_contract.py",
+      "evaluation_registry": "scripts/benchmark_queue_lib.py",
+      "evaluation_summarizer": "scripts/summarize_trace_final25_multiseed.py"
+    },
+    "sha256": {
+      "system_prompt": "f394927d9abcfb7a1e43ef48a30c29b8c70e6facdbda314d7b27c59d8c3ae900",
+      "evaluation_launcher": "2f472a64fc557584121c72edbf6808aea1766a8784781aecb741e8adb4182537",
+      "evaluation_contract": "10d02f9a27521a249dc2f9e5b6f3ef1ea4dd233a7834039d9579951a1bd437a3",
+      "historical_3b_shared_launcher": "0043d0344e20a9d9bfa13b3d8cac0b9ac440bc6dd281c3e7e377f2db8522f66c",
+      "historical_7b_shared_launcher": "2024750ebf3bebd4812a9ab7e9321ea401b9b2145f5cfd7c7bebbc7eb0376877",
+      "historical_7b_wrapper": "f8238fb500e4423916fcf714d09a84416c355e702930a9fb420d2489a7d12323",
+      "historical_3b_reward": "bc8114b049a6b502eff00005a779149881c7e49c243f205764e52c0b7041b45f",
+      "historical_7b_reward": "ebeba54e558e2fec809f0b42dfec3eabc728386f111e28d5f450e8bd65eadbea",
+      "historical_grpo_core": "871cadc71a8b04295ebdc8ff516ba242697e49cb27680920d4870a8431023d71"
+    }
+  },
+  "training": {
+    "dataset": {
+      "train": {
+        "tasks": 1000,
+        "samples_per_task": 64,
+        "rows": 64000,
+        "generation_seed": 42
+      },
+      "validation": {
+        "tasks": 1000,
+        "samples_per_task": 2,
+        "rows": 2000,
+        "generation_seed": 1042,
+        "distribution": "IID over the same 1000 tasks"
+      },
+      "image_storage": "embedded_bytes",
+      "max_exported_image_pixels": 1280000,
+      "qwen25vl3b_source": {
+        "kind": "local_parquet",
+        "train_file": "trace_rlvr_train_64000_all1000_seed42.parquet",
+        "train_sha256": "5aab653cc0ceea28f5cf597493572a5deb624714d2aebb027f30d7e79579765a",
+        "validation_file": "trace_rlvr_validation_iid_2000_all1000_seed1042.parquet",
+        "validation_sha256": "0be8b114454f8b9814cac9e70f412fb1e19a143775c8b27501e1400a682414a4",
+        "prompt_key": "prompt_answer_only"
+      },
+      "qwen25vl7b_source": {
+        "kind": "huggingface_dataset",
+        "repo_id": "maveryn/trace",
+        "revision": "e317b746b258630682367cc6a9d87dedd195113c",
+        "train_split": "train",
+        "validation_split": "validation",
+        "train_shards": 16,
+        "validation_shards": 1,
+        "prompt_key": "prompt_answer"
+      },
+      "source_equivalence_check": {
+        "train_instance_id_sets_equal": true,
+        "validation_instance_id_sets_equal": true,
+        "fields_equal_by_instance_id": [
+          "task",
+          "answer_gt",
+          "trace_ref"
+        ],
+        "effective_prompt_equal_by_instance_id": true,
+        "effective_prompt_columns": {
+          "qwen25vl3b": "prompt_answer_only",
+          "qwen25vl7b": "prompt_answer"
+        },
+        "row_order_equal": false,
+        "physical_schema_equal": false
+      }
+    },
+    "prompt": {
+      "role": "system",
+      "text": "You are a helpful, conversational assistant tasked with answering a question about an image.\n\nReason carefully from the image and the question to determine the answer.\n\nEnd your response with a JSON object in this format:\n{\"answer\": ...}\n"
+    },
+    "reward": {
+      "mode": "answer",
+      "answer_scoring": "exact_json",
+      "answer_weight": 1.0,
+      "annotation_weight": 0.0,
+      "format_weight": 0.05,
+      "answer_reward": "binary exact equality after canonical JSON normalization",
+      "format_reward": "binary: terminal JSON object with exactly the answer key",
+      "overall": "0.95 * answer_reward + 0.05 * format_reward",
+      "range": [
+        0.0,
+        1.0
+      ]
+    },
+    "algorithm": {
+      "advantage_estimator": "grpo",
+      "rollouts_per_prompt": 8,
+      "group_standard_deviation": "torch.std sample standard deviation",
+      "advantage_epsilon": 1e-06,
+      "policy_loss_type": "default token-level PPO clipping",
+      "gspo": false,
+      "clip_ratio_low": 0.2,
+      "clip_ratio_high": 0.3,
+      "dual_clip": 3.0,
+      "ppo_epochs": 1,
+      "loss_aggregation": "token_mean",
+      "critic": false,
+      "reference_kl": false,
+      "kl_coef": 0.0,
+      "entropy_bonus": false
+    },
+    "optimization": {
+      "steps": 500,
+      "prompt_batch_size": 128,
+      "responses_per_step": 1024,
+      "total_sampled_responses": 512000,
+      "max_prompt_tokens": 2048,
+      "max_response_tokens": 2048,
+      "optimizer": "fused_adamw",
+      "learning_rate": 1e-06,
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "weight_decay": 0.01,
+      "scheduler": "constant",
+      "warmup_steps": 0,
+      "max_grad_norm": 1.0,
+      "actor_global_prompt_batch_size": 128,
+      "actor_effective_response_batch_size": 1024,
+      "micro_batch_size_per_device_for_experience": 2,
+      "micro_batch_size_per_device_for_update": 1,
+      "dynamic_batching": true,
+      "padding_free": true,
+      "gradient_checkpointing": true,
+      "full_parameter_training": true,
+      "lora_rank": 0,
+      "freeze_vision_tower": false
+    },
+    "rollout": {
+      "backend": "vllm_hybrid_engine",
+      "temperature": 1.0,
+      "top_p": 1.0,
+      "top_k": -1,
+      "seed": 1,
+      "tensor_parallel_size": 2,
+      "gpu_memory_utilization": 0.6,
+      "max_num_batched_tokens": 8192,
+      "dtype": "bf16"
+    },
+    "validation": {
+      "frequency_steps": 100,
+      "before_training": false,
+      "batch_size": 1024,
+      "temperature": 0.6,
+      "top_p": 0.95,
+      "responses_per_prompt": 1
+    },
+    "distributed": {
+      "nodes": 1,
+      "gpus": 8,
+      "gpu_model": "NVIDIA H100 80GB HBM3",
+      "strategy": "FSDP full shard",
+      "parameter_dtype": "bf16",
+      "reduce_dtype": "fp32",
+      "buffer_dtype": "fp32",
+      "offload_parameters": true,
+      "offload_optimizer": true
+    },
+    "environment": {
+      "driver": "570.195.03",
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6",
+      "vllm": "0.10.2",
+      "ray": "2.56.0",
+      "datasets": "5.0.0",
+      "pyarrow": "24.0.0",
+      "wandb": "0.26.1",
+      "qwen_vl_utils": "0.0.14"
+    },
+    "runs": [
+      {
+        "model_slug": "trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500",
+        "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "base_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+        "experiment_name": "trace_qwen25vl3b_easyr1_all1000_answer_nokl_step200_bsz128_rollout8_iidval2000_20260711T141819Z",
+        "execution": "steps 0-200 followed by exact resume to step 500",
+        "wandb_project": "trace_easyr1",
+        "wandb_run_id": "hj1ichjk",
+        "wandb_url": "https://wandb.ai/llm-reasoning-rl/trace_easyr1/runs/hj1ichjk",
+        "checkpoint_step": 500,
+        "merged_hf_local_path": "/dev/shm/trace_rlvr/merged_hf/trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500",
+        "merged_hf_sha256": {
+          "config.json": "29cadee0bc6b4672ff1057537c853251a7b74345b3031c9d3624c1d2fefb10f4",
+          "model.safetensors.index.json": "713a5e05580684d9a8cd0bf276c9b6d0aafcde17244f5fca4b62722ed8983ce9",
+          "model-00001-of-00002.safetensors": "cbda86cb3af01bf054e65a3f81a236ee2c1d9d85bd2c878db3e7eb37ea893a47",
+          "model-00002-of-00002.safetensors": "5bfc95ee188f7f53279702c129e32ce704247eb8f999867acb8c2fc38dfd6fcd"
+        }
+      },
+      {
+        "model_slug": "trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500",
+        "base_model": "Qwen/Qwen2.5-VL-7B-Instruct",
+        "base_revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+        "experiment_name": "trace_qwen25vl7b_easyr1_all1000_answer_nokl_step500_bsz128_rollout8_iidval2000_20260712T073500Z",
+        "execution": "steps 0-500 in one run",
+        "wandb_project": "trace_easyr1",
+        "wandb_run_id": "jiswyznz",
+        "wandb_url": "https://wandb.ai/llm-reasoning-rl/trace_easyr1/runs/jiswyznz",
+        "checkpoint_step": 500,
+        "merged_hf_local_path": "/dev/shm/trace_rlvr/merged_hf/trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500",
+        "merged_hf_sha256": {
+          "config.json": "90932c21da40bb151d29c14f73f464a46a897c04d8a9d2bc93f953e12d120141",
+          "model.safetensors.index.json": "cccf141507dfe99f91a7e6b97b6f52f16b34f6fd8b17c74330af93311ce4b8d4",
+          "model-00001-of-00004.safetensors": "9631ce9acefb694fc7fd7c13fee701304fb5d3ccc1ba6c0b554e97f1f733aa2e",
+          "model-00002-of-00004.safetensors": "c19eb01d2b7289bbc12b5e829c1f0a92e17542a0a7703bb9937fb17b32438d6d",
+          "model-00003-of-00004.safetensors": "44e5cfa71e09d0f019766506b3c11fad5d5d54f6340c66902d0d15b54d2703ee",
+          "model-00004-of-00004.safetensors": "80cce5b3136a486872d0ead73e441425a6d6767c5ffd0eb8aa55d327af216cbc"
+        }
+      }
+    ]
+  },
+  "evaluation": {
+    "suite": "trace_final25",
+    "campaign_tag": "trace_final25_temp06_seed42_44_8models_v1",
+    "full_splits": true,
+    "benchmarks": 25,
+    "rows_per_model_seed": 31969,
+    "generation_seeds": [
+      42,
+      43,
+      44
+    ],
+    "generation_seed_interpretation": "decoding variation for one fixed checkpoint, not independent training seeds",
+    "generation": {
+      "backend": "eight one-GPU OpenAI-compatible vLLM endpoints",
+      "temperature": 0.6,
+      "top_p": 1.0,
+      "top_k": -1,
+      "presence_penalty": 0.0,
+      "repetition_penalty": 1.0,
+      "default_max_tokens": 4096,
+      "gpu_memory_utilization": 0.9,
+      "max_model_len": 32768,
+      "max_num_seqs": 256,
+      "max_num_batched_tokens": 32768,
+      "parallelism_per_endpoint": 32,
+      "max_image_pixels": 1000000,
+      "max_image_side": 1280,
+      "image_jpeg_quality": 85,
+      "trace_training_system_prompt_injected": false
+    },
+    "judge": {
+      "model": "Qwen/Qwen3-32B",
+      "revision": "9216db5781bf21249d130ec9da846c4624c16137",
+      "temperature": 0.0,
+      "backend": "eight one-GPU OpenAI-compatible vLLM endpoints",
+      "gpu_memory_utilization": 0.9,
+      "max_model_len": 8192,
+      "max_num_seqs": 128,
+      "max_num_batched_tokens": 32768,
+      "api_parallelism": 128,
+      "api_batch_size": 128,
+      "api_batches_per_endpoint": 2,
+      "max_batch_characters": 200000
+    },
+    "models": [
+      {
+        "slug": "qwen25vl3b-base",
+        "label": "Qwen2.5-VL-3B Base",
+        "source": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3"
+      },
+      {
+        "slug": "trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500",
+        "label": "Qwen2.5-VL-3B Answer GRPO 500",
+        "source": "training.runs[0]"
+      },
+      {
+        "slug": "qwen25vl7b-base",
+        "label": "Qwen2.5-VL-7B Base",
+        "source": "Qwen/Qwen2.5-VL-7B-Instruct",
+        "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5"
+      },
+      {
+        "slug": "trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500",
+        "label": "Qwen2.5-VL-7B Answer GRPO 500",
+        "source": "training.runs[1]"
+      },
+      {
+        "slug": "game-rl-qwen25vl7b",
+        "label": "OpenMOSS Game-RL Qwen2.5-VL-7B",
+        "source": "OpenMOSS-Team/Game-RL-Qwen2.5-VL-7B",
+        "revision": "205b5934ce70504cfd6ae26b16f705d0b98b9306"
+      },
+      {
+        "slug": "sphinx-qwen7b-500",
+        "label": "Sphinx Qwen2.5-VL-7B 500",
+        "source": "xashru/sphinx_qwen7b_500",
+        "revision": "6ffefb03d5cb0767683bfb42a084ea86b707ef9a"
+      },
+      {
+        "slug": "pcgrpo-qwen25vl7b-jigsaw-care",
+        "label": "PCGRPO Qwen2.5-VL-7B Jigsaw CARE",
+        "source": "armenjeddi/PCGRPO-Qwen2.5-VL-7B-Jigsaw-with-curriculum-with-grpo-care",
+        "revision": "921bbced4176f5d362e98c843a57656c5d78dad7"
+      },
+      {
+        "slug": "vero-qwen25-7b",
+        "label": "Vero Qwen2.5-VL-7B",
+        "source": "zlab-princeton/Vero-Qwen25-7B",
+        "revision": "180e84be5acb2aa887cf51015b84b6a6e453ee90"
+      }
+    ],
+    "benchmark_contracts": [
+      {
+        "key": "chartmuseum",
+        "category": "Charts, Tables & Structured Figures",
+        "display": "ChartMuseum",
+        "alias": "ChartMuseum_test",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge_test",
+        "rows": 1000,
+        "max_tokens": 4096,
+        "extraction": "preserve response; unwrap answer tag when present",
+        "scoring": "Qwen3-32B semantic correctness against reference",
+        "judge_role": "scoring",
+        "paper": "https://arxiv.org/abs/2505.13444"
+      },
+      {
+        "key": "chartqapro",
+        "category": "Charts, Tables & Structured Figures",
+        "display": "ChartQAPro",
+        "alias": "ChartQAPro_CoT",
+        "run_name": "vlmevalkit_faithful_cot",
+        "rows": 1948,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B final-answer extraction",
+        "scoring": "official/local normalized scorer",
+        "judge_role": "extraction",
+        "paper": "https://aclanthology.org/2025.findings-acl.978/"
+      },
+      {
+        "key": "charxivreason",
+        "category": "Charts, Tables & Structured Figures",
+        "display": "CharXivReason",
+        "alias": "CharXiv_reasoning_val",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge",
+        "rows": 1000,
+        "max_tokens": 4096,
+        "extraction": "benchmark grading prompt extracts answer",
+        "scoring": "Qwen3-32B rubric score",
+        "judge_role": "both",
+        "paper": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/cdf6f8e9fd9aeaf79b6024caec24f15b-Abstract-Datasets_and_Benchmarks_Track.html"
+      },
+      {
+        "key": "tablevqabench",
+        "category": "Charts, Tables & Structured Figures",
+        "display": "TableVQABench",
+        "alias": "TableVQABench",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 1500,
+        "max_tokens": 4096,
+        "extraction": "deterministic answer-tag, boxed, JSON, and final-answer parser",
+        "scoring": "official FinTabNetQA, VTabFact, VWTQ, and VWTQ-Syn scorers",
+        "judge_role": "none",
+        "paper": "https://arxiv.org/abs/2404.19205"
+      },
+      {
+        "key": "evochart",
+        "category": "Charts, Tables & Structured Figures",
+        "display": "EvoChart",
+        "alias": "EvoChart",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge",
+        "rows": 1250,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B extracts final answer while judging",
+        "scoring": "semantic correctness with numeric-format tolerance",
+        "judge_role": "both",
+        "paper": "https://ojs.aaai.org/index.php/AAAI/article/view/32383"
+      },
+      {
+        "key": "mathvision",
+        "category": "Visual Mathematics",
+        "display": "MathVision",
+        "alias": "MathVision",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge",
+        "rows": 3040,
+        "max_tokens": 4096,
+        "extraction": "official prefetch, else Qwen3-32B extraction",
+        "scoring": "official normalized answer scorer",
+        "judge_role": "extraction",
+        "paper": "https://papers.nips.cc/paper_files/paper/2024/hash/ad0edc7d5fa1a783f063646968b7315b-Abstract-Datasets_and_Benchmarks_Track.html"
+      },
+      {
+        "key": "mathvista",
+        "category": "Visual Mathematics",
+        "display": "MathVista",
+        "alias": "MathVista_MINI",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge",
+        "rows": 1000,
+        "max_tokens": 4096,
+        "extraction": "official prefetch, else Qwen3-32B extraction",
+        "scoring": "official normalized answer scorer",
+        "judge_role": "extraction",
+        "paper": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/663bce02a0050c4a11f1eb8a7f1429d3-Abstract-Conference.html"
+      },
+      {
+        "key": "mathverse",
+        "category": "Visual Mathematics",
+        "display": "MathVerse",
+        "alias": "MathVerse_MINI_Vision_Only_cot",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge",
+        "rows": 788,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B answer extraction",
+        "scoring": "official prefetch, else strict binary judge",
+        "judge_role": "both",
+        "paper": "https://arxiv.org/abs/2403.14624"
+      },
+      {
+        "key": "wemath",
+        "category": "Visual Mathematics",
+        "display": "WeMath",
+        "alias": "WeMath_COT",
+        "run_name": "vlmevalkit_cot_qwen32b_judge",
+        "rows": 1740,
+        "max_tokens": 2048,
+        "extraction": "Qwen3-32B selected-option extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://aclanthology.org/2025.acl-long.983/"
+      },
+      {
+        "key": "phyx_mini_mc",
+        "category": "Science & Academic Reasoning",
+        "display": "PhyX mini MC",
+        "alias": "PhyX_mini_MC",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 1000,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B A-D extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2505.15929"
+      },
+      {
+        "key": "physics",
+        "category": "Science & Academic Reasoning",
+        "display": "Physics",
+        "alias": "Physics",
+        "run_name": "vlmevalkit_reasoning",
+        "rows": 1297,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B extracts answer while judging",
+        "scoring": "strict semantic correctness decision",
+        "judge_role": "both",
+        "paper": "https://github.com/open-compass/VLMEvalKit"
+      },
+      {
+        "key": "mmmu_pro_vision",
+        "category": "Science & Academic Reasoning",
+        "display": "MMMU-ProVis",
+        "alias": "MMMU_Pro_V_COT",
+        "run_name": "vlmevalkit_cot_max2048",
+        "rows": 1730,
+        "max_tokens": 2048,
+        "extraction": "Qwen3-32B selected-option extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://aclanthology.org/2025.acl-long.736/"
+      },
+      {
+        "key": "mmstar",
+        "category": "Science & Academic Reasoning",
+        "display": "MMStar",
+        "alias": "MMStar",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 1500,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B A-D extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2403.20330"
+      },
+      {
+        "key": "screenspot",
+        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "display": "ScreenSpot",
+        "alias": "ScreenSpot",
+        "run_name": "vlmevalkit_defaults_sample200",
+        "rows": 1272,
+        "max_tokens": 1024,
+        "extraction": "deterministic pyautogui or coordinate-pair parser",
+        "scoring": "official point-inside-target-box accuracy",
+        "judge_role": "none",
+        "paper": "https://aclanthology.org/2024.acl-long.505/"
+      },
+      {
+        "key": "spatialvizbench_cot",
+        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "display": "SpatialVizBench COT",
+        "alias": "SpatialVizBench_CoT",
+        "run_name": "vlmevalkit_cot",
+        "rows": 1180,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B selected-option extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2507.07610"
+      },
+      {
+        "key": "cvbench_3d",
+        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "display": "CV-Bench 3D",
+        "alias": "CV-Bench-3D",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 1200,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B selected-option extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2406.16860"
+      },
+      {
+        "key": "erqa",
+        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "display": "ERQA",
+        "alias": "ERQA",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 400,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B A-D extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2503.20020"
+      },
+      {
+        "key": "blink",
+        "category": "Visual Perception, Counting & Evidence Grounding",
+        "display": "Blink",
+        "alias": "BLINK",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 1901,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B selected-option extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2404.12390"
+      },
+      {
+        "key": "countbenchqa",
+        "category": "Visual Perception, Counting & Evidence Grounding",
+        "display": "CountBenchQA",
+        "alias": "CountBenchQA",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 487,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B final integer extraction",
+        "scoring": "normalized exact integer match",
+        "judge_role": "extraction",
+        "paper": "https://huggingface.co/datasets/vikhyatk/CountBenchQA"
+      },
+      {
+        "key": "countqa",
+        "category": "Visual Perception, Counting & Evidence Grounding",
+        "display": "CountQA",
+        "alias": "CountQA",
+        "run_name": "vlmevalkit_cot_boxed",
+        "rows": 1528,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B final integer extraction",
+        "scoring": "normalized exact integer match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2508.06585"
+      },
+      {
+        "key": "treebench",
+        "category": "Visual Perception, Counting & Evidence Grounding",
+        "display": "TreeBench",
+        "alias": "TreeBench",
+        "run_name": "vlmevalkit_defaults",
+        "rows": 405,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B extraction using source option labels",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2507.07999"
+      },
+      {
+        "key": "puzzlevqa",
+        "category": "Puzzles & Abstract Logic",
+        "display": "PuzzleVQA",
+        "alias": "PuzzleVQA",
+        "run_name": "vlmevalkit_reasoning",
+        "rows": 2000,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B extraction with option-value-to-letter mapping",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://aclanthology.org/2024.findings-acl.962/"
+      },
+      {
+        "key": "visualpuzzles",
+        "category": "Puzzles & Abstract Logic",
+        "display": "VisualPuzzles",
+        "alias": "VisualPuzzles",
+        "run_name": "vlmevalkit_reasoning",
+        "rows": 1168,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B A-D extraction",
+        "scoring": "exact option-letter match",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2504.10342"
+      },
+      {
+        "key": "logicvista",
+        "category": "Puzzles & Abstract Logic",
+        "display": "LogicVista",
+        "alias": "LogicVista",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge",
+        "rows": 447,
+        "max_tokens": 4096,
+        "extraction": "Qwen3-32B option-set extraction",
+        "scoring": "official exact normalized option-set comparison",
+        "judge_role": "extraction",
+        "paper": "https://arxiv.org/abs/2407.04973"
+      },
+      {
+        "key": "mme_reasoning",
+        "category": "Puzzles & Abstract Logic",
+        "display": "MME-Reasoning",
+        "alias": "MME-Reasoning",
+        "run_name": "vlmevalkit_defaults_qwen32b_judge",
+        "rows": 1188,
+        "max_tokens": 4096,
+        "extraction": "official task-specific Qwen3-32B extraction prompts",
+        "scoring": "official deterministic functions and Qwen3-32B open-answer correctness",
+        "judge_role": "both",
+        "paper": "https://arxiv.org/abs/2505.21327"
+      }
+    ],
+    "reporting": {
+      "benchmark_unit": "accuracy percentage using each benchmark's primary metric",
+      "tablevqabench_primary_metric": "macro mean of four official split scorers",
+      "overall_metric": "unweighted macro mean of 25 benchmark primary scores",
+      "per_benchmark_summary": "arithmetic mean and sample standard deviation over generation seeds",
+      "delta_pairing": "same benchmark rows and same generation seed",
+      "confidence_intervals_in_default_summary": false
+    }
+  }
+}

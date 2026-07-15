@@ -5,6 +5,7 @@ set -euo pipefail
 
 HOST="${HOST:-127.0.0.1}"
 PORT_START="${PORT_START:-18000}"
+VLLM_PORT_BASE="${VLLM_PORT_BASE:-29000}"
 SERVED_MODEL_NAME="${SERVED_MODEL_NAME:-$(basename "${MODEL_PATH}")}"
 GPU_GROUPS="${GPU_GROUPS:-0 1 2 3 4 5 6 7}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.90}"
@@ -59,6 +60,7 @@ for i in "${!GROUP_ARRAY[@]}"; do
     tp="${#gpu_ids[@]}"
   fi
   log="${LOG_DIR}/endpoint_${i}_port_${port}_gpu_${group//,/}.log"
+  vllm_port=$((VLLM_PORT_BASE + i * 100))
   affinity="${AFFINITY_ARRAY[$i]:-}"
   launch_prefix=()
   if [[ -n "${affinity}" ]]; then
@@ -83,8 +85,9 @@ for i in "${!GROUP_ARRAY[@]}"; do
   if [[ -n "${CHAT_TEMPLATE}" ]]; then
     server_args+=(--chat-template "${CHAT_TEMPLATE}")
   fi
-  echo "[start] port=${port} gpus=${group} tp=${tp} cpus=${affinity:-unbound} threads=${CPU_THREADS_PER_PROCESS} model=${MODEL_PATH} served=${SERVED_MODEL_NAME}"
+  echo "[start] port=${port} vllm_port=${vllm_port} gpus=${group} tp=${tp} cpus=${affinity:-unbound} threads=${CPU_THREADS_PER_PROCESS} model=${MODEL_PATH} served=${SERVED_MODEL_NAME}"
   CUDA_VISIBLE_DEVICES="${group}" \
+  VLLM_PORT="${vllm_port}" \
   VLLM_WORKER_MULTIPROC_METHOD="${VLLM_WORKER_MULTIPROC_METHOD:-spawn}" \
   OMP_NUM_THREADS="${VLLM_OMP_NUM_THREADS}" \
   MKL_NUM_THREADS="${VLLM_MKL_NUM_THREADS}" \

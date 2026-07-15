@@ -6,6 +6,7 @@ import sys
 import tempfile
 import types
 import unittest
+from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -47,9 +48,13 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _validate_math_like_judged_table,
 )
 from run_llm_extracted_benchmark_score_queue import (  # noqa: E402
+    _legacy_raw_output_from_error,
     _inline_dot_option_columns,
     _inline_option_columns,
+    _job_id_for_row,
     _literal_options,
+    _normalize_option,
+    _parse_json_object,
     _ordered_fixed_option_columns,
     _ordered_source_option_columns,
     _source_row_exclusion_reason,
@@ -309,6 +314,18 @@ class TraceFinal25ContractTests(unittest.TestCase):
         row = {"question": "Question", "answer": "D", "A": "one", "B": "two"}
         self.assertEqual(_valid_letters_for("generic", row), "AB")
 
+    def test_duplicate_source_indices_get_stable_ordinal_job_ids(self):
+        counts = Counter({"6710": 2})
+        last = {"6710": 1010}
+        self.assertEqual(
+            _job_id_for_row("countqa", "model", "6710", 103, counts, last),
+            "countqa__model__6710__ordinal103",
+        )
+        self.assertEqual(
+            _job_id_for_row("countqa", "model", "6710", 1010, counts, last),
+            "countqa__model__6710",
+        )
+
     def test_required_mcq_contract_rejects_missing_ground_truth_option(self):
         item = {
             "benchmark": "blink",
@@ -383,12 +400,29 @@ class TraceFinal25ContractTests(unittest.TestCase):
             _run_score_for_spec(args, spec_by_key("mme_reasoning"), "model", "slug", None)
 
     def test_binary_judge_parser_rejects_fuzzy_or_negated_text(self):
-        self.assertEqual(parse_binary_score('{"score": 1}'), None)
+        self.assertEqual(parse_binary_score('{"score": 1}'), 1.0)
         self.assertIsNone(parse_binary_score("The answers are not equivalent"))
         self.assertIsNone(parse_binary_score("This looks correct to me"))
         self.assertEqual(parse_binary_score("Judgement: 1"), 1.0)
         self.assertEqual(parse_binary_score("Judge output: 0"), 0.0)
         self.assertEqual(parse_binary_score("score=0"), 0.0)
+        self.assertEqual(parse_binary_score('{"score": 0, "answer": "wrong"}'), 0.0)
+
+    def test_fenced_json_decoder_handles_latex_braces_inside_answer(self):
+        raw = '```json\n{"score": 0, "answer": "E = \\\\frac{a}{b}"}\n```'
+        self.assertEqual(_parse_json_object(raw), {"score": 0, "answer": r"E = \frac{a}{b}"})
+
+    def test_invalid_single_choice_extractions_become_abstentions(self):
+        self.assertEqual(_normalize_option("E", "ABCD"), "Z")
+        self.assertEqual(_normalize_option("HD", "ABCDEFGHIJ"), "Z")
+        self.assertEqual(_normalize_option("B", "ABCD"), "B")
+        self.assertEqual(_normalize_option("yellow", "ABCD"), "")
+
+    def test_legacy_failed_output_is_recoverable(self):
+        job_id = "physics__model__row"
+        raw = '```json\n{"score": 0, "answer": "E = \\\\frac{a}{b}"}\n```'
+        error = repr(ValueError(f"Malformed binary judge output for {job_id}: {raw!r}"))
+        self.assertEqual(_legacy_raw_output_from_error(job_id, error), raw)
 
     def test_incomplete_judge_cache_entries_are_retried(self):
         self.assertTrue(

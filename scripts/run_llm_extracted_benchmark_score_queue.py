@@ -10,6 +10,7 @@ import os
 import re
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -457,6 +458,20 @@ def _source_row_exclusion_reason(
     return reason
 
 
+def _job_id_for_row(
+    benchmark: str,
+    model_slug: str,
+    index: str,
+    ordinal: int,
+    index_counts: Counter[str],
+    last_ordinal_by_index: dict[str, int],
+) -> str:
+    base = f"{benchmark}__{model_slug}__{index}"
+    if index_counts[index] > 1 and ordinal != last_ordinal_by_index[index]:
+        return f"{base}__ordinal{ordinal}"
+    return base
+
+
 def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     exclusions: list[dict[str, Any]] = []
@@ -464,7 +479,11 @@ def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
         for model_slug, model_path in args.model_entries:
             pred_path = _prediction_path(args.run_root, benchmark, model_slug)
             df = _load_prediction_table(pred_path)
-            for ordinal, row_obj in enumerate(df.to_dict(orient="records")):
+            records = df.to_dict(orient="records")
+            row_indices = [_row_index(row, ordinal) for ordinal, row in enumerate(records)]
+            index_counts = Counter(row_indices)
+            last_ordinal_by_index = {index: ordinal for ordinal, index in enumerate(row_indices)}
+            for ordinal, row_obj in enumerate(records):
                 row = dict(row_obj)
                 index = _row_index(row, ordinal)
                 valid_letters = _valid_letters_for(benchmark, row)
@@ -499,7 +518,14 @@ def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
                     )
                     continue
                 item = {
-                    "job_id": f"{benchmark}__{model_slug}__{index}",
+                    "job_id": _job_id_for_row(
+                        benchmark,
+                        model_slug,
+                        index,
+                        ordinal,
+                        index_counts,
+                        last_ordinal_by_index,
+                    ),
                     "benchmark": benchmark,
                     "model_slug": model_slug,
                     "model_path": model_path,
@@ -528,6 +554,10 @@ def _done_path(args: argparse.Namespace, job_id: str) -> Path:
     return args.output_root / args.queue_name / "items" / _safe_job_filename(job_id)
 
 
+def _failure_path(args: argparse.Namespace, job_id: str) -> Path:
+    return args.output_root / args.queue_name / "failures" / _safe_job_filename(job_id)
+
+
 def _manifest_path(args: argparse.Namespace) -> Path:
     return args.output_root / args.queue_name / "manifest.jsonl"
 
@@ -535,6 +565,10 @@ def _manifest_path(args: argparse.Namespace) -> Path:
 def write_manifest(args: argparse.Namespace, items: list[dict[str, Any]]) -> None:
     path = _manifest_path(args)
     path.parent.mkdir(parents=True, exist_ok=True)
+    job_ids = [item["job_id"] for item in items]
+    if len(job_ids) != len(set(job_ids)):
+        duplicates = [job_id for job_id, count in Counter(job_ids).items() if count > 1]
+        raise ValueError(f"Manifest contains duplicate job ids: {duplicates[:10]}")
     with path.open("w", encoding="utf-8") as f:
         for item in items:
             f.write(json.dumps(item, ensure_ascii=False, default=json_default) + "\n")
@@ -644,7 +678,25 @@ def mark_done(args: argparse.Namespace, item: dict[str, Any], result: dict[str, 
         write_json(queue_path, state)
 
 
-def mark_failed(args: argparse.Namespace, item: dict[str, Any], error: str) -> None:
+def mark_failed(
+    args: argparse.Namespace,
+    item: dict[str, Any],
+    error: str,
+    *,
+    raw_output: str | None = None,
+) -> None:
+    if raw_output is not None:
+        failure_path = _failure_path(args, item["job_id"])
+        failure_path.parent.mkdir(parents=True, exist_ok=True)
+        write_json(
+            failure_path,
+            {
+                "job_id": item["job_id"],
+                "error": error,
+                "raw_output": raw_output,
+                "updated_at": time.time(),
+            },
+        )
     queue_path = args.queue_root / f"llm_extract_{args.queue_name}.json"
     now = time.time()
     lock_path = queue_path.with_suffix(queue_path.suffix + ".lock")
@@ -662,26 +714,35 @@ def mark_failed(args: argparse.Namespace, item: dict[str, Any], error: str) -> N
         write_json(queue_path, state)
 
 
+def _decode_first_json_object(text: str) -> dict[str, Any]:
+    raw = str(text or "").strip()
+    if not raw:
+        return {}
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            return obj
+    except Exception:
+        pass
+    decoder = json.JSONDecoder()
+    for match in re.finditer(r"\{", raw):
+        try:
+            obj, _ = decoder.raw_decode(raw[match.start() :])
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            continue
+    return {}
+
+
 def _parse_json_answer(text: str) -> str:
     raw = str(text or "").strip()
     if not raw:
         return ""
-    try:
-        obj = json.loads(raw)
-        if isinstance(obj, dict):
-            value = obj.get("answer", obj.get("extracted_answer", ""))
-            return _clean_cell(value)
-    except Exception:
-        pass
-    match = re.search(r"\{.*?\}", raw, flags=re.S)
-    if match:
-        try:
-            obj = json.loads(match.group(0))
-            if isinstance(obj, dict):
-                value = obj.get("answer", obj.get("extracted_answer", ""))
-                return _clean_cell(value)
-        except Exception:
-            pass
+    obj = _decode_first_json_object(raw)
+    if obj:
+        value = obj.get("answer", obj.get("extracted_answer", ""))
+        return _clean_cell(value)
     match = re.search(r'"?(?:answer|extracted_answer)"?\s*[:=]\s*"?([^"\n}]+)', raw, flags=re.I)
     if match:
         return match.group(1).strip()
@@ -692,20 +753,9 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     raw = str(text or "").strip()
     if not raw:
         return {}
-    try:
-        obj = json.loads(raw)
-        if isinstance(obj, dict):
-            return obj
-    except Exception:
-        pass
-    match = re.search(r"\{.*?\}", raw, flags=re.S)
-    if match:
-        try:
-            obj = json.loads(match.group(0))
-            if isinstance(obj, dict):
-                return obj
-        except Exception:
-            pass
+    obj = _decode_first_json_object(raw)
+    if obj:
+        return obj
     answer = _parse_json_answer(raw)
     return {"answer": answer} if answer else {}
 
@@ -716,8 +766,70 @@ def _normalize_option(value: str, valid_letters: Iterable[str]) -> str:
     text = text.strip("()[]{}.:;\"'`* ")
     if text in letters or text == "Z":
         return text
+    if re.fullmatch(r"[A-Z]{1,2}", text):
+        # A response that explicitly selects an unavailable or multiple option
+        # is an invalid single-choice answer, not an extraction-system error.
+        return "Z"
     match = re.search(rf"\b([{re.escape(letters)}Z])\b", text)
     return match.group(1) if match else ""
+
+
+def _legacy_raw_output_from_error(job_id: str, error: str) -> str:
+    """Recover judge output embedded by the pre-raw-artifact failure format."""
+
+    text = str(error or "")
+    if text.startswith("ValueError(") and text.endswith(")"):
+        try:
+            text = str(ast.literal_eval(text[len("ValueError(") : -1]))
+        except Exception:
+            return ""
+    marker = f"{job_id}: "
+    if marker not in text:
+        return ""
+    encoded = text.split(marker, 1)[1]
+    try:
+        return str(ast.literal_eval(encoded))
+    except Exception:
+        return ""
+
+
+def _recover_failed_outputs(
+    args: argparse.Namespace,
+    items: list[dict[str, Any]],
+) -> tuple[int, int]:
+    queue_path = args.queue_root / f"llm_extract_{args.queue_name}.json"
+    state = load_json(queue_path, {"jobs": {}})
+    failed = {
+        job_id: info
+        for job_id, info in (state.get("jobs") or {}).items()
+        if info.get("status") == "failed"
+    }
+    if not failed:
+        return 0, 0
+
+    item_by_id = {item["job_id"]: item for item in items}
+    recovered = 0
+    unrecoverable = 0
+    for job_id, info in failed.items():
+        item = item_by_id.get(job_id)
+        if item is None or _done_path(args, job_id).exists():
+            continue
+        failure_payload = load_json(_failure_path(args, job_id), {})
+        raw = _clean_cell(failure_payload.get("raw_output"))
+        if not raw:
+            raw = _legacy_raw_output_from_error(job_id, info.get("error", ""))
+        if not raw:
+            unrecoverable += 1
+            continue
+        try:
+            result = _result_from_judge_output(item, raw)
+            result["judge_model"] = args.judge_model
+            result["recovered_from_failed_output"] = True
+            write_done_result(args, item, result)
+            recovered += 1
+        except Exception:
+            unrecoverable += 1
+    return recovered, unrecoverable
 
 
 def _normalize_number(value: str) -> str:
@@ -951,6 +1063,12 @@ def _make_api_batches(
 def run_api_pool(args: argparse.Namespace) -> None:
     items = load_manifest(args)
     tokenizer = _load_api_tokenizer(args)
+    recovered, unrecoverable = _recover_failed_outputs(args, items)
+    if recovered or unrecoverable:
+        print(
+            f"[llm-extract:recover] recovered={recovered} "
+            f"unrecoverable={unrecoverable}"
+        )
     pending = [item for item in items if not _done_path(args, item["job_id"]).exists()]
     print(
         "[llm-extract:api] "
@@ -1003,7 +1121,7 @@ def run_api_pool(args: argparse.Namespace) -> None:
             except Exception as exc:
                 errors += 1
                 messages.append(repr(exc))
-                mark_failed(args, item, repr(exc))
+                mark_failed(args, item, repr(exc), raw_output=raw)
         return errors, messages
 
     errors = 0

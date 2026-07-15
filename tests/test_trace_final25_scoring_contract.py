@@ -36,6 +36,7 @@ from benchmark_queue_lib import (  # noqa: E402
 from run_external_benchmark_score_queue import (  # noqa: E402
     _judge_cache_entry_needs_retry,
     _judge_retry_token_limits,
+    _normalize_logicvista_judgement,
     _parse_chartmuseum_judgement_output,
     _patch_screenspot_point_parser,
     _resolve_charxiv_extracted_answer,
@@ -315,6 +316,14 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(_judge_retry_token_limits(16), [128, 256, 512, 1024])
         self.assertEqual(_judge_retry_token_limits(256), [256, 512, 1024])
         self.assertEqual(_judge_retry_token_limits(2048), [2048])
+
+    def test_logicvista_normalizes_numeric_and_letter_option_schemes(self):
+        self.assertEqual(_normalize_logicvista_judgement("3", "3"), ("3", True, False))
+        self.assertEqual(_normalize_logicvista_judgement("3", "B"), ("C", False, True))
+        self.assertEqual(_normalize_logicvista_judgement("2", "B"), ("B", True, True))
+        self.assertEqual(_normalize_logicvista_judgement("B", "2"), ("2", True, True))
+        self.assertEqual(_normalize_logicvista_judgement("BD", "B, D"), ("BD", True, False))
+        self.assertIsNone(_normalize_logicvista_judgement("The answer is B", "B"))
 
     def test_chartmuseum_parser_accepts_explicit_markdown_or_final_decision(self):
         self.assertEqual(_parse_chartmuseum_judgement_output("**Yes**"), 1)

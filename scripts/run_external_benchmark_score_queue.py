@@ -1224,6 +1224,110 @@ def _normalize_mathverse_score_table(score_df: pd.DataFrame) -> dict[str, Any]:
     return scores
 
 
+def _logicvista_label_tokens(value: Any) -> tuple[str, list[str]] | None:
+    compact = re.sub(r"[\s,;/]+", "", str(value or "").strip().upper())
+    if re.fullmatch(r"[A-KZ]+", compact):
+        return "letter", list(compact)
+    if re.fullmatch(r"[1-9]+", compact):
+        return "number", list(compact)
+    return None
+
+
+def _normalize_logicvista_judgement(judge_output: Any, answer: Any) -> tuple[str, bool, bool] | None:
+    extracted = _logicvista_label_tokens(judge_output)
+    target = _logicvista_label_tokens(answer)
+    if extracted is None or target is None:
+        return None
+    extracted_kind, extracted_tokens = extracted
+    target_kind, target_tokens = target
+    mapped = extracted_kind != target_kind
+    if mapped and extracted_tokens == ["Z"]:
+        normalized_tokens = ["Z"]
+    elif extracted_kind == "number" and target_kind == "letter":
+        normalized_tokens = [chr(ord("A") + int(token) - 1) for token in extracted_tokens]
+    elif extracted_kind == "letter" and target_kind == "number":
+        if any(token == "Z" for token in extracted_tokens):
+            normalized_tokens = ["Z"]
+        else:
+            normalized_tokens = [str(ord(token) - ord("A") + 1) for token in extracted_tokens]
+    else:
+        normalized_tokens = extracted_tokens
+    normalized = "".join(sorted(normalized_tokens))
+    expected = "".join(sorted(target_tokens))
+    return normalized, normalized == expected, mapped
+
+
+def _repair_logicvista_option_summary(
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+    summary: dict[str, Any],
+) -> dict[str, Any]:
+    if spec.key != "logicvista":
+        return summary
+    judged_table = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
+    cache_path = output_dir / "logicvista_qwen3_32b_extract.jsonl"
+    if not judged_table.exists() or not cache_path.exists():
+        return summary
+
+    runner, _ = _import_vlmeval_runner()
+    from vlmeval.dataset.utils.logicvista import evaluate_logicvista
+    from vlmeval.smp import dump, get_intermediate_file_path
+
+    data = pd.read_excel(judged_table, keep_default_na=False)
+    cached = runner.load_jsonl_by_index(cache_path)
+    malformed: list[str] = []
+    normalized_values: list[str] = []
+    hits: list[int] = []
+    mapped_rows = 0
+    for _, row in data.iterrows():
+        index = str(row.get("index"))
+        judge_output = cached.get(index, {}).get("judge_output", "")
+        normalized = _normalize_logicvista_judgement(judge_output, row.get("answer", ""))
+        if normalized is None:
+            malformed.append(index)
+            normalized_values.append("")
+            hits.append(0)
+            continue
+        value, hit, mapped = normalized
+        normalized_values.append(value)
+        hits.append(int(hit))
+        mapped_rows += int(mapped)
+    if malformed:
+        raise RuntimeError(
+            f"LogicVista judge produced {len(malformed)} malformed option extractions; "
+            f"first indices={malformed[:10]}"
+        )
+
+    data["res"] = normalized_values
+    data["log"] = "Succeed"
+    data["hit"] = hits
+    data.to_excel(judged_table, index=False)
+    score_df = evaluate_logicvista(str(judged_table))
+    dump(score_df, str(get_intermediate_file_path(str(judged_table), "_score", "csv")))
+    records = json.loads(score_df.to_json(orient="records"))
+    overall_rows = [row for row in records if row.get("Task&Skill") == "Overall"]
+    if len(overall_rows) != 1:
+        raise RuntimeError(f"LogicVista scorer returned no unique Overall row: {records}")
+    overall = float(overall_rows[0]["acc"])
+    repaired_summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "rows": len(data),
+        "score": overall,
+        "scores": {"table": records, "Overall": overall},
+        "artifacts": {
+            **(summary.get("artifacts") or {}),
+            "judged_table": str(judged_table),
+            "logicvista_ordinal_label_mappings": mapped_rows,
+            "logicvista_validated_judge_rows": int(len(data)),
+        },
+    }
+    write_json(output_dir / "scores.json", repaired_summary)
+    print(json.dumps(repaired_summary, indent=2, ensure_ascii=False, default=json_default))
+    return repaired_summary
+
+
 def _repair_mathverse_binary_judgement_summary(
     spec: BenchmarkSpec,
     model_path: str,
@@ -1318,7 +1422,7 @@ def _validate_math_like_judged_table(spec: BenchmarkSpec, output_dir: Path) -> N
             )
     elif spec.key == "logicvista":
         values = data["res"].fillna("").astype(str).str.strip().str.upper()
-        bad = values.eq("") | ~values.map(lambda value: set(value) <= set("ABCDEFGHIJKZ"))
+        bad = values.eq("") | ~values.map(lambda value: set(value) <= set("ABCDEFGHIJKZ123456789"))
         if bad.any():
             indices = data.loc[bad, "index"].astype(str).tolist()
             raise RuntimeError(
@@ -1361,6 +1465,7 @@ def _run_local_math_like(
             summary = _repair_mathverse_binary_judgement_summary(spec, model_path, output_dir, summary)
         elif mode == "logicvista_local_judge":
             summary = runner.run_logicvista_local_judge(ns)
+            summary = _repair_logicvista_option_summary(spec, model_path, output_dir, summary)
         else:
             raise ValueError(f"Unsupported math-like local judge mode for {spec.key}: {mode}")
         _validate_math_like_judged_table(spec, output_dir)

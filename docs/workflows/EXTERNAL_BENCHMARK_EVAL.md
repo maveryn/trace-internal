@@ -384,6 +384,12 @@ labels without exposing those choices in the generation prompt. Do not force
 TreeBench to A-D: the official OCR rows include an A-C question and a source
 image with a duplicated C label.
 
+Resumed API generation keys each row by source-content hash. Before preparing
+jobs it removes stale row-result files whose hashes no longer match the active
+dataset, and finalization derives row counts and token statistics only from
+the active row identities. A repaired or replaced dataset row is regenerated
+once; its older response cannot inflate summary counts or enter scoring.
+
 The active deterministic repairs are part of the scorer, not post-processing:
 
 - ScreenSpot accepts named and positional `pyautogui.click`/`moveTo` calls,

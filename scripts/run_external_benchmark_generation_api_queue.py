@@ -462,6 +462,30 @@ def _load_existing_result_paths(output_dir: Path) -> dict[str, Path]:
     return out
 
 
+def _prune_stale_row_results(output_dir: Path, row_records: list[dict[str, Any]]) -> int:
+    """Remove successful/error artifacts that no longer match current source rows."""
+
+    current_keys = {_row_key(row, rank) for rank, row in enumerate(row_records)}
+    current_identities = {_row_identity(row) for row in row_records}
+    current_indices = {str(row.get("index")) for row in row_records}
+    removed = 0
+    for path in (output_dir / "api_row_results").glob("*.json"):
+        try:
+            result = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        row_key = result.get("row_key")
+        if row_key is None:
+            keep = str(result.get("index")) in current_indices
+        else:
+            identity = _row_identity_from_key(result.get("index"), row_key)
+            keep = str(row_key) in current_keys or identity in current_identities
+        if not keep:
+            path.unlink()
+            removed += 1
+    return removed
+
+
 def _restore_mirrored_row_results(row_result_dir: Path, mirror_row_result_dir: Path | None) -> None:
     """Restore missing canonical row files from a persistent result mirror."""
 
@@ -520,6 +544,7 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
             kind = "vlmeval"
         handles[spec.key] = handle
 
+        pruned = _prune_stale_row_results(output_dir, row_records)
         existing = {} if args.no_resume else _load_existing_result_paths(output_dir)
         pending = 0
         spec_jobs: list[RowJob] = []
@@ -549,7 +574,7 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
         print(
             "[api-generate:prepare] "
             f"{spec.key} rows={len(row_records)} existing={len(set(existing.values()))} "
-            f"pending={pending} output={output_dir}"
+            f"pending={pending} pruned={pruned} output={output_dir}"
         )
     jobs: list[RowJob] = []
     max_len = max((len(spec_jobs) for spec_jobs in jobs_by_spec), default=0)
@@ -674,12 +699,26 @@ def _prediction_map_from_row_results(output_dir: Path) -> dict[str, dict[str, An
     return pred_map
 
 
-def _unique_prediction_results(pred_map: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    unique: dict[str, dict[str, Any]] = {}
-    for row in pred_map.values():
-        key = str(row.get("row_key") or f"legacy:{row.get('index')}")
-        unique[key] = row
-    return unique
+def _prediction_for_row(
+    pred_map: dict[str, dict[str, Any]], row: dict[str, Any], rank: int
+) -> dict[str, Any]:
+    return pred_map.get(
+        _row_key(row, rank),
+        pred_map.get(_row_identity(row), pred_map.get(str(row["index"]), {})),
+    )
+
+
+def _current_prediction_results(
+    pred_map: dict[str, dict[str, Any]], row_records: list[dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
+    """Select at most one persisted result for each row in the active dataset."""
+
+    current: dict[str, dict[str, Any]] = {}
+    for rank, row in enumerate(row_records):
+        prediction = _prediction_for_row(pred_map, row, rank)
+        if prediction:
+            current[_row_key(row, rank)] = prediction
+    return current
 
 
 def _token_stats(pred_map: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -702,18 +741,16 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
     spec = handle.spec
     output_dir = run_dir(spec, args.model_slug, args.run_root)
     pred_map = _prediction_map_from_row_results(output_dir)
-    unique_predictions = _unique_prediction_results(pred_map)
     if spec.kind == "chartmuseum" or spec.key == "chartmuseum":
         # Keep the exact row order used when jobs were created. The row key
         # includes the per-run rank, so sorting here breaks resume/finalize for
         # shuffled subset manifests.
         rows = list(handle.rows or [])
+        row_records = rows
+        unique_predictions = _current_prediction_results(pred_map, row_records)
         records = []
         for rank, row in enumerate(rows):
-            pred = pred_map.get(
-                _row_key(row, rank),
-                pred_map.get(_row_identity(row), pred_map.get(str(row["index"]), {})),
-            )
+            pred = _prediction_for_row(pred_map, row, rank)
             raw = pred.get("prediction", "")
             records.append(
                 {
@@ -741,15 +778,13 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
         eval_file = output_dir / "predictions.xlsx"
         expected_rows = len(rows)
     else:
+        row_records = [row.to_dict() for _, row in handle.dataset.data.iterrows()]
+        unique_predictions = _current_prediction_results(pred_map, row_records)
         pred_jsonl = output_dir / "predictions.jsonl"
         records = []
         with pred_jsonl.open("w", encoding="utf-8") as f:
-            for rank, (_, row) in enumerate(handle.dataset.data.iterrows()):
-                row_dict = row.to_dict()
-                pred = pred_map.get(
-                    _row_key(row_dict, rank),
-                    pred_map.get(_row_identity(row_dict), pred_map.get(str(row_dict["index"]), {})),
-                )
+            for rank, row_dict in enumerate(row_records):
+                pred = _prediction_for_row(pred_map, row_dict, rank)
                 record = {
                     "index": str(row_dict["index"]),
                     "prediction": pred.get("prediction", ""),

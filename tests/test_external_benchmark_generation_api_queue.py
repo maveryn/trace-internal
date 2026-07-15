@@ -247,6 +247,46 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
             changed = {**original, "question": "Repaired prompt"}
             self.assertNotIn(runner._row_identity(changed), existing)
 
+    def test_prune_and_finalize_ignore_stale_source_hashes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_root = Path(tmp)
+            spec = BenchmarkSpec("demo", "Demo", "Demo", "demo")
+            current = {"index": "sample-1", "question": "Repaired prompt", "answer": "B"}
+            stale = {"index": "sample-1", "question": "Broken prompt", "answer": "B"}
+            dataset = SimpleNamespace(dataset_name="Demo", data=runner.pd.DataFrame([current]))
+            handle = runner.DatasetHandle(spec=spec, dataset=dataset)
+            output_dir = runner.run_dir(spec, "model", run_root)
+            result_dir = output_dir / "api_row_results"
+            result_dir.mkdir(parents=True)
+            runner._atomic_write_json(
+                result_dir / runner._safe_result_name_for_row(stale, 0),
+                {
+                    "index": "sample-1",
+                    "row_key": runner._row_key(stale, 0),
+                    "prediction": "stale",
+                    "output_token_count": 99,
+                },
+            )
+            runner._atomic_write_json(
+                result_dir / runner._safe_result_name_for_row(current, 0),
+                {
+                    "index": "sample-1",
+                    "row_key": runner._row_key(current, 0),
+                    "prediction": "current",
+                    "finish_reason": "stop",
+                    "output_token_count": 1,
+                },
+            )
+
+            pred_map = runner._prediction_map_from_row_results(output_dir)
+            selected = runner._current_prediction_results(pred_map, [current])
+            self.assertEqual(len(selected), 1)
+            self.assertEqual(next(iter(selected.values()))["prediction"], "current")
+
+            removed = runner._prune_stale_row_results(output_dir, [current])
+            self.assertEqual(removed, 1)
+            self.assertEqual(len(list(result_dir.glob("*.json"))), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

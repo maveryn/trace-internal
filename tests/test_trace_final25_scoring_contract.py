@@ -34,6 +34,7 @@ from benchmark_queue_lib import (  # noqa: E402
     spec_by_key,
 )
 from run_external_benchmark_score_queue import (  # noqa: E402
+    _judge_cache_entry_needs_retry,
     _parse_chartmuseum_judgement_output,
     _patch_screenspot_point_parser,
     _resolve_charxiv_extracted_answer,
@@ -298,7 +299,17 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertIsNone(parse_binary_score("The answers are not equivalent"))
         self.assertIsNone(parse_binary_score("This looks correct to me"))
         self.assertEqual(parse_binary_score("Judgement: 1"), 1.0)
+        self.assertEqual(parse_binary_score("Judge output: 0"), 0.0)
         self.assertEqual(parse_binary_score("score=0"), 0.0)
+
+    def test_incomplete_judge_cache_entries_are_retried(self):
+        self.assertTrue(
+            _judge_cache_entry_needs_retry(
+                {"judge_output": "partial reasoning", "judge_finish_reason": "length"}
+            )
+        )
+        self.assertTrue(_judge_cache_entry_needs_retry({"judge_output": "", "judge_finish_reason": "stop"}))
+        self.assertFalse(_judge_cache_entry_needs_retry({"judge_output": "0", "judge_finish_reason": "stop"}))
 
     def test_chartmuseum_parser_accepts_explicit_markdown_or_final_decision(self):
         self.assertEqual(_parse_chartmuseum_judgement_output("**Yes**"), 1)

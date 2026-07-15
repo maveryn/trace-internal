@@ -161,7 +161,10 @@ def parse_binary_score(value: Any) -> float | None:
     if text in {"0", "false", "no", "incorrect"}:
         return 0.0
 
-    match = re.search(r"\b(?:score|judg(?:e)?ment|correct)\b\s*[:=]\s*([01])\b", text)
+    match = re.search(
+        r"\b(?:score|judg(?:e)?ment|judge\s+output|correct)\b\s*[:=]\s*([01])\b",
+        text,
+    )
     if match:
         return float(match.group(1))
     return None

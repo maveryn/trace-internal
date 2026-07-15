@@ -72,6 +72,12 @@ def _import_vlmeval_runner():
     return runner, chartmuseum
 
 
+def _judge_cache_entry_needs_retry(row: dict[str, Any]) -> bool:
+    output = str(row.get("judge_output", "")).strip()
+    finish_reason = str(row.get("judge_finish_reason", "")).strip().lower()
+    return not output or finish_reason in {"length", "max_tokens"}
+
+
 class PersistentJudge:
     def __init__(self, args: argparse.Namespace):
         self.args = args
@@ -217,11 +223,25 @@ class PersistentJudge:
         if no_resume and cache_path.exists():
             cache_path.unlink()
         existing = {} if no_resume else runner.load_jsonl_by_index(cache_path)
-        pending = [(idx, prompt) for idx, prompt in prompts if str(idx) not in existing]
+        retry_ids = {
+            str(idx)
+            for idx, _ in prompts
+            if str(idx) in existing and _judge_cache_entry_needs_retry(existing[str(idx)])
+        }
+        pending = [
+            (idx, prompt)
+            for idx, prompt in prompts
+            if str(idx) not in existing or str(idx) in retry_ids
+        ]
         endpoints = self.api_bases
+        effective_max_tokens = max(
+            128,
+            int(max_tokens if max_tokens is not None else self.args.judge_max_tokens),
+        )
         print(
             "[judge:api-cached] "
             f"cache={cache_path} rows={len(prompts)} existing={len(existing)} pending={len(pending)} "
+            f"retry_incomplete={len(retry_ids)} max_tokens={effective_max_tokens} "
             f"endpoints={len(endpoints)} parallelism={getattr(self.args, 'judge_api_parallelism', 128)}"
         )
         if pending:
@@ -233,7 +253,7 @@ class PersistentJudge:
                 result = self._call_api_completion(
                     endpoint,
                     rendered[str(idx)],
-                    max_tokens=max_tokens,
+                    max_tokens=effective_max_tokens,
                     temperature=temperature,
                     top_p=top_p,
                 )
@@ -278,10 +298,24 @@ class PersistentJudge:
         if no_resume and cache_path.exists():
             cache_path.unlink()
         existing = {} if no_resume else runner.load_jsonl_by_index(cache_path)
-        pending = [(idx, prompt) for idx, prompt in prompts if str(idx) not in existing]
+        retry_ids = {
+            str(idx)
+            for idx, _ in prompts
+            if str(idx) in existing and _judge_cache_entry_needs_retry(existing[str(idx)])
+        }
+        pending = [
+            (idx, prompt)
+            for idx, prompt in prompts
+            if str(idx) not in existing or str(idx) in retry_ids
+        ]
+        effective_max_tokens = max(
+            128,
+            int(max_tokens if max_tokens is not None else self.args.judge_max_tokens),
+        )
         print(
             "[judge:cached] "
-            f"cache={cache_path} rows={len(prompts)} existing={len(existing)} pending={len(pending)}"
+            f"cache={cache_path} rows={len(prompts)} existing={len(existing)} pending={len(pending)} "
+            f"retry_incomplete={len(retry_ids)} max_tokens={effective_max_tokens}"
         )
         if pending:
             self._ensure_loaded()
@@ -289,7 +323,7 @@ class PersistentJudge:
             sampling = SamplingParams(
                 temperature=temperature,
                 top_p=top_p,
-                max_tokens=max_tokens if max_tokens is not None else self.args.judge_max_tokens,
+                max_tokens=effective_max_tokens,
             )
             total_batches = math.ceil(len(pending) / self.args.judge_batch_size)
             for start in tqdm(range(0, len(pending), self.args.judge_batch_size), total=total_batches, desc=desc):

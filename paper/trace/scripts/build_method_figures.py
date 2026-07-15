@@ -872,15 +872,15 @@ def _build_environment_coverage(coverage: dict[str, Any], output: Path) -> None:
     for panel in panels:
         _rounded_card(draw, panel, radius=24, width=3)
 
-    draw.text((75, 78), "Typed answer interfaces", font=heading, fill=INK)
+    draw.text((75, 78), "Answer reward contracts", font=heading, fill=INK)
     draw.text((1555, 78), "Internal query branches", font=heading, fill=INK)
 
     answer_order = ("integer", "option_letter", "string", "number")
     answer_labels = {
-        "integer": "Integer",
-        "option_letter": "Option letter",
-        "string": "String label",
-        "number": "Real number",
+        "integer": "Integer exact",
+        "option_letter": "Option exact",
+        "string": "String exact",
+        "number": "Number exact",
     }
     answer_colors = (BLUE, ORANGE, GREEN, PURPLE)
     answer_max = max(int(coverage["answer_types"][key]) for key in answer_order)
@@ -901,7 +901,15 @@ def _build_environment_coverage(coverage: dict[str, Any], output: Path) -> None:
             value_font_size=36,
         )
         y += 155
-    draw.text((75, 900), "790 tasks return open-form numeric or string answers.", font=subheading, fill=INK)
+    _draw_wrapped(
+        draw,
+        (75, 885),
+        "1,000 / 1,000 tasks use deterministic exact-match answer rewards; no LLM judge.",
+        subheading,
+        max_width=1270,
+        fill=INK,
+        line_gap=8,
+    )
 
     branch_counts = coverage["query_branch_counts"]
     branch_max = max(int(value) for value in branch_counts.values())

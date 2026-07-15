@@ -9825,7 +9825,7 @@
       ],
       "media_type": "image/png",
       "path": "figures/environment_coverage.png",
-      "sha256": "fdad99f519790e41e79fa75e1b42f72c2ef59929f9df2bfa2e7a1252743920c8"
+      "sha256": "9b40d9562d69daaff36ae4c50cf08c1889c6eec16f572da14b4e9f0c80ddd573"
     },
     {
       "image_size": [
@@ -10500,7 +10500,7 @@
     "task_id": "task_graph__node_link__shortest_path_length"
   },
   "schema_version": "trace_paper_method_figures_v8",
-  "source_repository_head": "323689fb4e048922baff84e89fc5a84676ec5484",
+  "source_repository_head": "fce635541469a83520b8d156706754bb2230558e",
   "sources": [
     {
       "data_path": "review/task-reviews/charts/multiseries/task_charts__multiseries__category_total_extremum_label/data/largest_category_total_label/0000.json",

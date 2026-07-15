@@ -46,8 +46,16 @@ verifier state to a reusable scoring contract, and $\Gamma$ records the
 execution as a replayable trace.
 
 Each supported answer type uses deterministic normalization followed by
-exact-match scoring. Task programs therefore produce typed answers and
-verifier state rather than defining ad hoc rewards for individual objectives.
+exact-match scoring. Across the active environment, 547 tasks return integers,
+51 return canonical numeric values, 192 return strings, and 210 return visible
+option letters. Integers and numbers are compared as normalized JSON scalars at
+the precision specified by the task; strings and option letters are compared
+as normalized typed values. All 1,000 tasks therefore resolve to the same
+answer reward contract, \texttt{answer\_exact\_match\_v0}. Primary training
+requires neither an LLM judge nor a task-specific learned reward model. Task
+programs produce the typed target and verifier state, while the shared scorer
+only parses, normalizes, and compares the submitted answer. The resulting
+contract distribution is summarized in Appendix~\ref{fig:environment-coverage}.
 
 All random choices descend from $z$ through independent seeded streams. The
 task, query, semantic parameters, prompt realization, visual parameters, and

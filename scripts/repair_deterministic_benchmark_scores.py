@@ -70,6 +70,20 @@ SELECTED25_SOURCES = {
     },
 }
 
+SELECTED25_MATHVERSE_SCORE_ROOTS = {
+    42: SHM_ROOT / "trace_candidate24_full_temp06_4096_20260713T103556Z_score" / "benchmark" / "mathverse",
+    43: SHM_ROOT
+    / "trace_selected25_full_temp06_4096_seed43_44_answer_3b7b_20260714T065129Z_score"
+    / "seed_43"
+    / "benchmark"
+    / "mathverse",
+    44: SHM_ROOT
+    / "trace_selected25_full_temp06_4096_seed43_44_answer_3b7b_20260714T065129Z_score"
+    / "seed_44"
+    / "benchmark"
+    / "mathverse",
+}
+
 FINAL20_EXTERNAL = {
     "OpenMOSS Game-RL Qwen2.5-VL-7B (seed42)": (
         "game-rl-qwen25vl7b",
@@ -256,6 +270,14 @@ def score_prediction(path: Path, benchmark: str) -> float:
     raise ValueError(benchmark)
 
 
+def score_json(root: Path, slug: str, run_name: str = "vlmevalkit_defaults_qwen32b_judge") -> float:
+    path = root / slug / run_name / "scores.json"
+    if not path.exists():
+        raise FileNotFoundError(path)
+    payload = json.loads(path.read_text())
+    return float(payload["score"])
+
+
 def round_score(value: float, digits: int = 2) -> float:
     return round(float(value), digits)
 
@@ -270,6 +292,7 @@ def recompute_selected25_scores() -> dict[tuple[int, str, str], float]:
                     prediction_path(roots[key], slug, benchmark),
                     benchmark,
                 )
+            scores[(seed, "MathVerse", model_name)] = score_json(SELECTED25_MATHVERSE_SCORE_ROOTS[seed], slug)
     return scores
 
 
@@ -320,6 +343,8 @@ def write_selected25_mean_std_md(path: Path, mean_std: pd.DataFrame, seed_values
         "",
         "ScreenSpot/TableVQABench note: cached predictions are deterministically re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.",
         "",
+        "VisualPuzzles note: cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract; no generation or judge rerun was used.",
+        "",
         "## Mean / Std",
         dataframe_to_markdown(mean_std),
         "",
@@ -337,7 +362,10 @@ def write_summary_md(path: Path, title: str, summary: pd.DataFrame, metadata: pd
     lines = [
         f"# {title}",
         "",
-        "Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.",
+        "Deterministic repair notes:",
+        "- ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls.",
+        "- VisualPuzzles cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract.",
+        "- No generation or judge rerun was used for these repairs.",
         "",
         dataframe_to_markdown(summary),
         "",
@@ -351,7 +379,10 @@ def write_final20_all_methods_md(path: Path, sheets: dict[str, pd.DataFrame]) ->
     lines = [
         "# TRACE Final20 Temp0.6 3B/7B All Methods Results",
         "",
-        "Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.",
+        "Deterministic repair notes:",
+        "- ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls.",
+        "- VisualPuzzles cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract.",
+        "- No generation or judge rerun was used for these repairs.",
         "",
         "## 3B",
         dataframe_to_markdown(sheets["3B"]),
@@ -369,7 +400,7 @@ def update_selected25_workbooks(selected_scores: dict[tuple[int, str, str], floa
     seed42_path = RESULTS_ROOT / "qwen25vl3b_7b_answer_grpo_selected25_greedy_temp06.xlsx"
     sheets = pd.read_excel(seed42_path, sheet_name=None)
     temp = sheets["temp0.6"]
-    for benchmark in ("ScreenSpot", "TableVQABench"):
+    for benchmark in ("ScreenSpot", "TableVQABench", "MathVerse"):
         mask = temp["Task"].astype(str).eq(benchmark)
         temp.loc[mask, "Qwen2.5 3B Base"] = round_score(selected_scores[(42, benchmark, "3B Base")], 4)
         temp.loc[mask, "Qwen2.5 3B Answer GRPO"] = round_score(selected_scores[(42, benchmark, "3B Answer GRPO 500")], 4)
@@ -382,7 +413,7 @@ def update_selected25_workbooks(selected_scores: dict[tuple[int, str, str], floa
     for seed in (43, 44):
         path = RESULTS_ROOT / f"trace_selected25_full_temp06_seed{seed}_answer_3b7b_results.xlsx"
         sheets = pd.read_excel(path, sheet_name=None)
-        for benchmark in ("ScreenSpot", "TableVQABench"):
+        for benchmark in ("ScreenSpot", "TableVQABench", "MathVerse"):
             mask = sheets["summary"]["benchmark"].astype(str).eq(benchmark)
             sheets["summary"].loc[mask, "Base"] = selected_scores[(seed, benchmark, "3B Base")]
             sheets["summary"].loc[mask, "Answer GRPO 500"] = selected_scores[(seed, benchmark, "3B Answer GRPO 500")]
@@ -422,7 +453,7 @@ def update_mean_std_workbook(selected_scores: dict[tuple[int, str, str], float])
     sheets = pd.read_excel(path, sheet_name=None)
     seed_values = sheets["seed_values"]
     for seed in (42, 43, 44):
-        for benchmark in ("ScreenSpot", "TableVQABench"):
+        for benchmark in ("ScreenSpot", "TableVQABench", "MathVerse"):
             mask = seed_values["seed"].eq(seed) & seed_values["Task"].astype(str).eq(benchmark)
             seed_values.loc[mask, "3B Base"] = round_score(selected_scores[(seed, benchmark, "3B Base")], 4)
             seed_values.loc[mask, "3B Answer GRPO 500"] = round_score(selected_scores[(seed, benchmark, "3B Answer GRPO 500")], 4)
@@ -458,6 +489,13 @@ def update_mean_std_workbook(selected_scores: dict[tuple[int, str, str], float])
     }
     if not metadata["item"].astype(str).eq(repair["item"]).any():
         metadata = pd.concat([metadata, pd.DataFrame([repair])], ignore_index=True)
+    mathverse_repair = {
+        "item": "mathverse_judgement_repair",
+        "value": "MathVerse local Qwen3-32B judge outputs of the form `Judgement: 1` are counted as correct.",
+        "note": "No generation or judge rerun.",
+    }
+    if not metadata["item"].astype(str).eq(mathverse_repair["item"]).any():
+        metadata = pd.concat([metadata, pd.DataFrame([mathverse_repair])], ignore_index=True)
     sheets["metadata"] = metadata
     write_excel(path, sheets)
     write_selected25_mean_std_md(path.with_suffix(".md"), mean_std, seed_values, metadata)

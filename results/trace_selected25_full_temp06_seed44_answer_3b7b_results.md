@@ -1,6 +1,9 @@
 # TRACE Selected25 Full Temp0.6 Seed44 Answer 3B/7B Results
 
-VisualPuzzles repair note: cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract; no generation or judge rerun was used.
+Deterministic repair notes:
+- ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls.
+- VisualPuzzles cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract.
+- No generation or judge rerun was used for these repairs.
 
 | benchmark_key                | benchmark                | dataset_alias                  | prompt_run                             |   Base |   Base rows | Base score run                         |   Answer GRPO 500 |   Answer GRPO 500 rows | Answer GRPO 500 score run              |   7B Base |   7B Base rows | 7B Base score run                      |   7B Answer GRPO 500 |   7B Answer GRPO 500 rows | 7B Answer GRPO 500 score run           |
 |:-----------------------------|:-------------------------|:-------------------------------|:---------------------------------------|-------:|------------:|:---------------------------------------|------------------:|-----------------------:|:---------------------------------------|----------:|---------------:|:---------------------------------------|---------------------:|--------------------------:|:---------------------------------------|

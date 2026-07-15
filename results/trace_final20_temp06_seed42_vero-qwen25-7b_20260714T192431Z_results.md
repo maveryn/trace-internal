@@ -1,6 +1,9 @@
 # vero-qwen25-7b TRACE Final20 Temp0.6 Results
 
-VisualPuzzles repair note: cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract; no generation or judge rerun was used.
+Deterministic repair notes:
+- ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls.
+- VisualPuzzles cached Qwen3 extraction outputs are re-scored with the benchmark-wide A-D option contract.
+- No generation or judge rerun was used for these repairs.
 
 | benchmark_key       | benchmark           | dataset_alias         | prompt_run                             |   vero-qwen25-7b |   vero-qwen25-7b rows | vero-qwen25-7b score run               |
 |:--------------------|:--------------------|:----------------------|:---------------------------------------|-----------------:|----------------------:|:---------------------------------------|

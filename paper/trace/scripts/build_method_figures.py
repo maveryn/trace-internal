@@ -861,85 +861,91 @@ def _build_domain_landscape(coverage: dict[str, Any], output: Path) -> None:
     canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
 
 
-def _build_environment_coverage(coverage: dict[str, Any], output: Path) -> None:
-    """Render answer-interface and query-branch diagnostics without repeating domain counts."""
+def _build_answer_reward_summary(coverage: dict[str, Any], output: Path) -> None:
+    """Render the typed answer interfaces governed by one exact-match reward."""
 
-    canvas = Image.new("RGB", (3000, 1120), PAPER)
+    canvas = Image.new("RGB", (1900, 1050), PAPER)
     draw = ImageDraw.Draw(canvas)
-    heading = _font(56, bold=True)
-    subheading = _font(39, bold=True)
-    panels = ((35, 35, 1480, 1085), (1515, 35, 2965, 1085))
-    for panel in panels:
-        _rounded_card(draw, panel, radius=24, width=3)
-
-    draw.text((75, 78), "Answer reward contracts", font=heading, fill=INK)
-    draw.text((1555, 78), "Internal query branches", font=heading, fill=INK)
-
     answer_order = ("integer", "option_letter", "string", "number")
     answer_labels = {
-        "integer": "Integer exact",
-        "option_letter": "Option exact",
-        "string": "String exact",
-        "number": "Number exact",
+        "integer": "Integer",
+        "option_letter": "Option letter",
+        "string": "String",
+        "number": "Numeric",
     }
     answer_colors = (BLUE, ORANGE, GREEN, PURPLE)
-    answer_max = max(int(coverage["answer_types"][key]) for key in answer_order)
-    y = 205
-    for key, color in zip(answer_order, answer_colors):
-        _draw_bar(
-            draw,
-            label=answer_labels[key],
-            value=int(coverage["answer_types"][key]),
-            maximum=answer_max,
-            x=75,
-            y=y,
-            width=690,
-            height=44,
-            color=color,
-            label_width=275,
-            label_font_size=37,
-            value_font_size=36,
+    values = [int(coverage["answer_types"][key]) for key in answer_order]
+    total = sum(values)
+    if total != int(coverage["task_count"]):
+        raise RuntimeError("answer-interface counts do not match the active task count")
+
+    center = (520, 525)
+    outer_radius = 400
+    inner_radius = 240
+    outer_bbox = (
+        center[0] - outer_radius,
+        center[1] - outer_radius,
+        center[0] + outer_radius,
+        center[1] + outer_radius,
+    )
+    angle = -90.0
+    for value, color in zip(values, answer_colors):
+        extent = 360.0 * value / total
+        draw.pieslice(
+            outer_bbox,
+            start=angle,
+            end=angle + extent,
+            fill=color,
+            outline=PAPER,
+            width=8,
         )
-        y += 155
-    _draw_wrapped(
-        draw,
-        (75, 885),
-        "1,000 / 1,000 tasks use deterministic exact-match answer rewards; no LLM judge.",
-        subheading,
-        max_width=1270,
-        fill=INK,
-        line_gap=8,
+        angle += extent
+    draw.ellipse(
+        (
+            center[0] - inner_radius,
+            center[1] - inner_radius,
+            center[0] + inner_radius,
+            center[1] + inner_radius,
+        ),
+        fill=PAPER,
     )
 
-    branch_counts = coverage["query_branch_counts"]
-    branch_max = max(int(value) for value in branch_counts.values())
-    branch_colors = (TEAL, BLUE, ORANGE, GREEN, PURPLE, (176, 75, 87))
-    branch_support = tuple(sorted(int(key) for key in branch_counts))
-    if len(branch_support) > len(branch_colors):
-        raise RuntimeError("query-branch diagnostic needs additional display colors")
-    y = 185
-    for branch_count, color in zip(branch_support, branch_colors):
-        _draw_bar(
-            draw,
-            label=f"{branch_count} branch" if branch_count == 1 else f"{branch_count} branches",
-            value=int(branch_counts.get(str(branch_count), 0)),
-            maximum=branch_max,
-            x=1555,
-            y=y,
-            width=650,
-            height=38,
-            color=color,
-            label_width=270,
-            label_font_size=35,
-            value_font_size=34,
-        )
-        y += 118
+    draw.text(center, "1,000", font=_font(96, bold=True), fill=INK, anchor="ms")
     draw.text(
-        (1555, 900),
-        f"{coverage['multi_query_tasks']} multi-branch tasks; {coverage['total_query_branches']:,} branches total.",
-        font=subheading,
-        fill=TEAL,
+        (center[0], center[1] + 52),
+        "tasks",
+        font=_font(42, bold=True),
+        fill=MUTED,
+        anchor="mm",
     )
+    draw.text(
+        (center[0], center[1] + 120),
+        "one exact-match reward",
+        font=_font(31, bold=True),
+        fill=INK,
+        anchor="mm",
+    )
+    draw.text((center[0], center[1] + 166), "no LLM judge", font=_font(29), fill=MUTED, anchor="mm")
+
+    legend_x = 1070
+    legend_y = 220
+    label_font = _font(46, bold=True)
+    value_font = _font(41)
+    for key, value, color in zip(answer_order, values, answer_colors):
+        draw.rounded_rectangle(
+            (legend_x, legend_y + 5, legend_x + 54, legend_y + 59),
+            radius=10,
+            fill=color,
+        )
+        draw.text((legend_x + 82, legend_y), answer_labels[key], font=label_font, fill=INK)
+        percentage = 100.0 * value / total
+        draw.text(
+            (legend_x + 82, legend_y + 61),
+            f"{value:,} tasks  |  {percentage:.1f}%",
+            font=value_font,
+            fill=MUTED,
+        )
+        legend_y += 190
 
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
@@ -1545,7 +1551,7 @@ def main() -> None:
         figures_dir / "domain_montage.pdf",
         figures_dir / "reachable_region_pipeline.png",
         figures_dir / "taxonomy_boundaries.png",
-        figures_dir / "environment_coverage.png",
+        figures_dir / "answer_reward_summary.png",
         figures_dir / "rendering_variation_pipeline.png",
         figures_dir / "rendering_variation_examples.pdf",
         figures_dir / "domain_operation_matrix.png",
@@ -1555,7 +1561,7 @@ def main() -> None:
     _build_domain_montage(montage_samples, outputs[0])
     _build_reachable_pipeline(running_sample, outputs[1])
     _build_taxonomy_boundaries(boundary_samples, outputs[2])
-    _build_environment_coverage(coverage, outputs[3])
+    _build_answer_reward_summary(coverage, outputs[3])
     _build_rendering_variation_pipeline(outputs[4])
     rendering_variation = _build_rendering_variation_examples(repo_root, outputs[5])
     _build_domain_operation_matrix(coverage, outputs[6])
@@ -1563,7 +1569,7 @@ def main() -> None:
     _build_rendering_variation_profile_table(rendering_variation, outputs[8])
 
     manifest = {
-        "schema_version": "trace_paper_method_figures_v8",
+        "schema_version": "trace_paper_method_figures_v9",
         "source_repository_head": _git_head(repo_root),
         "pillow_version": pillow_version,
         "fonts": {

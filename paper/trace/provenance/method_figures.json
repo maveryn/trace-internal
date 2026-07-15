@@ -9820,12 +9820,12 @@
     },
     {
       "image_size": [
-        3000,
-        1120
+        1900,
+        1050
       ],
       "media_type": "image/png",
-      "path": "figures/environment_coverage.png",
-      "sha256": "9b40d9562d69daaff36ae4c50cf08c1889c6eec16f572da14b4e9f0c80ddd573"
+      "path": "figures/answer_reward_summary.png",
+      "sha256": "cc072451e41def34de0a9be5b011d2c9da20a89fca91466f8896863772deaf40"
     },
     {
       "image_size": [
@@ -10499,8 +10499,8 @@
     "semantic_sha256": "29f15281a86a75d38c693eef721d6518066231ba56a09cebd7ca7fc53b4e208f",
     "task_id": "task_graph__node_link__shortest_path_length"
   },
-  "schema_version": "trace_paper_method_figures_v8",
-  "source_repository_head": "fce635541469a83520b8d156706754bb2230558e",
+  "schema_version": "trace_paper_method_figures_v9",
+  "source_repository_head": "908ceae54a4a1c0eabee9343a82b9ebd93eeef11",
   "sources": [
     {
       "data_path": "review/task-reviews/charts/multiseries/task_charts__multiseries__category_total_extremum_label/data/largest_category_total_label/0000.json",

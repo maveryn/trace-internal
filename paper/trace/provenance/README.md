@@ -38,8 +38,10 @@ without rasterization.
 Figures `fig:domain-montage`, `fig:reachable-pipeline`, and
 `fig:taxonomy-boundaries` are generated from pinned task-review instances.
 Figure `fig:domain-landscape` is generated from the active inventory. Figure
-`fig:environment-coverage` summarizes answer interfaces and query branches
-from the active contracts. Figure `fig:domain-operation-matrix` is an
+`fig:answer-reward-summary` summarizes the typed answer interfaces governed by
+the shared exact-match reward contract. Query-branch counts remain available
+in the coverage manifest but are reported in prose rather than a dedicated
+figure. Figure `fig:domain-operation-matrix` is an
 exhaustive multi-label summary generated from the literal
 `reasoning_operations` declaration in every active task. Task documents mirror
 those declarations; generation fails on missing metadata,
@@ -72,7 +74,7 @@ stored in `provenance/method_figures.json`, including output
 dimensions and SHA-256 checksums. Figure~1 is a PDF montage
 that embeds each source review image at its original raster resolution; LaTeX
 scales the images for display without downsampling their stored pixels. The
-current figures were generated and visually inspected on 2026-07-14.
+current figures were generated and visually inspected on 2026-07-15.
 Regenerate them after the release commit is frozen so the recorded repository
 revision identifies the final paper source.
 

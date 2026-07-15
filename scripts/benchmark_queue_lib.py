@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 import shutil
 import time
 from contextlib import contextmanager
@@ -20,6 +21,15 @@ BASE_MODEL_SLUG = "qwen3-vl-4b-instruct"
 DEFAULT_RUN_ROOT = REPO_ROOT / "runs"
 DEFAULT_BENCHMARK_ROOT = REPO_ROOT / "benchmark"
 DEFAULT_QUEUE_ROOT = DEFAULT_BENCHMARK_ROOT / "queues"
+BENCHMARK_RUN_SETS = (
+    "full",
+    "remaining_base",
+    "base_all",
+    "trace_candidate37_200",
+    "trace_grounding",
+    "trace_video4",
+    "trace_final25",
+)
 EXTERNAL_EVAL_V1_SUBSET_ROOT = DEFAULT_BENCHMARK_ROOT / "subsets" / "external_eval_v1"
 EXTERNAL_EVAL_V1_QUEUE_SUFFIX = "external_eval_v1"
 EXTERNAL_EVAL_V1_BENCHMARKS = (
@@ -96,6 +106,29 @@ TRACE_VIDEO4_BENCHMARKS = (
     "tempcompass",
 )
 
+TRACE_FINAL25_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
+    "Charts, Tables & Structured Figures": (
+        "chartmuseum",
+        "chartqapro",
+        "charxivreason",
+        "tablevqabench",
+        "evochart",
+    ),
+    "Visual Mathematics": ("mathvision", "mathvista", "mathverse", "wemath"),
+    "Science & Academic Reasoning": ("phyx_mini_mc", "physics", "mmmu_pro_vision", "mmstar"),
+    "Spatial, 3D, Embodied & UI Grounding": ("screenspot", "spatialvizbench_cot", "cvbench_3d", "erqa"),
+    "Visual Perception, Counting & Evidence Grounding": ("blink", "countbenchqa", "countqa", "treebench"),
+    "Puzzles & Abstract Logic": ("puzzlevqa", "visualpuzzles", "logicvista", "mme_reasoning"),
+}
+TRACE_FINAL25_BENCHMARKS = tuple(
+    key for category_keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.values() for key in category_keys
+)
+
+MME_REASONING_TSV_URL = (
+    "https://huggingface.co/datasets/InternScience/MME-Reasoning/resolve/main/MME_Reasoning.tsv"
+)
+MME_REASONING_MD5 = "b243f44778782d3821523689f6b40a1e"
+
 
 @dataclass(frozen=True)
 class BenchmarkSpec:
@@ -164,6 +197,14 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("screenspotpro_office", "ScreenSpotPro/Office", "ScreenSpot_Pro_Office", "vlmevalkit_defaults_pooled/office", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
     BenchmarkSpec("screenspotpro_os", "ScreenSpotPro/OS", "ScreenSpot_Pro_OS", "vlmevalkit_defaults_pooled/os", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
     BenchmarkSpec("mmstar", "MMStar", "MMStar", "vlmevalkit_defaults"),
+    BenchmarkSpec(
+        "mme_reasoning",
+        "MME-Reasoning",
+        "MME-Reasoning",
+        "vlmevalkit_defaults_qwen32b_judge",
+        eval_mode="mme_reasoning_local_judge",
+        max_tokens=4096,
+    ),
     BenchmarkSpec("mme_realworld_lite", "MME-RealWorld-Lite", "MME-RealWorld-Lite", "vlmevalkit_defaults"),
     BenchmarkSpec("treebench", "TreeBench", "TreeBench", "vlmevalkit_defaults"),
     BenchmarkSpec("vlmblind", "VLMBlind", "VLMBlind", "vlmevalkit_defaults"),
@@ -280,6 +321,117 @@ def spec_by_key(key: str) -> BenchmarkSpec:
     raise KeyError(key)
 
 
+def _repair_treebench_options(dataset: Any) -> list[dict[str, Any]]:
+    """Repair a known TreeBench TSV delimiter defect before prompt generation.
+
+    At least one upstream row stores option B at the end of column A and shifts
+    the remaining choices left, leaving the ground-truth option absent from the
+    generated prompt. The repair is intentionally narrow: it only applies when
+    a single-letter ground truth is missing and the preceding option contains
+    an explicit marker for the next option.
+    """
+
+    import pandas as pd
+
+    def has_value(value: Any) -> bool:
+        try:
+            if pd.isna(value):
+                return False
+        except (TypeError, ValueError):
+            pass
+        return bool(str(value).strip())
+
+    data = dataset.data.copy()
+    repairs: list[dict[str, Any]] = []
+    option_letters = "ABCDEFGHIJK"
+    for row_pos, row in data.iterrows():
+        answer = str(row.get("answer", "")).strip().upper()
+        if len(answer) != 1 or answer not in option_letters:
+            continue
+        present = [letter for letter in option_letters if letter in data and has_value(row.get(letter))]
+        if answer in present:
+            continue
+
+        repaired = False
+        for letter in present:
+            if letter == option_letters[-1]:
+                continue
+            next_letter = option_letters[option_letters.index(letter) + 1]
+            value = str(row.get(letter, ""))
+            marker = re.search(rf"\s+{re.escape(next_letter)}\.\s+", value)
+            if marker is None:
+                continue
+
+            prefix = value[: marker.start()].strip()
+            embedded = value[marker.end() :].strip()
+            if not prefix or not embedded:
+                continue
+
+            highest = max(option_letters.index(item) for item in present)
+            next_index = option_letters.index(next_letter)
+            for option_index in range(highest, next_index - 1, -1):
+                source = option_letters[option_index]
+                target = option_letters[option_index + 1]
+                data.at[row_pos, target] = row.get(source)
+            data.at[row_pos, letter] = prefix
+            data.at[row_pos, next_letter] = embedded
+            repairs.append(
+                {
+                    "index": str(row.get("index", row_pos)),
+                    "split_column": letter,
+                    "inserted_column": next_letter,
+                    "ground_truth": answer,
+                }
+            )
+            repaired = True
+            break
+
+        refreshed = data.loc[row_pos]
+        repaired_present = [
+            letter for letter in option_letters if letter in data and has_value(refreshed.get(letter))
+        ]
+        if not repaired or answer not in repaired_present:
+            raise ValueError(
+                "TreeBench row has a ground-truth option missing from its prompt choices: "
+                f"index={row.get('index', row_pos)!r} answer={answer!r} choices={present!r}"
+            )
+
+    dataset.data = data
+    return repairs
+
+
+def build_vlmeval_dataset(spec: BenchmarkSpec) -> Any:
+    """Build a VLMEvalKit dataset with TRACE's reproducibility fixes applied."""
+
+    if spec.key == "mme_reasoning":
+        # Keep the release URL/checksum in the shared builder so Final25
+        # generation does not depend on the dedicated scorer's runtime patch.
+        from vlmeval.dataset.image_vqa import MMEReasoning
+
+        MMEReasoning.DATASET_URL[spec.alias] = MME_REASONING_TSV_URL
+        MMEReasoning.DATASET_MD5 = {spec.alias: MME_REASONING_MD5}
+
+    if spec.key == "erqa":
+        # Upstream registers two incompatible classes under the same ``ERQA``
+        # alias. Explicit construction avoids registry-order and cache-dependent
+        # behavior and pins the 400-row EASI leaderboard benchmark used by TRACE.
+        from vlmeval.dataset.erqabench import ERQABench
+
+        dataset = ERQABench(dataset=spec.alias)
+    else:
+        from vlmeval.dataset import build_dataset
+
+        dataset = build_dataset(spec.alias)
+    if dataset is None:
+        raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
+
+    normalization: dict[str, Any] = {}
+    if spec.key == "treebench":
+        normalization["treebench_option_repairs"] = _repair_treebench_options(dataset)
+    dataset.trace_normalization = normalization
+    return dataset
+
+
 def benchmark_dir(spec: BenchmarkSpec, model_slug: str, benchmark_root: Path = DEFAULT_BENCHMARK_ROOT) -> Path:
     key = spec.aggregate_group or spec.key
     run_name = spec.aggregate_run_name if spec.aggregate_group else spec.run_name
@@ -317,6 +469,8 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
         return [spec_by_key(key) for key in TRACE_GROUNDING_COUNTING_EXTRA_BENCHMARKS]
     if run_set == "trace_video4":
         return [spec_by_key(key) for key in TRACE_VIDEO4_BENCHMARKS]
+    if run_set == "trace_final25":
+        return [spec_by_key(key) for key in TRACE_FINAL25_BENCHMARKS]
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 

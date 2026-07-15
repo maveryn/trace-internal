@@ -25,6 +25,7 @@ except Exception:
 
 from benchmark_queue_lib import (
     BASE_MODEL_SPEC,
+    BENCHMARK_RUN_SETS,
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT,
     TRACE_CANDIDATE37_200_BENCHMARKS,
@@ -35,6 +36,7 @@ from benchmark_queue_lib import (
     VLMEVAL_ROOT,
     BenchmarkSpec,
     benchmark_specs_for_run_set,
+    build_vlmeval_dataset,
     claim_next_job,
     effective_generation_batch_size,
     filter_benchmark_specs,
@@ -280,16 +282,13 @@ def _generate_vlmeval_spec(
     repetition_penalty_override: float | None,
 ) -> dict[str, Any]:
     runner, _ = _import_vlmeval_runner()
-    from vlmeval.dataset import build_dataset
 
     output_dir.mkdir(parents=True, exist_ok=True)
     pred_jsonl = output_dir / "predictions.jsonl"
     if no_resume and pred_jsonl.exists():
         pred_jsonl.unlink()
 
-    dataset = build_dataset(spec.alias)
-    if dataset is None:
-        raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
+    dataset = build_vlmeval_dataset(spec)
     subset_entries = _subset_entries(subset_manifest, spec)
     dataset.data = _apply_subset_frame(dataset.data, subset_entries) if subset_manifest else _limit_frame(dataset.data, limit, sample_seed)
 
@@ -664,7 +663,7 @@ def main() -> None:
     parser.add_argument("--model-slug", default=BASE_MODEL_SPEC.slug)
     parser.add_argument(
         "--run-set",
-        choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding", "trace_video4"],
+        choices=BENCHMARK_RUN_SETS,
         default="remaining_base",
     )
     parser.add_argument(

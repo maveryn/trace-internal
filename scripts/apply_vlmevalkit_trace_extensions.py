@@ -43,7 +43,7 @@ def apply_extensions(vlmeval_root: Path) -> None:
     if not scripts_root.exists():
         raise RuntimeError(f"VLMEvalKit scripts directory does not exist: {scripts_root}")
 
-    for name in ("trace_local_vqa.py", "visiongraph.py", "evochart.py"):
+    for name in ("trace_local_vqa.py", "visiongraph.py", "evochart.py", "mirage.py"):
         shutil.copy2(EXT_ROOT / name, dataset_root / name)
     for name in ("batched_chartmuseum_vllm.py", "batched_chartqapro_vllm.py", "batched_vlmevalkit_qwen3vl.py"):
         shutil.copy2(EXT_ROOT / "scripts" / name, scripts_root / name)
@@ -65,6 +65,11 @@ def apply_extensions(vlmeval_root: Path) -> None:
         "from .erqabench import ERQABench",
         "from .evochart import EvoChart",
     )
+    text = insert_once(
+        text,
+        "from .mindcubebench import MindCubeBench",
+        "from .mirage import MIRAGE",
+    )
     text = insert_symbol_once(
         text,
         "ChartMuseum, ChartQAPro,",
@@ -82,6 +87,12 @@ def apply_extensions(vlmeval_root: Path) -> None:
         "MMRarebenchDiagnosis, MMRarebenchTreatment, MMRarebenchCrossmodal, MMRarebenchExamination,",
         "VisionGraphQ3",
         "VisionGraphQ3,",
+    )
+    text = insert_symbol_once(
+        text,
+        "VisionGraphQ3,",
+        "MIRAGE",
+        "VisionGraphQ3, MIRAGE,",
     )
     init_path.write_text(text)
 

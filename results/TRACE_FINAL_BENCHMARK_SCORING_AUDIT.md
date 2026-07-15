@@ -1,5 +1,8 @@
 # TRACE Final Benchmark Scoring Audit
 
+> Superseded for the frozen 25-benchmark suite by
+> `results/TRACE_FINAL25_SCORING_AUDIT.md`.
+
 Date: 2026-07-15
 
 Scope: final benchmark set from `trace_final20_temp06_3b7b_all_methods_results`, excluding `Game-QA-Lite`, plus `EvoChart` and `MathVerse`.
@@ -62,4 +65,3 @@ Previously known fixes remain active:
 | Qwen2.5-VL-3B Answer GRPO 500 | 39.59 | 1.37 |
 | Qwen2.5-VL-7B Base | 43.82 | 0.29 |
 | Qwen2.5-VL-7B Answer GRPO 500 | 46.40 | 1.11 |
-

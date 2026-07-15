@@ -1,0 +1,77 @@
+{
+  "root": "/home/shadeform/trace/benchmark/llm_extracted",
+  "files_scanned": 39168,
+  "rows_by_benchmark": {
+    "blink": 4000,
+    "chartqapro": 4000,
+    "countbenchqa": 1948,
+    "cvbench_3d": 4000,
+    "erqa": 1600,
+    "mmmu_pro_vision": 4000,
+    "physics": 4000,
+    "phyx_mini_mc": 4000,
+    "puzzlevqa": 4000,
+    "treebench": 1620,
+    "wemath": 6000
+  },
+  "empty_extractions": {
+    "physics": 19,
+    "phyx_mini_mc": 4
+  },
+  "malformed_option_extractions": {},
+  "missing_binary_decisions": {},
+  "ground_truth_excluded_from_valid_options": {
+    "phyx_mini_mc": 4,
+    "treebench": 4
+  },
+  "missing_required_option_text": {
+    "blink": 2000,
+    "cvbench_3d": 2000,
+    "erqa": 1596,
+    "treebench": 272
+  },
+  "ground_truth_excluded_from_parsed_option_text": {
+    "blink": 2000,
+    "cvbench_3d": 2000,
+    "erqa": 1596,
+    "phyx_mini_mc": 4,
+    "treebench": 276
+  },
+  "examples": {
+    "gt_excluded": [
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/phyx_mini_mc__qwen25vl3b-base__22.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/phyx_mini_mc__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__22.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/treebench__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__330.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/treebench__qwen25vl3b-base__330.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate6_highrisk_1000_7b_base_vs_step500_qwen32b_api_extract_20260713T004000Z/items/treebench__trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500__330.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate6_highrisk_1000_7b_base_vs_step500_qwen32b_api_extract_20260713T004000Z/items/treebench__qwen25vl7b-base__330.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate6_highrisk_1000_7b_base_vs_step500_qwen32b_api_extract_20260713T004000Z/items/phyx_mini_mc__qwen25vl7b-base__22.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate6_highrisk_1000_7b_base_vs_step500_qwen32b_api_extract_20260713T004000Z/items/phyx_mini_mc__trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500__22.json"
+    ],
+    "gt_excluded_from_options": [
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__67.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__178.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/treebench__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__281.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__281.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/treebench__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__325.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__143.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__124.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__122.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__269.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__0.json"
+    ],
+    "missing_option_text": [
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__67.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__178.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/treebench__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__281.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__281.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/treebench__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__325.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__143.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__124.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__122.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500__269.json",
+      "/home/shadeform/trace/benchmark/llm_extracted/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/trace_candidate15_1000_3b_base_vs_step500_qwen32b_api_extract_20260713T011502Z/items/erqa__qwen25vl3b-base__0.json"
+    ]
+  },
+  "interpretation": "Historical artifacts may contain failures fixed by the current pipeline. A clean final run must report zero malformed option extractions, missing binary decisions, ground truths excluded from valid options, missing required option text, and ground truths excluded from parsed option text."
+}

@@ -5,6 +5,7 @@ import argparse
 import ast
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,20 +22,19 @@ for path in (SCRIPTS_ROOT, VLMEVAL_ROOT, VLMEVAL_ROOT / "scripts"):
         sys.path.insert(0, str(path))
 
 import benchmark_queue_lib as benchmark_lib  # noqa: E402
-from benchmark_queue_lib import BenchmarkSpec, extract_score_and_rows, json_default, run_dir, write_json  # noqa: E402
+from benchmark_queue_lib import (  # noqa: E402
+    MME_REASONING_MD5,
+    MME_REASONING_TSV_URL,
+    extract_score_and_rows,
+    json_default,
+    run_dir,
+    spec_by_key,
+    write_json,
+)
 from run_external_benchmark_score_queue import PersistentJudge  # noqa: E402
 
 
-MME_REASONING_SPEC = BenchmarkSpec(
-    "mme_reasoning",
-    "MME-Reasoning",
-    "MME-Reasoning",
-    "vlmevalkit_defaults_qwen32b_judge",
-    eval_mode="mme_reasoning_local_judge",
-    max_tokens=4096,
-)
-MME_REASONING_TSV_URL = "https://huggingface.co/datasets/InternScience/MME-Reasoning/resolve/main/MME_Reasoning.tsv"
-MME_REASONING_MD5 = "b243f44778782d3821523689f6b40a1e"
+MME_REASONING_SPEC = spec_by_key("mme_reasoning")
 
 
 def _patch_mme_reasoning_dataset() -> None:
@@ -105,12 +105,37 @@ def _extract_json_from_response(text: str) -> str | None:
     return extract_json_from_response(text)
 
 
+def _normalize_choice_extraction(output: str) -> str | None:
+    """Normalize the MME judge's single- or multi-option extraction."""
+
+    text = str(output or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = ast.literal_eval(text)
+    except Exception:
+        parsed = None
+    if isinstance(parsed, (list, tuple)):
+        values = [str(value).strip().upper() for value in parsed]
+    else:
+        inner = text.strip("[]() ")
+        values = [part.strip().strip("\"'").upper() for part in inner.split(",")]
+    if not values or any(re.fullmatch(r"[A-Z]", value) is None for value in values):
+        return None
+    return ",".join(values)
+
+
 def _validate_extraction(eval_prompt: str, output: str) -> tuple[bool, str]:
+    if not str(output or "").strip():
+        return False, output
     from vlmeval.dataset.utils.mme_reasoning import FAIL_MSG
 
     if FAIL_MSG in output:
         return False, output
-    if eval_prompt in {"open_question_prompt", "choice_prompt", "points24_prompt"}:
+    if eval_prompt == "choice_prompt":
+        normalized = _normalize_choice_extraction(output)
+        return (normalized is not None), (normalized or output)
+    if eval_prompt in {"open_question_prompt", "points24_prompt"}:
         return True, output
     try:
         json.loads(output)
@@ -276,7 +301,7 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
             prompts=pending,
             cache_name=f"mme_reasoning_extract_attempt{attempt}.jsonl",
             max_tokens=args.extract_max_tokens,
-            temperature=attempt * 0.5,
+            temperature=0.0,
             top_p=1.0,
             no_resume=args.no_resume,
             desc=f"{args.model_slug} MME extract attempt {attempt}",
@@ -295,8 +320,23 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
                 next_pending.append(idx)
         pending_indices = next_pending
 
-    for idx in pending_indices:
-        extraction_rows[idx] = {"log": "All 5 retries failed.\n", "res": ""}
+    if pending_indices:
+        failure_path = benchmark_output_dir / "mme_reasoning_extraction_failures.json"
+        write_json(
+            failure_path,
+            {
+                "stage": "answer_extraction",
+                "count": len(pending_indices),
+                "indices": pending_indices,
+                "retries": 5,
+                "temperature": 0.0,
+            },
+        )
+        judge.cleanup()
+        raise RuntimeError(
+            "MME-Reasoning judge failed to produce parseable extractions for "
+            f"{len(pending_indices)} rows; first indices={pending_indices[:10]}"
+        )
 
     data["res"] = [extraction_rows[str(idx)]["res"] for idx in data["index"]]
     data["log"] = [extraction_rows[str(idx)]["log"] for idx in data["index"]]
@@ -323,7 +363,7 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
             prompts=pending,
             cache_name=f"mme_reasoning_score_open_attempt{attempt}.jsonl",
             max_tokens=args.score_max_tokens,
-            temperature=attempt * 0.5,
+            temperature=0.0,
             top_p=1.0,
             no_resume=args.no_resume,
             desc=f"{args.model_slug} MME open score attempt {attempt}",
@@ -342,8 +382,23 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
                 next_pending.append(idx)
         pending_open = next_pending
 
-    for idx in pending_open:
-        score_rows[idx] = {"log_score": "All 5 retries failed.\n", "score": False}
+    if pending_open:
+        failure_path = benchmark_output_dir / "mme_reasoning_open_judge_failures.json"
+        write_json(
+            failure_path,
+            {
+                "stage": "open_answer_scoring",
+                "count": len(pending_open),
+                "indices": pending_open,
+                "retries": 5,
+                "temperature": 0.0,
+            },
+        )
+        judge.cleanup()
+        raise RuntimeError(
+            "MME-Reasoning judge failed to produce binary decisions for "
+            f"{len(pending_open)} open-answer rows; first indices={pending_open[:10]}"
+        )
 
     for _, line in data.iterrows():
         idx = str(line["index"])
@@ -414,6 +469,10 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
             "model": args.judge_model,
             "api_model": args.judge_api_model,
             "api_bases": args.judge_api_bases,
+            "temperature": 0.0,
+            "extraction_retries": 5,
+            "unresolved_extractions": 0,
+            "unresolved_open_scores": 0,
         },
     }
     write_json(benchmark_output_dir / "scores.json", scores)

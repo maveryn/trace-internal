@@ -14,6 +14,15 @@ MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-65536}"
 MAX_IMAGES="${MAX_IMAGES:-24}"
 MAX_VIDEOS="${MAX_VIDEOS:-3}"
 LIMIT_MM_PER_PROMPT="${LIMIT_MM_PER_PROMPT:-{\"image\":${MAX_IMAGES},\"video\":${MAX_VIDEOS}}}"
+CPU_THREADS_PER_PROCESS="${CPU_THREADS_PER_PROCESS:-8}"
+VLLM_OMP_NUM_THREADS="${VLLM_OMP_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
+VLLM_MKL_NUM_THREADS="${VLLM_MKL_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
+VLLM_OPENBLAS_NUM_THREADS="${VLLM_OPENBLAS_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
+VLLM_NUMEXPR_NUM_THREADS="${VLLM_NUMEXPR_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
+VLLM_TOKENIZERS_PARALLELISM="${VLLM_TOKENIZERS_PARALLELISM:-false}"
+CPU_AFFINITY_GROUPS="${CPU_AFFINITY_GROUPS:-}"
+REASONING_PARSER="${REASONING_PARSER:-}"
+CHAT_TEMPLATE="${CHAT_TEMPLATE:-}"
 WAIT_READY="${WAIT_READY:-1}"
 READY_TIMEOUT_SEC="${READY_TIMEOUT_SEC:-900}"
 LOG_DIR="${LOG_DIR:-logs/vllm/endpoints/${SERVED_MODEL_NAME}_$(date -u +%Y%m%dT%H%M%SZ)}"
@@ -26,6 +35,15 @@ if [[ "${GPU_GROUPS}" == *";"* ]]; then
   IFS=';' read -r -a GROUP_ARRAY <<< "${GPU_GROUPS}"
 else
   read -r -a GROUP_ARRAY <<< "${GPU_GROUPS}"
+fi
+
+AFFINITY_ARRAY=()
+if [[ -n "${CPU_AFFINITY_GROUPS}" ]]; then
+  IFS=';' read -r -a AFFINITY_ARRAY <<< "${CPU_AFFINITY_GROUPS}"
+  if [[ "${#AFFINITY_ARRAY[@]}" -ne "${#GROUP_ARRAY[@]}" ]]; then
+    echo "[error] CPU_AFFINITY_GROUPS must contain one semicolon-delimited CPU list per GPU_GROUPS entry" >&2
+    exit 1
+  fi
 fi
 
 ports=()
@@ -41,21 +59,39 @@ for i in "${!GROUP_ARRAY[@]}"; do
     tp="${#gpu_ids[@]}"
   fi
   log="${LOG_DIR}/endpoint_${i}_port_${port}_gpu_${group//,/}.log"
-  echo "[start] port=${port} gpus=${group} tp=${tp} model=${MODEL_PATH} served=${SERVED_MODEL_NAME}"
+  affinity="${AFFINITY_ARRAY[$i]:-}"
+  launch_prefix=()
+  if [[ -n "${affinity}" ]]; then
+    launch_prefix=(taskset --cpu-list "${affinity}")
+  fi
+  server_args=(
+    --model "${MODEL_PATH}"
+    --served-model-name "${SERVED_MODEL_NAME}"
+    --host "${HOST}"
+    --port "${port}"
+    --trust-remote-code
+    --tensor-parallel-size "${tp}"
+    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION}"
+    --max-model-len "${MAX_MODEL_LEN}"
+    --max-num-seqs "${MAX_NUM_SEQS}"
+    --max-num-batched-tokens "${MAX_NUM_BATCHED_TOKENS}"
+    --limit-mm-per-prompt "${LIMIT_MM_PER_PROMPT}"
+  )
+  if [[ -n "${REASONING_PARSER}" ]]; then
+    server_args+=(--reasoning-parser "${REASONING_PARSER}")
+  fi
+  if [[ -n "${CHAT_TEMPLATE}" ]]; then
+    server_args+=(--chat-template "${CHAT_TEMPLATE}")
+  fi
+  echo "[start] port=${port} gpus=${group} tp=${tp} cpus=${affinity:-unbound} threads=${CPU_THREADS_PER_PROCESS} model=${MODEL_PATH} served=${SERVED_MODEL_NAME}"
   CUDA_VISIBLE_DEVICES="${group}" \
   VLLM_WORKER_MULTIPROC_METHOD="${VLLM_WORKER_MULTIPROC_METHOD:-spawn}" \
-  nohup python -m vllm.entrypoints.openai.api_server \
-    --model "${MODEL_PATH}" \
-    --served-model-name "${SERVED_MODEL_NAME}" \
-    --host "${HOST}" \
-    --port "${port}" \
-    --trust-remote-code \
-    --tensor-parallel-size "${tp}" \
-    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION}" \
-    --max-model-len "${MAX_MODEL_LEN}" \
-    --max-num-seqs "${MAX_NUM_SEQS}" \
-    --max-num-batched-tokens "${MAX_NUM_BATCHED_TOKENS}" \
-    --limit-mm-per-prompt "${LIMIT_MM_PER_PROMPT}" \
+  OMP_NUM_THREADS="${VLLM_OMP_NUM_THREADS}" \
+  MKL_NUM_THREADS="${VLLM_MKL_NUM_THREADS}" \
+  OPENBLAS_NUM_THREADS="${VLLM_OPENBLAS_NUM_THREADS}" \
+  NUMEXPR_NUM_THREADS="${VLLM_NUMEXPR_NUM_THREADS}" \
+  TOKENIZERS_PARALLELISM="${VLLM_TOKENIZERS_PARALLELISM}" \
+  nohup "${launch_prefix[@]}" python -m vllm.entrypoints.openai.api_server "${server_args[@]}" \
     > "${log}" 2>&1 &
   echo "$! ${port} ${group} ${log}" >> "${PID_FILE}"
 done

@@ -16,6 +16,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from benchmark_queue_lib import (  # noqa: E402
+    BENCHMARK_RUN_SETS,
     DEFAULT_BENCHMARK_ROOT,
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT as LIB_REPO_ROOT,
@@ -35,6 +36,7 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _maybe_write_screenspot_aggregate,
     _run_score_for_spec,
 )
+from trace_final25_contract import DIRECT_SCORE_KEYS  # noqa: E402
 
 
 def _parse_model(value: str) -> tuple[str, str]:
@@ -94,6 +96,14 @@ def run_worker(args: argparse.Namespace) -> None:
         specs = filter_benchmark_specs(specs, exclude=args.exclude)
     else:
         specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    if args.run_set == "trace_final25":
+        unsupported = [spec.key for spec in specs if spec.key not in DIRECT_SCORE_KEYS]
+        if args.only and unsupported:
+            raise ValueError(
+                "The Final25 multi-model direct scorer only accepts DIRECT_SCORE_KEYS; "
+                f"route these separately: {unsupported}"
+            )
+        specs = [spec for spec in specs if spec.key in DIRECT_SCORE_KEYS]
     materialize_grounding_benchmark_files(specs)
     queue_path = args.queue_root / f"score_multi_{args.queue_name}.json"
     jobs = [(spec.key, _sentinel_path(args.benchmark_root, args.queue_name, spec.key)) for spec in specs]
@@ -140,7 +150,7 @@ def main() -> None:
     parser.add_argument("--model-entry", action="append", type=_parse_model, dest="model_entries", required=True)
     parser.add_argument(
         "--run-set",
-        choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding", "trace_video4"],
+        choices=BENCHMARK_RUN_SETS,
         default="trace_candidate37_200",
     )
     parser.add_argument("--trace-candidate37-200", action="store_true")

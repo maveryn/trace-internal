@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +36,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from benchmark_queue_lib import (  # noqa: E402
+    BENCHMARK_RUN_SETS,
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT as LIB_REPO_ROOT,
     TRACE_CANDIDATE37_200_BENCHMARKS,
@@ -43,6 +44,7 @@ from benchmark_queue_lib import (  # noqa: E402
     TRACE_GROUNDING_SUBSET_ROOT,
     BenchmarkSpec,
     benchmark_specs_for_run_set,
+    build_vlmeval_dataset,
     effective_generation_batch_size,
     filter_benchmark_specs,
     json_default,
@@ -70,6 +72,80 @@ class RowJob:
     output_dir: Path
     result_path: Path
     kind: str
+    mirror_result_path: Path | None = None
+    attempted_endpoints: tuple[str, ...] = ()
+    attempt_count: int = 0
+
+
+class PermanentAPIError(RuntimeError):
+    """A request error caused by the row payload rather than endpoint health."""
+
+    def __init__(self, endpoint: str, status_code: int, detail: str):
+        self.endpoint = endpoint
+        self.status_code = int(status_code)
+        self.detail = detail
+        super().__init__(f"{endpoint} returned HTTP {status_code}: {detail}")
+
+
+class RetryableAPIError(RuntimeError):
+    """A transport or server error that may succeed on another endpoint."""
+
+    def __init__(self, endpoint: str, detail: str, *, affects_health: bool = True):
+        self.endpoint = endpoint
+        self.detail = detail
+        self.affects_health = bool(affects_health)
+        super().__init__(f"{endpoint} failed: {detail}")
+
+
+class EndpointHealth:
+    """Track endpoint failures and quarantine unhealthy workers for this run."""
+
+    def __init__(self, endpoints: list[str], failure_threshold: int):
+        self.endpoints = tuple(endpoints)
+        self.failure_threshold = max(1, int(failure_threshold))
+        self.failure_streak = {endpoint: 0 for endpoint in self.endpoints}
+        self.failure_count = {endpoint: 0 for endpoint in self.endpoints}
+        self.disabled: set[str] = set()
+        self.lock = threading.Lock()
+
+    def is_disabled(self, endpoint: str) -> bool:
+        with self.lock:
+            return endpoint in self.disabled
+
+    def should_defer(self, endpoint: str, attempted_endpoints: tuple[str, ...]) -> bool:
+        attempted = set(attempted_endpoints)
+        if endpoint not in attempted:
+            return False
+        with self.lock:
+            return any(candidate not in self.disabled and candidate not in attempted for candidate in self.endpoints)
+
+    def record_success(self, endpoint: str) -> None:
+        with self.lock:
+            self.failure_streak[endpoint] = 0
+
+    def record_failure(self, endpoint: str) -> bool:
+        """Record a retriable failure and return whether the endpoint was newly disabled."""
+
+        with self.lock:
+            self.failure_count[endpoint] += 1
+            self.failure_streak[endpoint] += 1
+            if self.failure_streak[endpoint] < self.failure_threshold:
+                return False
+            # Keep one endpoint available so queued rows terminate with explicit
+            # errors instead of leaving queue.join() blocked when the whole pool
+            # is unavailable.
+            if endpoint in self.disabled or len(self.disabled) >= len(self.endpoints) - 1:
+                return False
+            self.disabled.add(endpoint)
+            return True
+
+    def snapshot(self) -> dict[str, Any]:
+        with self.lock:
+            return {
+                "failure_threshold": self.failure_threshold,
+                "disabled_endpoints": sorted(self.disabled),
+                "failure_count": dict(self.failure_count),
+            }
 
 
 class DatasetHandle:
@@ -111,11 +187,49 @@ def _safe_result_name_for_row(row: dict[str, Any], rank: int) -> str:
     return f"{int(rank):08d}.{safe_index}.{digest}.json"
 
 
-def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
+def _atomic_write_bytes(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + f".tmp.{os.getpid()}.{threading.get_ident()}")
-    tmp.write_text(json.dumps(payload, ensure_ascii=False, default=json_default) + "\n", encoding="utf-8")
+    tmp.write_bytes(payload)
     tmp.replace(path)
+
+
+def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
+    encoded = (json.dumps(payload, ensure_ascii=False, default=json_default) + "\n").encode("utf-8")
+    _atomic_write_bytes(path, encoded)
+
+
+def _write_job_result(job: RowJob, payload: dict[str, Any]) -> None:
+    """Atomically write the canonical result and its optional persistent mirror."""
+
+    encoded = (json.dumps(payload, ensure_ascii=False, default=json_default) + "\n").encode("utf-8")
+    _atomic_write_bytes(job.result_path, encoded)
+    if job.mirror_result_path is not None:
+        _atomic_write_bytes(job.mirror_result_path, encoded)
+
+
+def _persist_worker_result(
+    job: RowJob,
+    payload: dict[str, Any],
+    errors: list[dict[str, Any]],
+    error_lock: threading.Lock,
+) -> None:
+    """Persist a final row result and surface storage failures in the suite result."""
+
+    try:
+        _write_job_result(job, payload)
+    except OSError as exc:
+        error = {
+            "benchmark_key": job.spec.key,
+            "index": str(job.row.get("index")),
+            "row_key": job.row_key,
+            "error": f"result persistence failed: {exc!r}",
+            "result_path": str(job.result_path),
+            "mirror_result_path": str(job.mirror_result_path) if job.mirror_result_path is not None else None,
+        }
+        with error_lock:
+            errors.append(error)
+        print(f"[api-generate:persistence-error] row_key={job.row_key} error={exc!r}")
 
 
 def _load_image(value: Any) -> Image.Image:
@@ -132,10 +246,27 @@ def _load_image(value: Any) -> Image.Image:
     raise TypeError(f"Unsupported image value type: {type(value)!r}")
 
 
-def _image_to_data_url(value: Any, *, image_format: str = "JPEG", quality: int = 95) -> str:
-    if isinstance(value, str) and value.startswith("data:image/"):
-        return value
+def _image_to_data_url(
+    value: Any,
+    *,
+    image_format: str = "JPEG",
+    quality: int = 85,
+    max_pixels: int = 1_000_000,
+    max_side: int = 1280,
+) -> str:
     image = _load_image(value)
+    width, height = image.size
+    scales = [1.0]
+    if max_pixels > 0 and width * height > max_pixels:
+        scales.append((max_pixels / float(width * height)) ** 0.5)
+    if max_side > 0 and max(width, height) > max_side:
+        scales.append(max_side / float(max(width, height)))
+    scale = min(scales)
+    if scale < 1.0:
+        image = image.resize(
+            (max(1, int(width * scale)), max(1, int(height * scale))),
+            Image.Resampling.LANCZOS,
+        )
     buf = io.BytesIO()
     fmt = image_format.upper()
     if fmt in {"JPG", "JPEG"}:
@@ -150,7 +281,7 @@ def _image_to_data_url(value: Any, *, image_format: str = "JPEG", quality: int =
     return f"data:{mime};base64,{base64.b64encode(buf.getvalue()).decode('ascii')}"
 
 
-def _vlmeval_messages(handle: DatasetHandle, row: dict[str, Any]) -> list[dict[str, Any]]:
+def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict[str, Any]) -> list[dict[str, Any]]:
     runner, _ = _import_vlmeval_runner()
     row_series = pd.Series(row)
     # Some VLMEvalKit datasets materialize cached images in build_prompt. Keep that
@@ -166,7 +297,19 @@ def _vlmeval_messages(handle: DatasetHandle, row: dict[str, Any]) -> list[dict[s
         typ = item.get("type")
         value = item.get("value")
         if typ == "image":
-            content.append({"type": "image_url", "image_url": {"url": _image_to_data_url(value)}})
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": _image_to_data_url(
+                            value,
+                            quality=int(args.image_jpeg_quality),
+                            max_pixels=int(args.max_image_pixels),
+                            max_side=int(args.max_image_side),
+                        )
+                    },
+                }
+            )
         elif typ == "video":
             raise NotImplementedError(f"OpenAI endpoint video prompts are not supported for {handle.spec.key}")
         else:
@@ -176,11 +319,23 @@ def _vlmeval_messages(handle: DatasetHandle, row: dict[str, Any]) -> list[dict[s
     return [{"role": "user", "content": content or [{"type": "text", "text": ""}]}]
 
 
-def _chartmuseum_messages(row: dict[str, Any]) -> list[dict[str, Any]]:
+def _chartmuseum_messages(args: argparse.Namespace, row: dict[str, Any]) -> list[dict[str, Any]]:
     image_path = row.get("image_path") or row.get("image")
     content: list[dict[str, Any]] = []
     if image_path:
-        content.append({"type": "image_url", "image_url": {"url": _image_to_data_url(image_path)}})
+        content.append(
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": _image_to_data_url(
+                        image_path,
+                        quality=int(args.image_jpeg_quality),
+                        max_pixels=int(args.max_image_pixels),
+                        max_side=int(args.max_image_side),
+                    )
+                },
+            }
+        )
     content.append({"type": "text", "text": str(row.get("question", ""))})
     return [{"role": "user", "content": content}]
 
@@ -209,22 +364,29 @@ def _call_endpoint(args: argparse.Namespace, endpoint: str, messages: list[dict[
     if args.seed is not None:
         payload["seed"] = int(args.seed)
     headers = {"Authorization": f"Bearer {args.api_key}"}
-    last_error: Exception | None = None
-    for attempt in range(int(args.api_max_retries)):
-        try:
-            response = requests.post(
-                _completion_url(endpoint),
-                json=payload,
-                headers=headers,
-                timeout=float(args.api_timeout),
-            )
-            response.raise_for_status()
-            return response.json()
-        except Exception as exc:
-            last_error = exc
-            sleep_s = min(30.0, 1.5 * (attempt + 1))
-            time.sleep(sleep_s)
-    raise RuntimeError(f"{endpoint} failed after {args.api_max_retries} attempts: {last_error!r}")
+    try:
+        response = requests.post(
+            _completion_url(endpoint),
+            json=payload,
+            headers=headers,
+            timeout=float(args.api_timeout),
+        )
+    except requests.RequestException as exc:
+        raise RetryableAPIError(endpoint, repr(exc)) from exc
+
+    detail = response.text[:2000].strip()
+    if 400 <= response.status_code < 500 and response.status_code != 429:
+        raise PermanentAPIError(endpoint, response.status_code, detail)
+    if response.status_code >= 400:
+        raise RetryableAPIError(
+            endpoint,
+            f"HTTP {response.status_code}: {detail}",
+            affects_health=response.status_code != 429,
+        )
+    try:
+        return response.json()
+    except ValueError as exc:
+        raise RetryableAPIError(endpoint, f"invalid JSON response: {detail}") from exc
 
 
 def _result_from_response(job: RowJob, response: dict[str, Any], endpoint: str) -> dict[str, Any]:
@@ -260,9 +422,25 @@ def _load_existing_result_paths(output_dir: Path) -> dict[str, Path]:
     return out
 
 
+def _restore_mirrored_row_results(row_result_dir: Path, mirror_row_result_dir: Path | None) -> None:
+    """Restore missing canonical row files from a persistent result mirror."""
+
+    if mirror_row_result_dir is None or not mirror_row_result_dir.exists():
+        return
+    row_result_dir.mkdir(parents=True, exist_ok=True)
+    restored = 0
+    for source in mirror_row_result_dir.glob("*.json"):
+        target = row_result_dir / source.name
+        if target.exists():
+            continue
+        shutil.copy2(source, target)
+        restored += 1
+    if restored:
+        print(f"[api-generate:restore] rows={restored} source={mirror_row_result_dir}")
+
+
 def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpec]) -> tuple[dict[str, DatasetHandle], list[RowJob]]:
     runner, chartmuseum = _import_vlmeval_runner()
-    from vlmeval.dataset import build_dataset
 
     handles: dict[str, DatasetHandle] = {}
     jobs_by_spec: list[list[RowJob]] = []
@@ -270,9 +448,16 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
         output_dir = run_dir(spec, args.model_slug, args.run_root)
         output_dir.mkdir(parents=True, exist_ok=True)
         row_result_dir = output_dir / "api_row_results"
+        mirror_output_dir = (
+            run_dir(spec, args.model_slug, args.result_mirror_root) if args.result_mirror_root is not None else None
+        )
+        mirror_row_result_dir = mirror_output_dir / "api_row_results" if mirror_output_dir is not None else None
         if args.no_resume and row_result_dir.exists():
             shutil.rmtree(row_result_dir)
+        if args.no_resume and mirror_row_result_dir is not None and mirror_row_result_dir.exists():
+            shutil.rmtree(mirror_row_result_dir)
         row_result_dir.mkdir(parents=True, exist_ok=True)
+        _restore_mirrored_row_results(row_result_dir, mirror_row_result_dir)
 
         subset_manifest = _subset_manifest_path(args.subset_root, spec) if args.subset_root else None
         subset_entries = _subset_entries(subset_manifest, spec) if subset_manifest else []
@@ -285,9 +470,7 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
             row_records = rows
             kind = "chartmuseum"
         else:
-            dataset = build_dataset(spec.alias)
-            if dataset is None:
-                raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
+            dataset = build_vlmeval_dataset(spec)
             if subset_manifest:
                 dataset.data = _apply_subset_frame(dataset.data, subset_entries)
             else:
@@ -314,6 +497,11 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
                     output_dir=output_dir,
                     result_path=row_result_dir / _safe_result_name_for_row(row, rank),
                     kind=kind,
+                    mirror_result_path=(
+                        mirror_row_result_dir / _safe_result_name_for_row(row, rank)
+                        if mirror_row_result_dir is not None
+                        else None
+                    ),
                 )
             )
             pending += 1
@@ -336,23 +524,38 @@ def _worker_loop(
     args: argparse.Namespace,
     endpoint: str,
     handles: dict[str, DatasetHandle],
-    jobs: "queue.Queue[RowJob | None]",
+    jobs: "queue.Queue[RowJob]",
     errors: list[dict[str, Any]],
     error_lock: threading.Lock,
     progress: tqdm,
+    endpoint_health: EndpointHealth,
+    stop_event: threading.Event,
 ) -> None:
-    while True:
-        job = jobs.get()
-        if job is None:
-            jobs.task_done()
+    while not stop_event.is_set():
+        if endpoint_health.is_disabled(endpoint):
             return
         try:
+            job = jobs.get(timeout=0.25)
+        except queue.Empty:
+            continue
+        finalized = False
+        try:
+            if endpoint_health.should_defer(endpoint, job.attempted_endpoints):
+                jobs.put(job)
+                time.sleep(0.005)
+                continue
             handle = handles[job.spec.key]
-            messages = _chartmuseum_messages(job.row) if job.kind == "chartmuseum" else _vlmeval_messages(handle, job.row)
+            messages = (
+                _chartmuseum_messages(args, job.row)
+                if job.kind == "chartmuseum"
+                else _vlmeval_messages(args, handle, job.row)
+            )
             response = _call_endpoint(args, endpoint, messages)
+            endpoint_health.record_success(endpoint)
             result = _result_from_response(job, response, endpoint)
-            _atomic_write_json(job.result_path, result)
-        except Exception as exc:
+            _persist_worker_result(job, result, errors, error_lock)
+            finalized = True
+        except PermanentAPIError as exc:
             error = {
                 "benchmark_key": job.spec.key,
                 "index": str(job.row.get("index")),
@@ -361,11 +564,54 @@ def _worker_loop(
                 "endpoint": endpoint,
                 "result_path": str(job.result_path),
             }
-            _atomic_write_json(job.result_path, {**error, "prediction": "", "finish_reason": "error"})
+            _persist_worker_result(job, {**error, "prediction": "", "finish_reason": "error"}, errors, error_lock)
             with error_lock:
                 errors.append(error)
+            finalized = True
+        except RetryableAPIError as exc:
+            disabled = endpoint_health.record_failure(endpoint) if exc.affects_health else False
+            if disabled:
+                print(f"[api-generate:endpoint-disabled] endpoint={endpoint} reason={exc.detail}")
+            next_job = replace(
+                job,
+                attempted_endpoints=tuple(dict.fromkeys((*job.attempted_endpoints, endpoint))),
+                attempt_count=job.attempt_count + 1,
+            )
+            if next_job.attempt_count < int(args.api_max_retries):
+                jobs.put(next_job)
+            else:
+                error = {
+                    "benchmark_key": job.spec.key,
+                    "index": str(job.row.get("index")),
+                    "row_key": job.row_key,
+                    "error": repr(exc),
+                    "endpoint": endpoint,
+                    "result_path": str(job.result_path),
+                }
+                _persist_worker_result(job, {**error, "prediction": "", "finish_reason": "error"}, errors, error_lock)
+                with error_lock:
+                    errors.append(error)
+                finalized = True
+            if next_job.attempt_count < int(args.api_max_retries):
+                time.sleep(min(5.0, 0.25 * next_job.attempt_count))
+        except Exception as exc:
+            # Dataset decoding and prompt construction errors are row-local and
+            # must not quarantine a healthy model endpoint.
+            error = {
+                "benchmark_key": job.spec.key,
+                "index": str(job.row.get("index")),
+                "row_key": job.row_key,
+                "error": repr(exc),
+                "endpoint": endpoint,
+                "result_path": str(job.result_path),
+            }
+            _persist_worker_result(job, {**error, "prediction": "", "finish_reason": "error"}, errors, error_lock)
+            with error_lock:
+                errors.append(error)
+            finalized = True
         finally:
-            progress.update(1)
+            if finalized:
+                progress.update(1)
             jobs.task_done()
 
 
@@ -455,9 +701,13 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
                 records.append({**row_dict, **record})
                 f.write(json.dumps(record, ensure_ascii=False, default=json_default) + "\n")
         frame = pd.DataFrame(records)
-        eval_file = output_dir / f"{handle.dataset.dataset_name}_predictions.xlsx"
+        # VLMEvalKit's evaluator resolves the prediction table from the alias
+        # requested by the run (for example ``QBench_Video_8frame``). Some
+        # dataset implementations expose a shorter internal ``dataset_name``
+        # (for example ``QBench_Video``), which is not evaluator-compatible.
+        eval_file = output_dir / f"{spec.alias}_predictions.xlsx"
         frame.to_excel(eval_file, index=False)
-        table_jsonl = output_dir / f"{handle.dataset.dataset_name}_predictions_table.jsonl"
+        table_jsonl = output_dir / f"{spec.alias}_predictions_table.jsonl"
         with table_jsonl.open("w", encoding="utf-8") as f:
             for record in records:
                 f.write(json.dumps(record, ensure_ascii=False, default=json_default) + "\n")
@@ -483,6 +733,9 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
             "api_model": args.api_model,
             "endpoint_count": len(args.api_bases),
             "parallelism_per_endpoint": int(args.parallelism_per_endpoint),
+            "max_image_pixels": int(args.max_image_pixels),
+            "max_image_side": int(args.max_image_side),
+            "image_jpeg_quality": int(args.image_jpeg_quality),
         },
         "subset_manifest": str(_subset_manifest_path(args.subset_root, spec)) if args.subset_root else None,
         "finish_reason": dict(finish_reasons),
@@ -513,11 +766,13 @@ def run(args: argparse.Namespace) -> None:
         raise ValueError("No benchmark specs selected")
     materialize_grounding_benchmark_files(specs)
     handles, pending = _prepare_handles_and_jobs(args, specs)
-    q: queue.Queue[RowJob | None] = queue.Queue()
+    q: queue.Queue[RowJob] = queue.Queue()
     for job in pending:
         q.put(job)
     errors: list[dict[str, Any]] = []
     error_lock = threading.Lock()
+    endpoint_health = EndpointHealth(args.api_bases, args.endpoint_failure_threshold)
+    stop_event = threading.Event()
     workers = []
     total_workers = len(args.api_bases) * int(args.parallelism_per_endpoint)
     print(
@@ -538,14 +793,15 @@ def run(args: argparse.Namespace) -> None:
                         "errors": errors,
                         "error_lock": error_lock,
                         "progress": progress,
+                        "endpoint_health": endpoint_health,
+                        "stop_event": stop_event,
                     },
                     daemon=True,
                 )
                 thread.start()
                 workers.append(thread)
-        for _ in workers:
-            q.put(None)
         q.join()
+        stop_event.set()
         for thread in workers:
             thread.join(timeout=5)
 
@@ -557,6 +813,7 @@ def run(args: argparse.Namespace) -> None:
         "benchmarks": summaries,
         "errors": errors[:100],
         "error_count": len(errors),
+        "endpoint_health": endpoint_health.snapshot(),
     }
     write_json(args.run_root / f"{args.model_slug}_api_generation_suite_summary.json", suite_summary)
     if errors:
@@ -571,15 +828,32 @@ def main() -> None:
     parser.add_argument("--api-base", action="append", dest="api_bases", required=True)
     parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", "EMPTY"))
     parser.add_argument("--api-timeout", type=float, default=300.0)
-    parser.add_argument("--api-max-retries", type=int, default=5)
+    parser.add_argument(
+        "--api-max-retries",
+        type=int,
+        default=5,
+        help="Maximum total attempts for a row across the endpoint pool; permanent HTTP 4xx errors are not retried.",
+    )
+    parser.add_argument(
+        "--endpoint-failure-threshold",
+        type=int,
+        default=2,
+        help="Consecutive transport/server failures before an endpoint is quarantined for the remainder of the run.",
+    )
     parser.add_argument("--parallelism-per-endpoint", type=int, default=4)
     parser.add_argument(
         "--run-set",
-        choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding", "trace_video4"],
+        choices=BENCHMARK_RUN_SETS,
         default="trace_candidate37_200",
     )
     parser.add_argument("--trace-candidate37-200", action="store_true")
     parser.add_argument("--run-root", type=Path, default=LIB_REPO_ROOT / "runs")
+    parser.add_argument(
+        "--result-mirror-root",
+        type=Path,
+        default=None,
+        help="Optional persistent run root that mirrors every atomic per-row result and restores missing rows on resume.",
+    )
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)
     parser.add_argument("--only", nargs="*", default=[])
     parser.add_argument("--exclude", nargs="*", default=[])
@@ -591,6 +865,9 @@ def main() -> None:
     parser.add_argument("--subset-root", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--sample-seed", type=int, default=0)
+    parser.add_argument("--max-image-pixels", type=int, default=1_000_000)
+    parser.add_argument("--max-image-side", type=int, default=1280)
+    parser.add_argument("--image-jpeg-quality", type=int, default=85)
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--top-k", type=int, default=-1)

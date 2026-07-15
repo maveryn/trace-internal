@@ -22,6 +22,7 @@ from benchmark_queue_lib import (
     TRACE_CANDIDATE37_200_SUBSET_ROOT,
     VLMEVAL_ROOT,
     BenchmarkSpec,
+    build_vlmeval_dataset,
     filter_benchmark_specs,
 )
 
@@ -131,10 +132,8 @@ def _question_hash(row: pd.Series) -> str:
 
 
 def _load_frame(spec: BenchmarkSpec) -> pd.DataFrame:
-    build_dataset = _import_vlmeval_dataset_builder()
-    dataset = build_dataset(spec.alias)
-    if dataset is None:
-        raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
+    _import_vlmeval_dataset_builder()
+    dataset = build_vlmeval_dataset(spec)
     frame = dataset.data.copy()
     if "index" not in frame.columns:
         raise RuntimeError(f"Dataset {spec.alias} does not expose an index column")

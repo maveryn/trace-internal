@@ -21,6 +21,7 @@ from tqdm import tqdm
 
 from benchmark_queue_lib import (
     BASE_MODEL_SPEC,
+    BENCHMARK_RUN_SETS,
     DEFAULT_BENCHMARK_ROOT,
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT,
@@ -32,6 +33,7 @@ from benchmark_queue_lib import (
     aggregate_score_path,
     benchmark_dir,
     benchmark_specs_for_run_set,
+    build_vlmeval_dataset,
     claim_next_job,
     extract_score_and_rows,
     filter_benchmark_specs,
@@ -41,10 +43,21 @@ from benchmark_queue_lib import (
     mark_job,
     materialize_grounding_benchmark_files,
     run_dir,
+    score_to_percent,
     score_path,
     spec_by_key,
     weighted_prefixed_overall_accuracy,
     write_json,
+)
+from trace_benchmark_answer_parsing import (  # noqa: E402
+    extract_click_point,
+    extract_final_answer,
+    parse_binary_score as _strict_parse_binary_score,
+)
+from trace_final25_contract import (  # noqa: E402
+    DEDICATED_SCORE_KEYS,
+    DIRECT_SCORE_KEYS,
+    LLM_EXTRACT_SCORE_KEYS,
 )
 
 
@@ -349,6 +362,85 @@ def _sanitize_prediction_table_for_scoring(spec: BenchmarkSpec, output_dir: Path
         print(f"[score:sanitize] {spec.alias} cast prediction/answer cells to strings: {pred_table}")
 
 
+def _run_tablevqabench_local_score(
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    """Score TableVQABench after deterministic final-answer wrapper parsing."""
+
+    _import_vlmeval_runner()
+    from vlmeval.dataset.utils.tablevqabench import evaluate_fintabnet, evaluate_tabfact, evaluate_wtq
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = pd.read_excel(pred_table).copy()
+    if "prediction" not in data or "answer" not in data or "split" not in data:
+        raise ValueError(f"Malformed TableVQABench prediction table: {pred_table}")
+
+    parsed = [extract_final_answer(value) for value in data["prediction"]]
+    data["raw_prediction"] = data["prediction"]
+    data["prediction"] = [answer if answer else "__missing_prediction__" for answer, _ in parsed]
+    data["trace_extraction_method"] = [method for _, method in parsed]
+    data["answer"] = data["answer"].fillna("__missing_answer__").map(str)
+
+    scored_rows: list[dict[str, Any]] = []
+    score_table: list[dict[str, Any]] = []
+    all_reported_scores: list[float] = []
+    for split, group in data.groupby("split", sort=True):
+        records = group.to_dict(orient="records")
+        if split == "fintabnetqa":
+            meta = evaluate_fintabnet(records, ["accuracy"])
+            metric_names = ["relieved_accuracy", "strict_accuracy"]
+        elif split == "vtabfact":
+            meta = evaluate_tabfact(records, ["accuracy"])
+            metric_names = ["accuracy"]
+        elif split in {"vwtq", "vwtq_syn"}:
+            meta = evaluate_wtq(records, ["accuracy"])
+            metric_names = ["accuracy"]
+        else:
+            raise ValueError(f"Unknown TableVQABench split {split!r}")
+        values = [float(value) for value in meta.get("average_scores", [])]
+        if len(values) != len(metric_names):
+            raise ValueError(f"Unexpected TableVQABench metrics for {split}: {meta}")
+        score_table.append(
+            {
+                "split": str(split),
+                "rows": int(len(records)),
+                **dict(zip(metric_names, values)),
+                "average_scores": values,
+            }
+        )
+        all_reported_scores.extend(values)
+        scored_rows.extend(records)
+
+    if len(scored_rows) != len(data) or not all_reported_scores:
+        raise ValueError("TableVQABench scorer did not account for every row")
+    overall = float(sum(all_reported_scores) / len(all_reported_scores))
+    judged_table = output_dir / f"{spec.alias}_trace_final_answer_scored.xlsx"
+    pd.DataFrame(scored_rows).to_excel(judged_table, index=False)
+    scores = {"Overall": overall, "table": score_table}
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "harness": "TRACE final-answer parser plus official TableVQABench split scorers",
+        "rows": int(len(data)),
+        "score": overall,
+        "scores": scores,
+        "aggregation": "macro mean over all official split average_scores values",
+        "extraction": {
+            "method_counts": data["trace_extraction_method"].value_counts().to_dict(),
+            "empty_predictions": int(sum(answer == "" for answer, _ in parsed)),
+        },
+        "artifacts": {"prediction_table": str(pred_table), "judged_table": str(judged_table)},
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
+
+
 def _copy_score_to_benchmark(spec: BenchmarkSpec, model_slug: str, run_output_dir: Path, benchmark_root: Path) -> Path:
     src = run_output_dir / "scores.json"
     if not src.exists():
@@ -362,9 +454,59 @@ def _copy_score_to_benchmark(spec: BenchmarkSpec, model_slug: str, run_output_di
 def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_path: str, output_dir: Path) -> dict[str, Any]:
     runner, _ = _import_vlmeval_runner()
     _patch_refspatial_point_parser(spec)
+    _patch_screenspot_point_parser(spec)
     _sanitize_prediction_table_for_scoring(spec, output_dir)
     ns = _namespace_for_spec(args, spec, output_dir, model_path)
-    return runner.run_vlmeval_evaluate(ns)
+    summary = runner.run_vlmeval_evaluate(ns)
+    if spec.key == "screenspot":
+        summary["harness"] = "VLMEvalKit ScreenSpot point-in-box scorer with TRACE click parser"
+        summary["parser"] = "pyautogui named/positional, answer tag, boxed, and coordinate-pair formats"
+        write_json(output_dir / "scores.json", summary)
+    return summary
+
+
+def _preferred_direct_score(spec: BenchmarkSpec, summary: dict[str, Any]) -> float | None:
+    """Return a benchmark-specific primary score when the generic normalizer is ambiguous."""
+
+    scores = summary.get("scores")
+    if not isinstance(scores, dict):
+        return None
+
+    if spec.key == "videommmu":
+        table = scores.get("table")
+        if not isinstance(table, list) or not table:
+            return None
+        # VideoMMMU returns a DataFrame indexed by total/hit/acc with
+        # categories as columns. The generic adapter drops that index and
+        # averages the Overall column, mixing counts with the percentage. The
+        # final row is the accuracy row produced by aggregate_results().
+        last_row = table[-1]
+        return score_to_percent(last_row.get("Overall")) if isinstance(last_row, dict) else None
+
+    if spec.key == "qbench_video":
+        table = scores.get("table")
+        if not isinstance(table, list):
+            return None
+        weighted_score = 0.0
+        total_rows = 0.0
+        for row in table:
+            if not isinstance(row, dict):
+                continue
+            acc = score_to_percent(row.get("acc"))
+            try:
+                count = float(row.get("overall"))
+            except (TypeError, ValueError):
+                continue
+            if acc is not None and count > 0:
+                weighted_score += acc * count
+                total_rows += count
+        return weighted_score / total_rows if total_rows else None
+
+    if spec.key == "video_tt":
+        overall = scores.get("overall")
+        return score_to_percent(overall.get("score")) if isinstance(overall, dict) else None
+
+    return None
 
 
 def _patch_refspatial_point_parser(spec: BenchmarkSpec) -> None:
@@ -379,6 +521,20 @@ def _patch_refspatial_point_parser(spec: BenchmarkSpec) -> None:
         pass
 
 
+def _patch_screenspot_point_parser(spec: BenchmarkSpec) -> None:
+    if spec.key != "screenspot":
+        return
+    from vlmeval.dataset.GUI import screenspot as screenspot_module
+
+    def parse_point(response: Any) -> list[float]:
+        point = extract_click_point(response)
+        if point is None:
+            raise ValueError(f"Could not parse ScreenSpot click point from response: {response!r}")
+        return [float(point[0]), float(point[1])]
+
+    screenspot_module.parse_bbox_aguvis = parse_point
+
+
 def _run_vlmeval_evaluate_with_kwargs(
     args: argparse.Namespace,
     spec: BenchmarkSpec,
@@ -389,12 +545,9 @@ def _run_vlmeval_evaluate_with_kwargs(
     harness: str,
 ) -> dict[str, Any]:
     runner, _ = _import_vlmeval_runner()
-    from vlmeval.dataset import build_dataset
     from vlmeval.smp import load
 
-    dataset = build_dataset(spec.alias)
-    if dataset is None:
-        raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
+    dataset = build_vlmeval_dataset(spec)
     candidates = [
         output_dir / f"{spec.alias}_predictions.xlsx",
         output_dir / "predictions.xlsx",
@@ -623,11 +776,22 @@ def _run_physics_subset_score(
         no_resume=args.no_resume,
         desc=f"{spec.alias} local judge",
     )
+    malformed_judgements: list[str] = []
     for row in rows:
         if row["log"] == "Pending local judge":
-            out = str(judged.get(str(row["index"]), {}).get("judge_output", "")).strip().lower()
-            row["res"] = 1.0 if "true" in out or out.startswith("yes") else 0.0
+            out = str(judged.get(str(row["index"]), {}).get("judge_output", "")).strip()
+            parsed = _strict_parse_binary_score(out)
+            if parsed is None:
+                malformed_judgements.append(str(row["index"]))
+                continue
+            row["res"] = parsed
             row["log"] = f"Judge output: {out}"
+
+    if malformed_judgements:
+        raise RuntimeError(
+            "Physics judge produced malformed decisions for "
+            f"{len(malformed_judgements)} rows; first indices={malformed_judgements[:10]}"
+        )
 
     judged_table = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
     pd.DataFrame(rows).to_excel(judged_table, index=False)
@@ -695,16 +859,8 @@ def _run_phyx_option_score(
 
 
 def _parse_binary_judgement_output(value: Any) -> int | None:
-    text = str(value or "").strip()
-    if not text:
-        return None
-    match = re.search(r"(?i)\bjudg(?:e)?ment\s*:\s*([01])\b", text)
-    if match:
-        return int(match.group(1))
-    match = re.search(r"\b([01])\b", text)
-    if match:
-        return int(match.group(1))
-    return None
+    parsed = _strict_parse_binary_score(value)
+    return int(parsed) if parsed is not None else None
 
 
 def _parse_json_object(text: Any) -> dict[str, Any]:
@@ -729,19 +885,7 @@ def _parse_json_object(text: Any) -> dict[str, Any]:
 
 
 def _parse_binary_score(value: Any) -> float | None:
-    if isinstance(value, bool):
-        return 1.0 if value else 0.0
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
-        if math.isnan(float(value)):
-            return None
-        return 1.0 if float(value) >= 0.5 else 0.0
-    text = str(value or "").strip().lower()
-    if text in {"1", "true", "yes", "correct"}:
-        return 1.0
-    if text in {"0", "false", "no", "incorrect"}:
-        return 0.0
-    parsed = _parse_binary_judgement_output(text)
-    return float(parsed) if parsed is not None else None
+    return _strict_parse_binary_score(value)
 
 
 def _parse_shortqa_correctness_output(value: Any) -> tuple[float, str]:
@@ -959,21 +1103,39 @@ def _repair_mathverse_binary_judgement_summary(
     if "score" not in df or "log_score" not in df:
         return summary
 
+    missing_extract = [
+        str(row.get("index"))
+        for _, row in df.iterrows()
+        if pd.isna(row.get("extract")) or not str(row.get("extract", "")).strip()
+    ]
+    if missing_extract:
+        raise RuntimeError(
+            f"MathVerse judge produced {len(missing_extract)} empty extractions; first indices={missing_extract[:10]}"
+        )
+
     repaired: list[bool] = []
     changed = 0
+    malformed: list[str] = []
     for _, row in df.iterrows():
         current = _truthy_score(row["score"])
-        if current:
+        log_score = str(row.get("log_score", ""))
+        if log_score == "Prefetch succeed":
             repaired.append(True)
             continue
-        judgement = _parse_binary_judgement_output(row.get("log_score"))
-        fixed = judgement == 1 if judgement is not None else False
+        judgement = _parse_binary_judgement_output(log_score)
+        if judgement is None:
+            malformed.append(str(row.get("index")))
+            repaired.append(current)
+            continue
+        fixed = judgement == 1
         if fixed != current:
             changed += 1
         repaired.append(fixed)
 
-    if changed == 0:
-        return summary
+    if malformed:
+        raise RuntimeError(
+            f"MathVerse judge produced {len(malformed)} malformed score decisions; first indices={malformed[:10]}"
+        )
 
     df["score"] = repaired
     df.to_excel(judged_table, index=False)
@@ -990,11 +1152,34 @@ def _repair_mathverse_binary_judgement_summary(
             **(summary.get("artifacts") or {}),
             "judged_table": str(judged_table),
             "mathverse_repaired_binary_judgement_rows": changed,
+            "mathverse_validated_judge_rows": int(len(df)),
         },
     }
     write_json(output_dir / "scores.json", repaired_summary)
     print(json.dumps(repaired_summary, indent=2, ensure_ascii=False, default=json_default))
     return repaired_summary
+
+
+def _validate_math_like_judged_table(spec: BenchmarkSpec, output_dir: Path) -> None:
+    judged_table = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
+    if not judged_table.exists():
+        raise FileNotFoundError(judged_table)
+    data = pd.read_excel(judged_table)
+    if spec.key in {"mathvision", "mathvista"}:
+        bad = data["res"].isna() | data["res"].astype(str).str.strip().eq("")
+        if bad.any():
+            indices = data.loc[bad, "index"].astype(str).tolist()
+            raise RuntimeError(
+                f"{spec.display} judge produced {len(indices)} empty extractions; first indices={indices[:10]}"
+            )
+    elif spec.key == "logicvista":
+        values = data["res"].fillna("").astype(str).str.strip().str.upper()
+        bad = values.eq("") | ~values.map(lambda value: set(value) <= set("ABCDEFGHIJKZ"))
+        if bad.any():
+            indices = data.loc[bad, "index"].astype(str).tolist()
+            raise RuntimeError(
+                f"LogicVista judge produced {len(indices)} malformed option extractions; first indices={indices[:10]}"
+            )
 
 
 def _run_local_math_like(
@@ -1024,15 +1209,18 @@ def _run_local_math_like(
     try:
         mode = local_judge_eval_mode(spec)
         if mode == "mathv_local_judge":
-            return runner.run_mathv_local_judge(ns)
-        if mode == "mathvista_local_judge":
-            return runner.run_mathvista_local_judge(ns)
-        if mode == "mathverse_local_judge":
+            summary = runner.run_mathv_local_judge(ns)
+        elif mode == "mathvista_local_judge":
+            summary = runner.run_mathvista_local_judge(ns)
+        elif mode == "mathverse_local_judge":
             summary = runner.run_mathverse_local_judge(ns)
-            return _repair_mathverse_binary_judgement_summary(spec, model_path, output_dir, summary)
-        if mode == "logicvista_local_judge":
-            return runner.run_logicvista_local_judge(ns)
-        raise ValueError(f"Unsupported math-like local judge mode for {spec.key}: {mode}")
+            summary = _repair_mathverse_binary_judgement_summary(spec, model_path, output_dir, summary)
+        elif mode == "logicvista_local_judge":
+            summary = runner.run_logicvista_local_judge(ns)
+        else:
+            raise ValueError(f"Unsupported math-like local judge mode for {spec.key}: {mode}")
+        _validate_math_like_judged_table(spec, output_dir)
+        return summary
     finally:
         runner._run_local_text_judge = old
 
@@ -1075,12 +1263,34 @@ def _run_charxiv_local_judge(
         desc=f"{spec.alias} judge",
     )
     judged_map = {**existing, **raw}
+    malformed: list[str] = []
     for idx, item in list(judged_map.items()):
-        if "score" not in item:
-            parsed = runner._parse_charxiv_judge(str(item.get("judge_output", "")))
-            item["score"] = parsed["score"]
-            item["extract_answer"] = parsed["extract_answer"]
-            judged_map[idx] = item
+        output = str(item.get("judge_output", ""))
+        obj = _parse_json_object(output)
+        raw_score = item.get("score", obj.get("score"))
+        if raw_score is None:
+            score_match = re.search(r'"?score"?\s*[:=]\s*([01](?:\.\d+)?)', output, flags=re.I)
+            raw_score = score_match.group(1) if score_match else None
+        try:
+            score = float(raw_score)
+        except (TypeError, ValueError):
+            malformed.append(str(idx))
+            continue
+        if not 0.0 <= score <= 1.0:
+            malformed.append(str(idx))
+            continue
+        parsed = runner._parse_charxiv_judge(output)
+        extract_answer = str(item.get("extract_answer", parsed.get("extract_answer", ""))).strip()
+        if not extract_answer:
+            malformed.append(str(idx))
+            continue
+        item["score"] = score
+        item["extract_answer"] = extract_answer
+        judged_map[idx] = item
+    if malformed:
+        raise RuntimeError(
+            f"CharXiv judge produced {len(malformed)} malformed decisions; first indices={malformed[:10]}"
+        )
     data["score"] = [float(judged_map[str(x)]["score"]) for x in data["index"]]
     data["extract_answer"] = [judged_map[str(x)]["extract_answer"] for x in data["index"]]
     judged_xlsx = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
@@ -1161,16 +1371,23 @@ def _run_evochart_local_judge(
     scores = []
     extracted = []
     judge_outputs = []
+    malformed: list[str] = []
     for _, row in data.iterrows():
         item = raw.get(str(row["index"]), {})
         output = str(item.get("judge_output", ""))
         obj = _parse_json_object(output)
         score = _parse_binary_score(obj.get("score", obj.get("judgement", obj.get("judgment", output))))
         if score is None:
-            score = 0.0
+            malformed.append(str(row["index"]))
+            score = float("nan")
         scores.append(float(score))
         extracted.append(str(obj.get("extracted_answer", obj.get("answer", ""))).strip())
         judge_outputs.append(output)
+
+    if malformed:
+        raise RuntimeError(
+            f"EvoChart judge produced {len(malformed)} malformed decisions; first indices={malformed[:10]}"
+        )
 
     data["eval_score"] = scores
     data["eval_pred"] = extracted
@@ -1356,16 +1573,27 @@ def _run_chartmuseum_local_judge(
     )
     judged_map = {**existing, **raw}
     judged_rows = []
+    malformed: list[str] = []
     for row in rows:
         item = dict(row)
         judged = judged_map[str(row["index"])]
         item["judge_model"] = args.judge_model
         item["judge_output"] = judged.get("judge_output", "")
-        parsed_binary = _parse_binary_judgement_output(item["judge_output"])
-        item["score"] = 1.0 if chartmuseum.parse_judge_output(str(item["judge_output"])) or parsed_binary == 1 else 0.0
+        clean_output = str(item["judge_output"]).strip().lower()
+        parsed_binary = _parse_binary_judgement_output(clean_output)
+        if parsed_binary is not None:
+            item["score"] = float(parsed_binary)
+        else:
+            malformed.append(str(row["index"]))
+            item["score"] = float("nan")
         item["judge_output_token_count"] = judged.get("judge_output_token_count", 0)
         item["judge_finish_reason"] = judged.get("judge_finish_reason", "")
         judged_rows.append(item)
+
+    if malformed:
+        raise RuntimeError(
+            f"ChartMuseum judge produced {len(malformed)} malformed decisions; first indices={malformed[:10]}"
+        )
 
     overall = sum(float(x["score"]) for x in judged_rows) / len(judged_rows)
     breakdown_counts: dict[str, list[float]] = defaultdict(list)
@@ -1532,8 +1760,20 @@ def _run_chartqapro_extracted_score(
 def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_path: str, model_slug: str, judge: PersistentJudge) -> dict[str, Any]:
     output_dir = run_dir(spec, model_slug, args.run_root)
     mode = local_judge_eval_mode(spec)
+    if args.run_set == "trace_final25" and spec.key in LLM_EXTRACT_SCORE_KEYS:
+        raise RuntimeError(
+            f"{spec.display} requires run_llm_extracted_benchmark_score_queue.py in the Final25 contract; "
+            "the generic direct scorer is intentionally disabled for this benchmark"
+        )
+    if args.run_set == "trace_final25" and spec.key in DEDICATED_SCORE_KEYS:
+        raise RuntimeError(
+            f"{spec.display} requires run_mme_reasoning_eval.py in the Final25 contract; "
+            "the generic direct scorer is intentionally disabled for this benchmark"
+        )
     if spec.key == "chartqapro":
         summary = _run_chartqapro_extracted_score(args, spec, model_path, output_dir)
+    elif spec.key == "tablevqabench":
+        summary = _run_tablevqabench_local_score(spec, model_path, output_dir)
     elif spec.key == "qspatial_plus":
         summary = _run_vlmeval_evaluate_with_kwargs(
             args,
@@ -1596,6 +1836,10 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         summary = _run_physics_subset_score(args, spec, model_path, output_dir, judge)
     else:
         summary = _run_direct_vlmeval(args, spec, model_path, output_dir)
+    preferred_direct_score = _preferred_direct_score(spec, summary)
+    if preferred_direct_score is not None:
+        summary["score"] = preferred_direct_score
+        write_json(output_dir / "scores.json", summary)
     grounding_score = grounding_preferred_score_and_rows(summary)
     if grounding_score is not None and grounding_score[0] is not None:
         summary["score"] = grounding_score[0]
@@ -1647,6 +1891,19 @@ def run_worker(args: argparse.Namespace) -> None:
 
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
     specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    if args.run_set == "trace_final25":
+        unsupported = [spec.key for spec in specs if spec.key not in DIRECT_SCORE_KEYS]
+        if args.only and unsupported:
+            raise ValueError(
+                "The Final25 direct scorer only accepts DIRECT_SCORE_KEYS; route these separately: "
+                f"{unsupported}"
+            )
+        specs = [spec for spec in specs if spec.key in DIRECT_SCORE_KEYS]
+        print(
+            "[score-worker:final25-route] "
+            f"direct={len(specs)} llm_extract={len(LLM_EXTRACT_SCORE_KEYS)} "
+            f"dedicated={len(DEDICATED_SCORE_KEYS)}"
+        )
     materialize_grounding_benchmark_files(specs)
     queue_path = args.queue_root / f"score_{args.queue_name or args.model_slug + '_' + args.run_set}.json"
     jobs = [(spec.key, score_path(spec, args.model_slug, args.benchmark_root)) for spec in specs]
@@ -1689,7 +1946,7 @@ def main() -> None:
     parser.add_argument("--model-slug", default=BASE_MODEL_SPEC.slug)
     parser.add_argument(
         "--run-set",
-        choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding", "trace_video4"],
+        choices=BENCHMARK_RUN_SETS,
         default="remaining_base",
     )
     parser.add_argument(

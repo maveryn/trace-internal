@@ -17,6 +17,10 @@ Included adapters:
   including the neutral `EvoChart` dataset entry, optional Qwen2.5/Qwen3 prompt
   aliases, deterministic relaxed chart-answer scoring for smoke checks, and
   queue-level direct judge scoring for final reported results.
+- `mirage.py`: DongSky/MIRAGE adapter with checksum-verified metadata/image
+  download, released-prompt construction, resumable local Qwen3-32B answer
+  extraction, persisted raw judge responses/metadata, and overall plus
+  category-level accuracy scoring.
 - `visiongraph.py`: `VisionGraph_Q3` and `VisionGraph_Q3_CoT`, exposing only
   the third VisionGraph graph-reasoning question as single-turn image VQA.
 

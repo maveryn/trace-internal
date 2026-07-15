@@ -281,6 +281,8 @@ def write_markdown(
             "- `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.",
             "- `TableVQABench`: macro mean over the reported split `average_scores` values.",
             "- `SEEPhys`: nested `Overall / Accuracy (%)` value.",
+            "- `QBench-Video`: row-count-weighted mean of the reported subtask accuracies.",
+            "- `VideoMMMU` uses its final accuracy row; `Video-TT` uses its nested `overall.score`.",
             "- Judge-backed datasets use the local Qwen3-32B judge configured by the queue.",
             "",
         ]

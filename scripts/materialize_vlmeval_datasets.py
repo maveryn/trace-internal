@@ -12,6 +12,11 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VLMEVAL_ROOT = Path(os.environ.get("VLMEVAL_ROOT", "/home/jovyan/work/VLMEvalKit"))
+SCRIPTS_ROOT = REPO_ROOT / "scripts"
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from benchmark_queue_lib import ALL_BENCHMARKS, build_vlmeval_dataset  # noqa: E402
 
 SCREENSPOT_PRO_ALIASES = [
     "ScreenSpot_Pro_Development",
@@ -67,7 +72,8 @@ def materialize_alias(alias: str, cache_root: Path, force: bool) -> dict[str, An
 
     build_dataset = _import_build_dataset()
     t0 = time.time()
-    dataset = build_dataset(alias)
+    matching_specs = [spec for spec in ALL_BENCHMARKS if spec.alias == alias]
+    dataset = build_vlmeval_dataset(matching_specs[0]) if matching_specs else build_dataset(alias)
     if dataset is None:
         raise RuntimeError(f"VLMEvalKit could not build dataset {alias}")
     data = dataset.data.copy()

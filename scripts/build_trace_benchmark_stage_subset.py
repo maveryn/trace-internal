@@ -19,6 +19,7 @@ from benchmark_queue_lib import (  # noqa: E402
     REPO_ROOT as LIB_REPO_ROOT,
     TRACE_CANDIDATE37_200_SUBSET_ROOT,
     BenchmarkSpec,
+    build_vlmeval_dataset,
     spec_by_key,
 )
 from run_external_benchmark_generation_queue import (  # noqa: E402
@@ -102,11 +103,7 @@ def _load_source_rows(spec: BenchmarkSpec, *, sample_seed: int) -> list[dict[str
         return chartmuseum.load_chartmuseum_rows(spec.split or "test", chartmuseum.DEFAULT_DATA_ROOT, None, sample_seed)
 
     _import_vlmeval_runner()
-    from vlmeval.dataset import build_dataset
-
-    dataset = build_dataset(spec.alias)
-    if dataset is None:
-        raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
+    dataset = build_vlmeval_dataset(spec)
     return [row.to_dict() for _, row in dataset.data.iterrows()]
 
 

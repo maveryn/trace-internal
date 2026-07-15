@@ -34,6 +34,8 @@ from benchmark_queue_lib import (  # noqa: E402
     write_json,
 )
 from run_external_benchmark_score_queue import PersistentJudge  # noqa: E402
+from trace_benchmark_answer_parsing import parse_binary_score as _strict_parse_binary_score  # noqa: E402
+from trace_final25_contract import LLM_EXTRACT_SCORE_KEYS, OPTION_TEXT_REQUIRED_KEYS  # noqa: E402
 
 
 DEFAULT_BENCHMARKS = (
@@ -52,6 +54,7 @@ HIGH_RISK_DIRECT_BENCHMARKS = (
     "physics",
     "mmmu_pro_vision",
     "visiongraph_q3",
+    "mmstar",
 )
 DEFAULT_MODELS = (
     ("qwen25vl7b-base", "Qwen/Qwen2.5-VL-7B-Instruct"),
@@ -61,6 +64,14 @@ DEFAULT_MODELS = (
     ),
 )
 LETTERS = "ABCDEFGHIJK"
+FIXED_OPTION_CONTRACTS = {
+    "erqa": "ABCD",
+    "mmstar": "ABCD",
+    "phyx_mini_mc": "ABCD",
+    "treebench": "ABCD",
+    "visualpuzzles": "ABCD",
+}
+REQUIRED_CHOICE_TEXT_CONTRACTS = set(OPTION_TEXT_REQUIRED_KEYS)
 
 
 def _load_prediction_table(path: Path) -> pd.DataFrame:
@@ -145,6 +156,24 @@ def _inline_option_columns(question: str) -> dict[str, str]:
     return out
 
 
+def _inline_dot_option_columns(question: str) -> dict[str, str]:
+    """Parse inline ``Choices: A. ... B. ...`` option blocks."""
+
+    text = str(question or "")
+    marker = re.search(r"\b(?:choices|options)\s*:\s*", text, flags=re.I)
+    if marker is None:
+        return {}
+    tail = text[marker.end() :]
+    matches = list(re.finditer(r"(?<!\w)([A-K])\s*[\.)]\s+", tail))
+    out: dict[str, str] = {}
+    for pos, match in enumerate(matches):
+        end = matches[pos + 1].start() if pos + 1 < len(matches) else len(tail)
+        value = re.sub(r"\s+", " ", tail[match.end() : end]).strip()
+        if value:
+            out[match.group(1)] = value
+    return out
+
+
 def _literal_options(row: dict[str, Any]) -> dict[str, str]:
     raw = _clean_cell(row.get("options") or row.get("multi-choice options"))
     if not raw:
@@ -159,26 +188,23 @@ def _literal_options(row: dict[str, Any]) -> dict[str, str]:
 
 
 def _valid_letters_for(benchmark: str, row: dict[str, Any]) -> str:
-    if benchmark == "visualpuzzles":
-        # VisualPuzzles sometimes stores non-choice metadata in the ``options``
-        # column even though the benchmark contract is always A-D. Do not let
-        # that metadata narrow extraction/scoring to only A.
-        return "ABCD"
-    explicit = "".join(_option_columns(row, LETTERS).keys())
-    if explicit:
-        return explicit
-    literal = "".join(_literal_options(row).keys())
-    if literal:
-        return literal
-    embedded = "".join(_embedded_option_columns(_question_for(benchmark, row)).keys())
-    if embedded:
-        return embedded
-    inline = "".join(_inline_option_columns(_question_for(benchmark, row)).keys())
-    if inline:
-        return inline
+    if benchmark in FIXED_OPTION_CONTRACTS:
+        return FIXED_OPTION_CONTRACTS[benchmark]
+
+    question = _question_for(benchmark, row)
+    candidates = (
+        "".join(_option_columns(row, LETTERS).keys()),
+        "".join(_literal_options(row).keys()),
+        "".join(_inline_option_columns(question).keys()),
+        "".join(_inline_dot_option_columns(question).keys()),
+        "".join(_embedded_option_columns(question).keys()),
+    )
+    parsed = next((candidate for candidate in candidates if candidate), "")
     answer = _clean_cell(row.get("answer")).upper()
-    if benchmark == "erqa":
-        return "ABCD"
+    if parsed:
+        return "".join(letter for letter in LETTERS if letter in parsed)
+    if benchmark in REQUIRED_CHOICE_TEXT_CONTRACTS:
+        return ""
     if len(answer) == 1 and answer in LETTERS:
         return LETTERS[: max(LETTERS.index(answer) + 1, 4)]
     return "ABCDEFG"
@@ -290,6 +316,37 @@ def _build_prompt(item: dict[str, Any]) -> str:
     )
 
 
+def _validate_required_choice_contract(item: dict[str, Any]) -> None:
+    benchmark = str(item["benchmark"])
+    if benchmark not in REQUIRED_CHOICE_TEXT_CONTRACTS:
+        return
+
+    index = str(item["index"])
+    options = item.get("options") or {}
+    if not options:
+        raise ValueError(f"{benchmark} index={index} has no parseable option text")
+    expected = set(item.get("valid_letters") or [])
+    observed = set(options)
+    if benchmark in FIXED_OPTION_CONTRACTS and observed != expected:
+        raise ValueError(
+            f"{benchmark} index={index} violates fixed option contract "
+            f"{''.join(item.get('valid_letters') or [])}: parsed={sorted(observed)}"
+        )
+
+    answer_kind = item["answer_kind"]
+    if answer_kind == "option":
+        gt = _normalize_option(item["answer"], item["valid_letters"])
+    elif answer_kind == "option_value":
+        gt = _option_value_to_letter(item)
+    else:
+        raise ValueError(f"{benchmark} index={index} unexpectedly uses answer kind {answer_kind!r}")
+    if not gt or gt == "Z" or gt not in options:
+        raise ValueError(
+            f"{benchmark} index={index} is missing ground-truth choice "
+            f"{item['answer']!r} from parsed options {sorted(options)}"
+        )
+
+
 def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     for benchmark in args.benchmarks:
@@ -304,9 +361,12 @@ def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
                 if not options:
                     options = _literal_options(row)
                 if not options:
-                    options = _embedded_option_columns(_question_for(benchmark, row))
-                if not options:
                     options = _inline_option_columns(_question_for(benchmark, row))
+                if not options:
+                    options = _inline_dot_option_columns(_question_for(benchmark, row))
+                if not options:
+                    options = _embedded_option_columns(_question_for(benchmark, row))
+                answer_kind = _answer_kind(benchmark, row)
                 item = {
                     "job_id": f"{benchmark}__{model_slug}__{index}",
                     "benchmark": benchmark,
@@ -317,11 +377,12 @@ def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
                     "question": _question_for(benchmark, row),
                     "prediction": _clean_cell(row.get("prediction")),
                     "answer": _clean_cell(row.get("answer")),
-                    "answer_kind": _answer_kind(benchmark, row),
+                    "answer_kind": answer_kind,
                     "valid_letters": list(valid_letters),
                     "options": options,
                     "prediction_table": str(pred_path),
                 }
+                _validate_required_choice_contract(item)
                 item["prompt"] = _build_prompt(item)
                 items.append(item)
     return items
@@ -515,24 +576,6 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     return {"answer": answer} if answer else {}
 
 
-def _parse_binary_score(value: Any) -> float:
-    if isinstance(value, bool):
-        return 1.0 if value else 0.0
-    if isinstance(value, (int, float)):
-        return 1.0 if float(value) >= 0.5 else 0.0
-    text = str(value or "").strip().lower()
-    if text in {"1", "true", "yes", "correct"}:
-        return 1.0
-    if text in {"0", "false", "no", "incorrect"}:
-        return 0.0
-    match = re.search(r"\b(score|judg(?:e)?ment|correct)\b\s*[:=]\s*([01])\b", text)
-    if match:
-        return float(match.group(2))
-    if re.search(r"\b(correct|equivalent|matches)\b", text):
-        return 1.0
-    return 0.0
-
-
 def _normalize_option(value: str, valid_letters: Iterable[str]) -> str:
     letters = "".join(valid_letters)
     text = str(value or "").strip().upper()
@@ -636,7 +679,12 @@ def _result_from_judge_output(item: dict[str, Any], raw: str) -> dict[str, Any]:
     }
     if item["answer_kind"] == "judge_binary":
         score_value = obj.get("score", obj.get("judgement", obj.get("judgment", raw)))
-        out["judge_score"] = _parse_binary_score(score_value)
+        judge_score = _strict_parse_binary_score(score_value)
+        if judge_score is None:
+            raise ValueError(f"Malformed binary judge output for {item['job_id']}: {raw!r}")
+        out["judge_score"] = judge_score
+    elif item["answer_kind"] in {"option", "option_value"} and not normalized:
+        raise ValueError(f"Malformed option extraction for {item['job_id']}: {raw!r}")
     return out
 
 
@@ -868,6 +916,10 @@ def _score_option_or_number(group: list[dict[str, Any]]) -> tuple[float, list[di
         else:
             gt = _normalize_short_for_exact(answer)
             pred = _normalize_short_for_exact(item.get("extracted", ""))
+        if not gt:
+            raise ValueError(
+                f"Could not normalize ground truth for {item.get('benchmark')} index={item.get('index')}: {answer!r}"
+            )
         hit = int(bool(gt) and pred == gt)
         correct += hit
         rows.append({**item, "eval_gt": gt, "eval_pred": pred, "eval_score": hit})
@@ -890,7 +942,9 @@ def _score_binary_judge(group: list[dict[str, Any]]) -> tuple[float, list[dict[s
     rows = []
     scores = []
     for item in group:
-        score = float(item.get("judge_score", 0.0))
+        if item.get("judge_score") is None:
+            raise ValueError(f"Missing binary judge score for {item.get('job_id')}")
+        score = float(item["judge_score"])
         score = 1.0 if score >= 0.5 else 0.0
         rows.append({**item, "eval_gt": item.get("answer", ""), "eval_pred": item.get("extracted", ""), "eval_score": score})
         scores.append(score)
@@ -1023,6 +1077,13 @@ def finalize(args: argparse.Namespace) -> None:
                 "score": score,
                 "scores": extra_scores,
                 "judge_model": args.judge_model,
+                "extraction_integrity": {
+                    "empty_extractions": int(sum(not _clean_cell(item.get("extracted")) for item in group)),
+                    "explicit_abstentions_z": int(sum(_clean_cell(item.get("extracted")).upper() == "Z" for item in group)),
+                    "missing_binary_decisions": int(
+                        sum(item.get("answer_kind") == "judge_binary" and item.get("judge_score") is None for item in group)
+                    ),
+                },
                 "artifacts": {"judged_table": str(score_dir / "llm_extracted_judged.xlsx")},
             }
             if args.benchmark_root is not None:
@@ -1046,7 +1107,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--queue-name", required=True)
     parser.add_argument("--benchmarks", nargs="*", default=list(DEFAULT_BENCHMARKS))
-    parser.add_argument("--high-risk-direct", action="store_true", help="Use the six high-risk direct-scored benchmarks.")
+    parser.add_argument("--high-risk-direct", action="store_true", help="Use the legacy high-risk extraction benchmark set.")
+    parser.add_argument("--final25", action="store_true", help="Use the canonical 15 Final25 LLM-extraction routes.")
     parser.add_argument("--model-entry", action="append", type=parse_model_entry, dest="model_entries")
     parser.add_argument("--run-root", type=Path, default=DEFAULT_RUN_ROOT)
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)
@@ -1085,7 +1147,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    if args.high_risk_direct:
+    if args.final25:
+        args.benchmarks = list(LLM_EXTRACT_SCORE_KEYS)
+    elif args.high_risk_direct:
         args.benchmarks = list(HIGH_RISK_DIRECT_BENCHMARKS)
     if not args.model_entries:
         args.model_entries = list(DEFAULT_MODELS)

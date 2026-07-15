@@ -40,6 +40,7 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _resolve_evochart_judgement,
     _run_score_for_spec,
     _run_tablevqabench_local_score,
+    _validate_math_like_judged_table,
 )
 from run_llm_extracted_benchmark_score_queue import (  # noqa: E402
     _inline_dot_option_columns,
@@ -105,6 +106,25 @@ class TraceFinal25ContractTests(unittest.TestCase):
 
     def test_required_option_text_contracts_are_llm_extraction_routes(self):
         self.assertTrue(set(OPTION_TEXT_REQUIRED_KEYS) <= set(LLM_EXTRACT_SCORE_KEYS))
+
+    def test_mathvision_validator_preserves_literal_none_extraction(self):
+        spec = spec_by_key("mathvision")
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            pd.DataFrame({"index": [957], "res": ["None"]}).to_excel(
+                output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx", index=False
+            )
+            _validate_math_like_judged_table(spec, output_dir)
+
+    def test_mathvision_validator_rejects_truly_empty_extraction(self):
+        spec = spec_by_key("mathvision")
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            pd.DataFrame({"index": [957], "res": [""]}).to_excel(
+                output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx", index=False
+            )
+            with self.assertRaisesRegex(RuntimeError, "1 empty extractions"):
+                _validate_math_like_judged_table(spec, output_dir)
 
     def test_erqa_builder_pins_easi_erqabench_class(self):
         built = SimpleNamespace(data=pd.DataFrame())

@@ -1159,7 +1159,9 @@ def _repair_mathverse_binary_judgement_summary(
     from vlmeval.dataset.utils.mathverse import MathVerse_acc
     from vlmeval.smp import dump, get_intermediate_file_path
 
-    df = pd.read_excel(judged_table)
+    # Preserve literal judge answers such as "None". Pandas otherwise coerces
+    # those Excel strings to NaN and reports a successful extraction as empty.
+    df = pd.read_excel(judged_table, keep_default_na=False)
     if "score" not in df or "log_score" not in df:
         return summary
 
@@ -1224,7 +1226,9 @@ def _validate_math_like_judged_table(spec: BenchmarkSpec, output_dir: Path) -> N
     judged_table = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
     if not judged_table.exists():
         raise FileNotFoundError(judged_table)
-    data = pd.read_excel(judged_table)
+    # Preserve literal judge answers such as "None". They are valid non-empty
+    # extraction outputs even when the benchmark scorer later marks them wrong.
+    data = pd.read_excel(judged_table, keep_default_na=False)
     if spec.key in {"mathvision", "mathvista"}:
         bad = data["res"].isna() | data["res"].astype(str).str.strip().eq("")
         if bad.any():

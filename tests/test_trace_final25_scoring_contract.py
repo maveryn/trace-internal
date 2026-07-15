@@ -428,6 +428,8 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertIsNone(parse_binary_score("The answers are not equivalent"))
         self.assertIsNone(parse_binary_score("This looks correct to me"))
         self.assertEqual(parse_binary_score("Judgement: 1"), 1.0)
+        self.assertEqual(parse_binary_score("Final Judgement: **1**"), 1.0)
+        self.assertEqual(parse_binary_score("Final Judgement:\n_0_"), 0.0)
         self.assertEqual(parse_binary_score("Judge output: 0"), 0.0)
         self.assertEqual(parse_binary_score("score=0"), 0.0)
         self.assertEqual(parse_binary_score('{"score": 0, "answer": "wrong"}'), 0.0)

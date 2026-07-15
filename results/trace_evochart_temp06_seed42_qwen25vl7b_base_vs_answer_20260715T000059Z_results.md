@@ -1,6 +1,6 @@
 # TRACE EvoChart Temp0.6 Seed42: Qwen2.5-VL-7B Base vs Answer GRPO
 
-Subset manifest root: `benchmark/subsets/trace_candidate37_200`
+Subset manifest root: `full EvoChart dataset (1,250 rows; no sampled subset)`
 
 Each benchmark has exactly one normalized score. Scores are percentages when the evaluator reports accuracy-like metrics.
 

@@ -40,6 +40,7 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _patch_screenspot_point_parser,
     _resolve_charxiv_extracted_answer,
     _resolve_evochart_judgement,
+    _restore_screenspot_prediction_metadata,
     _run_score_for_spec,
     _run_tablevqabench_local_score,
     _validate_math_like_judged_table,
@@ -363,6 +364,31 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(screenspot.parse_bbox_aguvis("pyautogui.click(12, 34)"), [12.0, 34.0])
         with self.assertRaises(ValueError):
             screenspot.parse_bbox_aguvis("I cannot find the target")
+
+    def test_screenspot_compact_table_restores_image_path_from_source(self):
+        spec = spec_by_key("screenspot")
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+            pd.DataFrame(
+                {
+                    "index": [0, 1],
+                    "bbox": ["[0, 0, 10, 10]", "[1, 1, 10, 10]"],
+                    "prediction": ["[5, 5]", "[6, 6]"],
+                }
+            ).to_excel(pred_table, index=False)
+            source = SimpleNamespace(
+                data=pd.DataFrame(
+                    {
+                        "index": [0, 1],
+                        "image_path": ["first.png", "second.png"],
+                    }
+                )
+            )
+            with mock.patch("run_external_benchmark_score_queue.build_vlmeval_dataset", return_value=source):
+                _restore_screenspot_prediction_metadata(spec, output_dir)
+            restored = pd.read_excel(pred_table)
+            self.assertEqual(restored["image_path"].tolist(), ["first.png", "second.png"])
 
     def test_tablevqabench_route_uses_wrapper_parser_and_official_split_scorers(self):
         rows = [

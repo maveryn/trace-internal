@@ -412,6 +412,35 @@ def _sanitize_prediction_table_for_scoring(spec: BenchmarkSpec, output_dir: Path
         print(f"[score:sanitize] {spec.alias} cast prediction/answer cells to strings: {pred_table}")
 
 
+def _restore_screenspot_prediction_metadata(spec: BenchmarkSpec, output_dir: Path) -> None:
+    if spec.key != "screenspot":
+        return
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        return
+    data = pd.read_excel(pred_table)
+    if "image_path" in data:
+        return
+    if "index" not in data:
+        raise ValueError(f"ScreenSpot prediction table has no index column: {pred_table}")
+
+    dataset = build_vlmeval_dataset(spec)
+    source = dataset.data
+    if "index" not in source or "image_path" not in source:
+        raise ValueError("ScreenSpot source dataset lacks index/image_path metadata")
+    source_keys = source["index"].map(str)
+    if source_keys.duplicated().any():
+        raise ValueError("ScreenSpot source dataset contains duplicate indices")
+    image_paths = dict(zip(source_keys, source["image_path"].map(str)))
+    data["image_path"] = data["index"].map(str).map(image_paths)
+    missing = data["image_path"].isna()
+    if missing.any():
+        indices = data.loc[missing, "index"].astype(str).tolist()
+        raise ValueError(f"ScreenSpot image_path metadata missing for indices={indices[:10]}")
+    data.to_excel(pred_table, index=False)
+    print(f"[score:metadata] restored ScreenSpot image_path for {len(data)} rows: {pred_table}")
+
+
 def _run_tablevqabench_local_score(
     spec: BenchmarkSpec,
     model_path: str,
@@ -505,6 +534,7 @@ def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
     runner, _ = _import_vlmeval_runner()
     _patch_refspatial_point_parser(spec)
     _patch_screenspot_point_parser(spec)
+    _restore_screenspot_prediction_metadata(spec, output_dir)
     _sanitize_prediction_table_for_scoring(spec, output_dir)
     ns = _namespace_for_spec(args, spec, output_dir, model_path)
     summary = runner.run_vlmeval_evaluate(ns)

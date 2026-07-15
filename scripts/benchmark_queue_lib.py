@@ -147,7 +147,7 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("mathverse", "MathVerse", "MathVerse_MINI_Vision_Only_cot", "vlmevalkit_defaults_qwen32b_judge"),
     BenchmarkSpec("logicvista", "LogicVista", "LogicVista", "vlmevalkit_defaults_qwen32b_judge"),
     BenchmarkSpec("mmesci_en", "MME-SCI EN", "MMESCI_EN", "vlmevalkit_defaults_qwen32b_judge", eval_mode="mmesci_local_judge", max_tokens=4096),
-    BenchmarkSpec("scienceqa_test", "ScienceQA TEST", "ScienceQA_TEST", "vlmevalkit_defaults", max_tokens=4096),
+    BenchmarkSpec("scienceqa_test", "ScienceQA TEST", "ScienceQA_TEST", "vlmevalkit_defaults", eval_mode="scienceqa_local_score", max_tokens=4096),
     BenchmarkSpec("wemath", "WeMath", "WeMath_COT", "vlmevalkit_cot_qwen32b_judge", eval_mode="wemath_local_judge", max_tokens=2048),
     BenchmarkSpec("mmhelix", "MM-HELIX", "MM-HELIX", "vlmevalkit_boxed_defaults", eval_mode="mmhelix_local_score", max_tokens=4096),
     BenchmarkSpec("blink", "Blink", "BLINK", "vlmevalkit_defaults"),
@@ -391,6 +391,8 @@ def local_judge_eval_mode(spec: BenchmarkSpec) -> str | None:
         return "logicvista_local_judge"
     if spec.eval_mode == "mmesci_local_judge" or spec.alias == "MMESCI_EN":
         return "mmesci_local_judge"
+    if spec.eval_mode == "scienceqa_local_score" or spec.alias == "ScienceQA_TEST":
+        return "scienceqa_local_score"
     if spec.alias == "SeePhys":
         return "seephys_local_judge"
     if spec.alias == "Physics":

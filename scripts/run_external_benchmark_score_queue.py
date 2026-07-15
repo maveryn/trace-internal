@@ -777,6 +777,150 @@ def _parse_shortqa_correctness_output(value: Any) -> tuple[float, str]:
     return 0.0, reason or "Failed to parse judge correctness"
 
 
+def _mcq_choice_labels(row: pd.Series) -> list[str]:
+    return [label for label in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if label in row and pd.notna(row[label])]
+
+
+def _extract_final_mcq_option(text: Any, choices: list[str]) -> tuple[str, str]:
+    """Extract an explicit final MCQ option from verbose CoT-style answers."""
+
+    if not choices:
+        return "Z", "no_choices"
+    value = str(text or "").replace("\r", "\n")
+    labels = "".join(re.escape(label) for label in choices)
+    marker_patterns = (
+        rf"(?is)(?:\*\*)?\s*(?:final\s+answer|correct\s+answer|answer)"
+        rf"\s*(?:is)?\s*:?\s*(?:\*\*)?\s*:?\s*"
+        rf"(?:\*\*)?\(?([{labels}])\)?(?:\*\*)?\s*(?:[\.\):\-]|$)",
+        rf"(?is)(?:therefore|thus|so),?\s*(?:the\s+)?(?:\*\*)?\s*"
+        rf"(?:final\s+)?(?:correct\s+)?answer\s*(?:is)?\s*:?\s*(?:\*\*)?\s*:?\s*"
+        rf"(?:\*\*)?\(?([{labels}])\)?(?:\*\*)?\s*(?:[\.\):\-]|$)",
+        rf"(?is)(?:final\s+answer|correct\s+answer|answer)[\s\S]{{0,160}}?"
+        rf"(?:\*\*)?\(?([{labels}])\)?(?:\*\*)?\s*[\.\)]",
+    )
+    matches: list[re.Match[str]] = []
+    for pattern in marker_patterns:
+        matches.extend(re.finditer(pattern, value))
+    if matches:
+        matches.sort(key=lambda match: match.start())
+        return matches[-1].group(1).upper(), "answer_marker"
+
+    tail = value[-1600:]
+    line_matches = list(
+        re.finditer(
+            rf"(?im)^\s*(?:[-*]\s*)?(?:\*\*)?([{labels}])(?:\*\*)?\s*[\.\):]\s+",
+            tail,
+        )
+    )
+    if line_matches:
+        return line_matches[-1].group(1).upper(), "tail_line_start"
+
+    if len(re.findall(r"\S+", value)) <= 40:
+        short_match = re.search(rf"(?<![A-Za-z])([{labels}])\s*[\.\):]\s+", value)
+        if short_match:
+            return short_match.group(1).upper(), "short_option"
+
+    lines = [line.strip() for line in value.splitlines() if line.strip()]
+    for line in reversed(lines[-8:]):
+        line_match = re.search(rf"^(?:\*\*)?([{labels}])(?:\*\*)?(?:\s*[\.\):]|\s*$)", line)
+        if line_match:
+            return line_match.group(1).upper(), "last_line"
+    return "Z", "unparsed"
+
+
+def _run_scienceqa_local_score(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    direct_summary = _run_direct_vlmeval(args, spec, model_path, output_dir)
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    exact_table = output_dir / f"{spec.alias}_predictions_exact_matching_result.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    if not exact_table.exists():
+        raise FileNotFoundError(exact_table)
+
+    predictions = pd.read_excel(pred_table)
+    exact = pd.read_excel(exact_table)
+    exact_cols = exact[["index", "hit", "log"]].rename(columns={"hit": "exact_hit", "log": "exact_log"})
+    data = predictions.merge(exact_cols, on="index", how="left")
+    if data["exact_hit"].isna().any():
+        missing = int(data["exact_hit"].isna().sum())
+        raise ValueError(f"{missing} ScienceQA rows missing exact-matching score")
+
+    fallback_opts: list[str] = []
+    fallback_methods: list[str] = []
+    fallback_hits: list[int] = []
+    final_hits: list[int] = []
+    used_fallback: list[bool] = []
+    for _, row in data.iterrows():
+        choices = _mcq_choice_labels(row)
+        option, method = _extract_final_mcq_option(row["prediction"], choices)
+        target = str(row["answer"]).strip().upper()
+        fallback_hit = int(option == target)
+        exact_failed = "Failed in Prefetch" in str(row["exact_log"])
+        fallback_opts.append(option)
+        fallback_methods.append(method)
+        fallback_hits.append(fallback_hit)
+        used_fallback.append(exact_failed)
+        final_hits.append(fallback_hit if exact_failed else int(row["exact_hit"]))
+
+    data["fallback_option"] = fallback_opts
+    data["fallback_method"] = fallback_methods
+    data["fallback_hit"] = fallback_hits
+    data["used_trace_fallback"] = used_fallback
+    data["hit"] = final_hits
+    data["log"] = [
+        (
+            f"TRACE fallback: opt={opt} method={method}; exact_log={log}"
+            if used
+            else str(log)
+        )
+        for opt, method, used, log in zip(fallback_opts, fallback_methods, used_fallback, data["exact_log"])
+    ]
+
+    from vlmeval.dataset.utils.multiple_choice import report_acc
+
+    acc_df = report_acc(data.copy())
+    corrected_table = output_dir / f"{spec.alias}_predictions_trace_mcq_fallback_result.xlsx"
+    corrected_csv = output_dir / f"{spec.alias}_predictions_trace_mcq_fallback_acc.csv"
+    data.to_excel(corrected_table, index=False)
+    acc_df.to_csv(corrected_csv, index=False)
+    overall = float(data["hit"].mean() * 100.0)
+    exact_overall = float(data["exact_hit"].mean() * 100.0)
+    fallback_rows = int(data["used_trace_fallback"].sum())
+    fallback_recovered = int(((data["used_trace_fallback"]) & (data["fallback_hit"] == 1)).sum())
+    scores_obj = {
+        "Overall": overall,
+        "table": acc_df.to_dict(orient="records"),
+        "vlmeval_exact_matching_overall": exact_overall,
+        "fallback_rows": fallback_rows,
+        "fallback_recovered": fallback_recovered,
+        "fallback_method_counts": data.loc[data["used_trace_fallback"], "fallback_method"].value_counts().to_dict(),
+    }
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "harness": "TRACE ScienceQA direct MCQ scorer with final-answer fallback",
+        "rows": len(data),
+        "score": overall,
+        "scores": scores_obj,
+        "direct_vlmeval_summary": direct_summary,
+        "artifacts": {
+            "prediction_table": str(pred_table),
+            "exact_matching_table": str(exact_table),
+            "trace_fallback_table": str(corrected_table),
+            "trace_fallback_score_csv": str(corrected_csv),
+        },
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
+
+
 def _truthy_score(value: Any) -> bool:
     if isinstance(value, bool):
         return value
@@ -1420,6 +1564,8 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         summary = _run_charxiv_local_judge(args, spec, model_path, output_dir, judge)
     elif mode == "mmesci_local_judge":
         summary = _run_mmesci_local_judge(args, spec, model_path, output_dir, judge)
+    elif mode == "scienceqa_local_score":
+        summary = _run_scienceqa_local_score(args, spec, model_path, output_dir)
     elif mode in {"mathv_local_judge", "mathvista_local_judge", "mathverse_local_judge", "logicvista_local_judge"}:
         summary = _run_local_math_like(args, spec, model_path, output_dir, judge)
     elif mode == "wemath_local_judge":

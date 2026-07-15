@@ -36,7 +36,11 @@ from benchmark_queue_lib import (  # noqa: E402
 )
 from run_external_benchmark_score_queue import PersistentJudge  # noqa: E402
 from trace_benchmark_answer_parsing import parse_binary_score as _strict_parse_binary_score  # noqa: E402
-from trace_final25_contract import LLM_EXTRACT_SCORE_KEYS, OPTION_TEXT_REQUIRED_KEYS  # noqa: E402
+from trace_final25_contract import (  # noqa: E402
+    LLM_EXTRACT_SCORE_KEYS,
+    OPTION_TEXT_REQUIRED_KEYS,
+    SOURCE_ROW_EXCLUSIONS,
+)
 
 
 DEFAULT_BENCHMARKS = (
@@ -66,10 +70,17 @@ DEFAULT_MODELS = (
 )
 LETTERS = "ABCDEFGHIJK"
 FIXED_OPTION_CONTRACTS = {
-    "erqa": "ABCD",
-    "mmstar": "ABCD",
     "phyx_mini_mc": "ABCD",
     "visualpuzzles": "ABCD",
+}
+VARIABLE_SOURCE_OPTION_CONTRACTS = {
+    "erqa": (2, 4),
+    "mmstar": (2, 4),
+}
+SOURCE_OPTION_OVERRIDES = {
+    # The official ERQA prompt has empty A/D markers but valid B/C choices.
+    # Preserve exactly the two choices that were visible during generation.
+    ("erqa", "271"): {"B": "No", "C": "Yes"},
 }
 REQUIRED_CHOICE_TEXT_CONTRACTS = set(OPTION_TEXT_REQUIRED_KEYS)
 
@@ -174,10 +185,68 @@ def _inline_dot_option_columns(question: str) -> dict[str, str]:
     return out
 
 
+def _ordered_fixed_option_columns(question: str, letters: str = "ABCD") -> dict[str, str]:
+    """Parse an ordered inline option block with a known label contract.
+
+    ERQA includes pointing rows such as ``A. A. B. B. C. C. D. D.``.
+    Parsing all letter-period tokens as markers loses the option values, while
+    the benchmark's fixed ordered A-D layout makes the boundaries unambiguous.
+    """
+
+    text = str(question or "")
+    marker = re.search(r"\b(?:choices|options)\s*[:.]\s*", text, flags=re.I)
+    if marker is not None:
+        tail = text[marker.end() :]
+    else:
+        first = re.search(r"(?<!\w)A\s*[\.):]\s*", text)
+        if first is None:
+            return {}
+        tail = text[first.start() :]
+    parts = []
+    for pos, letter in enumerate(letters):
+        next_letter = letters[pos + 1] if pos + 1 < len(letters) else None
+        if next_letter is None:
+            pattern = rf"^{re.escape(letter)}\s*[\.):]\s*(.*?)(?=\s+Please\s+answer\b|$)"
+        else:
+            pattern = (
+                rf"^{re.escape(letter)}\s*[\.):]\s*(.*?)\s+"
+                rf"(?={re.escape(next_letter)}\s*[\.):]\s+)"
+            )
+        match = re.search(pattern, tail, flags=re.I | re.S)
+        if match is None:
+            return {}
+        value = re.sub(r"\s+", " ", match.group(1)).strip().rstrip(".").strip()
+        if not value:
+            return {}
+        parts.append((letter, value))
+        consumed = match.end()
+        tail = tail[consumed:].lstrip()
+    return dict(parts)
+
+
+def _source_option_override(benchmark: str, row: dict[str, Any]) -> dict[str, str]:
+    return dict(SOURCE_OPTION_OVERRIDES.get((benchmark, _row_index(row, -1)), {}))
+
+
+def _ordered_source_option_columns(question: str) -> dict[str, str]:
+    for letters in ("ABCD", "ABC", "AB"):
+        options = _ordered_fixed_option_columns(question, letters)
+        if options:
+            return options
+    return {}
+
+
 def _literal_options(row: dict[str, Any]) -> dict[str, str]:
     raw = _clean_cell(row.get("options") or row.get("multi-choice options"))
     if not raw:
         return {}
+    # VisualPuzzles serializes some option arrays in NumPy display form, e.g.
+    # ``['32' '35' '37' '40']``. Python accepts adjacent string literals by
+    # concatenating them, so detect this representation before literal_eval.
+    quoted = re.findall(r"(['\"])(.*?)\1", raw)
+    if raw.lstrip().startswith(("[", "(")) and len(quoted) > 1:
+        values = [_clean_cell(value) for _, value in quoted]
+        return {LETTERS[i]: value for i, value in enumerate(values) if i < len(LETTERS) and value}
     try:
         parsed = ast.literal_eval(raw)
     except Exception:
@@ -196,6 +265,13 @@ def _literal_options(row: dict[str, Any]) -> dict[str, str]:
 def _valid_letters_for(benchmark: str, row: dict[str, Any]) -> str:
     if benchmark in FIXED_OPTION_CONTRACTS:
         return FIXED_OPTION_CONTRACTS[benchmark]
+    override = _source_option_override(benchmark, row)
+    if override:
+        return "".join(letter for letter in LETTERS if letter in override)
+    if benchmark == "erqa":
+        ordered = _ordered_source_option_columns(_question_for(benchmark, row))
+        if ordered:
+            return "".join(ordered)
 
     question = _question_for(benchmark, row)
     candidates = (
@@ -338,6 +414,14 @@ def _validate_required_choice_contract(item: dict[str, Any]) -> None:
             f"{benchmark} index={index} violates fixed option contract "
             f"{''.join(item.get('valid_letters') or [])}: parsed={sorted(observed)}"
         )
+    if benchmark in VARIABLE_SOURCE_OPTION_CONTRACTS:
+        minimum, maximum = VARIABLE_SOURCE_OPTION_CONTRACTS[benchmark]
+        observed_labels = "".join(letter for letter in LETTERS if letter in observed)
+        if not minimum <= len(observed_labels) <= maximum:
+            raise ValueError(
+                f"{benchmark} index={index} violates variable source option contract "
+                f"with {minimum}-{maximum} choices: parsed={sorted(observed)}"
+            )
 
     answer_kind = item["answer_kind"]
     if answer_kind == "option":
@@ -353,8 +437,29 @@ def _validate_required_choice_contract(item: dict[str, Any]) -> None:
         )
 
 
+def _source_row_exclusion_reason(
+    benchmark: str,
+    index: str,
+    answer: str,
+    options: dict[str, str],
+) -> str:
+    reason = SOURCE_ROW_EXCLUSIONS.get(benchmark, {}).get(index, "")
+    if not reason:
+        return ""
+    gold = _clean_cell(answer).upper()
+    if gold in options:
+        return ""
+    if benchmark == "mmstar" and gold != "A":
+        raise ValueError(
+            f"{benchmark} index={index} exclusion contract drifted: "
+            f"expected missing gold A, found {answer!r}"
+        )
+    return reason
+
+
 def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
+    exclusions: list[dict[str, Any]] = []
     for benchmark in args.benchmarks:
         for model_slug, model_path in args.model_entries:
             pred_path = _prediction_path(args.run_root, benchmark, model_slug)
@@ -367,12 +472,32 @@ def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
                 if not options:
                     options = _literal_options(row)
                 if not options:
+                    options = _source_option_override(benchmark, row)
+                if not options and benchmark == "erqa":
+                    options = _ordered_source_option_columns(_question_for(benchmark, row))
+                if not options:
                     options = _inline_option_columns(_question_for(benchmark, row))
                 if not options:
                     options = _inline_dot_option_columns(_question_for(benchmark, row))
                 if not options:
                     options = _embedded_option_columns(_question_for(benchmark, row))
                 answer_kind = _answer_kind(benchmark, row)
+                exclusion_reason = _source_row_exclusion_reason(
+                    benchmark,
+                    index,
+                    _clean_cell(row.get("answer")),
+                    options,
+                )
+                if exclusion_reason:
+                    exclusions.append(
+                        {
+                            "benchmark": benchmark,
+                            "model_slug": model_slug,
+                            "index": index,
+                            "reason": exclusion_reason,
+                        }
+                    )
+                    continue
                 item = {
                     "job_id": f"{benchmark}__{model_slug}__{index}",
                     "benchmark": benchmark,
@@ -391,6 +516,7 @@ def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
                 _validate_required_choice_contract(item)
                 item["prompt"] = _build_prompt(item)
                 items.append(item)
+    args.source_row_exclusions = exclusions
     return items
 
 
@@ -419,6 +545,8 @@ def write_manifest(args: argparse.Namespace, items: list[dict[str, Any]]) -> Non
             "benchmarks": args.benchmarks,
             "model_slugs": [slug for slug, _ in args.model_entries],
             "rows": len(items),
+            "source_rows_excluded": len(getattr(args, "source_row_exclusions", [])),
+            "source_row_exclusions": getattr(args, "source_row_exclusions", []),
             "created_at": time.time(),
         },
     )
@@ -1054,6 +1182,8 @@ def finalize(args: argparse.Namespace) -> None:
     out_root = args.output_root / args.queue_name / "scores"
     summary_rows = []
     detailed_rows_by_key: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    manifest_summary = load_json(args.output_root / args.queue_name / "manifest_summary.json", {})
+    source_exclusions = manifest_summary.get("source_row_exclusions") or []
     for benchmark in args.benchmarks:
         for model_slug, model_path in args.model_entries:
             group = [r for r in results if r["benchmark"] == benchmark and r["model_slug"] == model_slug]
@@ -1080,6 +1210,15 @@ def finalize(args: argparse.Namespace) -> None:
                 "model_slug": model_slug,
                 "run_name": "llm_extracted",
                 "rows": len(group),
+                "source_rows_excluded": sum(
+                    exclusion.get("benchmark") == benchmark and exclusion.get("model_slug") == model_slug
+                    for exclusion in source_exclusions
+                ),
+                "source_row_exclusions": [
+                    exclusion
+                    for exclusion in source_exclusions
+                    if exclusion.get("benchmark") == benchmark and exclusion.get("model_slug") == model_slug
+                ],
                 "score": score,
                 "scores": extra_scores,
                 "judge_model": args.judge_model,

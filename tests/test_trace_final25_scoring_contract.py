@@ -50,6 +50,9 @@ from run_llm_extracted_benchmark_score_queue import (  # noqa: E402
     _inline_dot_option_columns,
     _inline_option_columns,
     _literal_options,
+    _ordered_fixed_option_columns,
+    _ordered_source_option_columns,
+    _source_row_exclusion_reason,
     _validate_required_choice_contract,
     _valid_letters_for,
     build_parser as build_llm_extract_parser,
@@ -239,6 +242,12 @@ class TraceFinal25ContractTests(unittest.TestCase):
         )
         self.assertEqual(_valid_letters_for("treebench", row), "ABC")
 
+    def test_visualpuzzles_numpy_style_option_array_is_parsed(self):
+        self.assertEqual(
+            _literal_options({"options": "['32' '35' '37' '40']"}),
+            {"A": "32", "B": "35", "C": "37", "D": "40"},
+        )
+
     def test_treebench_refuses_missing_unrepairable_ground_truth(self):
         dataset = SimpleNamespace(
             data=pd.DataFrame([{"index": 7, "answer": "D", "A": "one", "B": "two", "C": "three"}])
@@ -262,6 +271,40 @@ class TraceFinal25ContractTests(unittest.TestCase):
             {"A": "left", "B": "right", "C": "above", "D": "below"},
         )
 
+    def test_erqa_ordered_parser_preserves_letter_valued_choices(self):
+        question = (
+            "Which point is on the mushroom cap? "
+            "Choices: A. A. B. B. C. C. D. D. "
+            "Please answer directly with only the letter of the correct option and nothing else."
+        )
+        self.assertEqual(
+            _ordered_fixed_option_columns(question),
+            {"A": "A", "B": "B", "C": "C", "D": "D"},
+        )
+
+    def test_erqa_ordered_parser_supports_binary_and_coordinate_layouts(self):
+        self.assertEqual(
+            _ordered_source_option_columns(
+                "Question? Choices: A. Yes. B. No. Please answer directly with only the letter."
+            ),
+            {"A": "Yes", "B": "No"},
+        )
+        self.assertEqual(
+            _ordered_source_option_columns(
+                "Which point? A) [1 2] B) [3 4] C) [5 6] D) [7 8] "
+                "Please answer directly with only the letter."
+            ),
+            {"A": "[1 2]", "B": "[3 4]", "C": "[5 6]", "D": "[7 8]"},
+        )
+
+    def test_erqa_malformed_but_scoreable_source_row_uses_visible_choices(self):
+        row = {
+            "index": 271,
+            "question": "Choices: A. B. No. C. Yes. D. Please answer directly with only the letter.",
+            "answer": "B",
+        }
+        self.assertEqual(_valid_letters_for("erqa", row), "BC")
+
     def test_valid_letters_do_not_inject_missing_ground_truth(self):
         row = {"question": "Question", "answer": "D", "A": "one", "B": "two"}
         self.assertEqual(_valid_letters_for("generic", row), "AB")
@@ -278,17 +321,59 @@ class TraceFinal25ContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing ground-truth choice"):
             _validate_required_choice_contract(item)
 
-    def test_fixed_mcq_contract_requires_every_expected_choice(self):
+    def test_mmstar_accepts_source_variable_prefix_choices(self):
+        item = {
+            "benchmark": "mmstar",
+            "index": "binary-row",
+            "answer": "B",
+            "answer_kind": "option",
+            "valid_letters": list("AB"),
+            "options": {"A": "first image", "B": "second image"},
+        }
+        _validate_required_choice_contract(item)
+
+    def test_mmstar_accepts_nonprefix_source_choice_labels(self):
+        item = {
+            "benchmark": "mmstar",
+            "index": "391",
+            "answer": "D",
+            "answer_kind": "option",
+            "valid_letters": list("ABD"),
+            "options": {"A": "Two", "B": "One", "D": "Three"},
+        }
+        _validate_required_choice_contract(item)
+
+    def test_mmstar_rejects_fewer_than_two_choices(self):
         item = {
             "benchmark": "mmstar",
             "index": "bad-row",
-            "answer": "B",
+            "answer": "A",
             "answer_kind": "option",
-            "valid_letters": list("ABCD"),
-            "options": {"A": "one", "B": "two", "C": "three"},
+            "valid_letters": list("A"),
+            "options": {"A": "only choice"},
         }
-        with self.assertRaisesRegex(ValueError, "fixed option contract"):
+        with self.assertRaisesRegex(ValueError, "variable source option contract"):
             _validate_required_choice_contract(item)
+
+    def test_mmstar_known_missing_gold_source_rows_are_excluded(self):
+        self.assertEqual(
+            _source_row_exclusion_reason(
+                "mmstar",
+                "268",
+                "A",
+                {"B": "Three", "C": "Two", "D": "One"},
+            ),
+            "official source omits the gold A option text",
+        )
+        self.assertEqual(
+            _source_row_exclusion_reason(
+                "mmstar",
+                "268",
+                "A",
+                {"A": "Four", "B": "Three", "C": "Two", "D": "One"},
+            ),
+            "",
+        )
 
     def test_final25_direct_scorer_rejects_non_direct_routes(self):
         args = SimpleNamespace(run_set="trace_final25", run_root=Path("/tmp/unused"))

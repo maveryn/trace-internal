@@ -118,7 +118,7 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     Final25Contract(
         "mmstar",
         "MCQ option",
-        "Qwen3-32B selected-option extraction with fixed A-D contract",
+        "Qwen3-32B selected-option extraction using source-provided choice labels",
         "exact option-letter match",
         "extraction",
         "run_llm_extracted_benchmark_score_queue.py",
@@ -150,7 +150,7 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     Final25Contract(
         "erqa",
         "MCQ option",
-        "Qwen3-32B selected-option extraction with fixed A-D contract",
+        "Qwen3-32B selected-option extraction using source-provided choice labels",
         "exact option-letter match",
         "extraction",
         "run_llm_extracted_benchmark_score_queue.py",
@@ -263,7 +263,8 @@ DEDICATED_SCORE_KEYS = ("mme_reasoning",)
 # option letters. A row is invalid when its parsed choices omit the ground
 # truth or, for fixed contracts, any expected option. TreeBench labels are
 # source-derived because its image-embedded OCR questions include both A-C and
-# A-D rows.
+# A-D rows. VisualPuzzles is intentionally absent: many rows put the labeled
+# A-D choices only in the image and therefore have no source choice text.
 OPTION_TEXT_REQUIRED_KEYS = (
     "wemath",
     "phyx_mini_mc",
@@ -275,5 +276,15 @@ OPTION_TEXT_REQUIRED_KEYS = (
     "blink",
     "treebench",
     "puzzlevqa",
-    "visualpuzzles",
 )
+
+# The official MMStar TSV has two malformed rows where the gold answer is A
+# but option A is empty. The missing choice was also absent from the model
+# prompt, so post-hoc repair would not be a fair evaluation. Exclude these
+# source rows consistently for every model and seed.
+SOURCE_ROW_EXCLUSIONS = {
+    "mmstar": {
+        "268": "official source omits the gold A option text",
+        "273": "official source omits the gold A option text",
+    },
+}

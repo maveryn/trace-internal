@@ -139,7 +139,7 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("chartmuseum", "ChartMuseum", "ChartMuseum_test", "vlmevalkit_defaults_qwen32b_judge_test", split="test", eval_mode="chartmuseum_local_judge", max_model_len=32768),
     BenchmarkSpec("charxivdesc", "CharXivDesc", "CharXiv_descriptive_val", "vlmevalkit_defaults_qwen32b_judge"),
     BenchmarkSpec("charxivreason", "CharXivReason", "CharXiv_reasoning_val", "vlmevalkit_defaults_qwen32b_judge"),
-    BenchmarkSpec("evochart", "EvoChart", "EvoChart_boxed", "vlmevalkit_boxed_defaults"),
+    BenchmarkSpec("evochart", "EvoChart", "EvoChart", "vlmevalkit_defaults_qwen32b_judge", eval_mode="evochart_local_judge"),
     BenchmarkSpec("infovqa", "InfoVQA", "InfoVQA_VAL", "vlmevalkit_defaults_val"),
     BenchmarkSpec("mmmu_pro_vision", "MMMU-ProVis", "MMMU_Pro_V_COT", "vlmevalkit_cot_max2048", max_tokens=2048),
     BenchmarkSpec("mathvision", "MathVision", "MathVision", "vlmevalkit_defaults_qwen32b_judge"),
@@ -375,6 +375,8 @@ def local_judge_eval_mode(spec: BenchmarkSpec) -> str | None:
         return "chartmuseum_local_judge"
     if spec.eval_mode == "wemath_local_judge" or spec.alias.startswith("WeMath"):
         return "wemath_local_judge"
+    if spec.eval_mode == "evochart_local_judge" or spec.alias == "EvoChart":
+        return "evochart_local_judge"
     if spec.alias.startswith("CharXiv_"):
         return "charxiv_local_judge"
     if spec.alias == "MathVision":

@@ -707,6 +707,43 @@ def _parse_binary_judgement_output(value: Any) -> int | None:
     return None
 
 
+def _parse_json_object(text: Any) -> dict[str, Any]:
+    raw = str(text or "").strip()
+    if not raw:
+        return {}
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            return obj
+    except Exception:
+        pass
+    match = re.search(r"\{.*?\}", raw, flags=re.S)
+    if match:
+        try:
+            obj = json.loads(match.group(0))
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            pass
+    return {}
+
+
+def _parse_binary_score(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return 1.0 if value else 0.0
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if math.isnan(float(value)):
+            return None
+        return 1.0 if float(value) >= 0.5 else 0.0
+    text = str(value or "").strip().lower()
+    if text in {"1", "true", "yes", "correct"}:
+        return 1.0
+    if text in {"0", "false", "no", "incorrect"}:
+        return 0.0
+    parsed = _parse_binary_judgement_output(text)
+    return float(parsed) if parsed is not None else None
+
+
 def _truthy_score(value: Any) -> bool:
     if isinstance(value, bool):
         return value
@@ -887,6 +924,112 @@ def _run_charxiv_local_judge(
         "scores": scores,
         "judge": {"temperature": 0.0, "top_p": 1.0, "max_tokens": args.judge_max_tokens, "thinking": "disabled via chat template enable_thinking=False when supported"},
         "artifacts": {"prediction_table": str(pred_table), "judge_jsonl": str(judge_jsonl), "judged_xlsx": str(judged_xlsx)},
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
+
+
+def _build_evochart_judge_prompt(row: dict[str, Any]) -> str:
+    clarity = "clear" if _truthy_score(row.get("is_clear", True)) else "approximate/low-clarity"
+    return (
+        "You are scoring an EvoChart chart question answering response.\n"
+        "Decide whether the model's final answer matches the reference answer.\n"
+        "Do not require boxed formatting, exact wording, or the same grammar. Accept paraphrases, tense changes, labels embedded in a sentence, punctuation/case differences, and article differences when the meaning is the same.\n"
+        "For numeric answers, accept equivalent formatting such as commas, currency symbols, percent signs, or units. For approximate/low-clarity references, allow a small numeric tolerance when the value is essentially the same.\n"
+        "Score only the final answer content. Mark incorrect if the response gives the wrong label/value/event, gives no answer, or only repeats unrelated reasoning.\n\n"
+        f"Question:\n{row.get('question', '')}\n\n"
+        f"Reference answer:\n{row.get('answer', '')}\n\n"
+        f"Reference clarity: {clarity}\n"
+        f"Chart type: {row.get('chart_type', '')}\n"
+        f"Attribute: {row.get('attribute', '')}\n\n"
+        f"Model response:\n{row.get('prediction', '')}\n\n"
+        "Return exactly one JSON object: {\"score\": 1, \"extracted_answer\": \"<model final answer>\"}.\n"
+        "Use score 1 for correct and 0 for incorrect."
+    )
+
+
+def _run_evochart_local_judge(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+    judge: PersistentJudge,
+) -> dict[str, Any]:
+    _import_vlmeval_runner()
+    from vlmeval.smp import load
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = load(str(pred_table))
+    judge_jsonl = output_dir / "judge_qwen3_32b.jsonl"
+    if args.no_resume and judge_jsonl.exists():
+        judge_jsonl.unlink()
+
+    prompts = []
+    for _, row in data.iterrows():
+        prompts.append((str(row["index"]), _build_evochart_judge_prompt(row.to_dict())))
+    raw = judge.run_cached(
+        output_dir=output_dir,
+        prompts=prompts,
+        cache_name="judge_qwen3_32b.jsonl",
+        max_tokens=args.judge_max_tokens,
+        temperature=0.0,
+        top_p=1.0,
+        no_resume=False,
+        desc=f"{spec.alias} judge",
+    )
+
+    scores = []
+    extracted = []
+    judge_outputs = []
+    for _, row in data.iterrows():
+        item = raw.get(str(row["index"]), {})
+        output = str(item.get("judge_output", ""))
+        obj = _parse_json_object(output)
+        score = _parse_binary_score(obj.get("score", obj.get("judgement", obj.get("judgment", output))))
+        if score is None:
+            score = 0.0
+        scores.append(float(score))
+        extracted.append(str(obj.get("extracted_answer", obj.get("answer", ""))).strip())
+        judge_outputs.append(output)
+
+    data["eval_score"] = scores
+    data["eval_pred"] = extracted
+    data["judge_output"] = judge_outputs
+    judged_xlsx = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
+    data.to_excel(judged_xlsx, index=False)
+
+    rows = [{"split": "Overall", "tot": len(data), "hit": sum(scores), "acc": sum(scores) / len(scores) * 100 if scores else 0.0}]
+    for field in ("chart_type", "attribute"):
+        if field not in data:
+            continue
+        for name, group in data.groupby(field, dropna=False):
+            vals = [float(x) for x in group["eval_score"].tolist()]
+            rows.append(
+                {
+                    "split": f"{field}:{name}",
+                    "tot": len(vals),
+                    "hit": sum(vals),
+                    "acc": sum(vals) / len(vals) * 100 if vals else 0.0,
+                }
+            )
+    table = pd.DataFrame(rows)
+    score_csv = output_dir / f"{spec.alias}_judged_qwen3_32b_acc.csv"
+    table.to_csv(score_csv, index=False)
+    overall = float(rows[0]["acc"]) if rows else 0.0
+    scores_obj = {"Overall": overall, "table": rows}
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "judge_model": args.judge_model,
+        "harness": "TRACE EvoChart Qwen3-32B direct-answer judge",
+        "rows": len(data),
+        "score": overall,
+        "scores": scores_obj,
+        "artifacts": {"prediction_table": str(pred_table), "judge_jsonl": str(judge_jsonl), "judged_table": str(judged_xlsx), "score_csv": str(score_csv)},
     }
     write_json(output_dir / "scores.json", summary)
     print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
@@ -1148,6 +1291,8 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         )
     elif mode == "chartmuseum_local_judge":
         summary = _run_chartmuseum_local_judge(args, spec, model_path, output_dir, judge)
+    elif mode == "evochart_local_judge":
+        summary = _run_evochart_local_judge(args, spec, model_path, output_dir, judge)
     elif mode == "charxiv_local_judge":
         summary = _run_charxiv_local_judge(args, spec, model_path, output_dir, judge)
     elif mode in {"mathv_local_judge", "mathvista_local_judge", "mathverse_local_judge", "logicvista_local_judge"}:

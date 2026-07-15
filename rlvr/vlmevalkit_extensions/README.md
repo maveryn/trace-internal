@@ -15,7 +15,8 @@ Included adapters:
 - `trace_local_vqa.py`: TRACE-local CountQA and Game-QA-Lite adapters.
 - `evochart.py`: TRACE-local EvoChart-QA adapter for `gsarch/EvoChart-QA`,
   including the neutral `EvoChart` dataset entry, optional Qwen2.5/Qwen3 prompt
-  aliases, and deterministic relaxed chart-answer scoring.
+  aliases, deterministic relaxed chart-answer scoring for smoke checks, and
+  queue-level direct judge scoring for final reported results.
 - `visiongraph.py`: `VisionGraph_Q3` and `VisionGraph_Q3_CoT`, exposing only
   the third VisionGraph graph-reasoning question as single-turn image VQA.
 

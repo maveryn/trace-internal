@@ -37,6 +37,7 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _parse_chartmuseum_judgement_output,
     _patch_screenspot_point_parser,
     _resolve_charxiv_extracted_answer,
+    _resolve_evochart_judgement,
     _run_score_for_spec,
     _run_tablevqabench_local_score,
 )
@@ -297,6 +298,16 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(
             _resolve_charxiv_extracted_answer({}, {"score": 0, "extract_answer": ""}, None),
             ("", "empty_prediction"),
+        )
+
+    def test_evochart_recovers_explicit_score_from_invalid_latex_json(self):
+        output = (
+            '```json\n{"score": 1, "extracted_answer": '
+            '"There are 5 dots after $ \\text{Living Area} = 4000 $."}\n```'
+        )
+        self.assertEqual(
+            _resolve_evochart_judgement(output, r"reasoning \boxed{5}"),
+            (1.0, "5", "deterministic_boxed"),
         )
 
     def test_final_answer_parser_supports_all_canonical_wrappers(self):

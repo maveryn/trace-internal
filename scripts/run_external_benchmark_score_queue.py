@@ -931,6 +931,23 @@ def _parse_binary_score(value: Any) -> float | None:
     return _strict_parse_binary_score(value)
 
 
+def _resolve_evochart_judgement(output: Any, prediction: Any) -> tuple[float | None, str, str]:
+    text = str(output or "")
+    obj = _parse_json_object(text)
+    score = _parse_binary_score(obj.get("score", obj.get("judgement", obj.get("judgment"))))
+    if score is None:
+        score_match = re.search(r'"score"\s*:\s*([01])(?:\.0+)?\b', text, flags=re.I)
+        score = float(score_match.group(1)) if score_match else None
+
+    extracted = str(obj.get("extracted_answer", obj.get("answer", ""))).strip()
+    if extracted:
+        return score, extracted, "judge_json"
+    if prediction is None or (isinstance(prediction, float) and math.isnan(prediction)):
+        return score, "", "empty_prediction"
+    fallback, method = extract_final_answer(prediction)
+    return score, fallback, f"deterministic_{method}" if fallback else "empty_prediction"
+
+
 def _parse_shortqa_correctness_output(value: Any) -> tuple[float, str]:
     text = str(value or "").strip()
     correct_st, correct_ed = "[Begin Correctness]", "[End Correctness]"
@@ -1422,18 +1439,22 @@ def _run_evochart_local_judge(
 
     scores = []
     extracted = []
+    extraction_methods = []
     judge_outputs = []
     malformed: list[str] = []
     for _, row in data.iterrows():
         item = raw.get(str(row["index"]), {})
         output = str(item.get("judge_output", ""))
-        obj = _parse_json_object(output)
-        score = _parse_binary_score(obj.get("score", obj.get("judgement", obj.get("judgment", output))))
+        score, extracted_answer, extraction_method = _resolve_evochart_judgement(
+            output,
+            row.get("prediction"),
+        )
         if score is None:
             malformed.append(str(row["index"]))
             score = float("nan")
         scores.append(float(score))
-        extracted.append(str(obj.get("extracted_answer", obj.get("answer", ""))).strip())
+        extracted.append(extracted_answer)
+        extraction_methods.append(extraction_method)
         judge_outputs.append(output)
 
     if malformed:
@@ -1443,6 +1464,7 @@ def _run_evochart_local_judge(
 
     data["eval_score"] = scores
     data["eval_pred"] = extracted
+    data["eval_pred_method"] = extraction_methods
     data["judge_output"] = judge_outputs
     judged_xlsx = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
     data.to_excel(judged_xlsx, index=False)

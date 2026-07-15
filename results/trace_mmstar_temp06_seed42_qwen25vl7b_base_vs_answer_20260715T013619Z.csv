@@ -1,0 +1,4 @@
+model,slug,rows,official_exact_accuracy,official_prefetch_parse_success_pct,official_prefetch_failures,fallback_parse_success_all_pct,fallback_recovered_correct_from_official_failures,fallback_unparsed_official_failures,fallback_corrected_accuracy,fallback_all_rows_accuracy,mean_output_tokens,median_output_tokens,max_output_tokens
+Qwen2.5-VL-7B base,qwen25vl7b-base,1500,58.666666666666664,91.2,132,97.53333333333333,55,30,62.33333333333333,61.93333333333333,46.47533333333333,5.0,4096.0
+TRACE answer GRPO step500,trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500,1500,52.2,75.2,372,95.0,171,44,63.6,62.2,140.90466666666666,9.5,4096.0
+TRACE answer GRPO - base delta,,,-6.4666666666666615,-16.0,240,-2.5333333333333314,116,14,1.2666666666666728,0.2666666666666728,94.42933333333332,4.5,0.0

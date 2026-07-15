@@ -34,6 +34,7 @@ from benchmark_queue_lib import (  # noqa: E402
     spec_by_key,
 )
 from run_external_benchmark_score_queue import (  # noqa: E402
+    _parse_chartmuseum_judgement_output,
     _patch_screenspot_point_parser,
     _run_score_for_spec,
     _run_tablevqabench_local_score,
@@ -276,6 +277,12 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertIsNone(parse_binary_score("This looks correct to me"))
         self.assertEqual(parse_binary_score("Judgement: 1"), 1.0)
         self.assertEqual(parse_binary_score("score=0"), 0.0)
+
+    def test_chartmuseum_parser_accepts_explicit_markdown_or_final_decision(self):
+        self.assertEqual(_parse_chartmuseum_judgement_output("**Yes**"), 1)
+        self.assertEqual(_parse_chartmuseum_judgement_output("**No**\n\nThe answers differ."), 0)
+        self.assertEqual(_parse_chartmuseum_judgement_output("Reasoning\nFinal Answer: Yes"), 1)
+        self.assertIsNone(_parse_chartmuseum_judgement_output("The answers are not equivalent"))
 
     def test_final_answer_parser_supports_all_canonical_wrappers(self):
         self.assertEqual(extract_final_answer("<answer>42</answer>"), ("42", "answer_tag"))

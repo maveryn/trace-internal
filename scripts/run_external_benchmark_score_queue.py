@@ -863,6 +863,32 @@ def _parse_binary_judgement_output(value: Any) -> int | None:
     return int(parsed) if parsed is not None else None
 
 
+def _parse_chartmuseum_judgement_output(value: Any) -> int | None:
+    """Parse ChartMuseum's explicit Yes/No contract without inferring from prose."""
+
+    parsed = _parse_binary_judgement_output(value)
+    if parsed is not None:
+        return parsed
+
+    text = str(value or "").strip()
+    leading = re.match(
+        r"^(?:\*{1,3}|_{1,3})?\s*(yes|no)\s*(?:\*{1,3}|_{1,3})?(?:\s|[.!,:;\-]|$)",
+        text,
+        flags=re.I,
+    )
+    if leading:
+        return 1 if leading.group(1).lower() == "yes" else 0
+
+    final = re.search(
+        r"(?:final\s+answer|response)\s*:\s*(?:\*{1,3}|_{1,3})?\s*(yes|no)\b",
+        text,
+        flags=re.I,
+    )
+    if final:
+        return 1 if final.group(1).lower() == "yes" else 0
+    return None
+
+
 def _parse_json_object(text: Any) -> dict[str, Any]:
     raw = str(text or "").strip()
     if not raw:
@@ -1550,6 +1576,7 @@ def _run_chartmuseum_local_judge(
     pending = [r for r in rows if str(r["index"]) not in existing]
     print(f"[chartmuseum judge] rows={len(rows)} existing={len(existing)} pending={len(pending)}")
 
+    output_contract = "\n\nReturn exactly one word: Yes or No. Do not use Markdown and do not explain."
     prompts = [
         (
             str(item["index"]),
@@ -1557,7 +1584,8 @@ def _run_chartmuseum_local_judge(
                 str(item.get("question", "")),
                 str(item.get("answer", "")),
                 chartmuseum.extract_answer(str(item.get("prediction", ""))),
-            ),
+            )
+            + output_contract,
         )
         for item in pending
     ]
@@ -1565,13 +1593,49 @@ def _run_chartmuseum_local_judge(
         output_dir=output_dir,
         prompts=prompts,
         cache_name="judge_qwen32b.jsonl",
-        max_tokens=64,
+        max_tokens=8,
         temperature=0.0,
         top_p=1.0,
         no_resume=False,
         desc="ChartMuseum judge",
     )
     judged_map = {**existing, **raw}
+
+    unresolved = [
+        str(row["index"])
+        for row in rows
+        if _parse_chartmuseum_judgement_output(judged_map[str(row["index"])].get("judge_output", "")) is None
+    ]
+    if unresolved:
+        row_by_index = {str(row["index"]): row for row in rows}
+        retry_prompts = []
+        for index in unresolved:
+            item = row_by_index[index]
+            retry_prompts.append(
+                (
+                    index,
+                    "Output exactly Yes or No. Do not explain.\n\n"
+                    + chartmuseum.format_compare_prompt(
+                        str(item.get("question", "")),
+                        str(item.get("answer", "")),
+                        chartmuseum.extract_answer(str(item.get("prediction", ""))),
+                    )
+                    + output_contract,
+                )
+            )
+        print(f"[chartmuseum judge retry] malformed={len(unresolved)}")
+        retries = judge.run_cached(
+            output_dir=output_dir,
+            prompts=retry_prompts,
+            cache_name="judge_qwen32b_binary_retry.jsonl",
+            max_tokens=8,
+            temperature=0.0,
+            top_p=1.0,
+            no_resume=False,
+            desc="ChartMuseum judge retry",
+        )
+        judged_map.update(retries)
+
     judged_rows = []
     malformed: list[str] = []
     for row in rows:
@@ -1580,7 +1644,7 @@ def _run_chartmuseum_local_judge(
         item["judge_model"] = args.judge_model
         item["judge_output"] = judged.get("judge_output", "")
         clean_output = str(item["judge_output"]).strip().lower()
-        parsed_binary = _parse_binary_judgement_output(clean_output)
+        parsed_binary = _parse_chartmuseum_judgement_output(clean_output)
         if parsed_binary is not None:
             item["score"] = float(parsed_binary)
         else:

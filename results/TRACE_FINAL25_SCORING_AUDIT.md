@@ -23,7 +23,12 @@ should be rescored with the strict deterministic judge wrapper.
 1. **TreeBench source row 330 had an invalid prompt.** Ground-truth D was
    absent because option B was embedded at the end of column A and later
    choices were shifted left. Dataset construction now performs a narrow,
-   logged repair and fails if any ground-truth option remains absent.
+   logged repair and fails if any ground-truth option remains absent. The
+   benchmark also has OCR rows whose choices intentionally appear only in the
+   image. Their choice text and actual label set are validated from the
+   `multi-choice options` metadata field without adding them to the model
+   prompt. This preserves the official A-C row and the source image that
+   repeats label C instead of inventing an A-D contract.
 2. **PhyX row 22 had an invalid extraction contract.** Prose beginning
    `A. H. Pfund...` was treated as the only option before the later
    `OPTION: A: ... B: ... C: ... D: ...` block. Inline `OPTION:` parsing now
@@ -106,7 +111,7 @@ The machine-readable scan is in
 | Visual Perception, Counting & Evidence Grounding | BLINK | MCQ | Qwen3 option extraction | Exact option letter | Extraction | Ready. |
 | Visual Perception, Counting & Evidence Grounding | CountBenchQA | Integer | Qwen3 integer extraction | Normalized exact integer | Extraction | Ready. |
 | Visual Perception, Counting & Evidence Grounding | CountQA | Integer | Qwen3 integer extraction | Normalized exact integer | Extraction | Ready. |
-| Visual Perception, Counting & Evidence Grounding | TreeBench | MCQ | Qwen3 option extraction, fixed A-D | Exact option letter | Extraction | Fixed; regenerate repaired source row. |
+| Visual Perception, Counting & Evidence Grounding | TreeBench | MCQ, including image-embedded OCR choices | Qwen3 option extraction using source labels; choice metadata retained for validation | Exact option letter | Extraction | Fixed; regenerate repaired source row. |
 | Puzzles & Abstract Logic | PuzzleVQA | Option/value | Qwen3 extraction and value-to-letter mapping | Exact option letter | Extraction | Ready. |
 | Puzzles & Abstract Logic | VisualPuzzles | MCQ | Qwen3 extraction, fixed A-D | Exact option letter | Extraction | Ready. |
 | Puzzles & Abstract Logic | LogicVista | Option set | Qwen3 option-set extraction | Official normalized set equality | Extraction | Ready; malformed extraction is fatal. |

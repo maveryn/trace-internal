@@ -41,6 +41,7 @@ from run_external_benchmark_score_queue import (  # noqa: E402
 from run_llm_extracted_benchmark_score_queue import (  # noqa: E402
     _inline_dot_option_columns,
     _inline_option_columns,
+    _literal_options,
     _validate_required_choice_contract,
     _valid_letters_for,
     build_parser as build_llm_extract_parser,
@@ -171,6 +172,45 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(row["C"], "He is running.")
         self.assertEqual(row["D"], "He is sitting.")
         self.assertEqual(repairs[0]["index"], "330")
+
+    def test_treebench_accepts_image_embedded_options_without_changing_prompt(self):
+        option_blob = "A. first choice\nB. second choice\nC. third choice\nD. fourth choice"
+        dataset = SimpleNamespace(
+            data=pd.DataFrame(
+                [
+                    {
+                        "index": 142,
+                        "question": "Recognize the question and options in the image and answer it.",
+                        "answer": "D",
+                        "multi-choice options": option_blob,
+                    }
+                ]
+            )
+        )
+        repairs = _repair_treebench_options(dataset)
+        self.assertEqual(repairs, [])
+        self.assertNotIn("A", dataset.data.columns)
+
+    def test_treebench_metadata_options_are_available_to_extractor(self):
+        row = {
+            "multi-choice options": "A. first choice\nB. second choice\nC. third choice\nD. fourth choice"
+        }
+        self.assertEqual(
+            _literal_options(row),
+            {"A": "first choice", "B": "second choice", "C": "third choice", "D": "fourth choice"},
+        )
+
+    def test_treebench_metadata_options_support_source_label_quirks(self):
+        row = {
+            "multi-choice options": (
+                "A First choice\nB Second choice\n C First C choice\nC. Duplicate C choice"
+            )
+        }
+        self.assertEqual(
+            _literal_options(row),
+            {"A": "First choice", "B": "Second choice", "C": "First C choice"},
+        )
+        self.assertEqual(_valid_letters_for("treebench", row), "ABC")
 
     def test_treebench_refuses_missing_unrepairable_ground_truth(self):
         dataset = SimpleNamespace(

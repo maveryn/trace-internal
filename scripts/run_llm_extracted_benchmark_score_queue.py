@@ -29,6 +29,7 @@ from benchmark_queue_lib import (  # noqa: E402
     file_lock,
     json_default,
     load_json,
+    parse_lettered_option_blob,
     run_dir,
     spec_by_key,
     write_json,
@@ -68,7 +69,6 @@ FIXED_OPTION_CONTRACTS = {
     "erqa": "ABCD",
     "mmstar": "ABCD",
     "phyx_mini_mc": "ABCD",
-    "treebench": "ABCD",
     "visualpuzzles": "ABCD",
 }
 REQUIRED_CHOICE_TEXT_CONTRACTS = set(OPTION_TEXT_REQUIRED_KEYS)
@@ -181,10 +181,16 @@ def _literal_options(row: dict[str, Any]) -> dict[str, str]:
     try:
         parsed = ast.literal_eval(raw)
     except Exception:
-        return {}
-    if not isinstance(parsed, (list, tuple)):
-        return {}
-    return {LETTERS[i]: _clean_cell(value) for i, value in enumerate(parsed) if i < len(LETTERS)}
+        parsed = None
+    if isinstance(parsed, (list, tuple)):
+        return {LETTERS[i]: _clean_cell(value) for i, value in enumerate(parsed) if i < len(LETTERS)}
+    if isinstance(parsed, dict):
+        return {
+            str(letter).strip().upper(): _clean_cell(value)
+            for letter, value in parsed.items()
+            if str(letter).strip().upper() in LETTERS and _clean_cell(value)
+        }
+    return parse_lettered_option_blob(raw)
 
 
 def _valid_letters_for(benchmark: str, row: dict[str, Any]) -> str:

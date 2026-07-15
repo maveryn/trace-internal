@@ -182,7 +182,7 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     Final25Contract(
         "treebench",
         "MCQ option",
-        "Qwen3-32B selected-option extraction with fixed A-D contract",
+        "Qwen3-32B selected-option extraction using source option labels",
         "exact option-letter match",
         "extraction",
         "run_llm_extracted_benchmark_score_queue.py",
@@ -261,7 +261,9 @@ DEDICATED_SCORE_KEYS = ("mme_reasoning",)
 
 # These routes require the actual choice text, not merely a guessed range of
 # option letters. A row is invalid when its parsed choices omit the ground
-# truth or, for fixed contracts, any expected option.
+# truth or, for fixed contracts, any expected option. TreeBench labels are
+# source-derived because its image-embedded OCR questions include both A-C and
+# A-D rows.
 OPTION_TEXT_REQUIRED_KEYS = (
     "wemath",
     "phyx_mini_mc",

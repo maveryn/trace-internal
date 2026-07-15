@@ -106,6 +106,36 @@ TRACE_VIDEO4_BENCHMARKS = (
     "tempcompass",
 )
 
+
+def parse_lettered_option_blob(value: Any) -> dict[str, str]:
+    """Parse a lettered option block stored in one metadata cell.
+
+    Most sources use ``A. ...``, while a few TreeBench OCR rows use a bare
+    letter at the beginning of each line. Duplicated source labels retain
+    their first value, matching the first visible option with that label.
+    """
+
+    if value is None or (isinstance(value, float) and math.isnan(value)):
+        return {}
+    text = str(value).strip()
+    if not text:
+        return {}
+
+    markers_by_start: dict[int, tuple[int, str]] = {}
+    for marker in re.finditer(r"(?:^|\s)([A-K])[\.\):]\s+", text):
+        markers_by_start[marker.start(1)] = (marker.end(), marker.group(1))
+    for marker in re.finditer(r"(?m)^\s*([A-K])\s+(?=\S)", text):
+        markers_by_start.setdefault(marker.start(1), (marker.end(), marker.group(1)))
+
+    markers = sorted((start, end, letter) for start, (end, letter) in markers_by_start.items())
+    options: dict[str, str] = {}
+    for pos, (_, value_start, letter) in enumerate(markers):
+        value_end = markers[pos + 1][0] if pos + 1 < len(markers) else len(text)
+        option = re.sub(r"\s+", " ", text[value_start:value_end]).strip()
+        if option:
+            options.setdefault(letter, option)
+    return options
+
 TRACE_FINAL25_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
     "Charts, Tables & Structured Figures": (
         "chartmuseum",
@@ -350,6 +380,14 @@ def _repair_treebench_options(dataset: Any) -> list[dict[str, Any]]:
             continue
         present = [letter for letter in option_letters if letter in data and has_value(row.get(letter))]
         if answer in present:
+            continue
+
+        metadata_options = parse_lettered_option_blob(row.get("multi-choice options"))
+        if not present and answer in metadata_options:
+            # TreeBench's OCR split deliberately leaves the option columns
+            # empty because the model must read the choices from the image.
+            # Keep its prompt unchanged; the metadata text is only for scorer
+            # validation and answer extraction.
             continue
 
         repaired = False

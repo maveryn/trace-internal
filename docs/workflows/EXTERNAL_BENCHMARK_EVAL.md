@@ -377,7 +377,12 @@ Dataset construction must go through `build_vlmeval_dataset(spec)`. This pins
 `ERQA` to the 400-row EASI `ERQABench` class despite VLMEvalKit registering two
 classes under the same alias, and it repairs the upstream TreeBench row whose
 option B delimiter is embedded in column A. The builder fails if a TreeBench
-ground-truth option is still absent after the narrow repair.
+ground-truth option is still absent after the narrow repair. TreeBench OCR
+rows intentionally keep choices inside the image; their `multi-choice
+options` metadata is parsed for scorer validation and source-derived option
+labels without exposing those choices in the generation prompt. Do not force
+TreeBench to A-D: the official OCR rows include an A-C question and a source
+image with a duplicated C label.
 
 The active deterministic repairs are part of the scorer, not post-processing:
 

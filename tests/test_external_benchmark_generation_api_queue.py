@@ -263,7 +263,7 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
                 ],
             )
 
-    def test_screenspot_uses_vero_reasoning_prompt_with_original_image(self):
+    def test_screenspot_uses_vlmevalkit_prompt_path_with_original_image(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             image_path = root / "screen.png"
@@ -273,8 +273,17 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
                 def build_prompt(self, _row, video_llm):
                     del video_llm
                     return [
+                        {
+                            "role": "system",
+                            "type": "text",
+                            "value": "OFFICIAL SCREENSPOT SYSTEM",
+                        },
                         {"type": "image", "value": image_path},
-                        {"type": "text", "value": "old VLMEvalKit prompt"},
+                        {
+                            "role": "user",
+                            "type": "text",
+                            "value": "OFFICIAL SCREENSPOT USER",
+                        },
                     ]
 
             handle = runner.DatasetHandle(
@@ -293,13 +302,21 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
                     {"question": "open settings", "image_path": str(image_path)},
                 )
 
-            self.assertEqual(messages[0]["role"], "system")
-            self.assertEqual(messages[0]["content"][0]["text"], "You are a helpful assistant.")
-            self.assertEqual(messages[1]["content"][0]["image_url"]["url"], image_path.as_uri())
             self.assertEqual(
-                messages[1]["content"][1]["text"],
-                "Provide the point for the command: open settings. "
-                'Output the point in a JSON array format: [{"point_2d": [x, y]}].',
+                messages,
+                [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "OFFICIAL SCREENSPOT SYSTEM"},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": image_path.as_uri()},
+                            },
+                            {"type": "text", "text": "OFFICIAL SCREENSPOT USER"},
+                        ],
+                    }
+                ],
             )
 
     def test_manifest_lookup_uses_ordinal_for_duplicate_row_identity(self):

@@ -1189,7 +1189,7 @@ _SCREENSPOT_ACTION_ARGS_RE = re.compile(
     rf"(?:y\s*=\s*)?({_SCREENSPOT_NUMBER})\s*$",
     flags=re.IGNORECASE,
 )
-SCREENSPOT_ACTION_ADAPTER_CONTRACT = "screenspot-vero-absolute-point-v2"
+SCREENSPOT_ACTION_ADAPTER_CONTRACT = "screenspot-unresolved-explicit-action-v1"
 
 
 def _screenspot_balanced_boxed_values(text: str) -> list[str]:
@@ -1229,110 +1229,33 @@ def _screenspot_point_text(value: float) -> str:
     return str(int(value)) if value.is_integer() else format(value, ".15g")
 
 
-def _screenspot_vero_final_answer(value: Any) -> str:
-    """Mirror VERO's answer/thinking/boxed unwrapping for ScreenSpot."""
+def _screenspot_explicit_action_prediction(value: Any) -> tuple[str | None, str]:
+    """Normalize one explicit final action only after the pinned parser is unresolved."""
 
-    text = str(value or "").strip()
-    if "</think>" in text and "<think>" not in text:
-        text = f"<think>\n{text}"
-    if "<answer>" in text and "</answer>" in text:
-        text = text.split("<answer>", 1)[1].split("</answer>", 1)[0].strip()
-    if "</think>" in text:
-        text = text.split("</think>", 1)[-1].strip()
-    boxed = _screenspot_balanced_boxed_values(text)
-    return (boxed[-1] if boxed else text).strip()
+    text = str(value or "")
+    if _SCREENSPOT_OFFICIAL_POINT_RE.search(text):
+        return None, "vlmevalkit_named_xy"
 
+    answer_blocks = list(_SCREENSPOT_ANSWER_BLOCK_RE.finditer(text))
+    if len(answer_blocks) != 1:
+        return None, "unresolved"
+    answer = answer_blocks[0].group(1)
 
-def _screenspot_point_from_json(value: Any) -> tuple[float, float] | None:
-    if isinstance(value, dict):
-        point = value.get("point_2d")
-        if isinstance(point, (list, tuple)) and len(point) >= 2:
-            try:
-                candidate = (float(point[0]), float(point[1]))
-            except (TypeError, ValueError, OverflowError):
-                candidate = None
-            if candidate is not None and all(math.isfinite(item) for item in candidate):
-                return candidate
-        for child in value.values():
-            candidate = _screenspot_point_from_json(child)
-            if candidate is not None:
-                return candidate
-    elif isinstance(value, list):
-        for child in value:
-            candidate = _screenspot_point_from_json(child)
-            if candidate is not None:
-                return candidate
-    return None
-
-
-def _screenspot_vero_point(value: Any) -> tuple[float, float] | None:
-    """Parse an absolute point with VERO's released ScreenSpot fallback order."""
-
-    text = _screenspot_vero_final_answer(value)
-    if not text:
-        return None
-    try:
-        point = _screenspot_point_from_json(json.loads(text))
-    except (TypeError, ValueError, json.JSONDecodeError):
-        point = None
-
-    if point is None:
-        blocks = re.findall(r"```(?:json)?\s*(\[[\s\S]*?\])\s*```", text, flags=re.IGNORECASE)
-        for block in reversed(blocks):
-            try:
-                point = _screenspot_point_from_json(json.loads(block))
-            except (TypeError, ValueError, json.JSONDecodeError):
-                point = None
-            if point is not None:
-                break
-
-    if point is None:
-        matches = re.findall(
-            r'point_2d"?\s*[:=]\s*\[\s*([^\]]+)\]',
-            text,
-            flags=re.IGNORECASE,
-        )
-        if matches:
-            numbers = re.findall(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", matches[-1])
-            if len(numbers) >= 2:
-                point = (float(numbers[0]), float(numbers[1]))
-
-    if point is None:
-        pairs = re.findall(r"\[\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)\s*\]", text)
-        if pairs:
-            point = (float(pairs[-1][0]), float(pairs[-1][1]))
-
-    if point is None:
-        numbers = re.findall(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", text)
-        if len(numbers) >= 2:
-            point = (float(numbers[-2]), float(numbers[-1]))
-
-    if point is None or not all(math.isfinite(item) for item in point):
-        return None
-    return point
-
-
-def _screenspot_explicit_action_prediction(
-    value: Any,
-    *,
-    image_size: tuple[int, int] | None = None,
-) -> tuple[str | None, str]:
-    """Adapt VERO's absolute point to the pinned ScreenSpot named-x/y parser."""
-
-    point = _screenspot_vero_point(value)
+    boxed_points = [
+        point
+        for boxed in _screenspot_balanced_boxed_values(answer)
+        for point in _screenspot_action_points(boxed)
+    ]
+    if boxed_points:
+        point = _screenspot_unique_point(boxed_points)
+        method = "answer_boxed_explicit_action"
+    else:
+        point = _screenspot_unique_point(_screenspot_action_points(answer))
+        method = "answer_unique_explicit_action"
     if point is None:
         return None, "unresolved"
-    x, y = point
-    method = "vero_absolute_point"
-    if image_size is not None:
-        width, height = image_size
-        if width <= 0 or height <= 0:
-            raise ValueError(f"ScreenSpot image dimensions must be positive, got {image_size!r}")
-        x = max(0.0, min(1.0, x / width))
-        y = max(0.0, min(1.0, y / height))
-        method = "vero_absolute_point_to_normalized"
-    x_text, y_text = (_screenspot_point_text(coordinate) for coordinate in (x, y))
-    return f"pyautogui.click(x={x_text}, y={y_text})", method
+    x, y = (_screenspot_point_text(coordinate) for coordinate in point)
+    return f"pyautogui.click(x={x}, y={y})", method
 
 
 def _adapt_screenspot_prediction_table(
@@ -1356,18 +1279,8 @@ def _adapt_screenspot_prediction_table(
     adapted: list[Any] = []
     methods: list[str] = []
     changed = 0
-    image_sizes: dict[Path, tuple[int, int]] = {}
-    rows = data.to_dict(orient="records")
-    for raw, row in zip(original, rows):
-        image_size = _screenspot_archive_image_size(
-            sub_dataset=row.get("SUB_DATASET"),
-            image_path=row.get("image_path"),
-            cache=image_sizes,
-        )
-        normalized, method = _screenspot_explicit_action_prediction(
-            raw,
-            image_size=image_size,
-        )
+    for raw in original:
+        normalized, method = _screenspot_explicit_action_prediction(raw)
         value = raw if normalized is None else normalized
         changed += int(str(value) != str(raw))
         adapted.append(value)
@@ -1645,11 +1558,12 @@ def _archive_direct_score_slices(
                 extraction_method = key
                 break
         if spec.key == "screenspot":
-            point = _screenspot_vero_point(str(row.get("raw_prediction", model_response)))
-            if point is None:
-                point = (0.0, 0.0)
+            _import_vlmeval_runner()
+            from vlmeval.dataset.GUI.screenspot import parse_bbox_aguvis
+
+            point = parse_bbox_aguvis(str(row.get("prediction", model_response)))
             extraction_value = point
-            extraction_method = "vero_screenspot_absolute_point"
+            extraction_method = "vlmevalkit_parse_bbox_aguvis"
         for method_key in ("extract_answer_method", "eval_pred_method", "trace_extraction_method"):
             if row.get(method_key) not in {None, ""}:
                 extraction_method = str(row[method_key])
@@ -1831,11 +1745,11 @@ def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
     summary = runner.run_vlmeval_evaluate(ns)
     if spec.key == "screenspot":
         summary["harness"] = (
-            "VERO absolute-point parser with pinned VLMEvalKit ScreenSpot point-in-box geometry"
+            "Pinned VLMEvalKit ScreenSpot scorer with unresolved explicit-action adapter"
         )
         summary["parser"] = (
-            "VERO JSON/fenced JSON/point_2d/pair/final-number fallbacks, then "
-            "normalized named-x/y adapter"
+            "trace explicit-action adapter, then "
+            "vlmeval.dataset.GUI.screenspot.parse_bbox_aguvis"
         )
         summary["prediction_adapter"] = screenspot_adapter
         write_json(output_dir / "scores.json", summary)

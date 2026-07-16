@@ -29,7 +29,6 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _run_tablevqabench_local_score,
     _screenspot_explicit_action_prediction,
     _screenspot_point_in_box_score,
-    _screenspot_vero_point,
 )
 
 
@@ -205,26 +204,35 @@ class ExternalBenchmarkScoreQueueTests(unittest.TestCase):
             0.0,
         )
 
-    def test_screenspot_adapter_parses_vero_absolute_point_and_normalizes(self):
+    def test_screenspot_adapter_preserves_official_and_accepts_one_explicit_action(self):
+        self.assertEqual(
+            _screenspot_explicit_action_prediction("pyautogui.click(x=12, y=34)"),
+            (None, "vlmevalkit_named_xy"),
+        )
         self.assertEqual(
             _screenspot_explicit_action_prediction(
-                '<answer>[{"point_2d": [12, 34]}]</answer>',
-                image_size=(100, 200),
+                "<answer>earlier prose \\boxed{pyautogui.click(12, 34)}</answer>"
             ),
-            ("pyautogui.click(x=0.12, y=0.17)", "vero_absolute_point_to_normalized"),
+            ("pyautogui.click(x=12, y=34)", "answer_boxed_explicit_action"),
+        )
+        self.assertEqual(
+            _screenspot_explicit_action_prediction(
+                "<answer>pyautogui.click(x=12, 34)</answer>"
+            ),
+            ("pyautogui.click(x=12, y=34)", "answer_unique_explicit_action"),
         )
 
-    def test_screenspot_parser_matches_vero_released_fallback_order(self):
-        self.assertEqual(
-            _screenspot_vero_point('<answer>[{"point_2d": [12, 34]}]</answer>'),
-            (12.0, 34.0),
-        )
-        self.assertEqual(
-            _screenspot_vero_point('reasoning then point_2d: [56, 78]'),
-            (56.0, 78.0),
-        )
-        self.assertEqual(_screenspot_vero_point("final coordinates [90, 12]"), (90.0, 12.0))
-        self.assertIsNone(_screenspot_vero_point("target not found"))
+    def test_screenspot_adapter_leaves_conflicts_and_bare_coordinates_unresolved(self):
+        for response in (
+            "<answer>pyautogui.click(12, 34); pyautogui.click(56, 78)</answer>",
+            "<answer>[12, 34]</answer>",
+            "<answer>pyautogui.click(12, 34)</answer><answer>pyautogui.click(12, 34)</answer>",
+        ):
+            with self.subTest(response=response):
+                self.assertEqual(
+                    _screenspot_explicit_action_prediction(response),
+                    (None, "unresolved"),
+                )
 
     def test_chartmuseum_parser_matches_official_yes_substring_rule(self):
         self.assertEqual(_parse_chartmuseum_judgement_output("Yes"), 1)

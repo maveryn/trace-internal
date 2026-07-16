@@ -28,7 +28,7 @@ comparison and coverage analysis.
   minimum override while retaining Qwen's normal 28-pixel grid alignment.
   Dataset preparation records each source SHA-256 and an ordered per-row media
   hash, and vLLM must be started with the matching allowed local media root.
-  Generation contract v6 also binds full/subset/limit selection, immutable model
+  Generation contract v7 also binds full/subset/limit selection, immutable model
   revision, dataset revision, and evaluation code hash; only the full selection
   is accepted as a completed frozen campaign run.
 - Judge-required benchmarks are generation first, then scored with the local
@@ -418,7 +418,7 @@ image with a duplicated C label.
 
 ChartMuseum generation uses the pinned VLMEvalKit implementation's
 `dump_image(...)[0]` image and `get_question(...)` model prompt in both API and
-local batched paths. Generation contract v6 rejects any resumable response
+local batched paths. Generation contract v7 rejects any resumable response
 created by the earlier bare-question prompt path.
 
 Resumed API generation keys each row by source-content hash. Before preparing
@@ -432,11 +432,14 @@ post-processing:
 
 - ChartMuseum uses the pinned `extract_answer`, `COMPARE_ANSWER_PROMPT`, and
   official yes-substring decision rule.
-- ScreenSpot uses VERO's released reasoning prompt with absolute-pixel
-  `[{"point_2d": [x, y]}]` output for every compared model. Its deterministic
-  response parser follows the released VERO JSON, fenced JSON, named
-  `point_2d`, coordinate-pair, and final-two-number fallbacks, then adapts the
-  point into the pinned VLMEvalKit point-in-box geometry.
+- ScreenSpot uses the pinned VLMEvalKit prompt and preserves every result
+  accepted by its named x/y parser. Only when that parser is unresolved,
+  exactly one `<answer>` block may supply one unambiguous explicit
+  `pyautogui.click` or `moveTo` action. A balanced boxed action takes
+  precedence; otherwise all explicit actions must name the same coordinates.
+  Bare coordinate pairs and conflicting actions remain unresolved. The
+  normalized action is then evaluated by the unchanged pinned point-in-box
+  geometry.
 - ScreenSpot archive records reconstruct each binary point-in-box result with
   the pinned VLMEvalKit geometry and original LMUData image dimensions. The
   archive job fails before emission unless their pooled accuracy exactly

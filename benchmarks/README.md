@@ -1,30 +1,29 @@
 # External Benchmark Categories
 
-This document groups the 25 selected external benchmarks by their primary
+This document groups the 24 selected external benchmarks by their primary
 evaluated capability. The short category names are intended for result tables,
 plots, and evaluation summaries. Each benchmark appears in exactly one
 category.
 
-The executable route definitions live in
-`scripts/trace_final25_contract.py`; the extraction/scoring audit is
-`results/TRACE_FINAL25_SCORING_AUDIT.md`.
+The canonical selection is `evaluation/final24/suite.v1.json`. Executable route
+definitions live in `scripts/trace_final25_contract.py`; Final24 inherits those
+benchmark-specific contracts unchanged from the pinned All31 source campaign.
 
-Final scoring has three routes. Ten benchmarks use benchmark-specific
-pinned/direct evaluators, 14 use the pinned VLMEvalKit dataset object's
+Final scoring has three routes. Seven benchmarks use benchmark-specific
+pinned/direct evaluators, 16 use the pinned VLMEvalKit dataset object's
 `evaluate` method on the saved prediction workbook, and MME-Reasoning uses its
-dedicated official task scorer. The provisional all26 view adds MMVP to the
-`dataset.evaluate` route. The older generic TRACE Qwen answer-extraction queue
-is not a final scoring route.
+dedicated official task scorer. The older generic TRACE Qwen answer-extraction
+queue is not a final scoring route.
 
 | Category | Benchmarks | Count |
 | --- | --- | ---: |
-| Charts & Tables | ChartMuseum, ChartQAPro, CharXivReason, TableVQABench, EvoChart | 5 |
+| Charts & Tables | ChartQAPro, CharXivReason, TableVQABench, EvoChart | 4 |
 | Visual Math | MathVision, MathVista, MathVerse, WeMath | 4 |
-| Science & General | PhyX mini MC, Physics, MMMU-ProVis, MMStar | 4 |
-| Spatial & Grounding | ScreenSpot, SpatialVizBench COT, CV-Bench 3D, ERQA | 4 |
+| Science & General | PhyX mini MC, MMMU-ProVis, RealWorldQA, MMStar | 4 |
+| Spatial Reasoning | EmbSpatial, SpatialVizBench COT, CV-Bench 3D, ERQA | 4 |
 | Perception & Counting | BLINK, CountBenchQA, CountQA, TreeBench | 4 |
 | Puzzles & Logic | PuzzleVQA, VisualPuzzles, LogicVista, MME-Reasoning | 4 |
-| **Total** |  | **25** |
+| **Total** |  | **24** |
 
 ## Placement Notes
 
@@ -35,31 +34,21 @@ is not a final scoring route.
 - **MMStar** is a general multimodal benchmark. It remains with the science
   benchmarks as their broad visual-reasoning complement, which is reflected in
   the Science & General label.
-- **ScreenSpot** evaluates UI element localization, so it belongs under
-  Spatial & Grounding.
+- **RealWorldQA** supplies the broad real-world component of Science & General.
+- **EmbSpatial**, **SpatialVizBench COT**, **CV-Bench 3D**, and **ERQA** primarily
+  evaluate spatial reasoning rather than coordinate or UI grounding.
 - **TreeBench** combines subtle-target perception, traceable visual evidence,
   and relational reasoning, so it belongs under Perception & Counting rather
   than the puzzle category.
 
-## Pending Candidate Evaluation
+## Historical Context
 
 - **VStarBench** remains an additive candidate benchmark. Its full 191-row
   `VStarBench` alias uses the normal generation route; scoring applies the same
   deterministic explicit-option normalization as RealWorldQA before the pinned
   VLMEvalKit `dataset.evaluate` exact-matching route.
-- **RealWorldQA** is an additive candidate evaluation, not a frozen Final25
-  member. Run its full 765-row `RealWorldQA` VLMEvalKit alias with the Final25
-  generation policy. Scoring deterministically normalizes explicit final MCQ
-  wrappers before delegating to the pinned `dataset.evaluate` exact-matching
-  route. The dedicated `trace_realworldqa` run set exists so candidate runs do
-  not change Final25 or provisional-MMVP membership.
-- **MMVP** is the candidate replacement for CountQA. After the current
-  500-step Qwen2.5-VL-7B answer-reward training run completes, evaluate the
-  full 300-row MMVP benchmark on the base and trained checkpoints using the
-  Final25 decoding policy. Report VLMEvalKit's paired `Overall` accuracy as
-  the primary metric and per-question `Average` accuracy as a secondary
-  metric. Keep CountQA in the frozen suite until the result is reviewed, and
-  do not replace it if the trained checkpoint regresses against base.
+- **MMVP** remains in the historical All31 diagnostic view but is not a
+  Final24 member; Final24 retains CountQA.
 - **EvoChart** uses a local deterministic evaluator extension because the
   pinned VLMEvalKit commit has no EvoChart evaluator.
 - **LogicVista** follows the pinned evaluator with one narrow exception for
@@ -70,6 +59,6 @@ is not a final scoring route.
   and **ERQA** uses the pinned EASI `ERQABench.evaluate` implementation to
   avoid VLMEvalKit's broken duplicate registry class.
 
-For an overall score, macro-average the 25 benchmark scores directly. Averaging
-the six category means equally gives categories equal weight rather than giving
-each benchmark equal weight.
+For an overall score, macro-average the 24 benchmark scores directly. Because
+every Final24 category contains four benchmarks, averaging the six category
+means produces the same overall value.

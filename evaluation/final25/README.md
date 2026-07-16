@@ -6,6 +6,10 @@ answers, judge outputs, scores, workbooks, or aggregate result tables. Runtime
 artifacts belong in the configured campaign root and the private evaluation
 archive.
 
+This is the immutable source contract for the historical Final25 and All31
+campaigns. The active reporting selection is
+[`../final24/suite.v1.json`](../final24/suite.v1.json).
+
 ## Suite Definition
 
 [`suite.v1.json`](suite.v1.json) defines three explicit suite views:

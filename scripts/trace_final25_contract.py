@@ -6,6 +6,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from benchmark_queue_lib import (
+    TRACE_FINAL24_BENCHMARK_CATEGORIES,
+    TRACE_FINAL24_BENCHMARKS,
     TRACE_FINAL25_BENCHMARK_CATEGORIES,
     TRACE_FINAL31_BENCHMARK_CATEGORIES,
 )
@@ -201,6 +203,8 @@ ALL31_CONTRACTS = (*ALL26_CONTRACTS, *FINAL31_ADDITION_CONTRACTS)
 CONTRACT_BY_KEY = {contract.key: contract for contract in CONTRACTS}
 ALL26_CONTRACT_BY_KEY = {contract.key: contract for contract in ALL26_CONTRACTS}
 ALL31_CONTRACT_BY_KEY = {contract.key: contract for contract in ALL31_CONTRACTS}
+FINAL24_CONTRACTS = tuple(ALL31_CONTRACT_BY_KEY[key] for key in TRACE_FINAL24_BENCHMARKS)
+FINAL24_CONTRACT_BY_KEY = {contract.key: contract for contract in FINAL24_CONTRACTS}
 CATEGORY_BY_KEY = {
     key: category
     for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()
@@ -209,6 +213,11 @@ CATEGORY_BY_KEY = {
 FINAL31_CATEGORY_BY_KEY = {
     key: category
     for category, keys in TRACE_FINAL31_BENCHMARK_CATEGORIES.items()
+    for key in keys
+}
+FINAL24_CATEGORY_BY_KEY = {
+    key: category
+    for category, keys in TRACE_FINAL24_BENCHMARK_CATEGORIES.items()
     for key in keys
 }
 
@@ -252,6 +261,15 @@ FINAL31_OFFICIAL_VLMEVAL_SCORE_KEYS = (
 FINAL31_DIRECT_SCORE_KEYS = DIRECT_SCORE_KEYS
 FINAL31_DEDICATED_SCORE_KEYS = ("mme_reasoning",)
 DEDICATED_SCORE_KEYS = ("mme_reasoning",)
+FINAL24_DIRECT_SCORE_KEYS = tuple(
+    key for key in TRACE_FINAL24_BENCHMARKS if key in FINAL31_DIRECT_SCORE_KEYS
+)
+FINAL24_OFFICIAL_VLMEVAL_SCORE_KEYS = tuple(
+    key for key in TRACE_FINAL24_BENCHMARKS if key in FINAL31_OFFICIAL_VLMEVAL_SCORE_KEYS
+)
+FINAL24_DEDICATED_SCORE_KEYS = tuple(
+    key for key in TRACE_FINAL24_BENCHMARKS if key in FINAL31_DEDICATED_SCORE_KEYS
+)
 
 # Compatibility alias for older queue code. These frozen-suite keys no longer
 # use TRACE's generic Qwen extraction queue; the final route is pinned

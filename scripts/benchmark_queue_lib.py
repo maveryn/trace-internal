@@ -159,6 +159,17 @@ TRACE_FINAL25_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
 TRACE_FINAL25_BENCHMARKS = tuple(
     key for category_keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.values() for key in category_keys
 )
+TRACE_FINAL24_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
+    "Charts & Tables": ("chartqapro", "charxivreason", "tablevqabench", "evochart"),
+    "Visual Math": ("mathvision", "mathvista", "mathverse", "wemath"),
+    "Science & General": ("phyx_mini_mc", "mmmu_pro_vision", "realworldqa", "mmstar"),
+    "Spatial Reasoning": ("embspatial", "spatialvizbench_cot", "cvbench_3d", "erqa"),
+    "Perception & Counting": ("blink", "countbenchqa", "countqa", "treebench"),
+    "Puzzles & Logic": ("puzzlevqa", "visualpuzzles", "logicvista", "mme_reasoning"),
+}
+TRACE_FINAL24_BENCHMARKS = tuple(
+    key for category_keys in TRACE_FINAL24_BENCHMARK_CATEGORIES.values() for key in category_keys
+)
 # Evaluation view used to compare the frozen CountQA slot with provisional
 # MMVP in one campaign. Keep the frozen Final25 ordering and append MMVP once,
 # matching the ``all26`` dataset-manifest view.

@@ -1,0 +1,60 @@
+{
+  "schema_version": "trace-final24-suite-v1",
+  "suite_name": "trace_final24",
+  "status": "canonical",
+  "description": "Active 24-benchmark reporting selection derived without regeneration or rescoring from the pinned All31 campaign contracts.",
+  "source_contract": {
+    "path": "evaluation/final25/suite.v1.json",
+    "sha256": "01284a6a388e4c25796d01002fcb8116598bf77d5d7ecd84cb79ce44a6602d89",
+    "view": "all31",
+    "scoring": "inherit_by_benchmark_key"
+  },
+  "aggregation": {
+    "overall": "unweighted_macro_average_of_24_benchmarks",
+    "category": "unweighted_macro_average_of_4_benchmarks",
+    "average_category_means_for_overall": true
+  },
+  "benchmarks": [
+    "chartqapro",
+    "charxivreason",
+    "tablevqabench",
+    "evochart",
+    "mathvision",
+    "mathvista",
+    "mathverse",
+    "wemath",
+    "phyx_mini_mc",
+    "mmmu_pro_vision",
+    "realworldqa",
+    "mmstar",
+    "embspatial",
+    "spatialvizbench_cot",
+    "cvbench_3d",
+    "erqa",
+    "blink",
+    "countbenchqa",
+    "countqa",
+    "treebench",
+    "puzzlevqa",
+    "visualpuzzles",
+    "logicvista",
+    "mme_reasoning"
+  ],
+  "categories": {
+    "Charts & Tables": ["chartqapro", "charxivreason", "tablevqabench", "evochart"],
+    "Visual Math": ["mathvision", "mathvista", "mathverse", "wemath"],
+    "Science & General": ["phyx_mini_mc", "mmmu_pro_vision", "realworldqa", "mmstar"],
+    "Spatial Reasoning": ["embspatial", "spatialvizbench_cot", "cvbench_3d", "erqa"],
+    "Perception & Counting": ["blink", "countbenchqa", "countqa", "treebench"],
+    "Puzzles & Logic": ["puzzlevqa", "visualpuzzles", "logicvista", "mme_reasoning"]
+  },
+  "excluded_from_source_view": [
+    "chartmuseum",
+    "physics",
+    "screenspot",
+    "mmvp",
+    "screenspotpro",
+    "screenspot_v2",
+    "visulogic"
+  ]
+}

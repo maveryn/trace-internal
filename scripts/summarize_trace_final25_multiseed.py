@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import statistics
@@ -17,6 +18,8 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from benchmark_queue_lib import (  # noqa: E402
+    TRACE_FINAL24_BENCHMARK_CATEGORIES,
+    TRACE_FINAL24_BENCHMARKS,
     TRACE_FINAL25_BENCHMARK_CATEGORIES,
     TRACE_FINAL25_BENCHMARKS,
     TRACE_FINAL26_BENCHMARKS,
@@ -29,24 +32,33 @@ from benchmark_queue_lib import (  # noqa: E402
 
 
 SUITE_BENCHMARKS: dict[str, tuple[str, ...]] = {
+    "final24": TRACE_FINAL24_BENCHMARKS,
     "frozen": TRACE_FINAL25_BENCHMARKS,
     "all26": TRACE_FINAL26_BENCHMARKS,
     "all31": TRACE_FINAL31_BENCHMARKS,
 }
 SUITE_IDS = {
+    "final24": "trace_final24",
     "frozen": "trace_final25",
     "all26": "trace_final26",
     "all31": "trace_final31",
 }
 SUITE_DISPLAY_NAMES = {
+    "final24": "Final24",
     "frozen": "Final25",
     "all26": "All26",
     "all31": "Final31",
 }
+FINAL24_SELECTION_PATH = REPO_ROOT / "evaluation" / "final24" / "suite.v1.json"
 
 
 def _categories_for_suite(suite: str) -> dict[str, tuple[str, ...]]:
-    if suite == "all31":
+    if suite == "final24":
+        categories = {
+            category: tuple(keys)
+            for category, keys in TRACE_FINAL24_BENCHMARK_CATEGORIES.items()
+        }
+    elif suite == "all31":
         categories = {
             category: tuple(keys)
             for category, keys in TRACE_FINAL31_BENCHMARK_CATEGORIES.items()
@@ -239,25 +251,40 @@ def main() -> None:
         category_rows.append(record)
     category_summary = pd.DataFrame(category_rows)
 
+    metadata_rows = [
+        {"key": "suite", "value": SUITE_IDS[args.suite]},
+        {"key": "suite_view", "value": args.suite},
+        {"key": "benchmark_count", "value": len(benchmark_rows)},
+        {"key": "rows_per_model_seed", "value": int(summary.iloc[:-1]["Rows"].sum())},
+        {"key": "seeds", "value": ",".join(map(str, args.seeds))},
+        {
+            "key": "decoding",
+            "value": (
+                "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096; "
+                "ScreenSpot family max_tokens=16384"
+                if args.suite == "all31"
+                else "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096"
+            ),
+        },
+        {"key": "judge", "value": "Qwen/Qwen3-32B, temperature=0"},
+        {"key": "score_root_base", "value": str(args.score_root_base)},
+    ]
+    final24_selection_sha256 = ""
+    if args.suite == "final24":
+        selection = json.loads(FINAL24_SELECTION_PATH.read_text(encoding="utf-8"))
+        final24_selection_sha256 = hashlib.sha256(FINAL24_SELECTION_PATH.read_bytes()).hexdigest()
+        metadata_rows.extend(
+            [
+                {"key": "selection_manifest", "value": str(FINAL24_SELECTION_PATH)},
+                {"key": "selection_manifest_sha256", "value": final24_selection_sha256},
+                {
+                    "key": "source_contract_sha256",
+                    "value": selection["source_contract"]["sha256"],
+                },
+            ]
+        )
     metadata = pd.DataFrame(
-        [
-            {"key": "suite", "value": SUITE_IDS[args.suite]},
-            {"key": "suite_view", "value": args.suite},
-            {"key": "benchmark_count", "value": len(benchmark_rows)},
-            {"key": "rows_per_model_seed", "value": int(summary.iloc[:-1]["Rows"].sum())},
-            {"key": "seeds", "value": ",".join(map(str, args.seeds))},
-            {
-                "key": "decoding",
-                "value": (
-                    "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096; "
-                    "ScreenSpot family max_tokens=16384"
-                    if args.suite == "all31"
-                    else "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096"
-                ),
-            },
-            {"key": "judge", "value": "Qwen/Qwen3-32B, temperature=0"},
-            {"key": "score_root_base", "value": str(args.score_root_base)},
-        ]
+        metadata_rows
         + [
             {"key": f"model/{slug}", "value": label}
             for slug, label in model_entries
@@ -309,7 +336,9 @@ def main() -> None:
         for label, _, _ in args.delta:
             values.append(_fmt(float(row[label])))
         lines.append("| " + " | ".join(values) + " |")
-    if args.suite == "frozen":
+    if args.suite == "final24":
+        scoring_note = "Scoring: the pinned contracts selected by the canonical Final24 suite."
+    elif args.suite == "frozen":
         scoring_note = "Judge: Qwen3-32B at temperature 0 through the frozen Final25 scoring contracts."
     elif args.suite == "all26":
         scoring_note = "Scoring: frozen Final25 contracts plus the official VLMEvalKit MMVP paired-option evaluation."
@@ -318,16 +347,27 @@ def main() -> None:
     decoding_note = "Decoding: temperature 0.6, top-p 1, top-k -1, no penalties, maximum 4096 generated tokens."
     if args.suite == "all31":
         decoding_note += " ScreenSpot, ScreenSpotPro, and ScreenSpot v2 use a 16384-token maximum."
+    selection_note = (
+        f"Selection manifest SHA-256: `{final24_selection_sha256}`."
+        if final24_selection_sha256
+        else ""
+    )
     lines.extend(
         [
             "",
             decoding_note,
             scoring_note,
+            *([selection_note] if selection_note else []),
         ]
     )
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     args.markdown.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    log_tag = {"frozen": "final25", "all26": "all26", "all31": "all31"}[args.suite]
+    log_tag = {
+        "final24": "final24",
+        "frozen": "final25",
+        "all26": "all26",
+        "all31": "all31",
+    }[args.suite]
     print(f"[{log_tag}-summary:done] rows={len(summary_rows)} models={len(model_entries)} excel={args.excel} markdown={args.markdown}")
 
 

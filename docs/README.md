@@ -44,6 +44,8 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
    - generated task-review artifacts live under `../review/task-reviews/`
    - sampled external benchmark failure analysis lives in
      `docs/workflows/EXTERNAL_BENCHMARK_EVAL.md`
+   - active external comparison selection lives in
+     `../evaluation/final24/README.md`
    - current task-calibration gates and vLLM serving commands live in
      `docs/workflows/CALIBRATION_GUIDE.md`
 5. Resources: `docs/resources/SHARED_LABEL_ASSETS.md`,

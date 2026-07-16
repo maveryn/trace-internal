@@ -163,6 +163,110 @@ class OfficialVLMEvalSavedScoreTest(unittest.TestCase):
                 {"max_tokens": 256, "api_key": "<redacted>"},
             )
 
+    def test_screenspot_concat_adapts_json_and_uses_sample_weighted_overall(self) -> None:
+        class _FakeScreenSpotConcat:
+            dataset_name = "ScreenSpot_Pro"
+
+            def __init__(self) -> None:
+                self.data = pd.DataFrame(
+                    {
+                        "index": [0, 1, 2, 3],
+                        "SUB_DATASET": ["Development", "Office", "Office", "Office"],
+                        "image_path": ["dev.png", "office-1.png", "office-2.png", "office-3.png"],
+                    }
+                )
+
+            def evaluate(self, eval_file: str, **_kwargs: object) -> dict[str, float | int]:
+                adapted = pd.read_excel(eval_file)
+                self.predictions = adapted["prediction"].tolist()
+                self.image_paths = adapted["image_path"].tolist()
+                return {
+                    "Development:Overall_Accuracy": 50.0,
+                    "Development:text:cnt": 1,
+                    "Office:Overall_Accuracy": 100.0,
+                    "Office:text:cnt": 3,
+                }
+
+        dataset = _FakeScreenSpotConcat()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            prediction = root / "saved.xlsx"
+            pd.DataFrame(
+                {
+                    "index": [0, 1, 2, 3],
+                    "SUB_DATASET": ["Development", "Office", "Office", "Office"],
+                    "prediction": ['```json\n[{"point_2d": [12, 34]}]\n```'] * 4,
+                }
+            ).to_excel(prediction, index=False)
+
+            summary = runner.run_saved_score(
+                benchmark_key="screenspotpro",
+                dataset_alias="ScreenSpot_Pro",
+                prediction_xlsx=prediction,
+                output_dir=root / "score",
+                model="model/path",
+                model_slug="model-slug",
+                run_name="official",
+                dataset_kwargs={},
+                judge_kwargs={},
+                primary_metric=None,
+                primary_value_scale="auto",
+                vlmeval_root=runner.DEFAULT_VLMEVAL_ROOT,
+                dataset_builder=lambda _alias, **_kwargs: dataset,
+                table_loader=pd.read_excel,
+                flatten_metrics=lambda _result: {},
+            )
+
+            self.assertEqual(dataset.predictions, ["pyautogui.click(x=12, y=34)"] * 4)
+            self.assertEqual(
+                dataset.image_paths,
+                ["dev.png", "office-1.png", "office-2.png", "office-3.png"],
+            )
+            self.assertEqual(summary["score"], 87.5)
+            self.assertEqual(summary["primary_metric"]["pooled_rows"], 4)
+            self.assertEqual(
+                summary["provenance"]["prediction_adapter"]["resolved_rows"],
+                4,
+            )
+            self.assertEqual(
+                summary["provenance"]["prediction_adapter"]["media_restore"],
+                {
+                    "contract": runner.SCREENSPOT_MEDIA_RESTORE_CONTRACT,
+                    "source": "dataset.data",
+                    "matched_by": "unique_string_index",
+                    "restored_rows": 4,
+                    "validated_sub_dataset": True,
+                },
+            )
+            self.assertIn("Development:Overall_Accuracy", summary["scores"])
+
+    def test_screenspot_concat_rejects_mismatched_compact_subset(self) -> None:
+        class _FakeScreenSpotConcat:
+            data = pd.DataFrame(
+                {
+                    "index": [0],
+                    "SUB_DATASET": ["Development"],
+                    "image_path": ["dev.png"],
+                }
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            prediction = Path(temporary) / "ScreenSpot_Pro_predictions.xlsx"
+            pd.DataFrame(
+                {
+                    "index": [0],
+                    "SUB_DATASET": ["Office"],
+                    "prediction": ['[{"point_2d": [12, 34]}]'],
+                }
+            ).to_excel(prediction, index=False)
+
+            with self.assertRaisesRegex(ValueError, "SUB_DATASET disagrees"):
+                runner._adapt_screenspot_prediction(
+                    prediction,
+                    pd.read_excel,
+                    _FakeScreenSpotConcat(),
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

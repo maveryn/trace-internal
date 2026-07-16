@@ -50,7 +50,7 @@ def test_mmvp_spec_uses_official_paired_option_contract() -> None:
     assert spec.alias == entry["vlmeval_alias"] == "MMVP"
     assert entry["route"] == "official_vlmevalkit"
     assert entry["answer_contract"] == "paired_option"
-    assert entry["score_contract"] == "official_mmvp_paired"
+    assert entry["score_contract"] == "pinned_vlmevalkit_dataset_evaluate_mmvp_paired"
     assert spec.kind == "vlmeval"
     assert spec.eval_mode == "auto"
     assert local_judge_eval_mode(spec) is None

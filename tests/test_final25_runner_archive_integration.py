@@ -435,6 +435,61 @@ class Final25RunnerArchiveIntegrationTests(unittest.TestCase):
                     },
                 )
 
+    def test_screenspot_direct_archive_preserves_invalid_json_extraction(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(
+            os.environ,
+            {
+                **_archive_env(Path(temporary) / "spool"),
+                "LMUData": str(Path(temporary) / "LMUData"),
+            },
+            clear=False,
+        ):
+            root = Path(temporary)
+            output = root / "screenspot"
+            output.mkdir()
+            image_dir = root / "LMUData" / "images" / "ScreenSpot_Mobile"
+            image_dir.mkdir(parents=True)
+            Image.new("RGB", (100, 100)).save(image_dir / "screen.png")
+            judged = output / "screenspot_judged.xlsx"
+            pd.DataFrame(
+                [
+                    {
+                        "index": "0",
+                        "question": "Click the control",
+                        "bbox": "[10, 20, 11, 11]",
+                        "SUB_DATASET": "ScreenSpot_Mobile",
+                        "image_path": "screen.png",
+                        "raw_prediction": "not valid JSON",
+                        "prediction": "pyautogui.click(x=1000000000000, y=1000000000000)",
+                        "trace_extraction_status": "invalid",
+                        "trace_extraction_method": "missing_json_point_2d",
+                        "trace_extraction_candidates": "[]",
+                    }
+                ]
+            ).to_excel(judged, index=False)
+
+            _archive_direct_score_slices(
+                SimpleNamespace(seed=42, judge_model="Qwen/Judge"),
+                spec_by_key("screenspot"),
+                "Qwen/Test",
+                "test-model",
+                output,
+                {
+                    "rows": 1,
+                    "score": 0.0,
+                    "harness": "official",
+                    "artifacts": {"judged_table": str(judged)},
+                },
+            )
+
+            archived = _payloads(root / "spool")
+            extraction = next(row for row in archived if "normalized_extraction" in row)
+            self.assertEqual(extraction["model_response"], "not valid JSON")
+            self.assertEqual(extraction["normalized_extraction"]["status"], "invalid")
+            self.assertIsNone(extraction["normalized_extraction"]["value"])
+            self.assertEqual(extraction["normalized_extraction"]["method"], "missing_json_point_2d")
+            self.assertEqual(extraction["normalized_extraction"]["candidates"], [])
+
     def test_llm_extraction_emits_response_extraction_and_score(self):
         with tempfile.TemporaryDirectory() as temporary, patch.dict(
             os.environ, _archive_env(Path(temporary) / "spool"), clear=False

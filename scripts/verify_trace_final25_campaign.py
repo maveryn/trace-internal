@@ -16,6 +16,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
 from benchmark_queue_lib import (  # noqa: E402
     TRACE_FINAL25_BENCHMARKS,
     TRACE_FINAL26_BENCHMARKS,
+    TRACE_FINAL31_BENCHMARKS,
     extract_score_and_rows,
     run_dir,
     score_path,
@@ -34,6 +35,24 @@ from run_external_benchmark_generation_api_queue import _generation_contract_has
 SUITE_BENCHMARKS: dict[str, tuple[str, ...]] = {
     "frozen": TRACE_FINAL25_BENCHMARKS,
     "all26": TRACE_FINAL26_BENCHMARKS,
+    "all31": TRACE_FINAL31_BENCHMARKS,
+}
+
+GUI_LONG_OUTPUT_KEYS = frozenset({"screenspot", "screenspotpro", "screenspot_v2"})
+FINAL31_SUBDATASET_ROWS = {
+    "screenspotpro": {
+        "ScreenSpot_Pro_Development": 299,
+        "ScreenSpot_Pro_Creative": 341,
+        "ScreenSpot_Pro_CAD": 261,
+        "ScreenSpot_Pro_Scientific": 254,
+        "ScreenSpot_Pro_Office": 230,
+        "ScreenSpot_Pro_OS": 196,
+    },
+    "screenspot_v2": {
+        "ScreenSpot_v2_Mobile": 501,
+        "ScreenSpot_v2_Desktop": 334,
+        "ScreenSpot_v2_Web": 437,
+    },
 }
 
 
@@ -63,6 +82,7 @@ def _expected_generation_contract_hash(
     dataset_snapshot_sha256: str,
     dataset_revision: str,
     final25_code_hash: str,
+    max_tokens: int = 4096,
 ) -> str:
     contract_args = argparse.Namespace(
         model=model,
@@ -73,7 +93,7 @@ def _expected_generation_contract_hash(
         top_k=-1,
         presence_penalty=0.0,
         repetition_penalty=1.0,
-        max_tokens=4096,
+        max_tokens=max_tokens,
         seed=seed,
         media_transport=MEDIA_TRANSPORT,
         min_image_pixels=QWEN_MIN_IMAGE_PIXELS,
@@ -100,6 +120,7 @@ def _generation_complete(
     *,
     expected_model_revision: str,
     expected_contract_hash: str,
+    expected_max_tokens: int = 4096,
 ) -> tuple[bool, str]:
     if not path.exists():
         return False, "missing"
@@ -117,7 +138,7 @@ def _generation_complete(
             "top_k": int(generation["top_k"]) == -1,
             "presence_penalty": abs(float(generation["presence_penalty"])) < 1e-9,
             "repetition_penalty": abs(float(generation["repetition_penalty"]) - 1.0) < 1e-9,
-            "max_tokens": int(generation["max_tokens"]) == 4096,
+            "max_tokens": int(generation["max_tokens"]) == expected_max_tokens,
             "compact_tables": bool(generation.get("compact_prediction_tables")),
             "contract_version": generation.get("contract_version") == GENERATION_CONTRACT_VERSION,
             "contract_hash": generation.get("contract_hash") == expected_contract_hash,
@@ -141,6 +162,28 @@ def _generation_complete(
         return not failed, detail
     except Exception as exc:
         return False, f"invalid:{type(exc).__name__}"
+
+
+def _validate_all31_subdatasets(dataset_manifest: Path) -> None:
+    payload = json.loads(dataset_manifest.read_text(encoding="utf-8"))
+    datasets = payload.get("datasets") or {}
+    failures: list[str] = []
+    for key, expected in FINAL31_SUBDATASET_ROWS.items():
+        receipt = datasets.get(key) or {}
+        actual_entries = receipt.get("subdatasets") or []
+        actual = {
+            str(entry.get("alias")): int(entry.get("rows", -1))
+            for entry in actual_entries
+            if isinstance(entry, dict)
+        }
+        if actual != expected:
+            failures.append(f"{key}: expected={expected!r} actual={actual!r}")
+        if int(receipt.get("rows", -1)) != sum(expected.values()):
+            failures.append(
+                f"{key}: receipt rows={receipt.get('rows')!r}, expected={sum(expected.values())}"
+            )
+    if failures:
+        raise ValueError("Final31 concat receipt mismatch: " + "; ".join(failures))
 
 
 def main() -> None:
@@ -175,6 +218,15 @@ def main() -> None:
         "--final25-code-hash",
         default=os.environ.get("TRACE_FINAL25_CODE_HASH"),
     )
+    parser.add_argument(
+        "--dataset-manifest",
+        type=Path,
+        default=(
+            Path(os.environ["FINAL25_DATASET_MANIFEST"])
+            if os.environ.get("FINAL25_DATASET_MANIFEST")
+            else None
+        ),
+    )
     args = parser.parse_args()
 
     try:
@@ -191,6 +243,13 @@ def main() -> None:
             parser.error("generation verification requires --dataset-snapshot-sha256")
         if not args.final25_code_hash:
             parser.error("generation verification requires --final25-code-hash")
+        if args.suite == "all31":
+            if args.dataset_manifest is None:
+                parser.error("all31 generation verification requires --dataset-manifest")
+            try:
+                _validate_all31_subdatasets(args.dataset_manifest)
+            except (OSError, ValueError, TypeError) as exc:
+                parser.error(str(exc))
 
     benchmarks = _benchmarks_for_suite(args.suite)
     records = []
@@ -203,6 +262,7 @@ def main() -> None:
                 if args.phase == "generation":
                     path = run_dir(spec, model_slug, run_root) / "generation_summary.json"
                     model, model_revision = model_entries[model_slug]
+                    expected_max_tokens = 16384 if benchmark_key in GUI_LONG_OUTPUT_KEYS else 4096
                     expected_contract_hash = _expected_generation_contract_hash(
                         model=model,
                         model_slug=model_slug,
@@ -211,6 +271,7 @@ def main() -> None:
                         dataset_snapshot_sha256=args.dataset_snapshot_sha256,
                         dataset_revision=args.dataset_revision,
                         final25_code_hash=args.final25_code_hash,
+                        max_tokens=expected_max_tokens,
                     )
                     complete, detail = _generation_complete(
                         path,
@@ -218,6 +279,7 @@ def main() -> None:
                         args.dataset_revision,
                         expected_model_revision=model_revision,
                         expected_contract_hash=expected_contract_hash,
+                        expected_max_tokens=expected_max_tokens,
                     )
                 else:
                     path = score_path(spec, model_slug, benchmark_root)
@@ -247,7 +309,7 @@ def main() -> None:
     if args.json:
         print(json.dumps({"complete": not incomplete, "suite": args.suite, "records": records}, indent=2))
     else:
-        log_tag = "final25" if args.suite == "frozen" else "all26"
+        log_tag = {"frozen": "final25", "all26": "all26", "all31": "all31"}[args.suite]
         print(
             f"[{log_tag}-verify] phase={args.phase} complete={len(records) - len(incomplete)}/{len(records)} "
             f"incomplete={len(incomplete)}"

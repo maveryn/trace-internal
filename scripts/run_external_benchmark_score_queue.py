@@ -61,6 +61,10 @@ from trace_final25_contract import (  # noqa: E402
     DIRECT_SCORE_KEYS,
     LLM_EXTRACT_SCORE_KEYS,
 )
+from screenspot_json_contract import (  # noqa: E402
+    adapt_screenspot_prediction_frame,
+    uses_screenspot_json_contract,
+)
 
 
 def _import_vlmeval_runner():
@@ -1174,127 +1178,20 @@ def _archive_expected_rows(summary: dict[str, Any]) -> int | None:
 
 _ARCHIVE_AGGREGATE_ONLY_SCORE_KEYS = frozenset({"tablevqabench", "mathvision", "mathvista"})
 
-_SCREENSPOT_OFFICIAL_POINT_RE = re.compile(r"x=([\d.]+), y=([\d.]+)")
-_SCREENSPOT_ANSWER_BLOCK_RE = re.compile(
-    r"<answer>\s*(.*?)\s*</answer>",
-    flags=re.IGNORECASE | re.DOTALL,
-)
-_SCREENSPOT_ACTION_CALL_RE = re.compile(
-    r"pyautogui\.(?:click|moveTo)\s*\((.*?)\)",
-    flags=re.IGNORECASE | re.DOTALL,
-)
-_SCREENSPOT_NUMBER = r"(?:\d+(?:\.\d*)?|\.\d+)"
-_SCREENSPOT_ACTION_ARGS_RE = re.compile(
-    rf"^\s*(?:x\s*=\s*)?({_SCREENSPOT_NUMBER})\s*,\s*"
-    rf"(?:y\s*=\s*)?({_SCREENSPOT_NUMBER})\s*$",
-    flags=re.IGNORECASE,
-)
-SCREENSPOT_ACTION_ADAPTER_CONTRACT = "screenspot-unresolved-explicit-action-v1"
-
-
-def _screenspot_balanced_boxed_values(text: str) -> list[str]:
-    values: list[str] = []
-    for match in re.finditer(r"\\boxed\s*\{", text):
-        start = match.end()
-        depth = 1
-        pos = start
-        while pos < len(text) and depth:
-            if text[pos] == "{":
-                depth += 1
-            elif text[pos] == "}":
-                depth -= 1
-            pos += 1
-        if depth == 0:
-            values.append(text[start : pos - 1])
-    return values
-
-
-def _screenspot_action_points(text: str) -> list[tuple[float, float]]:
-    points: list[tuple[float, float]] = []
-    for call in _SCREENSPOT_ACTION_CALL_RE.finditer(text):
-        match = _SCREENSPOT_ACTION_ARGS_RE.fullmatch(call.group(1))
-        if match:
-            point = (float(match.group(1)), float(match.group(2)))
-            if all(math.isfinite(coordinate) for coordinate in point):
-                points.append(point)
-    return points
-
-
-def _screenspot_unique_point(points: list[tuple[float, float]]) -> tuple[float, float] | None:
-    unique = set(points)
-    return next(iter(unique)) if len(unique) == 1 else None
-
-
-def _screenspot_point_text(value: float) -> str:
-    return str(int(value)) if value.is_integer() else format(value, ".15g")
-
-
-def _screenspot_explicit_action_prediction(value: Any) -> tuple[str | None, str]:
-    """Normalize one explicit final action only after the pinned parser is unresolved."""
-
-    text = str(value or "")
-    if _SCREENSPOT_OFFICIAL_POINT_RE.search(text):
-        return None, "vlmevalkit_named_xy"
-
-    answer_blocks = list(_SCREENSPOT_ANSWER_BLOCK_RE.finditer(text))
-    if len(answer_blocks) != 1:
-        return None, "unresolved"
-    answer = answer_blocks[0].group(1)
-
-    boxed_points = [
-        point
-        for boxed in _screenspot_balanced_boxed_values(answer)
-        for point in _screenspot_action_points(boxed)
-    ]
-    if boxed_points:
-        point = _screenspot_unique_point(boxed_points)
-        method = "answer_boxed_explicit_action"
-    else:
-        point = _screenspot_unique_point(_screenspot_action_points(answer))
-        method = "answer_unique_explicit_action"
-    if point is None:
-        return None, "unresolved"
-    x, y = (_screenspot_point_text(coordinate) for coordinate in point)
-    return f"pyautogui.click(x={x}, y={y})", method
-
 
 def _adapt_screenspot_prediction_table(
     spec: BenchmarkSpec,
     output_dir: Path,
 ) -> dict[str, Any] | None:
-    if spec.key != "screenspot":
+    if not uses_screenspot_json_contract(spec):
         return None
     prediction = output_dir / f"{spec.alias}_predictions.xlsx"
     if not prediction.exists():
         raise FileNotFoundError(prediction)
     data = pd.read_excel(prediction, keep_default_na=False)
-    if "prediction" not in data:
-        raise KeyError(f"ScreenSpot workbook lacks prediction column: {prediction}")
-    original = (
-        data["raw_prediction"].copy()
-        if "raw_prediction" in data
-        else data["prediction"].copy()
-    )
-    data["raw_prediction"] = original
-    adapted: list[Any] = []
-    methods: list[str] = []
-    changed = 0
-    for raw in original:
-        normalized, method = _screenspot_explicit_action_prediction(raw)
-        value = raw if normalized is None else normalized
-        changed += int(str(value) != str(raw))
-        adapted.append(value)
-        methods.append(method)
-    data["prediction"] = adapted
-    data["trace_extraction_method"] = methods
-    data.to_excel(prediction, index=False)
-    method_counts = data["trace_extraction_method"].value_counts().to_dict()
-    return {
-        "contract": SCREENSPOT_ACTION_ADAPTER_CONTRACT,
-        "changed_rows": changed,
-        "method_counts": {str(key): int(value) for key, value in method_counts.items()},
-        "rows": int(len(data)),
-    }
+    adapted, receipt = adapt_screenspot_prediction_frame(data)
+    adapted.to_excel(prediction, index=False)
+    return receipt
 
 
 def _screenspot_point_in_box_score(
@@ -1551,6 +1448,8 @@ def _archive_direct_score_slices(
             model_response = source_row.get("prediction", row.get("prediction", ""))
         extraction_value = None
         extraction_method = ""
+        extraction_status = ""
+        extraction_candidates: list[Any] = []
         for key in ("extract_answer", "eval_pred", "res", "extract", "prediction"):
             value = row.get(key)
             if value not in {None, ""}:
@@ -1564,6 +1463,19 @@ def _archive_direct_score_slices(
             point = parse_bbox_aguvis(str(row.get("prediction", model_response)))
             extraction_value = point
             extraction_method = "vlmevalkit_parse_bbox_aguvis"
+            trace_status = str(row.get("trace_extraction_status") or "").strip()
+            if trace_status in {"resolved", "ambiguous", "invalid"}:
+                extraction_status = trace_status
+                if trace_status != "resolved":
+                    extraction_value = None
+                raw_candidates = row.get("trace_extraction_candidates")
+                if isinstance(raw_candidates, str):
+                    try:
+                        parsed_candidates = json.loads(raw_candidates)
+                    except json.JSONDecodeError:
+                        parsed_candidates = []
+                    if isinstance(parsed_candidates, list):
+                        extraction_candidates = parsed_candidates
         for method_key in ("extract_answer_method", "eval_pred_method", "trace_extraction_method"):
             if row.get(method_key) not in {None, ""}:
                 extraction_method = str(row[method_key])
@@ -1610,9 +1522,12 @@ def _archive_direct_score_slices(
                 "judge_prompt": canonical_json([event.get("prompt", "") for event in events]),
                 "judge_response": canonical_json([event.get("response", "") for event in events]),
                 "normalized_extraction": {
-                    "status": "resolved" if extraction_value not in {None, ""} else "invalid",
+                    "status": extraction_status or (
+                        "resolved" if extraction_value is not None and extraction_value != "" else "invalid"
+                    ),
                     "value": extraction_value,
                     "method": extraction_method,
+                    **({"candidates": extraction_candidates} if extraction_status else {}),
                 },
                 "retries": {
                     "events": events,
@@ -1743,12 +1658,12 @@ def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
     _sanitize_prediction_table_for_scoring(spec, output_dir)
     ns = _namespace_for_spec(args, spec, output_dir, model_path)
     summary = runner.run_vlmeval_evaluate(ns)
-    if spec.key == "screenspot":
+    if uses_screenspot_json_contract(spec):
         summary["harness"] = (
-            "Pinned VLMEvalKit ScreenSpot scorer with unresolved explicit-action adapter"
+            "Pinned VLMEvalKit ScreenSpot-family point-in-box scorer with strict JSON adapter"
         )
         summary["parser"] = (
-            "trace explicit-action adapter, then "
+            "trace strict JSON point_2d adapter, then "
             "vlmeval.dataset.GUI.screenspot.parse_bbox_aguvis"
         )
         summary["prediction_adapter"] = screenspot_adapter

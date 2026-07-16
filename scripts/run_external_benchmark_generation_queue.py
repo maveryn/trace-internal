@@ -47,6 +47,7 @@ from benchmark_queue_lib import (
     spec_by_key,
     write_json,
 )
+from screenspot_json_contract import apply_screenspot_json_prompt
 
 
 def _import_vlmeval_runner():
@@ -241,6 +242,7 @@ def _prepare_vlmeval_batch(
     requests: list[dict[str, Any]] = []
     for row in rows:
         struct = runner.build_prompt_for_runner(dataset, row, video_llm=spec.video_llm)
+        struct = apply_screenspot_json_prompt(spec, row, struct)
         requests.append(
             runner.make_vllm_request(
                 processor,

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -30,6 +31,8 @@ BENCHMARK_RUN_SETS = (
     "trace_video4",
     "trace_final25",
     "trace_final26",
+    "trace_final31",
+    "trace_realworldqa",
 )
 EXTERNAL_EVAL_V1_SUBSET_ROOT = DEFAULT_BENCHMARK_ROOT / "subsets" / "external_eval_v1"
 EXTERNAL_EVAL_V1_QUEUE_SUFFIX = "external_eval_v1"
@@ -107,6 +110,8 @@ TRACE_VIDEO4_BENCHMARKS = (
     "tempcompass",
 )
 
+TRACE_REALWORLDQA_BENCHMARKS = ("realworldqa",)
+
 
 def parse_lettered_option_blob(value: Any) -> dict[str, str]:
     """Parse a lettered option block stored in one metadata cell.
@@ -146,7 +151,7 @@ TRACE_FINAL25_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
         "evochart",
     ),
     "Visual Math": ("mathvision", "mathvista", "mathverse", "wemath"),
-    "Science & General Reasoning": ("phyx_mini_mc", "physics", "mmmu_pro_vision", "mmstar"),
+    "Science & General": ("phyx_mini_mc", "physics", "mmmu_pro_vision", "mmstar"),
     "Spatial & Grounding": ("screenspot", "spatialvizbench_cot", "cvbench_3d", "erqa"),
     "Perception & Counting": ("blink", "countbenchqa", "countqa", "treebench"),
     "Puzzles & Logic": ("puzzlevqa", "visualpuzzles", "logicvista", "mme_reasoning"),
@@ -158,11 +163,59 @@ TRACE_FINAL25_BENCHMARKS = tuple(
 # MMVP in one campaign. Keep the frozen Final25 ordering and append MMVP once,
 # matching the ``all26`` dataset-manifest view.
 TRACE_FINAL26_BENCHMARKS = (*TRACE_FINAL25_BENCHMARKS, "mmvp")
+TRACE_FINAL31_ADDITIONS = (
+    "screenspotpro",
+    "screenspot_v2",
+    "embspatial",
+    "realworldqa",
+    "visulogic",
+)
+TRACE_FINAL31_BENCHMARKS = (*TRACE_FINAL26_BENCHMARKS, *TRACE_FINAL31_ADDITIONS)
+TRACE_FINAL31_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
+    "Charts & Tables": TRACE_FINAL25_BENCHMARK_CATEGORIES["Charts & Tables"],
+    "Visual Math": TRACE_FINAL25_BENCHMARK_CATEGORIES["Visual Math"],
+    "Science & General": (
+        *TRACE_FINAL25_BENCHMARK_CATEGORIES["Science & General"],
+        "realworldqa",
+    ),
+    "Spatial & Grounding": (
+        *TRACE_FINAL25_BENCHMARK_CATEGORIES["Spatial & Grounding"],
+        "screenspotpro",
+        "screenspot_v2",
+        "embspatial",
+    ),
+    "Perception & Counting": (
+        *TRACE_FINAL25_BENCHMARK_CATEGORIES["Perception & Counting"],
+        "mmvp",
+    ),
+    "Puzzles & Logic": (
+        *TRACE_FINAL25_BENCHMARK_CATEGORIES["Puzzles & Logic"],
+        "visulogic",
+    ),
+}
 
 MME_REASONING_TSV_URL = (
     "https://huggingface.co/datasets/InternScience/MME-Reasoning/resolve/main/MME_Reasoning.tsv"
 )
 MME_REASONING_MD5 = "b243f44778782d3821523689f6b40a1e"
+REALWORLDQA_TSV_URL = "http://opencompass.openxlab.space/utils/VLMEval/RealWorldQA.tsv"
+REALWORLDQA_MD5 = "4de008f55dc4fd008ca9e15321dc44b7"
+VISULOGIC_TSV_URL = "http://opencompass.openxlab.space/utils/VLMEval/VisuLogic.tsv"
+VISULOGIC_MD5 = "b0820b5ec1e01dfe3951927f0def73b6"
+SCREENSPOT_PRO_TSV_ROOT = (
+    "http://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_Pro"
+)
+SCREENSPOT_PRO_TSV_URLS = {
+    alias: f"{SCREENSPOT_PRO_TSV_ROOT}/{alias}.tsv"
+    for alias in (
+        "ScreenSpot_Pro_Development",
+        "ScreenSpot_Pro_Creative",
+        "ScreenSpot_Pro_CAD",
+        "ScreenSpot_Pro_Scientific",
+        "ScreenSpot_Pro_Office",
+        "ScreenSpot_Pro_OS",
+    )
+}
 
 
 @dataclass(frozen=True)
@@ -220,18 +273,115 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("mmhelix", "MM-HELIX", "MM-HELIX", "vlmevalkit_boxed_defaults", eval_mode="mmhelix_local_score", max_tokens=4096),
     BenchmarkSpec("blink", "Blink", "BLINK", "vlmevalkit_defaults"),
     BenchmarkSpec("erqa", "ERQA", "ERQA", "vlmevalkit_defaults"),
-    BenchmarkSpec("embspatial", "EmbSpatial", "EmbSpatialBench", "vlmevalkit_defaults"),
+    BenchmarkSpec(
+        "embspatial",
+        "EmbSpatial",
+        "EmbSpatialBench",
+        "vlmevalkit_defaults",
+        max_tokens=4096,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+    ),
     BenchmarkSpec("robospatialhome", "RoboSpatialHome", "RoboSpatialHome", "vlmevalkit_defaults"),
     BenchmarkSpec("game_qa_lite", "Game-QA-Lite", "Game-QA-Lite", "vlmevalkit_cot_boxed"),
     BenchmarkSpec("countqa", "CountQA", "CountQA", "vlmevalkit_cot_boxed"),
     BenchmarkSpec("vstarbench", "VStarBench", "VStarBench", "vlmevalkit_defaults"),
-    BenchmarkSpec("screenspotpro_development", "ScreenSpotPro/Development", "ScreenSpot_Pro_Development", "vlmevalkit_defaults_pooled/development", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
-    BenchmarkSpec("screenspotpro_creative", "ScreenSpotPro/Creative", "ScreenSpot_Pro_Creative", "vlmevalkit_defaults_pooled/creative", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
-    BenchmarkSpec("screenspotpro_cad", "ScreenSpotPro/CAD", "ScreenSpot_Pro_CAD", "vlmevalkit_defaults_pooled/cad", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
-    BenchmarkSpec("screenspotpro_scientific", "ScreenSpotPro/Scientific", "ScreenSpot_Pro_Scientific", "vlmevalkit_defaults_pooled/scientific", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
-    BenchmarkSpec("screenspotpro_office", "ScreenSpotPro/Office", "ScreenSpot_Pro_Office", "vlmevalkit_defaults_pooled/office", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
-    BenchmarkSpec("screenspotpro_os", "ScreenSpotPro/OS", "ScreenSpot_Pro_OS", "vlmevalkit_defaults_pooled/os", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
+    BenchmarkSpec(
+        "screenspotpro_development",
+        "ScreenSpotPro/Development",
+        "ScreenSpot_Pro_Development",
+        "vlmevalkit_defaults_pooled/development",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        aggregate_group="screenspotpro",
+        aggregate_run_name="vlmevalkit_defaults_pooled",
+    ),
+    BenchmarkSpec(
+        "screenspotpro_creative",
+        "ScreenSpotPro/Creative",
+        "ScreenSpot_Pro_Creative",
+        "vlmevalkit_defaults_pooled/creative",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        aggregate_group="screenspotpro",
+        aggregate_run_name="vlmevalkit_defaults_pooled",
+    ),
+    BenchmarkSpec(
+        "screenspotpro_cad",
+        "ScreenSpotPro/CAD",
+        "ScreenSpot_Pro_CAD",
+        "vlmevalkit_defaults_pooled/cad",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        aggregate_group="screenspotpro",
+        aggregate_run_name="vlmevalkit_defaults_pooled",
+    ),
+    BenchmarkSpec(
+        "screenspotpro_scientific",
+        "ScreenSpotPro/Scientific",
+        "ScreenSpot_Pro_Scientific",
+        "vlmevalkit_defaults_pooled/scientific",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        aggregate_group="screenspotpro",
+        aggregate_run_name="vlmevalkit_defaults_pooled",
+    ),
+    BenchmarkSpec(
+        "screenspotpro_office",
+        "ScreenSpotPro/Office",
+        "ScreenSpot_Pro_Office",
+        "vlmevalkit_defaults_pooled/office",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        aggregate_group="screenspotpro",
+        aggregate_run_name="vlmevalkit_defaults_pooled",
+    ),
+    BenchmarkSpec(
+        "screenspotpro_os",
+        "ScreenSpotPro/OS",
+        "ScreenSpot_Pro_OS",
+        "vlmevalkit_defaults_pooled/os",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        aggregate_group="screenspotpro",
+        aggregate_run_name="vlmevalkit_defaults_pooled",
+    ),
     BenchmarkSpec("mmstar", "MMStar", "MMStar", "vlmevalkit_defaults"),
+    BenchmarkSpec(
+        "realworldqa",
+        "RealWorldQA",
+        "RealWorldQA",
+        "vlmevalkit_defaults",
+        max_tokens=4096,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        note=(
+            "Candidate 765-row real-world visual MCQ benchmark; use pinned "
+            "VLMEvalKit dataset.evaluate."
+        ),
+    ),
     BenchmarkSpec(
         "mme_reasoning",
         "MME-Reasoning",
@@ -262,8 +412,28 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
 
 TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("mindcubebench_tiny", "MindCubeBench tiny", "MindCubeBench_tiny_raw_qa", "vlmevalkit_defaults"),
-    BenchmarkSpec("screenspot", "ScreenSpot", "ScreenSpot", "vlmevalkit_defaults_sample200", max_tokens=1024),
-    BenchmarkSpec("screenspotpro", "ScreenSpot-Pro", "ScreenSpot_Pro", "vlmevalkit_defaults_sample200", max_tokens=1024),
+    BenchmarkSpec(
+        "screenspot",
+        "ScreenSpot",
+        "ScreenSpot",
+        "vlmevalkit_json_point_native",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+    ),
+    BenchmarkSpec(
+        "screenspotpro",
+        "ScreenSpotPro",
+        "ScreenSpot_Pro",
+        "vlmevalkit_json_point_native",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+    ),
     BenchmarkSpec("puzzlevqa", "PuzzleVQA", "PuzzleVQA", "vlmevalkit_reasoning"),
     BenchmarkSpec("omni3dbench", "Omni3DBench", "Omni3DBench", "vlmevalkit_defaults"),
     BenchmarkSpec("visualpuzzles", "VisualPuzzles", "VisualPuzzles", "vlmevalkit_reasoning"),
@@ -273,7 +443,17 @@ TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("qspatial_plus", "QSpatial plus", "QSpatial_plus", "vlmevalkit_reasoning"),
     BenchmarkSpec("countbenchqa", "CountBenchQA", "CountBenchQA", "vlmevalkit_defaults"),
     BenchmarkSpec("phyx_mini_mc", "PhyX mini MC", "PhyX_mini_MC", "vlmevalkit_defaults"),
-    BenchmarkSpec("visulogic", "VisuLogic", "VisuLogic", "vlmevalkit_reasoning"),
+    BenchmarkSpec(
+        "visulogic",
+        "VisuLogic",
+        "VisuLogic",
+        "vlmevalkit_reasoning",
+        max_tokens=4096,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+    ),
     BenchmarkSpec("spbench_si_cot", "SPBench SI COT", "SPBench-SI_CoT", "vlmevalkit_cot"),
     BenchmarkSpec("spatialvizbench_cot", "SpatialVizBench COT", "SpatialVizBench_CoT", "vlmevalkit_cot"),
     BenchmarkSpec("physics", "Physics", "Physics", "vlmevalkit_reasoning"),
@@ -322,7 +502,17 @@ TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("groundingme", "GroundingME", "GroundingME", "vlmevalkit_bbox_iou", max_tokens=1024),
     BenchmarkSpec("tdbench_grounding", "TDBenchGrounding rot0", "tdbench_grounding_rot0", "vlmevalkit_bbox_centroid", max_tokens=1024),
     BenchmarkSpec("ocrbench_v2_mini", "OCRBench v2 MINI", "OCRBench_v2_MINI", "vlmevalkit_defaults", max_tokens=2048),
-    BenchmarkSpec("screenspot_v2", "ScreenSpot v2", "ScreenSpot_v2", "vlmevalkit_defaults", max_tokens=1024),
+    BenchmarkSpec(
+        "screenspot_v2",
+        "ScreenSpot v2",
+        "ScreenSpot_v2",
+        "vlmevalkit_json_point_native",
+        max_tokens=16384,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+    ),
 )
 
 ALL_BENCHMARKS: tuple[BenchmarkSpec, ...] = BENCHMARKS + TRACE_CANDIDATE37_EXTRA_BENCHMARKS
@@ -469,6 +659,30 @@ def build_vlmeval_dataset(spec: BenchmarkSpec) -> Any:
         MMEReasoning.DATASET_URL[spec.alias] = MME_REASONING_TSV_URL
         MMEReasoning.DATASET_MD5 = {spec.alias: MME_REASONING_MD5}
 
+    if spec.key == "realworldqa":
+        # The pinned HTTPS object currently presents an expired certificate.
+        # Its HTTP endpoint serves the byte-identical artifact, whose upstream
+        # MD5 remains mandatory, so clean-cache construction stays reproducible.
+        from vlmeval.dataset.image_mcq import ImageMCQDataset
+
+        ImageMCQDataset.DATASET_URL[spec.alias] = REALWORLDQA_TSV_URL
+        ImageMCQDataset.DATASET_MD5[spec.alias] = REALWORLDQA_MD5
+
+    if spec.key == "visulogic":
+        # The pinned HTTPS object currently presents an expired certificate.
+        # Preserve the official checksum while using its byte-identical HTTP URL.
+        from vlmeval.dataset.image_mcq import VisuLogic
+
+        VisuLogic.DATASET_URL[spec.alias] = VISULOGIC_TSV_URL
+        VisuLogic.DATASET_MD5[spec.alias] = VISULOGIC_MD5
+
+    if spec.key == "screenspotpro" or spec.aggregate_group == "screenspotpro":
+        # ScreenSpotPro has the same expired-certificate issue. The six official
+        # subset checksums remain authoritative in the pinned dataset class.
+        from vlmeval.dataset.GUI.screenspot_pro import ScreenSpot_Pro
+
+        ScreenSpot_Pro.DATASET_URL.update(SCREENSPOT_PRO_TSV_URLS)
+
     if spec.key == "erqa":
         # Upstream registers two incompatible classes under the same ``ERQA``
         # alias. Explicit construction avoids registry-order and cache-dependent
@@ -531,6 +745,10 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
         return [spec_by_key(key) for key in TRACE_FINAL25_BENCHMARKS]
     if run_set == "trace_final26":
         return [spec_by_key(key) for key in TRACE_FINAL26_BENCHMARKS]
+    if run_set == "trace_final31":
+        return [spec_by_key(key) for key in TRACE_FINAL31_BENCHMARKS]
+    if run_set == "trace_realworldqa":
+        return [spec_by_key(key) for key in TRACE_REALWORLDQA_BENCHMARKS]
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 
@@ -811,18 +1029,58 @@ REMOTE_TSV_DATASET_FILES = {
         "OCRBench_v2_MINI.tsv",
     ),
     "screenspot_v2": (
-        "https://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Mobile.tsv",
-        "ScreenSpot_v2/ScreenSpot_v2_Mobile.tsv",
+        "http://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Mobile.tsv",
+        "ScreenSpot_v2_Mobile.tsv",
     ),
     "screenspot_v2_desktop": (
-        "https://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Desktop.tsv",
-        "ScreenSpot_v2/ScreenSpot_v2_Desktop.tsv",
+        "http://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Desktop.tsv",
+        "ScreenSpot_v2_Desktop.tsv",
     ),
     "screenspot_v2_web": (
-        "https://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Web.tsv",
-        "ScreenSpot_v2/ScreenSpot_v2_Web.tsv",
+        "http://opencompass.openxlab.space/utils/benchmarks/GUI/ScreenSpot_v2/ScreenSpot_v2_Web.tsv",
+        "ScreenSpot_v2_Web.tsv",
     ),
 }
+
+REMOTE_TSV_DATASET_MD5 = {
+    "screenspot_v2": "234c858ab4f0e787e8388a73df65a4b7",
+    "screenspot_v2_desktop": "5f2aa2a497327bd33b2512a0c75cf994",
+    "screenspot_v2_web": "01cd0877ee1b735a6d5190b053ba9482",
+}
+
+REMOTE_TSV_DATASET_MIRRORS = {
+    "screenspot_v2": "ScreenSpot_v2/ScreenSpot_v2_Mobile.tsv",
+    "screenspot_v2_desktop": "ScreenSpot_v2/ScreenSpot_v2_Desktop.tsv",
+    "screenspot_v2_web": "ScreenSpot_v2/ScreenSpot_v2_Web.tsv",
+}
+
+
+def _md5_file(path: Path) -> str:
+    digest = hashlib.md5()  # noqa: S324 - upstream artifact identity, not security.
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(8 * 1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _ensure_dataset_mirror(source: Path, mirror: Path) -> None:
+    mirror.parent.mkdir(parents=True, exist_ok=True)
+    if mirror.exists():
+        try:
+            if source.samefile(mirror):
+                return
+        except OSError:
+            pass
+        if (
+            mirror.stat().st_size == source.stat().st_size
+            and _md5_file(mirror) == _md5_file(source)
+        ):
+            return
+        mirror.unlink()
+    try:
+        os.link(source, mirror)
+    except OSError:
+        shutil.copyfile(source, mirror)
 
 
 def lmu_data_root() -> Path:
@@ -880,8 +1138,15 @@ def materialize_grounding_benchmark_files(specs: Iterable[BenchmarkSpec], *, roo
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     for key, url, local_filename in remote_targets:
         target = data_root / local_filename
+        expected_md5 = REMOTE_TSV_DATASET_MD5.get(key)
+        mirror_name = REMOTE_TSV_DATASET_MIRRORS.get(key)
+        mirror = data_root / mirror_name if mirror_name else None
         if target.exists() and target.stat().st_size > 0:
-            continue
+            if expected_md5 is None or _md5_file(target) == expected_md5:
+                if mirror is not None:
+                    _ensure_dataset_mirror(target, mirror)
+                continue
+            target.unlink()
         print(f"[benchmark-data] materializing {key}: {url} -> {target}")
         target.parent.mkdir(parents=True, exist_ok=True)
         tmp = target.with_suffix(target.suffix + f".tmp.{os.getpid()}")
@@ -891,7 +1156,16 @@ def materialize_grounding_benchmark_files(specs: Iterable[BenchmarkSpec], *, roo
                 for chunk in response.iter_content(chunk_size=16 * 1024 * 1024):
                     if chunk:
                         f.write(chunk)
+        if expected_md5 is not None:
+            actual_md5 = _md5_file(tmp)
+            if actual_md5 != expected_md5:
+                tmp.unlink(missing_ok=True)
+                raise RuntimeError(
+                    f"checksum mismatch for {key}: {actual_md5} != {expected_md5}"
+                )
         tmp.replace(target)
+        if mirror is not None:
+            _ensure_dataset_mirror(target, mirror)
 
 
 def grounding_preferred_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, int | None] | None:

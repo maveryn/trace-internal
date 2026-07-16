@@ -139,8 +139,9 @@ def test_manifest_matches_registered_alias_categories_and_score_routes() -> None
     suite = _load_suite()
     entries = {entry["key"]: entry for entry in suite["benchmarks"]}
     frozen = set(suite["suites"]["frozen"])
+    all31 = set(suite["suites"]["all31"])
 
-    assert set(entries) == frozen | {"mmvp"}
+    assert set(entries) == all31
     assert {entry["key"] for entry in suite["benchmarks"] if entry["category"] == "Perception & Counting"} == {
         "blink",
         "countbenchqa",

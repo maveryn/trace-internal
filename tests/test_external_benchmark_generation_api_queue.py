@@ -263,7 +263,7 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
                 ],
             )
 
-    def test_screenspot_uses_vlmevalkit_prompt_path_with_original_image(self):
+    def test_screenspot_family_uses_no_system_json_prompt_with_official_image(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             image_path = root / "screen.png"
@@ -286,38 +286,50 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
                         },
                     ]
 
-            handle = runner.DatasetHandle(
-                spec=BenchmarkSpec("screenspot", "ScreenSpot", "ScreenSpot", "run"),
-                dataset=Dataset(),
-                rows=[],
-            )
             args = _args(
                 media_transport=runner.MEDIA_TRANSPORT,
                 allowed_local_media_path=root,
             )
-            with patch.object(runner, "_import_vlmeval_runner", return_value=(object(), object())):
-                messages = runner._vlmeval_messages(
-                    args,
-                    handle,
-                    {"question": "open settings", "image_path": str(image_path)},
-                )
+            for spec in (
+                BenchmarkSpec("screenspot", "ScreenSpot", "ScreenSpot", "run"),
+                BenchmarkSpec("screenspotpro", "ScreenSpotPro", "ScreenSpot_Pro", "run"),
+                BenchmarkSpec("screenspot_v2", "ScreenSpot v2", "ScreenSpot_v2", "run"),
+            ):
+                with self.subTest(key=spec.key):
+                    handle = runner.DatasetHandle(spec=spec, dataset=Dataset(), rows=[])
+                    with patch.object(
+                        runner,
+                        "_import_vlmeval_runner",
+                        return_value=(object(), object()),
+                    ):
+                        messages = runner._vlmeval_messages(
+                            args,
+                            handle,
+                            {"question": "open settings?!", "image_path": str(image_path)},
+                        )
 
-            self.assertEqual(
-                messages,
-                [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "OFFICIAL SCREENSPOT SYSTEM"},
+                    self.assertEqual(
+                        messages,
+                        [
                             {
-                                "type": "image_url",
-                                "image_url": {"url": image_path.as_uri()},
-                            },
-                            {"type": "text", "text": "OFFICIAL SCREENSPOT USER"},
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {"url": image_path.as_uri()},
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": (
+                                            "Provide the point for the command: open settings! "
+                                            'Output the point in a JSON array format: '
+                                            '[{"point_2d": [x, y]}].'
+                                        ),
+                                    },
+                                ],
+                            }
                         ],
-                    }
-                ],
-            )
+                    )
 
     def test_manifest_lookup_uses_ordinal_for_duplicate_row_identity(self):
         with tempfile.TemporaryDirectory() as tmp:

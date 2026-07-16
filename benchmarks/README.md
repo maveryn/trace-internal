@@ -20,7 +20,7 @@ is not a final scoring route.
 | --- | --- | ---: |
 | Charts & Tables | ChartMuseum, ChartQAPro, CharXivReason, TableVQABench, EvoChart | 5 |
 | Visual Math | MathVision, MathVista, MathVerse, WeMath | 4 |
-| Science & General Reasoning | PhyX mini MC, Physics, MMMU-ProVis, MMStar | 4 |
+| Science & General | PhyX mini MC, Physics, MMMU-ProVis, MMStar | 4 |
 | Spatial & Grounding | ScreenSpot, SpatialVizBench COT, CV-Bench 3D, ERQA | 4 |
 | Perception & Counting | BLINK, CountBenchQA, CountQA, TreeBench | 4 |
 | Puzzles & Logic | PuzzleVQA, VisualPuzzles, LogicVista, MME-Reasoning | 4 |
@@ -34,7 +34,7 @@ is not a final scoring route.
   Reasoning for this compact reporting taxonomy.
 - **MMStar** is a general multimodal benchmark. It remains with the science
   benchmarks as their broad visual-reasoning complement, which is reflected in
-  the Science & General Reasoning label.
+  the Science & General label.
 - **ScreenSpot** evaluates UI element localization, so it belongs under
   Spatial & Grounding.
 - **TreeBench** combines subtle-target perception, traceable visual evidence,
@@ -43,6 +43,16 @@ is not a final scoring route.
 
 ## Pending Candidate Evaluation
 
+- **VStarBench** remains an additive candidate benchmark. Its full 191-row
+  `VStarBench` alias uses the normal generation route; scoring applies the same
+  deterministic explicit-option normalization as RealWorldQA before the pinned
+  VLMEvalKit `dataset.evaluate` exact-matching route.
+- **RealWorldQA** is an additive candidate evaluation, not a frozen Final25
+  member. Run its full 765-row `RealWorldQA` VLMEvalKit alias with the Final25
+  generation policy. Scoring deterministically normalizes explicit final MCQ
+  wrappers before delegating to the pinned `dataset.evaluate` exact-matching
+  route. The dedicated `trace_realworldqa` run set exists so candidate runs do
+  not change Final25 or provisional-MMVP membership.
 - **MMVP** is the candidate replacement for CountQA. After the current
   500-step Qwen2.5-VL-7B answer-reward training run completes, evaluate the
   full 300-row MMVP benchmark on the base and trained checkpoints using the

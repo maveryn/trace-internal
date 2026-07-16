@@ -150,7 +150,7 @@ class TraceFinal25ContractTests(unittest.TestCase):
             {
                 "Charts & Tables": 5,
                 "Visual Math": 4,
-                "Science & General Reasoning": 4,
+                "Science & General": 4,
                 "Spatial & Grounding": 4,
                 "Perception & Counting": 4,
                 "Puzzles & Logic": 4,

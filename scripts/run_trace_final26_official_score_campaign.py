@@ -79,6 +79,63 @@ DIRECT_SCORE_KEYS = (
 )
 MME_SCORE_KEY = "mme_reasoning"
 ALL_SCORE_KEYS = (*DIRECT_SCORE_KEYS, *OFFICIAL_SCORE_KEYS, MME_SCORE_KEY)
+ACTIVE_SUITE = "all26"
+ACTIVE_RUN_SET = "trace_final26"
+ACTIVE_DATASET_VIEW = "all26"
+GENERATION_MAX_TOKENS_BY_KEY: dict[str, int] = {}
+FINAL31_OFFICIAL_ADDITIONS = (
+    "screenspotpro",
+    "screenspot_v2",
+    "embspatial",
+    "realworldqa",
+    "visulogic",
+)
+DETERMINISTIC_OFFICIAL_SCORE_KEYS = frozenset(FINAL31_OFFICIAL_ADDITIONS)
+
+
+def _activate_suite(suite: str) -> None:
+    global ACTIVE_SUITE, ACTIVE_RUN_SET, ACTIVE_DATASET_VIEW, CONTRACT_VERSION
+    global OFFICIAL_SCORE_KEYS, DIRECT_SCORE_KEYS, ALL_SCORE_KEYS
+    global GENERATION_MAX_TOKENS_BY_KEY
+
+    if suite == "all26":
+        ACTIVE_SUITE = "all26"
+        ACTIVE_RUN_SET = "trace_final26"
+        ACTIVE_DATASET_VIEW = "all26"
+        CONTRACT_VERSION = "trace-final26-official-score-campaign-v1"
+        OFFICIAL_SCORE_KEYS = (
+            "chartqapro", "wemath", "phyx_mini_mc", "mmmu_pro_vision", "mmstar",
+            "spatialvizbench_cot", "cvbench_3d", "erqa", "blink", "countbenchqa",
+            "countqa", "treebench", "puzzlevqa", "visualpuzzles", "mmvp",
+        )
+        DIRECT_SCORE_KEYS = (
+            "chartmuseum", "charxivreason", "tablevqabench", "evochart", "mathvision",
+            "mathvista", "mathverse", "physics", "screenspot", "logicvista",
+        )
+        GENERATION_MAX_TOKENS_BY_KEY = {}
+    elif suite == "all31":
+        ACTIVE_SUITE = "all31"
+        ACTIVE_RUN_SET = "trace_final31"
+        ACTIVE_DATASET_VIEW = "all31"
+        CONTRACT_VERSION = "trace-final31-official-score-campaign-v1"
+        OFFICIAL_SCORE_KEYS = (
+            "chartqapro", "wemath", "phyx_mini_mc", "mmmu_pro_vision", "mmstar",
+            "spatialvizbench_cot", "cvbench_3d", "erqa", "blink", "countbenchqa",
+            "countqa", "treebench", "puzzlevqa", "visualpuzzles", "mmvp",
+            *FINAL31_OFFICIAL_ADDITIONS,
+        )
+        DIRECT_SCORE_KEYS = (
+            "chartmuseum", "charxivreason", "tablevqabench", "evochart", "mathvision",
+            "mathvista", "mathverse", "physics", "screenspot", "logicvista",
+        )
+        GENERATION_MAX_TOKENS_BY_KEY = {
+            "screenspot": 16384,
+            "screenspotpro": 16384,
+            "screenspot_v2": 16384,
+        }
+    else:
+        raise ValueError(f"Unknown suite {suite!r}")
+    ALL_SCORE_KEYS = (*DIRECT_SCORE_KEYS, *OFFICIAL_SCORE_KEYS, MME_SCORE_KEY)
 
 
 @dataclass(frozen=True)
@@ -159,14 +216,26 @@ def _load_specs() -> dict[str, Any]:
     from trace_final25_contract import (
         DEDICATED_SCORE_KEYS as CONTRACT_DEDICATED_KEYS,
         DIRECT_SCORE_KEYS as CONTRACT_DIRECT_KEYS,
+        FINAL31_DEDICATED_SCORE_KEYS as CONTRACT_FINAL31_DEDICATED_KEYS,
+        FINAL31_DIRECT_SCORE_KEYS as CONTRACT_FINAL31_DIRECT_KEYS,
+        FINAL31_OFFICIAL_VLMEVAL_SCORE_KEYS as CONTRACT_FINAL31_OFFICIAL_KEYS,
         OFFICIAL_VLMEVAL_SCORE_KEYS as CONTRACT_OFFICIAL_KEYS,
     )
 
-    if set(DIRECT_SCORE_KEYS) != set(CONTRACT_DIRECT_KEYS):
+    expected_direct = (
+        CONTRACT_FINAL31_DIRECT_KEYS if ACTIVE_SUITE == "all31" else CONTRACT_DIRECT_KEYS
+    )
+    expected_official = (
+        CONTRACT_FINAL31_OFFICIAL_KEYS if ACTIVE_SUITE == "all31" else CONTRACT_OFFICIAL_KEYS
+    )
+    expected_dedicated = (
+        CONTRACT_FINAL31_DEDICATED_KEYS if ACTIVE_SUITE == "all31" else CONTRACT_DEDICATED_KEYS
+    )
+    if set(DIRECT_SCORE_KEYS) != set(expected_direct):
         raise RuntimeError("Final26 direct route disagrees with trace_final25_contract")
-    if set(OFFICIAL_SCORE_KEYS) != set(CONTRACT_OFFICIAL_KEYS):
+    if set(OFFICIAL_SCORE_KEYS) != set(expected_official):
         raise RuntimeError("Final26 official route disagrees with trace_final25_contract")
-    if set(CONTRACT_DEDICATED_KEYS) != {MME_SCORE_KEY}:
+    if set(expected_dedicated) != {MME_SCORE_KEY}:
         raise RuntimeError("Final26 dedicated route must contain only MME-Reasoning")
 
     return {key: spec_by_key(key) for key in ALL_SCORE_KEYS}
@@ -278,18 +347,18 @@ def _validate_generation_inputs(
     workbooks: dict[str, list[Workbook]],
     *,
     seed: int,
+    expected_dataset_snapshot: str,
 ) -> dict[str, dict[str, dict[str, Any]]]:
     import pandas as pd
 
     validated: dict[str, dict[str, dict[str, Any]]] = {}
     failures: list[str] = []
-    expected_generation = {
+    expected_generation_base = {
         "temperature": 0.6,
         "top_p": 1.0,
         "top_k": -1,
         "presence_penalty": 0.0,
         "repetition_penalty": 1.0,
-        "max_tokens": 4096,
         "seed": seed,
     }
     for campaign in campaigns:
@@ -310,6 +379,10 @@ def _validate_generation_inputs(
                     raise ValueError(f"model_slug={summary.get('model_slug')!r}")
 
                 generation = summary.get("generation") or {}
+                expected_generation = {
+                    **expected_generation_base,
+                    "max_tokens": GENERATION_MAX_TOKENS_BY_KEY.get(key, 4096),
+                }
                 for field, expected in expected_generation.items():
                     if generation.get(field) != expected:
                         raise ValueError(
@@ -321,6 +394,11 @@ def _validate_generation_inputs(
                 snapshot = str(generation.get("dataset_snapshot_sha256") or "")
                 if len(snapshot) != 64:
                     raise ValueError(f"invalid dataset snapshot {snapshot!r}")
+                if snapshot != expected_dataset_snapshot:
+                    raise ValueError(
+                        f"dataset snapshot {snapshot!r} does not match active "
+                        f"{ACTIVE_DATASET_VIEW} manifest snapshot {expected_dataset_snapshot!r}"
+                    )
                 snapshots.add(snapshot)
 
                 finish_reason = summary.get("finish_reason") or {}
@@ -366,18 +444,28 @@ def _validate_dataset_manifest(path: Path, lmu_data: Path) -> dict[str, Any]:
             "Dataset manifest VLMEvalKit commit mismatch: "
             f"{manifest.get('vlmevalkit_commit')!r}"
         )
-    if int(manifest.get("failed", -1)) != 0 or int(manifest.get("ready", -1)) != 26:
+    if int(manifest.get("failed", -1)) != 0 or int(manifest.get("ready", -1)) < len(ALL_SCORE_KEYS):
         raise RuntimeError(
-            f"Dataset manifest is not ready for all26: ready={manifest.get('ready')} "
+            f"Dataset manifest is not ready for {ACTIVE_DATASET_VIEW}: ready={manifest.get('ready')} "
             f"failed={manifest.get('failed')}"
         )
-    view = manifest.get("dataset_views", {}).get("all26")
+    view = manifest.get("dataset_views", {}).get(ACTIVE_DATASET_VIEW)
     if not isinstance(view, list) or set(view) != set(ALL_SCORE_KEYS):
-        raise RuntimeError("Dataset manifest all26 view does not match the scoring route")
+        raise RuntimeError(
+            f"Dataset manifest {ACTIVE_DATASET_VIEW} view does not match the scoring route"
+        )
     datasets = manifest.get("datasets", {})
     not_ready = [key for key in ALL_SCORE_KEYS if datasets.get(key, {}).get("status") != "ready"]
     if not_ready:
         raise RuntimeError(f"Dataset receipts are not ready: {not_ready}")
+    view_snapshot = str(
+        (manifest.get("view_snapshot_sha256") or {}).get(ACTIVE_DATASET_VIEW) or ""
+    )
+    if len(view_snapshot) != 64:
+        raise RuntimeError(
+            f"Dataset manifest has no valid {ACTIVE_DATASET_VIEW} view snapshot: "
+            f"{view_snapshot!r}"
+        )
     recorded_root = Path(str(manifest.get("lmu_data_root", ""))).resolve()
     if recorded_root != lmu_data.resolve():
         raise RuntimeError(
@@ -388,9 +476,10 @@ def _validate_dataset_manifest(path: Path, lmu_data: Path) -> dict[str, Any]:
 
 def _base_env(args: argparse.Namespace) -> dict[str, str]:
     env = os.environ.copy()
-    for key in list(env):
-        if key.startswith("TRACE_FINAL25_HF_"):
-            env.pop(key, None)
+    if not args.emit_archive:
+        for key in list(env):
+            if key.startswith("TRACE_FINAL25_HF_"):
+                env.pop(key, None)
     for key in ("HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"):
         env.pop(key, None)
 
@@ -450,6 +539,8 @@ def _validate_runtime(args: argparse.Namespace, env: dict[str, str]) -> None:
 
 
 def _judge_kwargs(args: argparse.Namespace, key: str) -> dict[str, Any]:
+    if key in DETERMINISTIC_OFFICIAL_SCORE_KEYS:
+        return {"model": "exact_matching", "nproc": args.eval_nproc}
     kwargs: dict[str, Any] = {
         "model": args.judge_api_model,
         "nproc": args.eval_nproc,
@@ -499,6 +590,8 @@ def _contract(
             )
     return {
         "contract_version": CONTRACT_VERSION,
+        "suite": ACTIVE_SUITE,
+        "dataset_view": ACTIVE_DATASET_VIEW,
         "seed": args.seed,
         "routes": {
             "official_vlmevalkit": list(OFFICIAL_SCORE_KEYS),
@@ -515,6 +608,10 @@ def _contract(
             "path": str(args.dataset_manifest),
             "sha256": _sha256(args.dataset_manifest),
             "dataset_snapshot_sha256": dataset_manifest.get("dataset_snapshot_sha256"),
+            "dataset_view": ACTIVE_DATASET_VIEW,
+            "view_snapshot_sha256": dataset_manifest.get("view_snapshot_sha256", {}).get(
+                ACTIVE_DATASET_VIEW
+            ),
             "all26_snapshot_sha256": dataset_manifest.get("view_snapshot_sha256", {}).get("all26"),
             "vlmevalkit_commit": dataset_manifest.get("vlmevalkit_commit"),
         },
@@ -552,9 +649,39 @@ def _contract(
     }
 
 
-def _prepare_score_root(score_root: Path, contract: dict[str, Any], resume: bool) -> str:
-    manifest_path = score_root / "score_campaign_manifest.json"
-    if score_root.exists() and any(score_root.iterdir()):
+def _prepare_score_root(
+    score_root: Path,
+    contract: dict[str, Any],
+    resume: bool,
+    *,
+    shared_seed_root: bool = False,
+) -> str:
+    seed = int(contract["seed"])
+    manifest_name = (
+        f"score_campaign_manifest_seed_{seed}.json"
+        if shared_seed_root
+        else "score_campaign_manifest.json"
+    )
+    manifest_path = score_root / manifest_name
+    if shared_seed_root:
+        score_root.mkdir(parents=True, exist_ok=True)
+        if manifest_path.is_file():
+            if not resume:
+                raise FileExistsError(
+                    f"Score contract already exists: {manifest_path}; pass --resume"
+                )
+            existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if existing.get("contract") != contract:
+                raise RuntimeError(
+                    f"Existing seed-{seed} score manifest does not match source hashes/judge contract"
+                )
+            return str(existing["contract_sha256"])
+        seed_root = score_root / f"seed_{seed}"
+        if seed_root.exists() and any(seed_root.iterdir()):
+            raise RuntimeError(
+                f"Cannot create a seed-{seed} contract over existing outputs without {manifest_path}"
+            )
+    elif score_root.exists() and any(score_root.iterdir()):
         if not resume:
             raise FileExistsError(
                 f"Score root is not empty: {score_root}; pass --resume only for this exact contract"
@@ -620,6 +747,136 @@ def _run_logged(
     print(f"[score:done] {label}", flush=True)
 
 
+def _archive_value(value: Any) -> Any | None:
+    if value is None:
+        return None
+    try:
+        if bool(value != value):
+            return None
+    except Exception:
+        pass
+    return value
+
+
+def _archive_identity(value: Any) -> str | None:
+    value = _archive_value(value)
+    if value is None:
+        return None
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    text = str(value).strip()
+    return text or None
+
+
+def _archive_score_value(value: Any) -> float | None:
+    value = _archive_value(value)
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return float(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "correct"}:
+            return 1.0
+        if normalized in {"false", "incorrect"}:
+            return 0.0
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        return None
+    return score if math.isfinite(score) else None
+
+
+def _archive_normalized_extraction(
+    adapted_row: Any,
+    prediction: Any,
+    fallback_method: str,
+) -> dict[str, Any]:
+    status = _archive_identity(adapted_row.get("trace_extraction_status"))
+    if status in {"resolved", "ambiguous", "invalid"}:
+        method = _archive_identity(adapted_row.get("trace_extraction_method")) or fallback_method
+        candidates: Any = []
+        raw_candidates = _archive_value(adapted_row.get("trace_extraction_candidates"))
+        if isinstance(raw_candidates, str):
+            try:
+                candidates = json.loads(raw_candidates)
+            except json.JSONDecodeError:
+                candidates = []
+        elif isinstance(raw_candidates, (list, tuple)):
+            candidates = list(raw_candidates)
+        return {
+            "status": status,
+            "value": prediction if status == "resolved" else None,
+            "method": method,
+            "candidates": candidates,
+        }
+
+    present = bool(_archive_identity(prediction))
+    return {
+        "status": "resolved" if present else "invalid",
+        "value": prediction if present else None,
+        "method": fallback_method,
+    }
+
+
+def _official_archive_row_scores(
+    summary: dict[str, Any],
+    source: Any,
+) -> dict[int, dict[str, Any]]:
+    import pandas as pd
+
+    score_columns = ("eval_score", "hit", "correct", "score", "match")
+    identity_columns = ("source_row_hash", "request_hash", "source_ordinal", "index")
+    source_identities = {
+        column: [_archive_identity(value) for value in source[column].tolist()]
+        for column in identity_columns
+        if column in source and source[column].notna().all()
+    }
+    best: dict[int, dict[str, Any]] = {}
+    for value in (summary.get("artifacts") or {}).get("official_outputs", []):
+        path = Path(str(value))
+        if not path.is_file() or path.suffix.lower() not in {".xlsx", ".pkl"}:
+            continue
+        try:
+            table = pd.read_excel(path) if path.suffix.lower() == ".xlsx" else pd.read_pickle(path)
+        except Exception:
+            continue
+        if not isinstance(table, pd.DataFrame):
+            continue
+        score_column = next((column for column in score_columns if column in table), None)
+        if score_column is None:
+            continue
+        for identity_column, source_values in source_identities.items():
+            if identity_column not in table:
+                continue
+            source_lookup = {
+                identity: ordinal
+                for ordinal, identity in enumerate(source_values)
+                if identity is not None
+            }
+            candidate_values = [_archive_identity(item) for item in table[identity_column].tolist()]
+            if len(source_lookup) != len(source_values) or len(set(candidate_values)) != len(candidate_values):
+                continue
+            matched: dict[int, dict[str, Any]] = {}
+            for candidate_identity, score_value in zip(candidate_values, table[score_column].tolist()):
+                if candidate_identity not in source_lookup:
+                    continue
+                score = _archive_score_value(score_value)
+                if score is None:
+                    continue
+                matched[source_lookup[candidate_identity]] = {
+                    "score": score,
+                    "artifact": str(path.resolve()),
+                    "score_column": score_column,
+                    "identity_column": identity_column,
+                }
+            if len(matched) > len(best):
+                best = matched
+            if len(best) == len(source):
+                return best
+    return best
+
+
 def _official_complete(job: OfficialJob) -> bool:
     scores_path = job.output_dir / "scores.json"
     if not scores_path.is_file():
@@ -632,6 +889,162 @@ def _official_complete(job: OfficialJob) -> bool:
     if provenance.get("judge_kwargs") != job.judge_kwargs:
         raise RuntimeError(f"Official score judge contract mismatch: {scores_path}")
     return True
+
+
+def _archive_official_job(args: argparse.Namespace, job: OfficialJob) -> None:
+    if not args.emit_archive:
+        return
+    scores_path = job.output_dir / "scores.json"
+    summary = json.loads(scores_path.read_text(encoding="utf-8"))
+    prediction_path = Path(summary["artifacts"]["prediction_table"])
+
+    import pandas as pd
+    from final25_archive_hooks import (
+        emit_extraction_slice,
+        emit_score_slice,
+        resolve_model_revision,
+        resolve_model_source,
+    )
+
+    source = pd.read_excel(job.workbook.staged)
+    adapted = pd.read_excel(prediction_path)
+    if len(source) != len(adapted):
+        raise RuntimeError(
+            f"official archive row mismatch for {job.workbook.benchmark_key}: "
+            f"source={len(source)} adapted={len(adapted)}"
+        )
+    adapter = (summary.get("provenance") or {}).get("prediction_adapter") or {}
+    method = str(adapter.get("contract") or "pinned_vlmevalkit_dataset_evaluate_input")
+    official_row_scores = _official_archive_row_scores(summary, source)
+    extraction_records: list[dict[str, Any]] = []
+    score_records: list[dict[str, Any]] = []
+    for ordinal, ((_, source_row), (_, adapted_row)) in enumerate(
+        zip(source.iterrows(), adapted.iterrows())
+    ):
+        raw_response = source_row.get("raw_prediction", source_row.get("prediction", ""))
+        prediction = adapted_row.get("prediction", "")
+        source_index = str(source_row.get("index", ordinal))
+        source_row_hash = str(source_row.get("source_row_hash") or "")
+        if not source_row_hash:
+            material = {
+                "index": source_index,
+                "question": source_row.get("question"),
+                "answer": source_row.get("answer"),
+                "options": {
+                    key: source_row.get(key)
+                    for key in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    if key in source and not pd.isna(source_row.get(key))
+                },
+            }
+            source_row_hash = hashlib.sha256(
+                json.dumps(material, sort_keys=True, default=str).encode("utf-8")
+            ).hexdigest()
+        request_hash = str(source_row.get("request_hash") or "")
+        if not request_hash:
+            request_hash = hashlib.sha256(
+                f"{source_row_hash}\0{raw_response}".encode("utf-8")
+            ).hexdigest()
+        common = {
+            "source_index": source_index,
+            "source_ordinal": ordinal,
+            "source_row_hash": source_row_hash,
+            "request_hash": request_hash,
+            "question": source_row.get("question"),
+            "ground_truth": source_row.get("answer"),
+            "options": {
+                key: source_row.get(key)
+                for key in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                if key in source and not pd.isna(source_row.get(key))
+            },
+        }
+        extraction_records.append(
+            {
+                **common,
+                "model_response": raw_response,
+                "judge_prompt": "",
+                "judge_response": "",
+                "normalized_extraction": _archive_normalized_extraction(
+                    adapted_row, prediction, method
+                ),
+                "retries": {"count": 0},
+            }
+        )
+        score_receipt = official_row_scores.get(ordinal)
+        row_score = score_receipt["score"] if score_receipt is not None else None
+        if row_score is None:
+            for candidate in ("eval_score", "hit", "correct", "score", "match"):
+                row_score = _archive_score_value(adapted_row.get(candidate))
+                if row_score is not None:
+                    score_receipt = {
+                        "artifact": str(prediction_path.resolve()),
+                        "score_column": candidate,
+                        "identity_column": "row_order",
+                    }
+                    break
+        if row_score is not None:
+            score_records.append(
+                {
+                    **common,
+                    "metadata": {
+                        "official_score_artifact": score_receipt["artifact"],
+                        "official_score_column": score_receipt["score_column"],
+                        "official_score_identity": score_receipt["identity_column"],
+                    },
+                    "prediction": prediction,
+                    "score": row_score,
+                    "scorer": "pinned_vlmevalkit.dataset.evaluate",
+                    "excluded": False,
+                }
+            )
+
+    identity = {
+        "model": resolve_model_source(job.campaign.slug, job.campaign.model),
+        "model_slug": job.campaign.slug,
+        "model_revision": resolve_model_revision(job.campaign.slug, job.campaign.model),
+        "seed": int(args.seed),
+        "benchmark": job.workbook.benchmark_key,
+        "dataset_alias": job.workbook.alias,
+        "dataset_split": "default",
+        "dataset_revision": os.environ.get("TRACE_FINAL25_DATASET_REVISION", "unknown"),
+    }
+    aggregate = {
+        "rows": int(summary["rows"]),
+        "score": float(summary["score"]),
+        "primary_metric": summary.get("primary_metric"),
+        "contract": (summary.get("provenance") or {}).get("contract"),
+    }
+    if len(score_records) != len(source):
+        score_records = [
+            {
+                "source_index": "__aggregate__",
+                "source_ordinal": 0,
+                "source_row_hash": job.workbook.sha256,
+                "request_hash": _sha256(scores_path),
+                "question": None,
+                "ground_truth": None,
+                "metadata": {
+                    "scope": "aggregate",
+                    "row_level_scores_available": False,
+                    "evaluated_rows": int(summary["rows"]),
+                },
+                "prediction": None,
+                "score": float(summary["score"]),
+                "scorer": "pinned_vlmevalkit.dataset.evaluate.aggregate",
+                "excluded": False,
+            }
+        ]
+    emit_extraction_slice(
+        records=extraction_records,
+        contract_version="trace-final31-official-extraction-v1",
+        aggregate=aggregate,
+        **identity,
+    )
+    emit_score_slice(
+        records=score_records,
+        contract_version="trace-final31-official-score-v1",
+        aggregate=aggregate,
+        **identity,
+    )
 
 
 def _validate_score_outputs(
@@ -715,6 +1128,7 @@ def _official_command(args: argparse.Namespace, job: OfficialJob) -> list[str]:
 def _direct_command(
     args: argparse.Namespace,
     campaign: Campaign,
+    benchmark_key: str,
     *,
     staged_run_root: Path,
     benchmark_root: Path,
@@ -730,7 +1144,7 @@ def _direct_command(
         "--model-slug",
         campaign.slug,
         "--run-set",
-        "trace_final25",
+        ACTIVE_RUN_SET,
         "--seed",
         str(args.seed),
         "--run-root",
@@ -740,11 +1154,11 @@ def _direct_command(
         "--queue-root",
         str(queue_root),
         "--queue-name",
-        f"official-final26-{campaign.slug}-{contract_sha256[:16]}-direct",
+        f"official-{ACTIVE_SUITE}-{campaign.slug}-{benchmark_key}-{contract_sha256[:16]}",
         "--worker-id",
-        f"official-final26-{campaign.slug}-direct",
+        f"official-{ACTIVE_SUITE}-{campaign.slug}-{benchmark_key}-direct",
         "--only",
-        *DIRECT_SCORE_KEYS,
+        benchmark_key,
         "--eval-judge-model",
         "exact_matching",
         "--eval-nproc",
@@ -816,6 +1230,161 @@ def _mme_command(
     return command
 
 
+def _run_direct_phase(
+    args: argparse.Namespace,
+    campaigns: list[Campaign],
+    *,
+    staged_run_root: Path,
+    benchmark_root: Path,
+    queue_root: Path,
+    endpoints: list[str],
+    contract_sha256: str,
+    env: dict[str, str],
+    log_root: Path,
+    specs: dict[str, Any],
+    generation_inputs: dict[str, dict[str, dict[str, Any]]],
+) -> None:
+    jobs = [(campaign, key) for campaign in campaigns for key in DIRECT_SCORE_KEYS]
+    endpoint_pool: queue.Queue[str] = queue.Queue()
+    for endpoint in endpoints:
+        endpoint_pool.put(endpoint)
+
+    def execute(job: tuple[Campaign, str]) -> None:
+        campaign, key = job
+        score_file = _run_dir(
+            benchmark_root, key, campaign.slug, specs[key].run_name
+        ) / "scores.json"
+        if args.resume and score_file.is_file():
+            try:
+                _validate_score_outputs(
+                    [campaign], (key,), benchmark_root=benchmark_root, specs=specs,
+                    generation_inputs=generation_inputs,
+                )
+            except RuntimeError:
+                print(f"[score:rerun] direct/{campaign.slug}/{key}", flush=True)
+            else:
+                print(f"[score:skip] direct/{campaign.slug}/{key}", flush=True)
+                return
+        endpoint = endpoint_pool.get()
+        try:
+            command = _direct_command(
+                args,
+                campaign,
+                key,
+                staged_run_root=staged_run_root,
+                benchmark_root=benchmark_root,
+                queue_root=queue_root,
+                endpoints=[endpoint],
+                contract_sha256=contract_sha256,
+            )
+            _run_logged(
+                command,
+                env=env,
+                log_path=log_root / "direct" / campaign.slug / f"{key}.log",
+                label=f"direct/{campaign.slug}/{key}",
+            )
+            _validate_score_outputs(
+                [campaign], (key,), benchmark_root=benchmark_root, specs=specs,
+                generation_inputs=generation_inputs,
+            )
+        finally:
+            endpoint_pool.put(endpoint)
+
+    errors: list[str] = []
+    workers = min(args.direct_workers, len(endpoints), len(jobs))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(execute, job): job for job in jobs}
+        for future in concurrent.futures.as_completed(futures):
+            campaign, key = futures[future]
+            try:
+                future.result()
+            except Exception as error:
+                errors.append(f"{campaign.slug}/{key}: {error}")
+    if errors:
+        raise RuntimeError("Direct scoring failures:\n  - " + "\n  - ".join(errors))
+
+
+def _partition_mme_endpoints(endpoints: list[str], workers: int) -> list[list[str]]:
+    if workers < 1:
+        return []
+    if not endpoints:
+        raise ValueError("MME-Reasoning scoring requires at least one judge endpoint")
+    group_count = min(workers, len(endpoints))
+    groups = [[] for _ in range(group_count)]
+    for offset, endpoint in enumerate(endpoints):
+        groups[offset % group_count].append(endpoint)
+    return groups
+
+
+def _run_mme_phase(
+    args: argparse.Namespace,
+    campaigns: list[Campaign],
+    *,
+    staged_run_root: Path,
+    benchmark_root: Path,
+    endpoints: list[str],
+    env: dict[str, str],
+    log_root: Path,
+    specs: dict[str, Any],
+    generation_inputs: dict[str, dict[str, dict[str, Any]]],
+) -> None:
+    pending: list[Campaign] = []
+    for campaign in campaigns:
+        score_file = _run_dir(
+            benchmark_root, MME_SCORE_KEY, campaign.slug, specs[MME_SCORE_KEY].run_name
+        ) / "scores.json"
+        if args.resume and score_file.is_file():
+            try:
+                _validate_score_outputs(
+                    [campaign], (MME_SCORE_KEY,), benchmark_root=benchmark_root,
+                    specs=specs, generation_inputs=generation_inputs,
+                )
+            except RuntimeError:
+                print(f"[score:rerun] mme/{campaign.slug}", flush=True)
+            else:
+                print(f"[score:skip] mme/{campaign.slug}", flush=True)
+                continue
+        pending.append(campaign)
+    if not pending:
+        return
+
+    workers = min(args.mme_workers, len(endpoints), len(pending))
+    endpoint_pool: queue.Queue[list[str]] = queue.Queue()
+    for group in _partition_mme_endpoints(endpoints, workers):
+        endpoint_pool.put(group)
+
+    def execute(campaign: Campaign) -> None:
+        endpoint_group = endpoint_pool.get()
+        try:
+            _run_logged(
+                _mme_command(
+                    args, campaign, staged_run_root=staged_run_root,
+                    benchmark_root=benchmark_root, endpoints=endpoint_group,
+                ),
+                env=env,
+                log_path=log_root / "mme_reasoning" / f"{campaign.slug}.log",
+                label=f"mme/{campaign.slug}",
+            )
+            _validate_score_outputs(
+                [campaign], (MME_SCORE_KEY,), benchmark_root=benchmark_root,
+                specs=specs, generation_inputs=generation_inputs,
+            )
+        finally:
+            endpoint_pool.put(endpoint_group)
+
+    errors: list[str] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(execute, campaign): campaign for campaign in pending}
+        for future in concurrent.futures.as_completed(futures):
+            campaign = futures[future]
+            try:
+                future.result()
+            except Exception as error:
+                errors.append(f"{campaign.slug}: {error}")
+    if errors:
+        raise RuntimeError("MME-Reasoning scoring failures:\n  - " + "\n  - ".join(errors))
+
+
 def _check_endpoints(endpoints: list[str], model: str) -> None:
     failures: list[str] = []
     for endpoint in endpoints:
@@ -870,8 +1439,11 @@ def _run_official_phase(
     log_root: Path,
 ) -> None:
     pending = [job for job in jobs if not (args.resume and _official_complete(job))]
+    completed = [job for job in jobs if job not in pending]
     skipped = len(jobs) - len(pending)
     print(f"[official:plan] pending={len(pending)} skipped={skipped}", flush=True)
+    for job in completed:
+        _archive_official_job(args, job)
     if not pending:
         return
 
@@ -891,6 +1463,7 @@ def _run_official_phase(
                 log_path=log_root / "official" / job.campaign.slug / f"{job.workbook.benchmark_key}.log",
                 label=label,
             )
+            _archive_official_job(args, job)
         finally:
             endpoint_pool.put(endpoint)
 
@@ -930,20 +1503,22 @@ def _print_plan(
             f"{_command_text(_official_command(args, job))}"
         )
     for campaign in campaigns:
-        print(
-            "[plan:direct] "
-            + _command_text(
-                _direct_command(
-                    args,
-                    campaign,
-                    staged_run_root=staged_run_root,
-                    benchmark_root=benchmark_root,
-                    queue_root=queue_root,
-                    endpoints=endpoints,
-                    contract_sha256=contract_sha256,
+        for key in DIRECT_SCORE_KEYS:
+            print(
+                "[plan:direct] "
+                + _command_text(
+                    _direct_command(
+                        args,
+                        campaign,
+                        key,
+                        staged_run_root=staged_run_root,
+                        benchmark_root=benchmark_root,
+                        queue_root=queue_root,
+                        endpoints=[endpoints[0]],
+                        contract_sha256=contract_sha256,
+                    )
                 )
             )
-        )
         print(
             "[plan:mme] "
             + _command_text(
@@ -960,7 +1535,7 @@ def _print_plan(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Score three saved Final26 campaigns in an isolated official-evaluation tree."
+        description="Score three saved TRACE campaigns in an isolated official-evaluation tree."
     )
     parser.add_argument(
         "--campaign",
@@ -971,6 +1546,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Repeat exactly three times; CAMPAIGN_ROOT contains seed_<seed>/runs.",
     )
     parser.add_argument("--score-root", type=Path, required=True)
+    parser.add_argument("--suite", choices=("all26", "all31"), default="all26")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--python", type=Path, default=DEFAULT_PYTHON)
     parser.add_argument("--eval-deps", type=Path, default=DEFAULT_EVAL_DEPS)
@@ -984,21 +1560,40 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--judge-max-tokens", type=int, default=256)
     parser.add_argument("--eval-nproc", type=int, default=16)
     parser.add_argument("--official-workers", type=int, default=8)
+    parser.add_argument("--direct-workers", type=int, default=8)
+    parser.add_argument("--mme-workers", type=int, default=3)
     parser.add_argument("--judge-api-parallelism", type=int, default=64)
     parser.add_argument("--judge-api-batch-size", type=int, default=64)
     parser.add_argument("--judge-api-batches-per-endpoint", type=int, default=1)
     parser.add_argument("--judge-api-max-batch-chars", type=int, default=200_000)
     parser.add_argument("--judge-cache-contract-version", default="trace-persistent-judge-v2")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument(
+        "--shared-seed-root",
+        action="store_true",
+        help="Store independent per-seed contracts under one score root.",
+    )
+    parser.add_argument(
+        "--emit-archive",
+        action="store_true",
+        help="Emit extraction and score descriptors to the configured asynchronous HF spool.",
+    )
     parser.add_argument("--preflight", "--dry-run", action="store_true", dest="preflight")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
+    _activate_suite(args.suite)
     if len(args.campaign) != 3:
         raise SystemExit(f"error: pass exactly three --campaign descriptors, got {len(args.campaign)}")
-    if args.seed < 0 or args.eval_nproc < 1 or args.official_workers < 1:
+    if (
+        args.seed < 0
+        or args.eval_nproc < 1
+        or args.official_workers < 1
+        or args.direct_workers < 1
+        or args.mme_workers < 1
+    ):
         raise SystemExit("error: seed must be non-negative and worker counts must be positive")
     if args.judge_max_tokens < 1:
         raise SystemExit("error: --judge-max-tokens must be positive")
@@ -1022,7 +1617,12 @@ def main() -> None:
     args.dataset_manifest = (
         args.dataset_manifest.expanduser().resolve()
         if args.dataset_manifest
-        else args.lmu_data / "trace_final25_dataset_manifest.json"
+        else args.lmu_data
+        / (
+            "trace_final31_dataset_manifest.json"
+            if args.suite == "all31"
+            else "trace_final25_dataset_manifest.json"
+        )
     )
     endpoints = list(dict.fromkeys(_normalize_endpoint(item) for item in (args.judge_endpoint or _default_endpoints())))
     if not endpoints:
@@ -1047,6 +1647,7 @@ def main() -> None:
         campaigns,
         workbooks,
         seed=args.seed,
+        expected_dataset_snapshot=dataset_manifest["view_snapshot_sha256"][ACTIVE_DATASET_VIEW],
     )
     contract = _contract(
         args,
@@ -1076,7 +1677,12 @@ def main() -> None:
         return
 
     _check_endpoints(endpoints, args.judge_api_model)
-    contract_sha256 = _prepare_score_root(args.score_root, contract, args.resume)
+    contract_sha256 = _prepare_score_root(
+        args.score_root,
+        contract,
+        args.resume,
+        shared_seed_root=args.shared_seed_root,
+    )
     _stage_workbooks(workbooks, resume=args.resume)
 
     _run_official_phase(
@@ -1093,68 +1699,30 @@ def main() -> None:
         specs=specs,
         generation_inputs=generation_inputs,
     )
-    for campaign in campaigns:
-        _run_logged(
-            _direct_command(
-                args,
-                campaign,
-                staged_run_root=staged_run_root,
-                benchmark_root=benchmark_root,
-                queue_root=queue_root,
-                endpoints=endpoints,
-                contract_sha256=contract_sha256,
-            ),
-            env=env,
-            log_path=log_root / "direct" / f"{campaign.slug}.log",
-            label=f"direct/{campaign.slug}",
-        )
-        _validate_score_outputs(
-            [campaign],
-            DIRECT_SCORE_KEYS,
-            benchmark_root=benchmark_root,
-            specs=specs,
-            generation_inputs=generation_inputs,
-        )
-    for campaign in campaigns:
-        mme_output = _run_dir(
-            benchmark_root,
-            MME_SCORE_KEY,
-            campaign.slug,
-            specs[MME_SCORE_KEY].run_name,
-        )
-        if args.resume and (mme_output / "scores.json").is_file():
-            try:
-                _validate_score_outputs(
-                    [campaign],
-                    (MME_SCORE_KEY,),
-                    benchmark_root=benchmark_root,
-                    specs=specs,
-                    generation_inputs=generation_inputs,
-                )
-            except RuntimeError:
-                print(f"[score:rerun] mme/{campaign.slug} existing output is invalid", flush=True)
-            else:
-                print(f"[score:skip] mme/{campaign.slug}", flush=True)
-                continue
-        _run_logged(
-            _mme_command(
-                args,
-                campaign,
-                staged_run_root=staged_run_root,
-                benchmark_root=benchmark_root,
-                endpoints=endpoints,
-            ),
-            env=env,
-            log_path=log_root / "mme_reasoning" / f"{campaign.slug}.log",
-            label=f"mme/{campaign.slug}",
-        )
-        _validate_score_outputs(
-            [campaign],
-            (MME_SCORE_KEY,),
-            benchmark_root=benchmark_root,
-            specs=specs,
-            generation_inputs=generation_inputs,
-        )
+    _run_direct_phase(
+        args,
+        campaigns,
+        staged_run_root=staged_run_root,
+        benchmark_root=benchmark_root,
+        queue_root=queue_root,
+        endpoints=endpoints,
+        contract_sha256=contract_sha256,
+        env=env,
+        log_root=log_root,
+        specs=specs,
+        generation_inputs=generation_inputs,
+    )
+    _run_mme_phase(
+        args,
+        campaigns,
+        staged_run_root=staged_run_root,
+        benchmark_root=benchmark_root,
+        endpoints=endpoints,
+        env=env,
+        log_root=log_root,
+        specs=specs,
+        generation_inputs=generation_inputs,
+    )
     completed = _validate_score_outputs(
         campaigns,
         ALL_SCORE_KEYS,
@@ -1163,7 +1731,12 @@ def main() -> None:
         generation_inputs=generation_inputs,
     )
     _write_json(
-        args.score_root / "score_campaign_completion.json",
+        args.score_root
+        / (
+            f"score_campaign_completion_seed_{args.seed}.json"
+            if args.shared_seed_root
+            else "score_campaign_completion.json"
+        ),
         {
             "completed_at": dt.datetime.now(dt.timezone.utc).isoformat(),
             "contract_sha256": contract_sha256,

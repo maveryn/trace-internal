@@ -27,8 +27,12 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _run_evochart_local_score,
     _run_physics_subset_score,
     _run_tablevqabench_local_score,
-    _screenspot_explicit_action_prediction,
     _screenspot_point_in_box_score,
+)
+from screenspot_json_contract import (  # noqa: E402
+    SCREENSPOT_JSON_UNRESOLVED,
+    adapt_screenspot_prediction_frame,
+    parse_screenspot_json_point,
 )
 
 
@@ -204,35 +208,33 @@ class ExternalBenchmarkScoreQueueTests(unittest.TestCase):
             0.0,
         )
 
-    def test_screenspot_adapter_preserves_official_and_accepts_one_explicit_action(self):
-        self.assertEqual(
-            _screenspot_explicit_action_prediction("pyautogui.click(x=12, y=34)"),
-            (None, "vlmevalkit_named_xy"),
+    def test_screenspot_json_adapter_accepts_one_point_and_identical_duplicates(self):
+        responses = (
+            '```json\n[{"point_2d": [12, 34]}]\n```',
+            '<answer>[{"point_2d": [12, 34]}]</answer>',
+            '[{"point_2d": [12, 34]}]\n[{"point_2d": [12, 34]}]',
+            '{"analysis": "unrelated"}\n[{"point_2d": [12, 34]}]',
         )
-        self.assertEqual(
-            _screenspot_explicit_action_prediction(
-                "<answer>earlier prose \\boxed{pyautogui.click(12, 34)}</answer>"
-            ),
-            ("pyautogui.click(x=12, y=34)", "answer_boxed_explicit_action"),
-        )
-        self.assertEqual(
-            _screenspot_explicit_action_prediction(
-                "<answer>pyautogui.click(x=12, 34)</answer>"
-            ),
-            ("pyautogui.click(x=12, y=34)", "answer_unique_explicit_action"),
-        )
-
-    def test_screenspot_adapter_leaves_conflicts_and_bare_coordinates_unresolved(self):
-        for response in (
-            "<answer>pyautogui.click(12, 34); pyautogui.click(56, 78)</answer>",
-            "<answer>[12, 34]</answer>",
-            "<answer>pyautogui.click(12, 34)</answer><answer>pyautogui.click(12, 34)</answer>",
-        ):
+        for response in responses:
             with self.subTest(response=response):
-                self.assertEqual(
-                    _screenspot_explicit_action_prediction(response),
-                    (None, "unresolved"),
-                )
+                parsed = parse_screenspot_json_point(response)
+                self.assertEqual(parsed.status, "resolved")
+                self.assertEqual(parsed.value, (12.0, 34.0))
+
+    def test_screenspot_json_adapter_rejects_conflicts_and_non_schema_coordinates(self):
+        raw = [
+            '[{"point_2d": [12, 34]}]\n[{"point_2d": [56, 78]}]',
+            'pyautogui.click(x=12, y=34)',
+            "[12, 34]",
+            '{"point_2d": [12, 34]}',
+            '[{"point_2d": [12]}]',
+            '[{"point_2d": [12, 34]}, {"metadata": "extra"}]',
+        ]
+        adapted, receipt = adapt_screenspot_prediction_frame(pd.DataFrame({"prediction": raw}))
+
+        self.assertEqual(adapted["prediction"].tolist(), [SCREENSPOT_JSON_UNRESOLVED] * len(raw))
+        self.assertEqual(receipt["resolved_rows"], 0)
+        self.assertEqual(receipt["status_counts"], {"ambiguous": 1, "invalid": 5})
 
     def test_chartmuseum_parser_matches_official_yes_substring_rule(self):
         self.assertEqual(_parse_chartmuseum_judgement_output("Yes"), 1)

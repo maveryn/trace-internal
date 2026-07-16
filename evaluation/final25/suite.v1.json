@@ -25,7 +25,12 @@
     "silent_zero_on_failure": false
   },
   "aggregation": {
-    "overall": "unweighted_macro_average_of_25_benchmarks",
+    "overall": "unweighted_macro_average_of_selected_benchmarks",
+    "benchmark_counts": {
+      "frozen": 25,
+      "provisional_mmvp": 25,
+      "all31": 31
+    },
     "category_means_are_not_overall": true
   },
   "suites": {
@@ -82,6 +87,39 @@
       "visualpuzzles",
       "logicvista",
       "mme_reasoning"
+    ],
+    "all31": [
+      "chartmuseum",
+      "chartqapro",
+      "charxivreason",
+      "tablevqabench",
+      "evochart",
+      "mathvision",
+      "mathvista",
+      "mathverse",
+      "wemath",
+      "phyx_mini_mc",
+      "physics",
+      "mmmu_pro_vision",
+      "mmstar",
+      "screenspot",
+      "spatialvizbench_cot",
+      "cvbench_3d",
+      "erqa",
+      "blink",
+      "countbenchqa",
+      "countqa",
+      "treebench",
+      "puzzlevqa",
+      "visualpuzzles",
+      "logicvista",
+      "mme_reasoning",
+      "mmvp",
+      "screenspotpro",
+      "screenspot_v2",
+      "embspatial",
+      "realworldqa",
+      "visulogic"
     ]
   },
   "provisional_replacement": {
@@ -180,7 +218,7 @@
     {
       "key": "phyx_mini_mc",
       "display_name": "PhyX mini MC",
-      "category": "Science & General Reasoning",
+      "category": "Science & General",
       "vlmeval_alias": "PhyX_mini_MC",
       "route": "official_vlmevalkit",
       "answer_contract": "option",
@@ -189,7 +227,7 @@
     {
       "key": "physics",
       "display_name": "Physics",
-      "category": "Science & General Reasoning",
+      "category": "Science & General",
       "vlmeval_alias": "Physics",
       "route": "direct_score",
       "answer_contract": "official_boxed_answer",
@@ -198,7 +236,7 @@
     {
       "key": "mmmu_pro_vision",
       "display_name": "MMMU-ProVis",
-      "category": "Science & General Reasoning",
+      "category": "Science & General",
       "vlmeval_alias": "MMMU_Pro_V_COT",
       "route": "official_vlmevalkit",
       "answer_contract": "option",
@@ -207,7 +245,7 @@
     {
       "key": "mmstar",
       "display_name": "MMStar",
-      "category": "Science & General Reasoning",
+      "category": "Science & General",
       "vlmeval_alias": "MMStar",
       "route": "official_vlmevalkit",
       "answer_contract": "option",
@@ -220,7 +258,10 @@
       "vlmeval_alias": "ScreenSpot",
       "route": "direct_score",
       "answer_contract": "point",
-      "score_contract": "pinned_point_inside_target_box"
+      "score_contract": "trace_strict_json_point_with_pinned_point_inside_target_box",
+      "prompt_contract": "trace_screenspot_json_point_v1",
+      "system_prompt": null,
+      "max_tokens": 16384
     },
     {
       "key": "spatialvizbench_cot",
@@ -333,6 +374,64 @@
       "route": "dedicated_score",
       "answer_contract": "mixed",
       "score_contract": "official_task_specific_with_open_answer_judge"
+    },
+    {
+      "key": "screenspotpro",
+      "display_name": "ScreenSpotPro",
+      "category": "Spatial & Grounding",
+      "vlmeval_alias": "ScreenSpot_Pro",
+      "route": "official_vlmevalkit",
+      "answer_contract": "point",
+      "score_contract": "trace_strict_json_point_with_pinned_point_inside_target_box",
+      "prompt_contract": "trace_screenspot_json_point_v1",
+      "system_prompt": null,
+      "max_tokens": 16384,
+      "expected_rows": 1581,
+      "aggregate_subdatasets": 6
+    },
+    {
+      "key": "screenspot_v2",
+      "display_name": "ScreenSpot v2",
+      "category": "Spatial & Grounding",
+      "vlmeval_alias": "ScreenSpot_v2",
+      "route": "official_vlmevalkit",
+      "answer_contract": "point",
+      "score_contract": "trace_strict_json_point_with_pinned_point_inside_target_box",
+      "prompt_contract": "trace_screenspot_json_point_v1",
+      "system_prompt": null,
+      "max_tokens": 16384,
+      "expected_rows": 1272,
+      "aggregate_subdatasets": 3
+    },
+    {
+      "key": "embspatial",
+      "display_name": "EmbSpatial",
+      "category": "Spatial & Grounding",
+      "vlmeval_alias": "EmbSpatialBench",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate",
+      "expected_rows": 3640
+    },
+    {
+      "key": "realworldqa",
+      "display_name": "RealWorldQA",
+      "category": "Science & General",
+      "vlmeval_alias": "RealWorldQA",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_with_deterministic_option_adapter",
+      "expected_rows": 765
+    },
+    {
+      "key": "visulogic",
+      "display_name": "VisuLogic",
+      "category": "Puzzles & Logic",
+      "vlmeval_alias": "VisuLogic",
+      "route": "official_vlmevalkit",
+      "answer_contract": "boxed_option",
+      "score_contract": "pinned_vlmevalkit_visulogic_acc",
+      "expected_rows": 1000
     }
   ]
 }

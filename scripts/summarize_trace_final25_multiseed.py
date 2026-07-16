@@ -20,6 +20,8 @@ from benchmark_queue_lib import (  # noqa: E402
     TRACE_FINAL25_BENCHMARK_CATEGORIES,
     TRACE_FINAL25_BENCHMARKS,
     TRACE_FINAL26_BENCHMARKS,
+    TRACE_FINAL31_BENCHMARK_CATEGORIES,
+    TRACE_FINAL31_BENCHMARKS,
     extract_score_and_rows,
     score_path,
     spec_by_key,
@@ -29,27 +31,36 @@ from benchmark_queue_lib import (  # noqa: E402
 SUITE_BENCHMARKS: dict[str, tuple[str, ...]] = {
     "frozen": TRACE_FINAL25_BENCHMARKS,
     "all26": TRACE_FINAL26_BENCHMARKS,
+    "all31": TRACE_FINAL31_BENCHMARKS,
 }
 SUITE_IDS = {
     "frozen": "trace_final25",
     "all26": "trace_final26",
+    "all31": "trace_final31",
 }
 SUITE_DISPLAY_NAMES = {
     "frozen": "Final25",
     "all26": "All26",
+    "all31": "Final31",
 }
 
 
 def _categories_for_suite(suite: str) -> dict[str, tuple[str, ...]]:
-    categories = {
-        category: tuple(keys)
-        for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()
-    }
-    if suite == "all26":
-        categories["Perception & Counting"] = (
-            *categories["Perception & Counting"],
-            "mmvp",
-        )
+    if suite == "all31":
+        categories = {
+            category: tuple(keys)
+            for category, keys in TRACE_FINAL31_BENCHMARK_CATEGORIES.items()
+        }
+    else:
+        categories = {
+            category: tuple(keys)
+            for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()
+        }
+        if suite == "all26":
+            categories["Perception & Counting"] = (
+                *categories["Perception & Counting"],
+                "mmvp",
+            )
 
     selected = SUITE_BENCHMARKS[suite]
     categorized = tuple(key for keys in categories.values() for key in keys)
@@ -85,6 +96,13 @@ def _parse_model_entry(value: str) -> tuple[str, str]:
     return slug.strip(), label.strip()
 
 
+def _parse_delta(value: str) -> tuple[str, str, str]:
+    parts = value.split("=", 2)
+    if len(parts) != 3 or not all(part.strip() for part in parts):
+        raise argparse.ArgumentTypeError("Expected LABEL=MINUEND_MODEL_SLUG=SUBTRAHEND_MODEL_SLUG")
+    return tuple(part.strip() for part in parts)  # type: ignore[return-value]
+
+
 def _write_excel(path: Path, sheets: dict[str, pd.DataFrame]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with pd.ExcelWriter(path, engine="openpyxl") as writer:
@@ -100,6 +118,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Summarize a strict multi-seed TRACE evaluation campaign.")
     parser.add_argument("--score-root-base", type=Path, required=True)
     parser.add_argument("--model-entry", action="append", type=_parse_model_entry, required=True)
+    parser.add_argument(
+        "--delta",
+        action="append",
+        type=_parse_delta,
+        default=[],
+        metavar="LABEL=MINUEND_SLUG=SUBTRAHEND_SLUG",
+    )
     parser.add_argument("--seeds", nargs="+", type=int, default=[42, 43, 44])
     parser.add_argument(
         "--suite",
@@ -113,6 +138,11 @@ def main() -> None:
     args = parser.parse_args()
 
     model_entries = list(dict(args.model_entry).items())
+    model_labels = dict(model_entries)
+    for label, minuend, subtrahend in args.delta:
+        missing = [slug for slug in (minuend, subtrahend) if slug not in model_labels]
+        if missing:
+            parser.error(f"delta {label!r} references unknown model slug(s): {missing}")
     categories_for_suite = _categories_for_suite(args.suite)
     benchmark_rows = _benchmark_rows_for_suite(args.suite)
     suite_title = args.title or _default_title(args.suite, args.seeds)
@@ -167,6 +197,8 @@ def main() -> None:
                 raise ValueError(f"Expected {len(args.seeds)} scores for {benchmark_key}/{model_slug}, found {len(values)}")
             row[f"{model_label} mean"] = statistics.fmean(values)
             row[f"{model_label} std"] = statistics.stdev(values) if len(values) > 1 else 0.0
+        for label, minuend, subtrahend in args.delta:
+            row[label] = row[f"{model_labels[minuend]} mean"] - row[f"{model_labels[subtrahend]} mean"]
         summary_rows.append(row)
 
     summary = pd.DataFrame(summary_rows)
@@ -180,15 +212,49 @@ def main() -> None:
         )
         average[f"{model_label} mean"] = statistics.fmean(per_seed)
         average[f"{model_label} std"] = statistics.stdev(per_seed) if len(per_seed) > 1 else 0.0
+    for label, minuend, subtrahend in args.delta:
+        average[label] = average[f"{model_labels[minuend]} mean"] - average[f"{model_labels[subtrahend]} mean"]
     summary = pd.concat([summary, pd.DataFrame([average])], ignore_index=True)
+
+    category_rows: list[dict[str, Any]] = []
+    for category, keys in categories_for_suite.items():
+        record: dict[str, Any] = {"Category": category, "Benchmarks": len(keys)}
+        for model_slug, model_label in model_entries:
+            per_seed = (
+                seed_values[
+                    (seed_values["category"] == category)
+                    & (seed_values["model_slug"] == model_slug)
+                ]
+                .groupby("seed", sort=True)["score"]
+                .mean()
+                .tolist()
+            )
+            record[f"{model_label} mean"] = statistics.fmean(per_seed)
+            record[f"{model_label} std"] = statistics.stdev(per_seed) if len(per_seed) > 1 else 0.0
+        for label, minuend, subtrahend in args.delta:
+            record[label] = (
+                record[f"{model_labels[minuend]} mean"]
+                - record[f"{model_labels[subtrahend]} mean"]
+            )
+        category_rows.append(record)
+    category_summary = pd.DataFrame(category_rows)
 
     metadata = pd.DataFrame(
         [
             {"key": "suite", "value": SUITE_IDS[args.suite]},
             {"key": "suite_view", "value": args.suite},
             {"key": "benchmark_count", "value": len(benchmark_rows)},
+            {"key": "rows_per_model_seed", "value": int(summary.iloc[:-1]["Rows"].sum())},
             {"key": "seeds", "value": ",".join(map(str, args.seeds))},
-            {"key": "decoding", "value": "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096"},
+            {
+                "key": "decoding",
+                "value": (
+                    "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096; "
+                    "ScreenSpot family max_tokens=16384"
+                    if args.suite == "all31"
+                    else "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096"
+                ),
+            },
             {"key": "judge", "value": "Qwen/Qwen3-32B, temperature=0"},
             {"key": "score_root_base", "value": str(args.score_root_base)},
         ]
@@ -208,35 +274,60 @@ def main() -> None:
         {
             "mean_std": summary,
             "seed_values": seed_values,
+            "category_summary": category_summary,
             "categories": categories,
             "metadata": metadata,
         },
     )
 
     lines = [f"# {suite_title}", "", f"Seeds: `{', '.join(map(str, args.seeds))}`", ""]
-    headers = ["Category", "Benchmark", "Rows"] + [label for _, label in model_entries]
+    category_headers = ["Category", "Benchmarks"] + [label for _, label in model_entries] + [
+        label for label, _, _ in args.delta
+    ]
+    lines.append("## Category Means")
+    lines.append("")
+    lines.append("| " + " | ".join(category_headers) + " |")
+    lines.append("|" + "|".join(["---"] * len(category_headers)) + "|")
+    for _, row in category_summary.iterrows():
+        values = [str(row["Category"]), str(int(row["Benchmarks"]))]
+        for _, label in model_entries:
+            values.append(f"{_fmt(float(row[f'{label} mean']))} +/- {_fmt(float(row[f'{label} std']))}")
+        for label, _, _ in args.delta:
+            values.append(_fmt(float(row[label])))
+        lines.append("| " + " | ".join(values) + " |")
+    lines.extend(["", "## Benchmark Means", ""])
+
+    headers = ["Category", "Benchmark", "Rows"] + [label for _, label in model_entries] + [
+        label for label, _, _ in args.delta
+    ]
     lines.append("| " + " | ".join(headers) + " |")
     lines.append("|" + "|".join(["---"] * len(headers)) + "|")
     for _, row in summary.iterrows():
         values = [str(row["Category"]), str(row["Benchmark"]), "" if pd.isna(row["Rows"]) else str(int(row["Rows"]))]
         for _, label in model_entries:
             values.append(f"{_fmt(float(row[f'{label} mean']))} +/- {_fmt(float(row[f'{label} std']))}")
+        for label, _, _ in args.delta:
+            values.append(_fmt(float(row[label])))
         lines.append("| " + " | ".join(values) + " |")
-    scoring_note = (
-        "Judge: Qwen3-32B at temperature 0 through the frozen Final25 scoring contracts."
-        if args.suite == "frozen"
-        else "Scoring: frozen Final25 contracts plus the official VLMEvalKit MMVP paired-option evaluation."
-    )
+    if args.suite == "frozen":
+        scoring_note = "Judge: Qwen3-32B at temperature 0 through the frozen Final25 scoring contracts."
+    elif args.suite == "all26":
+        scoring_note = "Scoring: frozen Final25 contracts plus the official VLMEvalKit MMVP paired-option evaluation."
+    else:
+        scoring_note = "Scoring: faithful Final25 routes plus MMVP and five pinned VLMEvalKit Final31 additions."
+    decoding_note = "Decoding: temperature 0.6, top-p 1, top-k -1, no penalties, maximum 4096 generated tokens."
+    if args.suite == "all31":
+        decoding_note += " ScreenSpot, ScreenSpotPro, and ScreenSpot v2 use a 16384-token maximum."
     lines.extend(
         [
             "",
-            "Decoding: temperature 0.6, top-p 1, top-k -1, no penalties, maximum 4096 generated tokens.",
+            decoding_note,
             scoring_note,
         ]
     )
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     args.markdown.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    log_tag = "final25" if args.suite == "frozen" else "all26"
+    log_tag = {"frozen": "final25", "all26": "all26", "all31": "all31"}[args.suite]
     print(f"[{log_tag}-summary:done] rows={len(summary_rows)} models={len(model_entries)} excel={args.excel} markdown={args.markdown}")
 
 

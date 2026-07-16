@@ -1,4 +1,4 @@
-# Final25 Evaluation
+# Final External Evaluation
 
 This directory is the configuration and contract surface for the final external
 benchmark campaign. It intentionally contains no model responses, extracted
@@ -8,10 +8,12 @@ archive.
 
 ## Suite Definition
 
-[`suite.v1.json`](suite.v1.json) defines two explicit suite views:
+[`suite.v1.json`](suite.v1.json) defines three explicit suite views:
 
 - `frozen`: the current 25-benchmark comparison suite, including CountQA.
 - `provisional_mmvp`: the same suite with MMVP replacing CountQA.
+- `all31`: the diagnostic All26 union (both CountQA and MMVP) plus
+  ScreenSpotPro, ScreenSpot v2, EmbSpatial, RealWorldQA, and VisuLogic.
 
 MMVP remains provisional until the full 300-row benchmark is run once on the
 Qwen2.5-VL-7B base model and the trained checkpoint with the same decoding
@@ -23,14 +25,21 @@ The six reporting categories are:
 
 1. Charts & Tables
 2. Visual Math
-3. Science & General Reasoning
+3. Science & General
 4. Spatial & Grounding
 5. Perception & Counting
 6. Puzzles & Logic
 
-The overall score is the unweighted macro-average of the 25 benchmark scores.
+The overall score is the unweighted macro-average of the selected benchmark
+scores: 25 scores for either comparison view and 31 scores for `all31`.
 Do not average the six category means, because that would give categories equal
 weight instead of benchmarks.
+
+In `all31`, RealWorldQA is reported under Science & General;
+ScreenSpotPro, ScreenSpot v2, and EmbSpatial under Spatial & Grounding; and
+VisuLogic under Puzzles & Logic. ScreenSpotPro's six official subsets and
+ScreenSpot v2's three official subsets are each pooled sample-wise into one
+logical benchmark score.
 
 ## Reproducibility Pin
 
@@ -55,15 +64,23 @@ provenance. A moving upstream branch is not a reproducible dependency.
 Prepare and hash the exact local prompt media before starting a model server:
 
 ```bash
-python scripts/prepare_trace_final25_datasets.py --view all26
-python scripts/prepare_trace_final25_datasets.py --view frozen --verify-only
+python scripts/prepare_trace_final25_datasets.py --view all31
+python scripts/prepare_trace_final25_datasets.py --view all31 --verify-only
 ```
 
-The manifest keeps separate snapshot hashes for the frozen and provisional
-views, so adding or repairing MMVP does not invalidate a frozen Final25 run.
+The Final31 command writes `trace_final31_dataset_manifest.json` and records
+separate snapshot hashes for the frozen, provisional, All26, and All31 views.
+It verifies 40,527 rows per model/seed, including exact ScreenSpotPro and
+ScreenSpot v2 child-subset row counts.
 Generation sends these verified files via `file://` and lets the pinned Qwen
 processor apply the suite-wide checkpoint-native bounds of 3,136 to
 12,845,056 pixels with normal 28-pixel grid alignment.
+
+ScreenSpot, ScreenSpotPro, and ScreenSpot v2 use the shared user-only JSON point
+prompt recorded as `trace_screenspot_json_point_v1`; no system message is
+injected. Their official subset data and point-in-target geometry remain pinned
+to VLMEvalKit. EmbSpatial, RealWorldQA, and VisuLogic retain their pinned
+VLMEvalKit prompts and deterministic evaluation routes.
 
 ## Environment Setup
 
@@ -139,7 +156,32 @@ PYTHONPATH=".tmp/eval_deps:.:scripts:external/VLMEvalKit:external/VLMEvalKit/scr
   pytest -q tests/test_final25_synthetic_pipeline.py
 ```
 
-## Isolated Final26 Rescoring
+## Final31 Campaign
+
+`scripts/run_trace_final31_temp06_3seed_3models.sh` is the resumable launcher
+for Qwen2.5-VL-7B Base, TRACE, and VERO on seeds 42, 43, and 44. It serves one
+model at a time as eight tensor-parallel-1 replicas, generates the 28 standard
+benchmarks with a 4,096-token cap and the three ScreenSpot benchmarks with a
+16,384-token cap, then replaces the generation pool with eight Qwen3-32B judge
+replicas. CPU finalization is bounded and overlaps subsequent generation.
+
+After dataset and model preparation, run and monitor it with:
+
+```bash
+bash scripts/run_trace_final31_temp06_3seed_3models.sh
+tail -f logs/benchmark/trace_final31_temp06_seed42_44_3models_v1/status.log
+python scripts/status_trace_final31_campaign.py \
+  --campaign-root /dev/shm/trace_rlvr/trace_final31_temp06_seed42_44_3models_v1 \
+  --dataset-manifest /dev/shm/trace_rlvr/LMUData/trace_final31_dataset_manifest.json
+```
+
+The launcher checks immutable dataset/model revisions before serving, validates
+every generation summary against the active All31 manifest snapshot before
+staging it for scoring, and resumes only exact generation and score contracts.
+The final workbook contains per-seed values, benchmark and category mean/std,
+and TRACE-minus-Base and TRACE-minus-VERO deltas.
+
+## Isolated Final26/Final31 Rescoring
 
 `scripts/run_trace_final26_official_score_campaign.py` rescoring takes exactly
 three repeatable `--campaign MODEL MODEL_SLUG CAMPAIGN_ROOT` descriptors. It
@@ -148,12 +190,13 @@ outputs are never used as evaluator working directories. Run `--preflight`
 first. A nonempty score root is rejected unless `--resume` finds an exact
 manifest match for every source XLSX hash and the judge contract.
 
-The fixed routes are 15 pinned `dataset.evaluate` jobs (the former 14 generic
+The All26 routes are 15 pinned `dataset.evaluate` jobs (the former 14 generic
 extraction jobs plus MMVP), the 10 existing direct-score jobs, and the dedicated
-MME-Reasoning scorer. Official evaluator processes lease at most one of the
-eight local Qwen3 judge endpoints each. HF archive variables and token
-environment variables are removed from scoring subprocesses; this workflow
-does not upload artifacts.
+MME-Reasoning scorer. `--suite all31` adds five pinned `dataset.evaluate` jobs;
+these additions use deterministic official scoring and never fall back to an
+LLM. Official evaluator processes lease at most one of the eight local Qwen3
+judge endpoints each. Archive variables reach scoring subprocesses only when
+`--emit-archive` is explicit.
 
 ## Private Run Archive
 
@@ -166,8 +209,11 @@ images, videos, local media paths, and credentials are rejected or removed.
 Each row retains the dataset alias/revision/split, source index and ordinal,
 source-row hash, request hash, model/revision, seed, raw response, extraction
 evidence, score, and code/config provenance needed for later reanalysis. The
-final launcher check requires all 1,800 stage identities for the frozen run:
-`8 models x 3 seeds x 25 benchmarks x 3 stages`.
+Final31 launcher checks all 837 stage identities:
+`3 models x 3 seeds x 31 benchmarks x 3 stages`. After stopping the background
+daemon it performs one explicit flush so the last completed slices are not left
+queued. Remote archive failure is a warning unless
+`REQUIRE_REMOTE_ARCHIVE=1`; local evaluation artifacts remain authoritative.
 
 The uploader reads `hf-token.txt` by path and requires mode `600`; the token is
 never placed in an archive record or command-line value. Archive management is

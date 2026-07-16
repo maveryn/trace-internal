@@ -21,6 +21,12 @@ import sys
 from pathlib import Path
 from typing import Any, Callable
 
+from screenspot_json_contract import (
+    adapt_screenspot_prediction_frame,
+    is_screenspot_json_key,
+    weighted_screenspot_accuracy,
+)
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_VLMEVAL_ROOT = REPO_ROOT / "external" / "VLMEvalKit"
@@ -29,6 +35,9 @@ CONTRACT = "vlmevalkit-dataset-evaluate-saved-response-v2"
 CHARTQAPRO_ADAPTER_CONTRACT = "chartqapro-official-final-answer-v2"
 PHYX_OPTION_ADAPTER_CONTRACT = "phyx-deterministic-option-v1"
 TREEBENCH_OPTION_ADAPTER_CONTRACT = "treebench-explicit-final-boxed-option-v1"
+REALWORLDQA_OPTION_ADAPTER_CONTRACT = "realworldqa-deterministic-final-option-v1"
+VSTARBENCH_OPTION_ADAPTER_CONTRACT = "vstarbench-deterministic-final-option-v1"
+SCREENSPOT_MEDIA_RESTORE_CONTRACT = "screenspot-official-dataset-image-path-v1"
 
 
 def _sha256(path: Path) -> str:
@@ -362,6 +371,163 @@ def _adapt_treebench_prediction(
     }
 
 
+def _adapt_explicit_mcq_prediction(
+    prediction: Path,
+    table_loader: Callable[[str], Any],
+    *,
+    dataset_name: str,
+    contract: str,
+) -> dict[str, Any]:
+    """Normalize explicit final MCQ options before official exact matching.
+
+    The benchmark is scored by the stock ``ImageMCQDataset.evaluate`` path.
+    This adapter only removes model-specific answer wrappers (for example
+    ``<answer>...\\boxed{B}</answer>``); rows without an explicit final option
+    remain unchanged for VLMEvalKit's own matcher.
+    """
+
+    sys.path.insert(0, str(REPO_ROOT))
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    from run_external_benchmark_score_queue import _extract_final_mcq_option
+    from rlvr.vlmevalkit_extensions.trace_final25_answer_parsing import extract_unambiguous_abcd
+    import pandas as pd
+
+    data = table_loader(str(prediction)).copy()
+    if "prediction" not in data:
+        raise KeyError(f"{dataset_name} workbook lacks prediction column: {prediction}")
+    original = (
+        data["raw_prediction"].copy()
+        if "raw_prediction" in data
+        else data["prediction"].copy()
+    )
+    data["raw_prediction"] = original
+    adapted: list[Any] = []
+    methods: dict[str, int] = {}
+    resolved = 0
+    for (_, row), raw in zip(data.iterrows(), original):
+        choices = [
+            label
+            for label in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            if label in data.columns and not pd.isna(row[label])
+        ]
+        option = extract_unambiguous_abcd(raw)
+        method = "explicit_wrapper"
+        if option == "Z" or option not in choices:
+            option, method = _extract_final_mcq_option(raw, choices)
+        if option != "Z" and option in choices:
+            adapted.append(f"Answer: {option}")
+            resolved += 1
+        else:
+            adapted.append(raw)
+            method = "official_matcher_fallback"
+        methods[method] = methods.get(method, 0) + 1
+    data["prediction"] = adapted
+    data.to_excel(prediction, index=False)
+    return {
+        "contract": contract,
+        "extractor": (
+            "trace_final25_answer_parsing.extract_unambiguous_abcd + "
+            "run_external_benchmark_score_queue._extract_final_mcq_option"
+        ),
+        "resolved_rows": resolved,
+        "unresolved_rows": int(len(data)) - resolved,
+        "methods": methods,
+        "rows": int(len(data)),
+        "adapted_prediction_sha256": _sha256(prediction),
+    }
+
+
+def _adapt_realworldqa_prediction(
+    prediction: Path,
+    table_loader: Callable[[str], Any],
+) -> dict[str, Any]:
+    return _adapt_explicit_mcq_prediction(
+        prediction,
+        table_loader,
+        dataset_name="RealWorldQA",
+        contract=REALWORLDQA_OPTION_ADAPTER_CONTRACT,
+    )
+
+
+def _adapt_vstarbench_prediction(
+    prediction: Path,
+    table_loader: Callable[[str], Any],
+) -> dict[str, Any]:
+    return _adapt_explicit_mcq_prediction(
+        prediction,
+        table_loader,
+        dataset_name="VStarBench",
+        contract=VSTARBENCH_OPTION_ADAPTER_CONTRACT,
+    )
+
+
+def _adapt_screenspot_prediction(
+    prediction: Path,
+    table_loader: Callable[[str], Any],
+    dataset: Any,
+) -> dict[str, Any]:
+    import pandas as pd
+
+    data = table_loader(str(prediction)).copy()
+    source = getattr(dataset, "data", None)
+    if not isinstance(source, pd.DataFrame):
+        raise TypeError("ScreenSpot dataset must expose its official rows as dataset.data")
+    if "index" not in data or "index" not in source or "image_path" not in source:
+        raise KeyError("ScreenSpot media restoration requires index and official image_path columns")
+
+    def index_key(value: Any) -> str:
+        if isinstance(value, float) and value.is_integer():
+            return str(int(value))
+        return str(value)
+
+    source_keys = [index_key(value) for value in source["index"]]
+    prediction_keys = [index_key(value) for value in data["index"]]
+    if len(source_keys) != len(set(source_keys)):
+        raise ValueError("ScreenSpot official dataset has duplicate string indices")
+    if len(prediction_keys) != len(set(prediction_keys)):
+        raise ValueError("ScreenSpot prediction workbook has duplicate string indices")
+    source_by_index = {
+        key: row for key, (_, row) in zip(source_keys, source.iterrows())
+    }
+    missing = [key for key in prediction_keys if key not in source_by_index]
+    if missing:
+        raise ValueError(f"ScreenSpot prediction indices are absent from official dataset: {missing[:10]}")
+
+    matched = [source_by_index[key] for key in prediction_keys]
+    if "SUB_DATASET" in source:
+        if "SUB_DATASET" not in data:
+            raise KeyError("ScreenSpot concat prediction workbook lacks SUB_DATASET")
+        mismatches = [
+            key
+            for key, actual, official in zip(
+                prediction_keys,
+                data["SUB_DATASET"],
+                (row["SUB_DATASET"] for row in matched),
+            )
+            if str(actual) != str(official)
+        ]
+        if mismatches:
+            raise ValueError(
+                f"ScreenSpot concat SUB_DATASET disagrees with official dataset at indices {mismatches[:10]}"
+            )
+
+    image_paths = [row["image_path"] for row in matched]
+    if any(pd.isna(value) or not str(value).strip() for value in image_paths):
+        raise ValueError("ScreenSpot official dataset contains an empty image_path")
+    data["image_path"] = image_paths
+    adapted, receipt = adapt_screenspot_prediction_frame(data)
+    adapted.to_excel(prediction, index=False)
+    receipt["media_restore"] = {
+        "contract": SCREENSPOT_MEDIA_RESTORE_CONTRACT,
+        "source": "dataset.data",
+        "matched_by": "unique_string_index",
+        "restored_rows": int(len(adapted)),
+        "validated_sub_dataset": "SUB_DATASET" in source,
+    }
+    receipt["adapted_prediction_sha256"] = _sha256(prediction)
+    return receipt
+
+
 def run_saved_score(
     *,
     benchmark_key: str | None,
@@ -427,7 +593,14 @@ def run_saved_score(
         prediction_xlsx,
         output_dir,
         official_name,
-        replace=benchmark_key in {"chartqapro", "phyx_mini_mc", "treebench"},
+        replace=benchmark_key in {
+            "chartqapro",
+            "phyx_mini_mc",
+            "realworldqa",
+            "treebench",
+            "vstarbench",
+        }
+        or is_screenspot_json_key(benchmark_key),
     )
     prediction_adapter: dict[str, Any] | None = None
     if benchmark_key == "chartqapro":
@@ -436,16 +609,38 @@ def run_saved_score(
         prediction_adapter = _adapt_phyx_option_prediction(prediction, table_loader)
     elif benchmark_key == "treebench":
         prediction_adapter = _adapt_treebench_prediction(prediction, table_loader)
+    elif benchmark_key == "realworldqa":
+        prediction_adapter = _adapt_realworldqa_prediction(prediction, table_loader)
+    elif benchmark_key == "vstarbench":
+        prediction_adapter = _adapt_vstarbench_prediction(prediction, table_loader)
+    elif is_screenspot_json_key(benchmark_key):
+        prediction_adapter = _adapt_screenspot_prediction(prediction, table_loader, dataset)
 
     # The only scoring call in this wrapper.
     result = dataset.evaluate(str(prediction), **dict(judge_kwargs))
-    score, primary = _primary_score(
-        dataset,
-        result,
-        flatten_metrics,
-        primary_metric,
-        primary_value_scale,
+    pooled_screenspot = (
+        weighted_screenspot_accuracy(result)
+        if is_screenspot_json_key(benchmark_key)
+        else None
     )
+    if pooled_screenspot is not None:
+        score, pooled_rows = pooled_screenspot
+        primary = {
+            "key": "Pooled Overall_Accuracy" if pooled_rows else "Overall_Accuracy",
+            "raw_value": score,
+            "raw_display": None,
+            "value_scale": "percent",
+            "official_report": _normalize_result(result),
+            "pooled_rows": pooled_rows or int(len(table_loader(str(prediction)))),
+        }
+    else:
+        score, primary = _primary_score(
+            dataset,
+            result,
+            flatten_metrics,
+            primary_metric,
+            primary_value_scale,
+        )
     evaluate_source_raw = inspect.getsourcefile(dataset.evaluate)
     evaluate_source = Path(evaluate_source_raw).resolve() if evaluate_source_raw else None
     scores_path = output_dir / "scores.json"

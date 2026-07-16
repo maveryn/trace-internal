@@ -67,6 +67,9 @@ from final25_media_contract import (  # noqa: E402
     row_lookup_key,
     source_record_sha256,
 )
+from screenspot_json_contract import (  # noqa: E402
+    apply_screenspot_json_prompt,
+)
 from run_external_benchmark_generation_queue import (  # noqa: E402
     _apply_subset_frame,
     _apply_subset_rows,
@@ -750,6 +753,7 @@ def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict
             struct = handle.dataset.build_prompt(row_series, handle.spec.video_llm)
         else:
             struct = runner.build_prompt_for_runner(handle.dataset, row_series, video_llm=handle.spec.video_llm)
+    struct = apply_screenspot_json_prompt(handle.spec, row, struct)
     content: list[dict[str, Any]] = []
     for item in struct:
         typ = item.get("type")
@@ -2228,7 +2232,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--dataset-manifest-view",
-        choices=("frozen", "provisional-mmvp", "all26"),
+        choices=("frozen", "provisional-mmvp", "all26", "all31"),
         default="frozen",
     )
     parser.add_argument(

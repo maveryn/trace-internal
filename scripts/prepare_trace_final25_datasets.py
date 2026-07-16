@@ -75,6 +75,27 @@ EXPECTED_ROWS = {
     "visualpuzzles": 1168,
     "logicvista": 447,
     "mme_reasoning": 1188,
+    "screenspotpro": 1581,
+    "screenspot_v2": 1272,
+    "embspatial": 3640,
+    "realworldqa": 765,
+    "visulogic": 1000,
+}
+
+EXPECTED_SUBDATASET_ROWS = {
+    "ScreenSpot_Pro": {
+        "ScreenSpot_Pro_Development": 299,
+        "ScreenSpot_Pro_Creative": 341,
+        "ScreenSpot_Pro_CAD": 261,
+        "ScreenSpot_Pro_Scientific": 254,
+        "ScreenSpot_Pro_Office": 230,
+        "ScreenSpot_Pro_OS": 196,
+    },
+    "ScreenSpot_v2": {
+        "ScreenSpot_v2_Mobile": 501,
+        "ScreenSpot_v2_Desktop": 334,
+        "ScreenSpot_v2_Web": 437,
+    },
 }
 
 CHARTMUSEUM_REPO = "yujieouo/ChartMuseum"
@@ -145,15 +166,18 @@ def _load_suite(path: Path) -> dict[str, Any]:
 
 
 def _selected_keys(suite: dict[str, Any], view: str, only: Iterable[str]) -> list[str]:
-    if view == "frozen":
-        keys = list(suite["suites"]["frozen"])
-    elif view == "provisional-mmvp":
-        keys = list(suite["suites"]["provisional_mmvp"])
-    else:
-        keys = list(suite["suites"]["frozen"])
-        for key in suite["suites"]["provisional_mmvp"]:
-            if key not in keys:
-                keys.append(key)
+    frozen = list(suite["suites"]["frozen"])
+    provisional = list(suite["suites"]["provisional_mmvp"])
+    all26 = [*frozen, *(key for key in provisional if key not in frozen)]
+    views = {
+        "frozen": frozen,
+        "provisional-mmvp": provisional,
+        "all26": all26,
+        "all31": list(suite["suites"]["all31"]),
+    }
+    if view not in views:
+        raise RuntimeError(f"unknown dataset view: {view}")
+    keys = views[view]
 
     requested = set(only)
     unknown = requested - set(keys)
@@ -172,6 +196,7 @@ def _new_manifest(
     frozen = [str(key) for key in suite["suites"]["frozen"]]
     provisional = [str(key) for key in suite["suites"]["provisional_mmvp"]]
     all26 = [*frozen, *(key for key in provisional if key not in frozen)]
+    all31 = [str(key) for key in suite["suites"]["all31"]]
     return {
         "schema_version": MANIFEST_SCHEMA,
         "suite_path": str(suite_path.resolve()),
@@ -186,6 +211,7 @@ def _new_manifest(
             "frozen": frozen,
             "provisional-mmvp": provisional,
             "all26": all26,
+            "all31": all31,
         },
         "view_snapshot_sha256": {},
         "datasets": {},
@@ -354,6 +380,19 @@ def _build_dataset(key: str, alias: str) -> Any:
     return build_vlmeval_dataset(spec_by_key(key))
 
 
+def _subdataset_rows(dataset: Any) -> list[dict[str, Any]]:
+    dataset_map = getattr(dataset, "dataset_map", None)
+    if not isinstance(dataset_map, dict):
+        return []
+    aliases = list(getattr(dataset, "datasets", dataset_map))
+    if len(aliases) != len(set(aliases)) or set(aliases) != set(dataset_map):
+        raise RuntimeError("concat dataset aliases are missing or duplicated")
+    return [
+        {"alias": str(alias), "rows": int(len(dataset_map[alias].data))}
+        for alias in aliases
+    ]
+
+
 def _flatten_media_value(value: Any) -> list[str]:
     if isinstance(value, (list, tuple)):
         flattened: list[str] = []
@@ -493,12 +532,32 @@ def _materialize_dataset(
         _stage_chartmuseum(lmu_root, token)
     elif key == "physics":
         _stage_physics(lmu_root)
+    elif key == "screenspot_v2":
+        from benchmark_queue_lib import materialize_grounding_benchmark_files, spec_by_key
+
+        materialize_grounding_benchmark_files([spec_by_key(key)], root=lmu_root)
     dataset = _build_dataset(key, alias)
     actual_rows = len(dataset.data)
     if actual_rows != expected_rows:
         raise RuntimeError(
             f"{key} row-count mismatch: downloaded {actual_rows}, expected {expected_rows}"
         )
+    subdatasets = _subdataset_rows(dataset)
+    expected_subdatasets = EXPECTED_SUBDATASET_ROWS.get(alias)
+    if expected_subdatasets is not None:
+        actual_subdatasets = {
+            str(item["alias"]): int(item["rows"]) for item in subdatasets
+        }
+        if actual_subdatasets != expected_subdatasets:
+            raise RuntimeError(
+                f"{key} subdataset row-count mismatch: {actual_subdatasets} != "
+                f"{expected_subdatasets}"
+            )
+        if sum(actual_subdatasets.values()) != actual_rows:
+            raise RuntimeError(
+                f"{key} subdataset rows do not sum to aggregate rows: "
+                f"{sum(actual_subdatasets.values())} != {actual_rows}"
+            )
 
     working_directory = REPO_ROOT.resolve()
     unique_media: dict[tuple[str, str], tuple[str, Path]] = {}
@@ -607,6 +666,7 @@ def _materialize_dataset(
         "unique_media": len(media_files),
         "media_bytes": total_bytes,
         "metadata_files": metadata_files,
+        "subdatasets": subdatasets,
         "media_files": media_files,
         "row_media": row_media,
         "dataset_snapshot_sha256": dataset_snapshot_sha256(row_media),
@@ -636,6 +696,18 @@ def _receipt_is_complete(receipt: dict[str, Any], *, alias: str, expected_rows: 
         or not receipt.get("dataset_snapshot_sha256")
     ):
         return False
+    expected_subdatasets = EXPECTED_SUBDATASET_ROWS.get(alias)
+    if expected_subdatasets is not None:
+        subdatasets = receipt.get("subdatasets")
+        if not isinstance(subdatasets, list):
+            return False
+        actual_subdatasets = {
+            str(item.get("alias")): int(item.get("rows", -1))
+            for item in subdatasets
+            if isinstance(item, dict)
+        }
+        if actual_subdatasets != expected_subdatasets:
+            return False
     for item in [*metadata_files, *media_files]:
         try:
             path = Path(str(item["path"]))
@@ -684,8 +756,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--suite", type=Path, default=DEFAULT_SUITE_PATH)
     parser.add_argument(
         "--view",
-        choices=("all26", "frozen", "provisional-mmvp"),
-        default="all26",
+        choices=("all31", "all26", "frozen", "provisional-mmvp"),
+        default="all31",
     )
     parser.add_argument("--only", action="append", default=[])
     parser.add_argument("--lmu-root", type=Path, default=DEFAULT_LMU_ROOT)
@@ -710,9 +782,12 @@ def main() -> None:
     lmu_root = args.lmu_root.expanduser().resolve()
     hf_home = (args.hf_home or (lmu_root / ".hf-cache")).expanduser().resolve()
     vlmeval_root = args.vlmeval_root.expanduser().resolve()
-    manifest_path = (
-        args.manifest or (lmu_root / "trace_final25_dataset_manifest.json")
-    ).expanduser().resolve()
+    default_manifest_name = (
+        "trace_final31_dataset_manifest.json"
+        if args.view == "all31"
+        else "trace_final25_dataset_manifest.json"
+    )
+    manifest_path = (args.manifest or (lmu_root / default_manifest_name)).expanduser().resolve()
     if args.workers < 1:
         raise SystemExit("--workers must be at least 1")
 

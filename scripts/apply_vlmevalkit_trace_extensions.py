@@ -87,6 +87,57 @@ def patch_physics_text_only_prompts(text: str) -> str:
     return prefix + marker + physics
 
 
+def patch_tablevqabench_answer_wrapper(text: str) -> str:
+    prefix, marker, table = text.partition("class TableVQABench")
+    if not marker:
+        raise RuntimeError("Could not find TableVQABench in image_vqa.py")
+    table = replace_once(
+        table,
+        """        data = load(eval_file)
+        assert 'answer' in data and 'prediction' in data
+
+        data['prediction'] = data['prediction'].str.replace('^Answer: ',
+                                                            '',
+                                                            regex=True)
+""",
+        """        from .utils.trace_final25_answer_parsing import unwrap_single_answer_block
+
+        data = load(eval_file)
+        assert 'answer' in data and 'prediction' in data
+
+        data['prediction'] = data['prediction'].map(unwrap_single_answer_block)
+        data['prediction'] = data['prediction'].str.replace('^Answer: ',
+                                                            '',
+                                                            regex=True)
+""",
+    )
+    return prefix + marker + table
+
+
+def patch_puzzle_answer_parser(text: str) -> str:
+    import_line = "from .trace_final25_answer_parsing import extract_unambiguous_abcd"
+    if import_line not in text:
+        anchors = ("from vlmeval.smp import load", "from vlmeval.smp.file import load")
+        anchor = next((candidate for candidate in anchors if candidate in text), None)
+        if anchor is None:
+            raise RuntimeError("Could not find puzzle parser import anchor")
+        text = insert_once(text, anchor, import_line)
+    return replace_once(
+        text,
+        """def extract_answer(ans):
+    matches = re.findall(r"\\banswer\\s*:\\s*([A-Z])\\b", ans, re.IGNORECASE)
+    if matches:
+        ans = matches[-1]
+        return ans
+    else:
+        return "Z"
+""",
+        """def extract_answer(ans):
+    return extract_unambiguous_abcd(ans)
+""",
+    )
+
+
 def apply_extensions(vlmeval_root: Path) -> None:
     dataset_root = vlmeval_root / "vlmeval" / "dataset"
     if not dataset_root.exists():
@@ -97,12 +148,21 @@ def apply_extensions(vlmeval_root: Path) -> None:
 
     for name in ("trace_local_vqa.py", "visiongraph.py", "evochart.py", "mirage.py"):
         shutil.copy2(EXT_ROOT / name, dataset_root / name)
+    shutil.copy2(
+        EXT_ROOT / "trace_final25_answer_parsing.py",
+        dataset_root / "utils" / "trace_final25_answer_parsing.py",
+    )
     for name in ("batched_chartmuseum_vllm.py", "batched_chartqapro_vllm.py", "batched_vlmevalkit_qwen3vl.py"):
         shutil.copy2(EXT_ROOT / "scripts" / name, scripts_root / name)
 
     image_vqa_path = dataset_root / "image_vqa.py"
     if image_vqa_path.exists():
-        image_vqa_path.write_text(patch_physics_text_only_prompts(image_vqa_path.read_text()))
+        image_vqa = patch_physics_text_only_prompts(image_vqa_path.read_text())
+        image_vqa_path.write_text(patch_tablevqabench_answer_wrapper(image_vqa))
+
+    for name in ("puzzlevqa.py", "visualpuzzles.py"):
+        path = dataset_root / "utils" / name
+        path.write_text(patch_puzzle_answer_parser(path.read_text()))
 
     init_path = dataset_root / "__init__.py"
     text = init_path.read_text()

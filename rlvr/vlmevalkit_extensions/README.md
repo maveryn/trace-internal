@@ -18,10 +18,23 @@ Included adapters:
 
 The plain `EvoChart` alias and `CountQA` append the exact generation suffix
 `Put the final answer inside \\boxed{}.`; other dataset aliases are unchanged.
+EvoChart scoring follows the authors' published metric. A numeric reference
+requires exactly one numeric value in the extracted answer: clear rows use
+zero-tolerance equality and unclear rows allow 5% relative error. Textual
+references use case-insensitive string equality. No judge is used.
 
 The installer also restores pinned VLMEvalKit's official Physics text-only
 prompt behavior: rows with an empty `image` cell do not receive a synthetic
 blank image. The later multi-ground-truth Physics handling remains unchanged.
+The evaluation environment pins upstream's `antlr4-python3-runtime==4.11.1`
+so the official symbolic-equivalence path remains available before judge
+fallback.
+
+`trace_final25_answer_parsing.py` adds only final-wrapper normalization before
+the unchanged official scorers: TableVQABench unwraps exactly one nonempty
+`<answer>` block, while PuzzleVQA and VisualPuzzles retain `Answer: X` and also
+accept one unambiguous A-D choice from an answer block or final box. Conflicting
+explicit choices remain unresolved.
 
 Included runner scripts:
 

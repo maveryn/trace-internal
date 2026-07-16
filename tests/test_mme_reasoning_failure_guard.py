@@ -161,6 +161,8 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
             "A": "A",
             "[A, C]": "A,C",
             "['b', 'd']": "B,D",
+            "[CD]": "C,D",
+            "BDE": "B,D,E",
             "B.": "B",
             r"C. $30^\circ$": "C",
             r"D. $\frac{3+\sqrt{2}}{2}$": "D",
@@ -171,8 +173,28 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
             with self.subTest(output=output):
                 self.assertEqual(mme._validate_extraction("choice_prompt", output), (True, expected))
 
+    def test_choice_extraction_types_explicit_model_abstentions(self):
+        for output in (
+            "None",
+            "None of the above",
+            "None of the given options can be used to compare the metals.",
+        ):
+            with self.subTest(output=output):
+                self.assertEqual(
+                    mme._validate_extraction("choice_prompt", output),
+                    (True, mme.MME_NO_CHOICE_SENTINEL),
+                )
+
     def test_choice_extraction_rejects_empty_verbose_or_conflicting_outputs(self):
-        for output in ("", "the answer is A", "A or B", "A. first, B. second"):
+        for output in (
+            "",
+            "the answer is A",
+            "A or B",
+            "A. first, B. second",
+            "AA",
+            "AH",
+            "None whatsoever",
+        ):
             with self.subTest(output=output):
                 valid, _normalized = mme._validate_extraction("choice_prompt", output)
                 self.assertFalse(valid)

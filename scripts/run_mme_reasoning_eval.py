@@ -44,13 +44,14 @@ from run_external_benchmark_score_queue import (  # noqa: E402
 
 
 MME_REASONING_SPEC = spec_by_key("mme_reasoning")
-MME_EVALUATION_CONTRACT_VERSION = "trace-final25-mme-evaluation-v4"
-MME_EXTRACTION_ARCHIVE_CONTRACT_VERSION = "trace-final25-mme-extraction-v3"
-MME_SCORE_ARCHIVE_CONTRACT_VERSION = "trace-final25-mme-score-v3"
+MME_EVALUATION_CONTRACT_VERSION = "trace-final25-mme-evaluation-v5"
+MME_EXTRACTION_ARCHIVE_CONTRACT_VERSION = "trace-final25-mme-extraction-v4"
+MME_SCORE_ARCHIVE_CONTRACT_VERSION = "trace-final25-mme-score-v4"
 MME_EXTRACTION_JUDGE_CONTRACT_VERSION = "trace-final25-mme-extraction-judge-v2"
 MME_OPEN_JUDGE_CONTRACT_VERSION = "trace-final25-mme-open-judge-v2"
 MME_FAILURE_FILENAME = "mme_reasoning_failures.json"
 MME_API_FAILURE_MESSAGE = "Failed to obtain answer via API."
+MME_NO_CHOICE_SENTINEL = "__MME_NO_CHOICE__"
 MME_RETRY_TEMPERATURES = (0.0, 0.5, 1.0, 1.5, 2.0)
 
 
@@ -219,6 +220,14 @@ def _normalize_choice_extraction(output: str) -> str | None:
     if not text:
         return None
 
+    no_choice = re.sub(r"\s+", " ", text).strip().rstrip(".!").casefold()
+    if (
+        no_choice == "none"
+        or no_choice == "none of the above"
+        or no_choice.startswith("none of the given options ")
+    ):
+        return MME_NO_CHOICE_SENTINEL
+
     # MME-Reasoning labels three choice rows with numeric identifiers (2, 4,
     # and 44).  The pinned evaluator treats these exactly like letter labels.
     if re.fullmatch(r"[+-]?\d+(?:\.\d+)?", text):
@@ -233,6 +242,9 @@ def _normalize_choice_extraction(output: str) -> str | None:
     else:
         inner = text.strip("[]() ")
         values = [part.strip().strip("\"'").upper() for part in inner.split(",")]
+        if len(values) == 1 and re.fullmatch(r"[A-G]{2,7}", values[0]):
+            compact = list(values[0])
+            values = compact if len(set(compact)) == len(compact) else values
     if values and all(re.fullmatch(r"[A-Z]", value) is not None for value in values):
         return ",".join(values)
 
@@ -826,12 +838,15 @@ def _run_score_impl(
             no_resume=args.no_resume,
             desc=f"{args.model_slug} MME extract attempt {attempt}",
             contract_version=extraction_judge_contract,
+            return_unresolved=True,
         )
         next_pending: list[str] = []
         for idx, prompt in pending:
             cache_entry = cache.get(idx, {})
             raw = str(cache_entry.get("judge_output", "")).strip()
+            finish_reason = str(cache_entry.get("judge_finish_reason", "")).strip().lower()
             ok, res = _validate_extraction(eval_prompt_by_idx[idx], raw)
+            ok = ok and finish_reason not in {"length", "max_tokens"}
             if ok:
                 extraction_rows[idx] = {
                     "log": "Succeed",
@@ -849,6 +864,7 @@ def _run_score_impl(
                     "cache": cache_name,
                     "request_hash": cache_entry.get("request_hash", ""),
                     "judge_output": raw,
+                    "judge_finish_reason": finish_reason,
                 }
                 next_pending.append(idx)
         pending_indices = next_pending
@@ -922,12 +938,14 @@ def _run_score_impl(
             no_resume=args.no_resume,
             desc=f"{args.model_slug} MME open score attempt {attempt}",
             contract_version=open_judge_contract,
+            return_unresolved=True,
         )
         next_pending = []
         for idx, prompt in pending:
             cache_entry = cache.get(idx, {})
             raw = str(cache_entry.get("judge_output", "")).strip()
-            if raw in {"0", "1"}:
+            finish_reason = str(cache_entry.get("judge_finish_reason", "")).strip().lower()
+            if raw in {"0", "1"} and finish_reason not in {"length", "max_tokens"}:
                 score = raw == "1"
                 score_rows[idx] = {
                     "log_score": "Succeed",
@@ -946,6 +964,7 @@ def _run_score_impl(
                     "cache": cache_name,
                     "request_hash": cache_entry.get("request_hash", ""),
                     "judge_output": raw,
+                    "judge_finish_reason": finish_reason,
                 }
                 next_pending.append(idx)
         pending_open = next_pending

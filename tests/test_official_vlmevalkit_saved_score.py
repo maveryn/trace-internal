@@ -30,6 +30,31 @@ class _FakeOfficialDataset:
 
 
 class OfficialVLMEvalSavedScoreTest(unittest.TestCase):
+    def test_chartqapro_adapter_extracts_model_wrappers_and_preserves_fallback(self) -> None:
+        raw_predictions = [
+            "reasoning\nThe Answer Is: **42**.",
+            "reasoning\n<answer>North America</answer>",
+            (
+                "reasoning\nThe answer is 17 for an intermediate result.\n"
+                "<answer>The final chart value is \\boxed{42}.</answer>"
+            ),
+            "reasoning only; no supported final answer",
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            prediction = Path(temporary) / "ChartQAPro_CoT_predictions.xlsx"
+            pd.DataFrame({"prediction": raw_predictions}).to_excel(prediction, index=False)
+
+            receipt = runner._adapt_chartqapro_prediction(prediction, pd.read_excel)
+            adapted = pd.read_excel(prediction)
+
+            self.assertEqual(
+                adapted["prediction"].tolist(),
+                ["42", "North America", "42", raw_predictions[-1]],
+            )
+            self.assertEqual(adapted["raw_prediction"].tolist(), raw_predictions)
+            self.assertEqual(receipt["changed_rows"], 3)
+            self.assertEqual(receipt["unresolved_rows"], 1)
+
     def test_phyx_option_adapter_normalizes_saved_responses(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             prediction = Path(temporary) / "PhyX_mini_MC_predictions.xlsx"
@@ -52,6 +77,28 @@ class OfficialVLMEvalSavedScoreTest(unittest.TestCase):
             self.assertEqual(receipt["contract"], runner.PHYX_OPTION_ADAPTER_CONTRACT)
             self.assertEqual(receipt["resolved_rows"], 3)
             self.assertEqual(receipt["unresolved_rows"], 1)
+
+    def test_treebench_adapter_uses_only_one_final_boxed_answer(self) -> None:
+        raw_predictions = [
+            "<answer>The image contains several labels. Final: \\boxed{C}.</answer>",
+            "<answer>B</answer>",
+            "<answer>First \\boxed{A}, then prose.</answer>",
+            "<answer>\\boxed{A}</answer><answer>\\boxed{B}</answer>",
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            prediction = Path(temporary) / "TreeBench_predictions.xlsx"
+            pd.DataFrame({"prediction": raw_predictions}).to_excel(prediction, index=False)
+
+            receipt = runner._adapt_treebench_prediction(prediction, pd.read_excel)
+            adapted = pd.read_excel(prediction)
+
+            self.assertEqual(
+                adapted["prediction"].tolist(),
+                ["C", *raw_predictions[1:]],
+            )
+            self.assertEqual(adapted["raw_prediction"].tolist(), raw_predictions)
+            self.assertEqual(receipt["contract"], runner.TREEBENCH_OPTION_ADAPTER_CONTRACT)
+            self.assertEqual(receipt["changed_rows"], 1)
 
     def test_delegates_evaluation_and_emits_provenance(self) -> None:
         dataset = _FakeOfficialDataset()
@@ -95,11 +142,6 @@ class OfficialVLMEvalSavedScoreTest(unittest.TestCase):
                 persisted["provenance"]["vlmevalkit_commit"],
                 "a8b12bf1c3737a33fc1de967c202f9c592b22e86",
             )
-            self.assertEqual(
-                runner._chartqapro_final_sentence("reasoning\nThe Answer Is: **42**."),
-                "42",
-            )
-
             class _FakeWeMath:
                 dataset_name = "WeMath_COT"
 

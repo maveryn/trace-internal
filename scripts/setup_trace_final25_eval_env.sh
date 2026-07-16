@@ -69,6 +69,7 @@ for module in (
 ):
     importlib.import_module(module)
 expected = {
+    "antlr4-python3-runtime": "4.11.1",
     "huggingface-hub": "0.36.2",
     "openpyxl": "3.1.5",
     "pandas": "2.3.3",
@@ -83,5 +84,10 @@ for distribution, wanted in expected.items():
     actual = version(distribution).split("+", 1)[0]
     if actual != wanted:
         raise RuntimeError(f"{distribution}=={wanted} is required, found {actual}")
+from sympy import Rational, simplify
+from sympy.parsing.latex import parse_latex
+
+if simplify(parse_latex(r"\frac{1}{2}") - Rational(1, 2)) != 0:
+    raise RuntimeError("SymPy LaTeX parsing preflight failed")
 print("[eval-env:ok] pinned VLMEvalKit and Final25 imports are available")
 PY

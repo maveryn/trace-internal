@@ -233,6 +233,41 @@ class PersistentJudgeAPIPoolTests(unittest.TestCase):
         self.assertEqual(rows["row"]["judge_max_tokens_used"], 512)
         self.assertEqual([item["max_tokens"] for item in server.requests], [128, 256, 512])
 
+    def test_route_can_receive_unresolved_row_after_internal_retries(self):
+        def callback(payload, _call_number):
+            self.assertEqual(_prompts_from_payload(payload), ["structured extraction"])
+            return 200, {
+                "choices": [{"index": 0, "text": "", "finish_reason": "length"}],
+                "usage": {"completion_tokens": 0},
+            }
+
+        server = _CompletionServer(callback)
+        self.addCleanup(server.close)
+        judge = score_queue.PersistentJudge(_args([server.base_url]))
+        self.addCleanup(judge.cleanup)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            rows = self._run_cached(
+                judge,
+                output_dir,
+                [("row", "structured extraction")],
+                return_unresolved=True,
+            )
+            resumed = self._run_cached(
+                judge,
+                output_dir,
+                [("row", "structured extraction")],
+                return_unresolved=True,
+            )
+
+        self.assertEqual(rows["row"]["judge_output"], "")
+        self.assertEqual(resumed["row"]["judge_output"], "")
+        self.assertEqual(rows["row"]["judge_finish_reason"], "length")
+        self.assertEqual(rows["row"]["judge_retry_reason"], "incomplete")
+        self.assertEqual(rows["row"]["judge_retry_count"], 4)
+        self.assertEqual([item["max_tokens"] for item in server.requests], [128, 256, 512, 1024])
+
     def test_nonempty_length_output_can_follow_official_extraction_semantics(self):
         def callback(payload, _call_number):
             self.assertEqual(_prompts_from_payload(payload), ["extract an answer"])

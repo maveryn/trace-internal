@@ -600,6 +600,7 @@ class PersistentJudge:
         contract_version: str,
         system_prompt: str | None,
         retry_on_length: bool,
+        return_unresolved: bool,
     ) -> dict[str, dict[str, Any]]:
         runner, _ = _import_vlmeval_runner()
 
@@ -630,12 +631,21 @@ class PersistentJudge:
             str(idx)
             for idx, _ in prompts
             if str(idx) in existing
-            and self._cache_entry_needs_retry(
-                existing[str(idx)],
-                expected[str(idx)],
-                output_validator,
-                output_validator_by_index,
-                retry_on_length=retry_on_length,
+            and (
+                any(
+                    str(existing[str(idx)].get(key, "")) != str(value)
+                    for key, value in expected[str(idx)].items()
+                )
+                or (
+                    not return_unresolved
+                    and self._cache_entry_needs_retry(
+                        existing[str(idx)],
+                        expected[str(idx)],
+                        output_validator,
+                        output_validator_by_index,
+                        retry_on_length=retry_on_length,
+                    )
+                )
             )
         }
         pending = [
@@ -672,6 +682,7 @@ class PersistentJudge:
                 accepted: dict[str, dict[str, Any]] = {}
                 retry_counts = {str(idx): 0 for idx, _ in batch}
                 retry_reasons: dict[str, str] = {}
+                last_results: dict[str, tuple[dict[str, Any], str, int]] = {}
                 limits = _judge_retry_token_limits(effective_max_tokens)
                 for retry_round, token_limit in enumerate(limits):
                     rows = self._call_api_completion_batch(
@@ -684,6 +695,7 @@ class PersistentJudge:
                     )
                     unresolved: list[tuple[str, str]] = []
                     for (idx, original_prompt), result in zip(active, rows):
+                        last_results[str(idx)] = (result, original_prompt, token_limit)
                         output = str(result.get("judge_output", ""))
                         reason = ""
                         if _judge_cache_entry_needs_retry(result, retry_on_length=retry_on_length):
@@ -719,9 +731,22 @@ class PersistentJudge:
                         break
                 if active:
                     failed = [str(idx) for idx, _ in active]
-                    raise RuntimeError(
-                        f"Judge produced incomplete or parse-invalid output after retries for indices={failed[:10]}"
-                    )
+                    if not return_unresolved:
+                        raise RuntimeError(
+                            "Judge produced incomplete or parse-invalid output after retries "
+                            f"for indices={failed[:10]}"
+                        )
+                    for idx, _ in active:
+                        result, original_prompt, token_limit = last_results[str(idx)]
+                        accepted[str(idx)] = {
+                            "index": str(idx),
+                            **result,
+                            **expected[str(idx)],
+                            "judge_prompt": original_prompt,
+                            "judge_max_tokens_used": token_limit,
+                            "judge_retry_count": retry_counts[str(idx)],
+                            "judge_retry_reason": retry_reasons.get(str(idx), ""),
+                        }
                 return [accepted[str(idx)] for idx, _ in batch]
 
             max_workers = min(
@@ -755,6 +780,7 @@ class PersistentJudge:
         contract_version: str | None = None,
         system_prompt: str | None = None,
         retry_on_length: bool = True,
+        return_unresolved: bool = False,
     ) -> dict[str, dict[str, Any]]:
         effective_contract_version = contract_version or str(
             self._arg("judge_cache_contract_version", PERSISTENT_JUDGE_CACHE_CONTRACT_VERSION)
@@ -774,6 +800,7 @@ class PersistentJudge:
                 contract_version=effective_contract_version,
                 system_prompt=system_prompt,
                 retry_on_length=retry_on_length,
+                return_unresolved=return_unresolved,
             )
         runner, _ = _import_vlmeval_runner()
         from vllm import SamplingParams
@@ -805,12 +832,21 @@ class PersistentJudge:
             str(idx)
             for idx, _ in prompts
             if str(idx) in existing
-            and self._cache_entry_needs_retry(
-                existing[str(idx)],
-                expected[str(idx)],
-                output_validator,
-                output_validator_by_index,
-                retry_on_length=retry_on_length,
+            and (
+                any(
+                    str(existing[str(idx)].get(key, "")) != str(value)
+                    for key, value in expected[str(idx)].items()
+                )
+                or (
+                    not return_unresolved
+                    and self._cache_entry_needs_retry(
+                        existing[str(idx)],
+                        expected[str(idx)],
+                        output_validator,
+                        output_validator_by_index,
+                        retry_on_length=retry_on_length,
+                    )
+                )
             )
         }
         pending = [
@@ -831,6 +867,7 @@ class PersistentJudge:
             accepted: dict[str, dict[str, Any]] = {}
             retry_counts = {str(idx): 0 for idx, _ in pending}
             retry_reasons: dict[str, str] = {}
+            last_results: dict[str, tuple[dict[str, Any], str, int]] = {}
             for token_limit in _judge_retry_token_limits(effective_max_tokens):
                 sampling = SamplingParams(
                     temperature=temperature,
@@ -857,6 +894,7 @@ class PersistentJudge:
                             "judge_finish_reason": out.outputs[0].finish_reason,
                             "judge_output_token_count": len(out.outputs[0].token_ids),
                         }
+                        last_results[str(idx)] = (result, original_prompt, token_limit)
                         reason = ""
                         if _judge_cache_entry_needs_retry(result, retry_on_length=retry_on_length):
                             reason = "incomplete"
@@ -896,9 +934,26 @@ class PersistentJudge:
                     break
             if active:
                 failed = [str(idx) for idx, _ in active]
-                raise RuntimeError(
-                    f"Judge produced incomplete or parse-invalid output after retries for indices={failed[:10]}"
-                )
+                if not return_unresolved:
+                    raise RuntimeError(
+                        "Judge produced incomplete or parse-invalid output after retries "
+                        f"for indices={failed[:10]}"
+                    )
+                unresolved_rows = []
+                for idx, _ in active:
+                    result, original_prompt, token_limit = last_results[str(idx)]
+                    unresolved_rows.append(
+                        {
+                            "index": str(idx),
+                            **result,
+                            **expected[str(idx)],
+                            "judge_prompt": original_prompt,
+                            "judge_max_tokens_used": token_limit,
+                            "judge_retry_count": retry_counts[str(idx)],
+                            "judge_retry_reason": retry_reasons.get(str(idx), ""),
+                        }
+                    )
+                runner.append_jsonl(cache_path, unresolved_rows)
         return runner.load_jsonl_by_index(cache_path)
 
     def cleanup(self) -> None:
@@ -998,6 +1053,7 @@ def _run_tablevqabench_local_score(
 
     _import_vlmeval_runner()
     from vlmeval.dataset.utils.tablevqabench import evaluate_fintabnet, evaluate_tabfact, evaluate_wtq
+    from vlmeval.dataset.utils.trace_final25_answer_parsing import unwrap_single_answer_block
 
     pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
     if not pred_table.exists():
@@ -1007,6 +1063,7 @@ def _run_tablevqabench_local_score(
         raise ValueError(f"Malformed TableVQABench prediction table: {pred_table}")
 
     data["raw_prediction"] = data["prediction"]
+    data["prediction"] = data["prediction"].map(unwrap_single_answer_block)
     data["prediction"] = data["prediction"].str.replace("^Answer: ", "", regex=True)
 
     scored_rows: list[dict[str, Any]] = []
@@ -1045,7 +1102,7 @@ def _run_tablevqabench_local_score(
         "scores": scores,
         "aggregation": "macro mean over all official split average_scores values",
         "extraction": {
-            "method": "pinned VLMEvalKit leading '^Answer: ' removal",
+            "method": "single <answer> unwrap, then pinned VLMEvalKit leading '^Answer: ' removal",
             "changed_predictions": int((data["raw_prediction"] != data["prediction"]).sum()),
         },
         "artifacts": {
@@ -1116,6 +1173,128 @@ def _archive_expected_rows(summary: dict[str, Any]) -> int | None:
 
 
 _ARCHIVE_AGGREGATE_ONLY_SCORE_KEYS = frozenset({"tablevqabench", "mathvision", "mathvista"})
+
+_SCREENSPOT_OFFICIAL_POINT_RE = re.compile(r"x=([\d.]+), y=([\d.]+)")
+_SCREENSPOT_ANSWER_BLOCK_RE = re.compile(
+    r"<answer>\s*(.*?)\s*</answer>",
+    flags=re.IGNORECASE | re.DOTALL,
+)
+_SCREENSPOT_ACTION_CALL_RE = re.compile(
+    r"pyautogui\.(?:click|moveTo)\s*\((.*?)\)",
+    flags=re.IGNORECASE | re.DOTALL,
+)
+_SCREENSPOT_NUMBER = r"(?:\d+(?:\.\d*)?|\.\d+)"
+_SCREENSPOT_ACTION_ARGS_RE = re.compile(
+    rf"^\s*(?:x\s*=\s*)?({_SCREENSPOT_NUMBER})\s*,\s*"
+    rf"(?:y\s*=\s*)?({_SCREENSPOT_NUMBER})\s*$",
+    flags=re.IGNORECASE,
+)
+SCREENSPOT_ACTION_ADAPTER_CONTRACT = "screenspot-unresolved-explicit-action-v1"
+
+
+def _screenspot_balanced_boxed_values(text: str) -> list[str]:
+    values: list[str] = []
+    for match in re.finditer(r"\\boxed\s*\{", text):
+        start = match.end()
+        depth = 1
+        pos = start
+        while pos < len(text) and depth:
+            if text[pos] == "{":
+                depth += 1
+            elif text[pos] == "}":
+                depth -= 1
+            pos += 1
+        if depth == 0:
+            values.append(text[start : pos - 1])
+    return values
+
+
+def _screenspot_action_points(text: str) -> list[tuple[float, float]]:
+    points: list[tuple[float, float]] = []
+    for call in _SCREENSPOT_ACTION_CALL_RE.finditer(text):
+        match = _SCREENSPOT_ACTION_ARGS_RE.fullmatch(call.group(1))
+        if match:
+            point = (float(match.group(1)), float(match.group(2)))
+            if all(math.isfinite(coordinate) for coordinate in point):
+                points.append(point)
+    return points
+
+
+def _screenspot_unique_point(points: list[tuple[float, float]]) -> tuple[float, float] | None:
+    unique = set(points)
+    return next(iter(unique)) if len(unique) == 1 else None
+
+
+def _screenspot_point_text(value: float) -> str:
+    return str(int(value)) if value.is_integer() else format(value, ".15g")
+
+
+def _screenspot_explicit_action_prediction(value: Any) -> tuple[str | None, str]:
+    """Normalize one explicit final action only after the pinned parser is unresolved."""
+
+    text = str(value or "")
+    if _SCREENSPOT_OFFICIAL_POINT_RE.search(text):
+        return None, "vlmevalkit_named_xy"
+
+    answer_blocks = list(_SCREENSPOT_ANSWER_BLOCK_RE.finditer(text))
+    if len(answer_blocks) != 1:
+        return None, "unresolved"
+    answer = answer_blocks[0].group(1)
+
+    boxed_points = [
+        point
+        for boxed in _screenspot_balanced_boxed_values(answer)
+        for point in _screenspot_action_points(boxed)
+    ]
+    if boxed_points:
+        point = _screenspot_unique_point(boxed_points)
+        method = "answer_boxed_explicit_action"
+    else:
+        point = _screenspot_unique_point(_screenspot_action_points(answer))
+        method = "answer_unique_explicit_action"
+    if point is None:
+        return None, "unresolved"
+    x, y = (_screenspot_point_text(coordinate) for coordinate in point)
+    return f"pyautogui.click(x={x}, y={y})", method
+
+
+def _adapt_screenspot_prediction_table(
+    spec: BenchmarkSpec,
+    output_dir: Path,
+) -> dict[str, Any] | None:
+    if spec.key != "screenspot":
+        return None
+    prediction = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not prediction.exists():
+        raise FileNotFoundError(prediction)
+    data = pd.read_excel(prediction, keep_default_na=False)
+    if "prediction" not in data:
+        raise KeyError(f"ScreenSpot workbook lacks prediction column: {prediction}")
+    original = (
+        data["raw_prediction"].copy()
+        if "raw_prediction" in data
+        else data["prediction"].copy()
+    )
+    data["raw_prediction"] = original
+    adapted: list[Any] = []
+    methods: list[str] = []
+    changed = 0
+    for raw in original:
+        normalized, method = _screenspot_explicit_action_prediction(raw)
+        value = raw if normalized is None else normalized
+        changed += int(str(value) != str(raw))
+        adapted.append(value)
+        methods.append(method)
+    data["prediction"] = adapted
+    data["trace_extraction_method"] = methods
+    data.to_excel(prediction, index=False)
+    method_counts = data["trace_extraction_method"].value_counts().to_dict()
+    return {
+        "contract": SCREENSPOT_ACTION_ADAPTER_CONTRACT,
+        "changed_rows": changed,
+        "method_counts": {str(key): int(value) for key, value in method_counts.items()},
+        "rows": int(len(data)),
+    }
 
 
 def _screenspot_point_in_box_score(
@@ -1382,7 +1561,7 @@ def _archive_direct_score_slices(
             _import_vlmeval_runner()
             from vlmeval.dataset.GUI.screenspot import parse_bbox_aguvis
 
-            point = parse_bbox_aguvis(str(model_response))
+            point = parse_bbox_aguvis(str(row.get("prediction", model_response)))
             extraction_value = point
             extraction_method = "vlmevalkit_parse_bbox_aguvis"
         for method_key in ("extract_answer_method", "eval_pred_method", "trace_extraction_method"):
@@ -1560,12 +1739,19 @@ def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
     runner, _ = _import_vlmeval_runner()
     _patch_refspatial_point_parser(spec)
     _restore_screenspot_prediction_metadata(spec, output_dir)
+    screenspot_adapter = _adapt_screenspot_prediction_table(spec, output_dir)
     _sanitize_prediction_table_for_scoring(spec, output_dir)
     ns = _namespace_for_spec(args, spec, output_dir, model_path)
     summary = runner.run_vlmeval_evaluate(ns)
     if spec.key == "screenspot":
-        summary["harness"] = "Pinned VLMEvalKit ScreenSpot parser and point-in-box scorer"
-        summary["parser"] = "vlmeval.dataset.GUI.screenspot.parse_bbox_aguvis"
+        summary["harness"] = (
+            "Pinned VLMEvalKit ScreenSpot scorer with unresolved explicit-action adapter"
+        )
+        summary["parser"] = (
+            "trace explicit-action adapter, then "
+            "vlmeval.dataset.GUI.screenspot.parse_bbox_aguvis"
+        )
+        summary["prediction_adapter"] = screenspot_adapter
         write_json(output_dir / "scores.json", summary)
     return summary
 

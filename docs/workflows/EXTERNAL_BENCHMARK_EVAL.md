@@ -380,16 +380,24 @@ Final25 setting (`temperature=0.6`, `top_p=1`, `top_k=-1`, no penalties,
 `max_tokens=4096`, seed 42 unless running the documented multi-seed
 comparison); evaluator judge settings follow each pinned benchmark contract.
 
-Four official-route selections are explicit:
+Five official-route selections are explicit:
 
-- ChartQAPro COT passes only the benchmark-mandated final `The answer is X`
-  sentence to its pinned evaluator; it does not run generic LLM extraction.
+- ChartQAPro COT preserves the pinned prompt and evaluator. Its adapter accepts
+  the benchmark-mandated final `The answer is X` sentence; inside exactly one
+  nonempty model-native `<answer>` block, a final balanced `\\boxed{...}` value
+  takes precedence, followed by that same official marker and then the trimmed
+  block. It does not run generic LLM extraction.
 - WeMath reports the official `Score (Strict)` field, which is already a
   percentage.
 - PhyX mini MC deterministically normalizes a final `A`-`D` option before the
   pinned evaluator runs. This fixes the pinned string parser rejecting atomic
   option responses and prevents option-list text from overriding the final
   answer.
+- TreeBench preserves the pinned evaluator and dimension aggregation. Before
+  evaluation, exactly one nonempty `<answer>` block ending in one boxed `A`-`E`
+  option is reduced to that option. This avoids the pinned parser selecting the
+  first `A`-`E` character from verbose OCR prose; all other responses are left
+  unchanged.
 - ERQA constructs the pinned EASI `ERQABench` class and calls its `evaluate`
   method. This avoids the duplicate `ERQA` registry entry whose
   `ERQADataset.evaluate` is broken; row identities and generation prompts were
@@ -422,8 +430,13 @@ post-processing:
 
 - ChartMuseum uses the pinned `extract_answer`, `COMPARE_ANSWER_PROMPT`, and
   official yes-substring decision rule.
-- ScreenSpot uses the pinned named x/y coordinate parser and point-in-box
-  geometry unchanged; no additional coordinate syntax is accepted.
+- ScreenSpot preserves every result accepted by the pinned named x/y parser.
+  Only when that parser is unresolved, exactly one `<answer>` block may supply
+  one unambiguous explicit `pyautogui.click` or `moveTo` action. A balanced
+  boxed action takes precedence; otherwise all explicit actions must name the
+  same two numeric coordinates. Bare coordinate pairs and conflicting actions
+  remain unresolved. The normalized action is then evaluated by the unchanged
+  pinned parser and point-in-box geometry.
 - ScreenSpot archive records reconstruct each binary point-in-box result with
   the pinned VLMEvalKit geometry and original LMUData image dimensions. The
   archive job fails before emission unless their pooled accuracy exactly
@@ -435,7 +448,15 @@ post-processing:
 - EvoChart uses a local deterministic evaluator extension because commit
   `a8b12bf1c3737a33fc1de967c202f9c592b22e86` has no EvoChart evaluator. Its
   plain alias and the local CountQA adapter append the exact generation suffix
-  `Put the final answer inside \\boxed{}.`.
+  `Put the final answer inside \\boxed{}.`. A numeric reference requires exactly
+  one numeric value in the extracted answer, so units such as `%` do not change
+  the value but competing numbers remain unresolved. Clear rows use
+  zero-tolerance numeric equality; unclear rows use 5% relative tolerance. Text
+  references use case-insensitive string equality. The scorer uses no LLM
+  judge.
+- Physics uses upstream's required `antlr4-python3-runtime==4.11.1`; environment
+  verification includes a SymPy LaTeX parse preflight so symbolic comparisons
+  cannot silently fall through to the judge because of an incompatible parser.
 - LogicVista follows the pinned option-set evaluator except for a narrow
   numeric-label case: numeric source labels are mapped to their corresponding
   choice letters before the unchanged exact-set comparison.
@@ -445,8 +466,16 @@ post-processing:
 
 All direct semantic judges and MME-Reasoning judge stages fail the scoring job
 when output is empty or does not satisfy the expected decision contract.
-MME-Reasoning choice extractions are normalized from either `A` or bracketed
-multi-select forms such as `[A, C]` to the official scorer's `A,C` contract.
+MME-Reasoning choice extractions are normalized from either `A`, bracketed
+multi-select forms such as `[A, C]`, or compact unique `A`-`G` multi-select
+forms such as `CD` to the official scorer's `A,C` contract. Incomplete judge
+rows pass through to the MME-specific per-row retry ladder without aborting
+otherwise valid rows from the same API batch.
+Explicit choice abstentions (`None`, `None of the above`, or `None of the given
+options...`) map to a typed no-choice sentinel and are scored false by the
+unchanged official choice comparison; the raw judge response remains in the
+row provenance. Other malformed choice extractions still exhaust retries and
+fail the scoring job.
 Its extraction/open-answer retries use the pinned temperature schedule
 `0, 0.5, 1, 1.5, 2`.
 Judge-format and infrastructure failures must never be counted as incorrect

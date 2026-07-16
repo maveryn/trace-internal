@@ -26,8 +26,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_VLMEVAL_ROOT = REPO_ROOT / "external" / "VLMEvalKit"
 PINNED_VLMEVALKIT_COMMIT = "a8b12bf1c3737a33fc1de967c202f9c592b22e86"
 CONTRACT = "vlmevalkit-dataset-evaluate-saved-response-v2"
-CHARTQAPRO_ADAPTER_CONTRACT = "chartqapro-official-final-sentence-v1"
+CHARTQAPRO_ADAPTER_CONTRACT = "chartqapro-official-final-answer-v2"
 PHYX_OPTION_ADAPTER_CONTRACT = "phyx-deterministic-option-v1"
+TREEBENCH_OPTION_ADAPTER_CONTRACT = "treebench-explicit-final-boxed-option-v1"
 
 
 def _sha256(path: Path) -> str:
@@ -194,6 +195,7 @@ _CHARTQAPRO_FINAL_MARKER = re.compile(
     r"\bthe[ \t]+answer[ \t]+is\b[ \t]*:?[ \t]*",
     re.IGNORECASE,
 )
+_CHARTQAPRO_ANSWER_TAG = re.compile(r"<answer>\s*(.*?)\s*</answer>", re.IGNORECASE | re.DOTALL)
 _BALANCED_MARKDOWN = ("**", "__", "~~", "`", "*", "_")
 
 
@@ -216,6 +218,45 @@ def _chartqapro_final_sentence(value: Any) -> str | None:
     return answer or None
 
 
+def _chartqapro_last_boxed(text: str) -> str | None:
+    last: str | None = None
+    start = 0
+    while True:
+        marker = text.find("\\boxed{", start)
+        if marker < 0:
+            return last
+        content_start = marker + len("\\boxed{")
+        depth = 1
+        pos = content_start
+        while pos < len(text) and depth:
+            if text[pos] == "{":
+                depth += 1
+            elif text[pos] == "}":
+                depth -= 1
+            pos += 1
+        if depth:
+            return last
+        last = text[content_start : pos - 1].strip()
+        start = pos
+
+
+def _chartqapro_final_answer(value: Any) -> str | None:
+    text = str(value or "")
+    answer_blocks = list(_CHARTQAPRO_ANSWER_TAG.finditer(text))
+    if answer_blocks:
+        if len(answer_blocks) != 1:
+            return None
+        answer = answer_blocks[0].group(1).strip()
+        if not answer:
+            return None
+        boxed = _chartqapro_last_boxed(answer)
+        if boxed is not None:
+            return boxed or None
+        marked = _chartqapro_final_sentence(answer)
+        return marked if marked is not None else answer
+    return _chartqapro_final_sentence(text)
+
+
 def _adapt_chartqapro_prediction(
     prediction: Path,
     table_loader: Callable[[str], Any],
@@ -229,7 +270,7 @@ def _adapt_chartqapro_prediction(
     unresolved = 0
     adapted: list[Any] = []
     for raw in original:
-        extracted = _chartqapro_final_sentence(raw)
+        extracted = _chartqapro_final_answer(raw)
         if extracted is None:
             unresolved += 1
             adapted.append(raw)
@@ -268,6 +309,54 @@ def _adapt_phyx_option_prediction(
         "extractor": "run_external_benchmark_score_queue._extract_option_letter",
         "resolved_rows": resolved,
         "unresolved_rows": len(extracted) - resolved,
+        "rows": int(len(data)),
+        "adapted_prediction_sha256": _sha256(prediction),
+    }
+
+
+def _treebench_final_boxed_option(value: Any) -> str | None:
+    text = str(value or "")
+    answer_blocks = list(_CHARTQAPRO_ANSWER_TAG.finditer(text))
+    if len(answer_blocks) != 1:
+        return None
+    answer = answer_blocks[0].group(1).strip()
+    if not answer:
+        return None
+    match = re.search(
+        r"\\boxed\s*\{\s*([A-E])\s*\}\s*[.!?。！？]*\s*$",
+        answer,
+        re.IGNORECASE,
+    )
+    return match.group(1).upper() if match else None
+
+
+def _adapt_treebench_prediction(
+    prediction: Path,
+    table_loader: Callable[[str], Any],
+) -> dict[str, Any]:
+    data = table_loader(str(prediction)).copy()
+    if "prediction" not in data:
+        raise KeyError(f"TreeBench workbook lacks prediction column: {prediction}")
+    original = (
+        data["raw_prediction"].copy()
+        if "raw_prediction" in data
+        else data["prediction"].copy()
+    )
+    data["raw_prediction"] = original
+    changed = 0
+    adapted: list[Any] = []
+    for raw in original:
+        extracted = _treebench_final_boxed_option(raw)
+        if extracted is None:
+            adapted.append(raw)
+        else:
+            changed += int(str(extracted) != str(raw))
+            adapted.append(extracted)
+    data["prediction"] = adapted
+    data.to_excel(prediction, index=False)
+    return {
+        "contract": TREEBENCH_OPTION_ADAPTER_CONTRACT,
+        "changed_rows": changed,
         "rows": int(len(data)),
         "adapted_prediction_sha256": _sha256(prediction),
     }
@@ -338,13 +427,15 @@ def run_saved_score(
         prediction_xlsx,
         output_dir,
         official_name,
-        replace=benchmark_key in {"chartqapro", "phyx_mini_mc"},
+        replace=benchmark_key in {"chartqapro", "phyx_mini_mc", "treebench"},
     )
     prediction_adapter: dict[str, Any] | None = None
     if benchmark_key == "chartqapro":
         prediction_adapter = _adapt_chartqapro_prediction(prediction, table_loader)
     elif benchmark_key == "phyx_mini_mc":
         prediction_adapter = _adapt_phyx_option_prediction(prediction, table_loader)
+    elif benchmark_key == "treebench":
+        prediction_adapter = _adapt_treebench_prediction(prediction, table_loader)
 
     # The only scoring call in this wrapper.
     result = dataset.evaluate(str(prediction), **dict(judge_kwargs))

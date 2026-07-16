@@ -123,7 +123,7 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     Final25Contract(
         "screenspot",
         "GUI click point",
-        "pinned named x/y coordinate parser",
+        "pinned named x/y parser, with one explicit final action fallback when unresolved",
         "pinned point-inside-target-box accuracy",
         "none",
         "run_external_benchmark_score_queue.py:screenspot",
@@ -141,7 +141,14 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     _pinned_vlmeval_contract("blink", "MCQ option"),
     _pinned_vlmeval_contract("countbenchqa", "integer count"),
     _pinned_vlmeval_contract("countqa", "integer count"),
-    _pinned_vlmeval_contract("treebench", "MCQ option"),
+    Final25Contract(
+        "treebench",
+        "MCQ option",
+        "pinned parser after one explicit final boxed-option adapter",
+        "pinned TreeBench dimension metric",
+        "benchmark-defined",
+        "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
+    ),
     _pinned_vlmeval_contract("puzzlevqa", "MCQ option or option value"),
     _pinned_vlmeval_contract("visualpuzzles", "MCQ option"),
     Final25Contract(

@@ -69,99 +69,29 @@ def _extract_final_answer(value: Any) -> str:
     return text
 
 
-def _normalize_text(value: Any) -> str:
-    return _coerce_text(value).lower()
-
-
-def _clean_number_text(text: str) -> str:
-    text = text.strip()
-    text = text.strip("$€£¥")
-    text = text.replace(",", "")
-    if text.endswith("."):
-        text = text[:-1].strip()
-    return text
-
-
-def _to_float(value: Any) -> float | None:
+def _parse_whole_number(value: Any) -> float | None:
     if isinstance(value, (int, float)):
         return float(value)
-    text = _clean_number_text(_coerce_text(value))
-    if not text:
-        return None
-    try:
-        if text.endswith("%"):
-            return float(text[:-1].strip()) / 100.0
-        return float(text)
-    except ValueError:
-        return None
-
-
-def _extract_numeric_value(value: Any) -> float | None:
-    if isinstance(value, (int, float)):
-        return float(value)
-    text = _clean_number_text(_coerce_text(value))
-    if not text:
-        return None
-    match = _NUMBER_PATTERN.search(text)
+    text = _coerce_text(value)
+    match = _NUMBER_PATTERN.fullmatch(text)
     if not match:
         return None
-    candidate = match.group(0).replace(",", "")
-    if candidate in {"", "+", "-"}:
-        return None
     try:
-        return float(candidate)
+        return float(match.group(0).replace(",", ""))
     except ValueError:
         return None
 
 
-def _within_tolerance(value: float, reference: float, max_relative_change: float) -> bool:
-    if reference == 0.0:
-        return abs(value) <= max_relative_change
-    return abs(value - reference) / abs(reference) <= max_relative_change
-
-
-def _apply_relaxed_tolerance(
-    prediction: Any,
-    target: Any,
-    max_relative_change: float = 0.05,
-) -> bool:
-    pred_text = _clean_number_text(_coerce_text(prediction))
-    target_text = _clean_number_text(_coerce_text(target))
-    if not pred_text or not target_text:
-        return False
-
-    pred_has_percent = pred_text.endswith("%")
-    target_has_percent = target_text.endswith("%")
-    pred_float = _to_float(pred_text)
-    target_float = _to_float(target_text)
-
-    if pred_float is not None and target_float is not None:
-        if _within_tolerance(pred_float, target_float, max_relative_change):
-            return True
-        if pred_has_percent and not target_has_percent:
-            return _within_tolerance(pred_float * 100.0, target_float, max_relative_change)
-        if target_has_percent and not pred_has_percent:
-            return _within_tolerance(pred_float, target_float * 100.0, max_relative_change)
-        if not pred_has_percent and not target_has_percent and 0 < pred_float < 1:
-            return _within_tolerance(pred_float * 100.0, target_float, max_relative_change)
-        if not pred_has_percent and not target_has_percent and 0 < target_float < 1:
-            return _within_tolerance(pred_float, target_float * 100.0, max_relative_change)
-
-    return pred_text.lower() == target_text.lower()
-
-
-def _compare_numeric_with_tolerance(
-    prediction: Any,
-    target: Any,
-    max_relative_change: float = 0.05,
-) -> bool:
-    target_number = _extract_numeric_value(target)
-    if target_number is None:
-        return False
-    pred_number = _extract_numeric_value(prediction)
-    if pred_number is None:
-        return False
-    return _within_tolerance(pred_number, target_number, max_relative_change)
+def _extract_single_number(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    matches = _NUMBER_PATTERN.findall(_coerce_text(value))
+    if len(matches) != 1:
+        return None
+    try:
+        return float(matches[0].replace(",", ""))
+    except ValueError:
+        return None
 
 
 def _as_bool(value: Any) -> bool:
@@ -203,20 +133,19 @@ def _load_cached_with_images(data_path: Path) -> pd.DataFrame | None:
 
 def score_prediction(prediction: Any, answer: Any, is_clear: Any) -> float:
     final_answer = _extract_final_answer(prediction)
+    target = _coerce_text(answer)
+    target_number = _parse_whole_number(target)
+    if target_number is None:
+        return float(final_answer.casefold() == target.casefold())
+
+    prediction_number = _extract_single_number(final_answer)
+    if prediction_number is None:
+        return 0.0
     if _as_bool(is_clear):
-        if _normalize_text(final_answer) == _normalize_text(answer):
-            return 1.0
-        answer_number = _extract_numeric_value(answer)
-        pred_number = _extract_numeric_value(final_answer) if answer_number is not None else None
-        return float(
-            answer_number is not None
-            and pred_number is not None
-            and abs(pred_number - answer_number) <= 1e-6
-        )
-    return float(
-        _apply_relaxed_tolerance(final_answer, answer)
-        or _compare_numeric_with_tolerance(final_answer, answer)
-    )
+        return float(prediction_number == target_number)
+    if target_number == 0.0:
+        return float(prediction_number == 0.0)
+    return float(abs(prediction_number - target_number) / abs(target_number) <= 0.05)
 
 
 class EvoChart(ImageBaseDataset):

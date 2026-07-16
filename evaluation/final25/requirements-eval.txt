@@ -2,7 +2,7 @@
 # .tmp/eval_deps so the active RLVR environment is not mutated.
 absl-py==2.5.0
 anls==0.0.2
-antlr4-python3-runtime==4.13.2
+antlr4-python3-runtime==4.11.1
 apted==1.0.3
 colormath==3.0.0
 decord==0.6.0

@@ -85,12 +85,19 @@ def test_countqa_boxed_prompt_does_not_change_gameqa_lite() -> None:
     assert gameqa_prompt[-1]["value"].endswith("Put only the final answer inside \\boxed{}.")
 
 
-def test_evochart_scoring_matches_vero_style_cases() -> None:
+def test_evochart_scoring_matches_published_strict_and_flex_contract() -> None:
     assert score_prediction("<answer>32</answer>", "32", True) == 1.0
     assert score_prediction("The answer is 33", "32", True) == 0.0
-    assert score_prediction("The value is 31", "32", False) == 1.0
-    assert score_prediction("The value is 28", "32", False) == 0.0
-    assert score_prediction("0.38", "38", False) == 1.0
+    assert score_prediction(r"\boxed{38%}", "38", True) == 1.0
+    assert score_prediction(r"\boxed{1.5 billion}", "1.5", True) == 1.0
+    assert score_prediction(r"\boxed{Q4 2022}", "4", True) == 0.0
+    assert score_prediction("31", "32", False) == 1.0
+    assert score_prediction("28", "32", False) == 0.0
+    assert score_prediction("0.38", "38", False) == 0.0
+    assert score_prediction("0", "0", False) == 1.0
+    assert score_prediction("0.04", "0", False) == 0.0
+    assert score_prediction("Rep/Lean Rep", "Rep/Lean Rep", False) == 1.0
+    assert score_prediction("rep/lean rep", "Rep/Lean Rep", False) == 1.0
 
 
 def test_evochart_evaluate_outputs_overall_and_breakdowns(tmp_path: Path) -> None:

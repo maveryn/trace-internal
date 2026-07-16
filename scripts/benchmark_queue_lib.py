@@ -29,6 +29,7 @@ BENCHMARK_RUN_SETS = (
     "trace_grounding",
     "trace_video4",
     "trace_final25",
+    "trace_final26",
 )
 EXTERNAL_EVAL_V1_SUBSET_ROOT = DEFAULT_BENCHMARK_ROOT / "subsets" / "external_eval_v1"
 EXTERNAL_EVAL_V1_QUEUE_SUFFIX = "external_eval_v1"
@@ -137,22 +138,26 @@ def parse_lettered_option_blob(value: Any) -> dict[str, str]:
     return options
 
 TRACE_FINAL25_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
-    "Charts, Tables & Structured Figures": (
+    "Charts & Tables": (
         "chartmuseum",
         "chartqapro",
         "charxivreason",
         "tablevqabench",
         "evochart",
     ),
-    "Visual Mathematics": ("mathvision", "mathvista", "mathverse", "wemath"),
-    "Science & Academic Reasoning": ("phyx_mini_mc", "physics", "mmmu_pro_vision", "mmstar"),
-    "Spatial, 3D, Embodied & UI Grounding": ("screenspot", "spatialvizbench_cot", "cvbench_3d", "erqa"),
-    "Visual Perception, Counting & Evidence Grounding": ("blink", "countbenchqa", "countqa", "treebench"),
-    "Puzzles & Abstract Logic": ("puzzlevqa", "visualpuzzles", "logicvista", "mme_reasoning"),
+    "Visual Math": ("mathvision", "mathvista", "mathverse", "wemath"),
+    "Science & General Reasoning": ("phyx_mini_mc", "physics", "mmmu_pro_vision", "mmstar"),
+    "Spatial & Grounding": ("screenspot", "spatialvizbench_cot", "cvbench_3d", "erqa"),
+    "Perception & Counting": ("blink", "countbenchqa", "countqa", "treebench"),
+    "Puzzles & Logic": ("puzzlevqa", "visualpuzzles", "logicvista", "mme_reasoning"),
 }
 TRACE_FINAL25_BENCHMARKS = tuple(
     key for category_keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.values() for key in category_keys
 )
+# Evaluation view used to compare the frozen CountQA slot with provisional
+# MMVP in one campaign. Keep the frozen Final25 ordering and append MMVP once,
+# matching the ``all26`` dataset-manifest view.
+TRACE_FINAL26_BENCHMARKS = (*TRACE_FINAL25_BENCHMARKS, "mmvp")
 
 MME_REASONING_TSV_URL = (
     "https://huggingface.co/datasets/InternScience/MME-Reasoning/resolve/main/MME_Reasoning.tsv"
@@ -237,6 +242,21 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     ),
     BenchmarkSpec("mme_realworld_lite", "MME-RealWorld-Lite", "MME-RealWorld-Lite", "vlmevalkit_defaults"),
     BenchmarkSpec("treebench", "TreeBench", "TreeBench", "vlmevalkit_defaults"),
+    BenchmarkSpec(
+        "mmvp",
+        "MMVP",
+        "MMVP",
+        "vlmevalkit_defaults",
+        max_tokens=4096,
+        temperature=0.6,
+        top_p=1.0,
+        top_k=-1,
+        presence_penalty=0.0,
+        note=(
+            "Official VLMEvalKit paired-option evaluation: Average is row accuracy; "
+            "Overall requires both questions in each pair to be correct."
+        ),
+    ),
     BenchmarkSpec("vlmblind", "VLMBlind", "VLMBlind", "vlmevalkit_defaults"),
 )
 
@@ -509,6 +529,8 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
         return [spec_by_key(key) for key in TRACE_VIDEO4_BENCHMARKS]
     if run_set == "trace_final25":
         return [spec_by_key(key) for key in TRACE_FINAL25_BENCHMARKS]
+    if run_set == "trace_final26":
+        return [spec_by_key(key) for key in TRACE_FINAL26_BENCHMARKS]
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 

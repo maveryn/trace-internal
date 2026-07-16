@@ -110,7 +110,11 @@ def _stable_hash(value: Any) -> str:
 
 def _safe_row_mapping(row: Any) -> dict[str, Any]:
     raw = row.to_dict() if hasattr(row, "to_dict") else dict(row)
-    return {str(key): value for key, value in raw.items() if str(key) not in MEDIA_KEYS}
+    return {
+        str(key): value
+        for key, value in raw.items()
+        if str(key) not in MEDIA_KEYS and not str(key).startswith("__trace_")
+    }
 
 
 def _row_hash(row: Any) -> str:

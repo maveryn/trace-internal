@@ -1,0 +1,182 @@
+# Final25 Evaluation
+
+This directory is the configuration and contract surface for the final external
+benchmark campaign. It intentionally contains no model responses, extracted
+answers, judge outputs, scores, workbooks, or aggregate result tables. Runtime
+artifacts belong in the configured campaign root and the private evaluation
+archive.
+
+## Suite Definition
+
+[`suite.v1.json`](suite.v1.json) defines two explicit suite views:
+
+- `frozen`: the current 25-benchmark comparison suite, including CountQA.
+- `provisional_mmvp`: the same suite with MMVP replacing CountQA.
+
+MMVP remains provisional until the full 300-row benchmark is run once on the
+Qwen2.5-VL-7B base model and the trained checkpoint with the same decoding
+policy. Promote the replacement only after reviewing VLMEvalKit's paired
+`Overall` accuracy and per-question `Average` accuracy. Until then, published
+or consolidated results must use the frozen view.
+
+The six reporting categories are:
+
+1. Charts & Tables
+2. Visual Math
+3. Science & General Reasoning
+4. Spatial & Grounding
+5. Perception & Counting
+6. Puzzles & Logic
+
+The overall score is the unweighted macro-average of the 25 benchmark scores.
+Do not average the six category means, because that would give categories equal
+weight instead of benchmarks.
+
+## Reproducibility Pin
+
+Use the official
+[`open-compass/VLMEvalKit`](https://github.com/open-compass/VLMEvalKit)
+repository at commit:
+
+```text
+a8b12bf1c3737a33fc1de967c202f9c592b22e86
+```
+
+The expected checkout is `external/VLMEvalKit`. Apply the repository's Trace
+extensions after checking out that exact upstream revision:
+
+```bash
+python scripts/apply_vlmevalkit_trace_extensions.py
+```
+
+Record both the upstream commit and the Trace commit in every campaign's
+provenance. A moving upstream branch is not a reproducible dependency.
+
+Prepare and hash the exact local prompt media before starting a model server:
+
+```bash
+python scripts/prepare_trace_final25_datasets.py --view all26
+python scripts/prepare_trace_final25_datasets.py --view frozen --verify-only
+```
+
+The manifest keeps separate snapshot hashes for the frozen and provisional
+views, so adding or repairing MMVP does not invalidate a frozen Final25 run.
+Generation sends these verified files via `file://` and lets the pinned Qwen
+processor perform the upstream VLMEvalKit resize.
+
+## Environment Setup
+
+Keep evaluation-only packages outside the active RLVR training environment:
+
+```bash
+scripts/setup_trace_final25_eval_env.sh
+scripts/setup_trace_final25_eval_env.sh --verify-only
+```
+
+The setup script installs the pinned packages from `requirements-eval.txt` into
+`.tmp/eval_deps`, verifies the official VLMEvalKit commit, reapplies the Trace
+extensions, and imports the complete CPU-side evaluation stack. The campaign
+launcher prepends this target to `PYTHONPATH`; it does not modify the training
+venv.
+
+Stage the public comparison models and Qwen3-32B judge at their immutable HF
+commits after training releases the GPUs:
+
+```bash
+python scripts/prepare_trace_final25_models.py download-public \
+  --model-root /dev/shm/trace_rlvr/final25_models \
+  --token-file hf-token.txt
+```
+
+Merged TRACE checkpoints are local artifacts, so register each one after the
+FSDP-to-HF merge. Registration hashes the config, index, and every weight shard
+and writes a provenance marker beside the model:
+
+```bash
+python scripts/prepare_trace_final25_models.py register-local \
+  --slug trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500 \
+  --path /dev/shm/trace_rlvr/merged_hf/trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500 \
+  --source <training-run-id>:global_step_500
+```
+
+The launcher refuses to start generation or scoring when a config, weight
+shard, provenance marker, or immutable revision is missing or mismatched. Its
+campaign hash includes the per-model revisions, suite revision, judge contract,
+and the content hash of the executed Trace/VLMEvalKit evaluation code.
+
+## Extraction Boundary
+
+The current deterministic parser is deliberately conservative and remains a
+score-neutral shadow audit:
+
+- Explicit wrappers such as `<answer>...</answer>`, `\boxed{...}`, JSON answer
+  objects, and final-answer markers may resolve a candidate.
+- An unwrapped raw response remains unresolved in the shadow output.
+- Conflicting explicit candidates remain unresolved and retain their candidate
+  evidence for audit.
+- Production benchmark-specific extraction and official scoring behavior stay
+  in the existing runners. The shadow record does not replace or override it.
+- Judge-required rows must fail after bounded retries when the judge output is
+  malformed; they must not be silently converted to zero.
+
+This boundary hardens provenance without introducing a new scoring framework or
+changing official VLMEvalKit metrics.
+
+## Synthetic Validation
+
+`tests/test_final25_synthetic_pipeline.py` exercises one synthetic response for
+each frozen benchmark plus MMVP. It covers deterministic wrapper extraction,
+exact option/number/short-answer comparisons, strict binary judge-output
+parsing, ScreenSpot point containment, MME-Reasoning structured validation, and
+MMVP's official paired metric. It does not load images, start a model server, or
+call an LLM judge.
+
+Run it with the pinned VLMEvalKit checkout available:
+
+```bash
+PYTHONPATH=".tmp/eval_deps:.:scripts:external/VLMEvalKit:external/VLMEvalKit/scripts" \
+  pytest -q tests/test_final25_synthetic_pipeline.py
+```
+
+## Isolated Final26 Rescoring
+
+`scripts/run_trace_final26_official_score_campaign.py` rescoring takes exactly
+three repeatable `--campaign MODEL MODEL_SLUG CAMPAIGN_ROOT` descriptors. It
+copies the saved prediction workbooks into a new `--score-root`; generation
+outputs are never used as evaluator working directories. Run `--preflight`
+first. A nonempty score root is rejected unless `--resume` finds an exact
+manifest match for every source XLSX hash and the judge contract.
+
+The fixed routes are 15 pinned `dataset.evaluate` jobs (the former 14 generic
+extraction jobs plus MMVP), the 10 existing direct-score jobs, and the dedicated
+MME-Reasoning scorer. Official evaluator processes lease at most one of the
+eight local Qwen3 judge endpoints each. HF archive variables and token
+environment variables are removed from scoring subprocesses; this workflow
+does not upload artifacts.
+
+## Private Run Archive
+
+The campaign launcher continuously spools one immutable slice after each
+model/seed/benchmark generation, extraction, and score stage. A CPU-pinned
+background process converts those slices to Zstd Parquet and commits them to
+the private `maveryn/trace-final25-eval-runs` dataset repository. Benchmark
+images, videos, local media paths, and credentials are rejected or removed.
+
+Each row retains the dataset alias/revision/split, source index and ordinal,
+source-row hash, request hash, model/revision, seed, raw response, extraction
+evidence, score, and code/config provenance needed for later reanalysis. The
+final launcher check requires all 1,800 stage identities for the frozen run:
+`8 models x 3 seeds x 25 benchmarks x 3 stages`.
+
+The uploader reads `hf-token.txt` by path and requires mode `600`; the token is
+never placed in an archive record or command-line value. Archive management is
+implemented by `scripts/final25_hf_archive.py`, including `flush`, `verify`,
+and filtered `reconstruct` commands.
+
+Generation uses bounded preparation, request, and persistence queues. Once a
+seed's row responses are durable, CPU finalization and archive emission run in
+the background while the endpoint pool continues with the next seed/model.
+Judge requests use bounded multi-prompt batches, endpoint cooldown/half-open
+recovery, strict route-specific output validation, and content-addressed cache
+contracts. Direct scoring, extraction, MME-Reasoning, and archive uploads use
+separate CPU pools so GPU serving is not blocked on workbook or upload work.

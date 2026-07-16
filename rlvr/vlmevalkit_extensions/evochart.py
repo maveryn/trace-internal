@@ -267,7 +267,7 @@ class EvoChart(ImageBaseDataset):
         msgs = super().build_prompt(line)
         assert msgs[-1]["type"] == "text"
         question = str(msgs[-1]["value"]).strip()
-        if self.dataset_name == "EvoChart_boxed":
+        if self.dataset_name in {"EvoChart", "EvoChart_boxed"}:
             question += BOXED_POST_PROMPT
         elif self.dataset_name == "EvoChart_Qwen25_ZS":
             question += "\nAnswer the question with a single word."

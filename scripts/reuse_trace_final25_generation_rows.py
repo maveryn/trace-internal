@@ -17,6 +17,13 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from benchmark_queue_lib import TRACE_FINAL25_BENCHMARKS, run_dir, spec_by_key  # noqa: E402
+from final25_media_contract import (  # noqa: E402
+    GENERATION_CONTRACT_VERSION,
+    MEDIA_CONTRACT_VERSION,
+    MEDIA_TRANSPORT,
+    QWEN_MAX_IMAGE_PIXELS,
+    QWEN_MIN_IMAGE_PIXELS,
+)
 
 
 DEFAULT_MODEL_SLUGS = (
@@ -93,6 +100,12 @@ def _candidate_from_summary(
     presence_penalty: float,
     repetition_penalty: float,
     max_tokens: int,
+    contract_version: str | None = None,
+    dataset_revision: str | None = None,
+    media_contract_version: str | None = None,
+    media_transport: str | None = None,
+    min_image_pixels: int | None = None,
+    max_image_pixels: int | None = None,
 ) -> Candidate | None:
     try:
         summary = json.loads(path.read_text(encoding="utf-8"))
@@ -118,6 +131,29 @@ def _candidate_from_summary(
         )
     ):
         return None
+    expected_fields = {
+        "contract_version": contract_version,
+        "media_contract_version": media_contract_version,
+        "media_transport": media_transport,
+        "min_image_pixels": min_image_pixels,
+        "max_image_pixels": max_image_pixels,
+    }
+    for field, expected in expected_fields.items():
+        if expected is not None and generation.get(field) != expected:
+            return None
+    if dataset_revision is not None and generation.get("dataset_revision") != dataset_revision:
+        return None
+    if contract_version is not None:
+        selection = generation.get("selection") or {}
+        if not (
+            str(generation.get("contract_hash") or "").strip()
+            and selection.get("mode") == "full"
+            and selection.get("limit") is None
+            and selection.get("sample_seed") is None
+            and selection.get("subset_manifest_sha256") is None
+            and summary.get("subset_manifest") is None
+        ):
+            return None
     rows = int(summary.get("rows") or 0)
     expected_rows = int(summary.get("expected_rows") or 0)
     if rows <= 0 or rows != expected_rows:
@@ -202,6 +238,12 @@ def main() -> None:
     parser.add_argument("--presence-penalty", type=float, default=0.0)
     parser.add_argument("--repetition-penalty", type=float, default=1.0)
     parser.add_argument("--max-tokens", type=int, default=4096)
+    parser.add_argument("--contract-version", default=GENERATION_CONTRACT_VERSION)
+    parser.add_argument("--dataset-revision", default=os.environ.get("TRACE_FINAL25_DATASET_REVISION"))
+    parser.add_argument("--media-contract-version", default=MEDIA_CONTRACT_VERSION)
+    parser.add_argument("--media-transport", default=MEDIA_TRANSPORT)
+    parser.add_argument("--min-image-pixels", type=int, default=QWEN_MIN_IMAGE_PIXELS)
+    parser.add_argument("--max-image-pixels", type=int, default=QWEN_MAX_IMAGE_PIXELS)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -222,6 +264,12 @@ def main() -> None:
             presence_penalty=args.presence_penalty,
             repetition_penalty=args.repetition_penalty,
             max_tokens=args.max_tokens,
+            contract_version=args.contract_version,
+            dataset_revision=args.dataset_revision,
+            media_contract_version=args.media_contract_version,
+            media_transport=args.media_transport,
+            min_image_pixels=args.min_image_pixels,
+            max_image_pixels=args.max_image_pixels,
         )
         if candidate is None:
             continue
@@ -258,6 +306,12 @@ def main() -> None:
             "presence_penalty": args.presence_penalty,
             "repetition_penalty": args.repetition_penalty,
             "max_tokens": args.max_tokens,
+            "contract_version": args.contract_version,
+            "dataset_revision": args.dataset_revision,
+            "media_contract_version": args.media_contract_version,
+            "media_transport": args.media_transport,
+            "min_image_pixels": args.min_image_pixels,
+            "max_image_pixels": args.max_image_pixels,
         },
         "summaries_scanned": scanned,
         "compatible_summaries": accepted,

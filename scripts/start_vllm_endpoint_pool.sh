@@ -14,16 +14,21 @@ MAX_NUM_SEQS="${MAX_NUM_SEQS:-256}"
 MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-65536}"
 MAX_IMAGES="${MAX_IMAGES:-24}"
 MAX_VIDEOS="${MAX_VIDEOS:-3}"
-LIMIT_MM_PER_PROMPT="${LIMIT_MM_PER_PROMPT:-{\"image\":${MAX_IMAGES},\"video\":${MAX_VIDEOS}}}"
+if [[ -z "${LIMIT_MM_PER_PROMPT:-}" ]]; then
+  LIMIT_MM_PER_PROMPT="$(printf '{\"image\":%s,\"video\":%s}' "${MAX_IMAGES}" "${MAX_VIDEOS}")"
+fi
 CPU_THREADS_PER_PROCESS="${CPU_THREADS_PER_PROCESS:-8}"
 VLLM_OMP_NUM_THREADS="${VLLM_OMP_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
 VLLM_MKL_NUM_THREADS="${VLLM_MKL_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
 VLLM_OPENBLAS_NUM_THREADS="${VLLM_OPENBLAS_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
 VLLM_NUMEXPR_NUM_THREADS="${VLLM_NUMEXPR_NUM_THREADS:-${CPU_THREADS_PER_PROCESS}}"
 VLLM_TOKENIZERS_PARALLELISM="${VLLM_TOKENIZERS_PARALLELISM:-false}"
+VLLM_DISABLE_COMPILE_CACHE="${VLLM_DISABLE_COMPILE_CACHE:-1}"
 CPU_AFFINITY_GROUPS="${CPU_AFFINITY_GROUPS:-}"
+PYTHON_BIN="${PYTHON_BIN:-python}"
 REASONING_PARSER="${REASONING_PARSER:-}"
 CHAT_TEMPLATE="${CHAT_TEMPLATE:-}"
+ALLOWED_LOCAL_MEDIA_PATH="${ALLOWED_LOCAL_MEDIA_PATH:-}"
 WAIT_READY="${WAIT_READY:-1}"
 READY_TIMEOUT_SEC="${READY_TIMEOUT_SEC:-900}"
 LOG_DIR="${LOG_DIR:-logs/vllm/endpoints/${SERVED_MODEL_NAME}_$(date -u +%Y%m%dT%H%M%SZ)}"
@@ -85,16 +90,20 @@ for i in "${!GROUP_ARRAY[@]}"; do
   if [[ -n "${CHAT_TEMPLATE}" ]]; then
     server_args+=(--chat-template "${CHAT_TEMPLATE}")
   fi
+  if [[ -n "${ALLOWED_LOCAL_MEDIA_PATH}" ]]; then
+    server_args+=(--allowed-local-media-path "${ALLOWED_LOCAL_MEDIA_PATH}")
+  fi
   echo "[start] port=${port} vllm_port=${vllm_port} gpus=${group} tp=${tp} cpus=${affinity:-unbound} threads=${CPU_THREADS_PER_PROCESS} model=${MODEL_PATH} served=${SERVED_MODEL_NAME}"
   CUDA_VISIBLE_DEVICES="${group}" \
   VLLM_PORT="${vllm_port}" \
   VLLM_WORKER_MULTIPROC_METHOD="${VLLM_WORKER_MULTIPROC_METHOD:-spawn}" \
+  VLLM_DISABLE_COMPILE_CACHE="${VLLM_DISABLE_COMPILE_CACHE}" \
   OMP_NUM_THREADS="${VLLM_OMP_NUM_THREADS}" \
   MKL_NUM_THREADS="${VLLM_MKL_NUM_THREADS}" \
   OPENBLAS_NUM_THREADS="${VLLM_OPENBLAS_NUM_THREADS}" \
   NUMEXPR_NUM_THREADS="${VLLM_NUMEXPR_NUM_THREADS}" \
   TOKENIZERS_PARALLELISM="${VLLM_TOKENIZERS_PARALLELISM}" \
-  nohup "${launch_prefix[@]}" python -m vllm.entrypoints.openai.api_server "${server_args[@]}" \
+  nohup setsid "${launch_prefix[@]}" "${PYTHON_BIN}" -m vllm.entrypoints.openai.api_server "${server_args[@]}" \
     > "${log}" 2>&1 &
   echo "$! ${port} ${group} ${log}" >> "${PID_FILE}"
 done

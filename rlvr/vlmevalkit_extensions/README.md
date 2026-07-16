@@ -16,6 +16,13 @@ Included adapters:
 - `visiongraph.py`: `VisionGraph_Q3` and `VisionGraph_Q3_CoT`, exposing only
   the third VisionGraph graph-reasoning question as single-turn image VQA.
 
+The plain `EvoChart` alias and `CountQA` append the exact generation suffix
+`Put the final answer inside \\boxed{}.`; other dataset aliases are unchanged.
+
+The installer also restores pinned VLMEvalKit's official Physics text-only
+prompt behavior: rows with an empty `image` cell do not receive a synthetic
+blank image. The later multi-ground-truth Physics handling remains unchanged.
+
 Included runner scripts:
 
 - `scripts/batched_vlmevalkit_qwen3vl.py`: local generation/scoring helpers

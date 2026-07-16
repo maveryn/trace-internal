@@ -9,29 +9,56 @@ The executable route definitions live in
 `scripts/trace_final25_contract.py`; the extraction/scoring audit is
 `results/TRACE_FINAL25_SCORING_AUDIT.md`.
 
+Final scoring has three routes. Ten benchmarks use benchmark-specific
+pinned/direct evaluators, 14 use the pinned VLMEvalKit dataset object's
+`evaluate` method on the saved prediction workbook, and MME-Reasoning uses its
+dedicated official task scorer. The provisional all26 view adds MMVP to the
+`dataset.evaluate` route. The older generic TRACE Qwen answer-extraction queue
+is not a final scoring route.
+
 | Category | Benchmarks | Count |
 | --- | --- | ---: |
-| Charts, Tables & Structured Figures | ChartMuseum, ChartQAPro, CharXivReason, TableVQABench, EvoChart | 5 |
-| Visual Mathematics | MathVision, MathVista, MathVerse, WeMath | 4 |
-| Science & Academic Reasoning | PhyX mini MC, Physics, MMMU-ProVis, MMStar | 4 |
-| Spatial, 3D, Embodied & UI Grounding | ScreenSpot, SpatialVizBench COT, CV-Bench 3D, ERQA | 4 |
-| Visual Perception, Counting & Evidence Grounding | BLINK, CountBenchQA, CountQA, TreeBench | 4 |
-| Puzzles & Abstract Logic | PuzzleVQA, VisualPuzzles, LogicVista, MME-Reasoning | 4 |
+| Charts & Tables | ChartMuseum, ChartQAPro, CharXivReason, TableVQABench, EvoChart | 5 |
+| Visual Math | MathVision, MathVista, MathVerse, WeMath | 4 |
+| Science & General Reasoning | PhyX mini MC, Physics, MMMU-ProVis, MMStar | 4 |
+| Spatial & Grounding | ScreenSpot, SpatialVizBench COT, CV-Bench 3D, ERQA | 4 |
+| Perception & Counting | BLINK, CountBenchQA, CountQA, TreeBench | 4 |
+| Puzzles & Logic | PuzzleVQA, VisualPuzzles, LogicVista, MME-Reasoning | 4 |
 | **Total** |  | **25** |
 
 ## Placement Notes
 
 - **CharXivReason** is categorized by its primary chart-reasoning objective,
   even though its charts come from scientific papers.
-- **MMMU-ProVis** is multidisciplinary, but is grouped under Science for this
-  compact reporting taxonomy.
-- **MMStar** is grouped under Science & Academic Reasoning because this suite
-  uses it as the broad academic visual-reasoning complement to MMMU-ProVis.
+- **MMMU-ProVis** is multidisciplinary, but is grouped under Science & General
+  Reasoning for this compact reporting taxonomy.
+- **MMStar** is a general multimodal benchmark. It remains with the science
+  benchmarks as their broad visual-reasoning complement, which is reflected in
+  the Science & General Reasoning label.
 - **ScreenSpot** evaluates UI element localization, so it belongs under
   Spatial & Grounding.
 - **TreeBench** combines subtle-target perception, traceable visual evidence,
   and relational reasoning, so it belongs under Perception & Counting rather
   than the puzzle category.
+
+## Pending Candidate Evaluation
+
+- **MMVP** is the candidate replacement for CountQA. After the current
+  500-step Qwen2.5-VL-7B answer-reward training run completes, evaluate the
+  full 300-row MMVP benchmark on the base and trained checkpoints using the
+  Final25 decoding policy. Report VLMEvalKit's paired `Overall` accuracy as
+  the primary metric and per-question `Average` accuracy as a secondary
+  metric. Keep CountQA in the frozen suite until the result is reviewed, and
+  do not replace it if the trained checkpoint regresses against base.
+- **EvoChart** uses a local deterministic evaluator extension because the
+  pinned VLMEvalKit commit has no EvoChart evaluator.
+- **LogicVista** follows the pinned evaluator with one narrow exception for
+  numeric source labels, which are mapped to their corresponding option
+  letters before exact-set comparison.
+- **ChartQAPro COT** keeps only its mandated final `The answer is X` sentence
+  for official evaluation. **WeMath** uses official `Score (Strict)` percent,
+  and **ERQA** uses the pinned EASI `ERQABench.evaluate` implementation to
+  avoid VLMEvalKit's broken duplicate registry class.
 
 For an overall score, macro-average the 25 benchmark scores directly. Averaging
 the six category means equally gives categories equal weight rather than giving

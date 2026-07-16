@@ -61,6 +61,8 @@ Current EasyR1 paper-training path:
   `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
 - answer-only wrapper:
   `scripts/run_trace_qwen25vl3b_easyr1_answer_nokl_tmpfs.sh`
+- pinned 3B all1000 answer-only step-500 rerun job:
+  `scripts/run_trace_qwen25vl3b_easyr1_all1000_answer_nokl_step500_job.sh`
 - answer-and-annotation gated wrapper:
   `scripts/run_trace_qwen25vl3b_easyr1_annotation_gated_nokl_tmpfs.sh`
 - answer-and-annotation additive wrapper:
@@ -137,6 +139,25 @@ Qwen2.5-VL-7B answer-only all1000 recipe:
 cd /home/shadeform/trace
 scripts/run_trace_qwen25vl7b_easyr1_answer_nokl_tmpfs.sh
 ```
+
+Qwen2.5-VL-3B answer-only all1000 reproducibility rerun on the current host:
+
+```bash
+cd /home/shadeform/trace
+scripts/run_trace_qwen25vl3b_easyr1_all1000_answer_nokl_step500_job.sh
+```
+
+The dedicated job uses the pinned 3B base model and dataset already staged
+under `/dev/shm/trace_rlvr`, runs 500 steps on 8 GPUs with the original IID
+validation settings, retains only the final checkpoint, merges it, and uploads
+it to a uniquely named private Hugging Face repository. Its large training log
+also stays under `/dev/shm/trace_rlvr/logs` so the host root disk is not filled
+by progress output. Set
+`TRACE_RLVR_DRY_RUN=1` to validate the resolved configuration without starting
+training, merging, or uploading. The generic 3B wrappers retain their existing
+defaults for ablation and resume workflows. The dedicated job permits path,
+run-name, and publication overrides but rejects changes to the frozen 500-step
+training contract or attempts to resume a prior checkpoint.
 
 Legacy Vero/split-v1 launchers remain available for reference only:
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import concurrent.futures
+import hashlib
+import importlib.util
 import os
 import json
 import sys
@@ -32,6 +35,7 @@ from benchmark_queue_lib import (  # noqa: E402
     TRACE_FINAL25_BENCHMARK_CATEGORIES,
     _repair_treebench_options,
     build_vlmeval_dataset,
+    score_path,
     spec_by_key,
 )
 from run_external_benchmark_score_queue import (  # noqa: E402
@@ -49,19 +53,36 @@ from run_external_benchmark_score_queue import (  # noqa: E402
 )
 from run_external_benchmark_score_multi_model_queue import _terminal_failed_jobs  # noqa: E402
 from run_llm_extracted_benchmark_score_queue import (  # noqa: E402
+    EXTRACTION_CONTRACT_VERSION,
+    JudgeOutputValidationError,
+    _answer_kind,
+    _build_prompt,
+    _countqa_needs_combined_total_instruction,
+    _done_path,
+    _done_result_is_current,
+    _failure_path,
     _legacy_raw_output_from_error,
     _inline_dot_option_columns,
     _inline_option_columns,
+    _iter_api_batches,
     _job_id_for_row,
     _literal_options,
     _normalize_option,
     _parse_json_object,
+    _recover_failed_outputs,
+    _request_hash_for_item,
+    _result_from_judge_output,
+    _score_binary_judge,
     _ordered_fixed_option_columns,
     _ordered_source_option_columns,
     _source_row_exclusion_reason,
     _validate_required_choice_contract,
     _valid_letters_for,
     build_parser as build_llm_extract_parser,
+    finalize as finalize_llm_extracted,
+    mark_failed,
+    run_api_pool,
+    write_done_result,
 )
 from run_mme_reasoning_eval import _validate_extraction  # noqa: E402
 from reuse_trace_final25_generation_rows import (  # noqa: E402
@@ -74,13 +95,36 @@ from trace_benchmark_answer_parsing import (  # noqa: E402
     parse_binary_score,
 )
 from trace_final25_contract import (  # noqa: E402
+    ALL26_CONTRACTS,
+    ALL26_CONTRACT_BY_KEY,
     CONTRACTS,
     CONTRACT_BY_KEY,
     DEDICATED_SCORE_KEYS,
     DIRECT_SCORE_KEYS,
+    FROZEN_OFFICIAL_VLMEVAL_SCORE_KEYS,
     LLM_EXTRACT_SCORE_KEYS,
+    OFFICIAL_VLMEVAL_SCORE_KEYS,
     OPTION_TEXT_REQUIRED_KEYS,
 )
+
+
+def _judge_extraction_item(kind: str = "option") -> dict:
+    prediction = "The model selected B."
+    return {
+        "job_id": f"synthetic__{kind}",
+        "benchmark": "synthetic",
+        "model_slug": "test-model",
+        "index": "0",
+        "ordinal": 0,
+        "answer": "B",
+        "answer_kind": kind,
+        "valid_letters": list("ABCD"),
+        "options": {"A": "circle", "B": "triangle", "C": "square", "D": "star"},
+        "prediction": prediction,
+        "prompt": "Return strict JSON.",
+        "request_hash": "a" * 64,
+        "response_sha256": hashlib.sha256(prediction.encode()).hexdigest(),
+    }
 
 
 class TraceFinal25ContractTests(unittest.TestCase):
@@ -92,33 +136,62 @@ class TraceFinal25ContractTests(unittest.TestCase):
         for key in TRACE_FINAL25_BENCHMARKS:
             self.assertEqual(spec_by_key(key).key, key)
 
+    def test_all26_adds_one_explicit_mmvp_contract(self):
+        self.assertEqual(len(ALL26_CONTRACTS), 26)
+        self.assertEqual(set(ALL26_CONTRACT_BY_KEY), set(CONTRACT_BY_KEY) | {"mmvp"})
+        self.assertEqual(
+            ALL26_CONTRACT_BY_KEY["mmvp"].runner,
+            "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
+        )
+
     def test_final25_category_counts_match_frozen_suite(self):
         self.assertEqual(
             {category: len(keys) for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()},
             {
-                "Charts, Tables & Structured Figures": 5,
-                "Visual Mathematics": 4,
-                "Science & Academic Reasoning": 4,
-                "Spatial, 3D, Embodied & UI Grounding": 4,
-                "Visual Perception, Counting & Evidence Grounding": 4,
-                "Puzzles & Abstract Logic": 4,
+                "Charts & Tables": 5,
+                "Visual Math": 4,
+                "Science & General Reasoning": 4,
+                "Spatial & Grounding": 4,
+                "Perception & Counting": 4,
+                "Puzzles & Logic": 4,
             },
         )
 
     def test_score_routes_are_disjoint_and_exhaustive(self):
-        routes = [set(DIRECT_SCORE_KEYS), set(LLM_EXTRACT_SCORE_KEYS), set(DEDICATED_SCORE_KEYS)]
+        official_frozen = set(FROZEN_OFFICIAL_VLMEVAL_SCORE_KEYS)
+        routes = [set(DIRECT_SCORE_KEYS), official_frozen, set(DEDICATED_SCORE_KEYS)]
         self.assertFalse(routes[0] & routes[1])
         self.assertFalse(routes[0] & routes[2])
         self.assertFalse(routes[1] & routes[2])
         self.assertEqual(set.union(*routes), set(TRACE_FINAL25_BENCHMARKS))
+        self.assertEqual(len(OFFICIAL_VLMEVAL_SCORE_KEYS), 15)
+        self.assertEqual(set(LLM_EXTRACT_SCORE_KEYS), official_frozen)
+        self.assertEqual(
+            set(DIRECT_SCORE_KEYS)
+            | set(OFFICIAL_VLMEVAL_SCORE_KEYS)
+            | set(DEDICATED_SCORE_KEYS),
+            set(ALL26_CONTRACT_BY_KEY),
+        )
 
     def test_final25_is_a_selectable_canonical_run_set(self):
         self.assertIn("trace_final25", BENCHMARK_RUN_SETS)
         parsed = build_llm_extract_parser().parse_args(["--queue-name", "test", "--final25"])
         self.assertTrue(parsed.final25)
 
-    def test_required_option_text_contracts_are_llm_extraction_routes(self):
-        self.assertTrue(set(OPTION_TEXT_REQUIRED_KEYS) <= set(LLM_EXTRACT_SCORE_KEYS))
+    def test_legacy_option_text_contracts_are_official_vlmeval_routes(self):
+        self.assertTrue(set(OPTION_TEXT_REQUIRED_KEYS) <= set(OFFICIAL_VLMEVAL_SCORE_KEYS))
+
+    def test_official_routes_call_pinned_dataset_evaluate(self):
+        for key in OFFICIAL_VLMEVAL_SCORE_KEYS:
+            self.assertEqual(
+                ALL26_CONTRACT_BY_KEY[key].runner,
+                "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
+            )
+
+    def test_special_official_route_selections_are_explicit(self):
+        self.assertIn("The answer is X", CONTRACT_BY_KEY["chartqapro"].extraction)
+        self.assertIn("Score (Strict)", CONTRACT_BY_KEY["wemath"].scoring)
+        self.assertIn("EASI ERQABench", CONTRACT_BY_KEY["erqa"].scoring)
 
     def test_mathvision_validator_preserves_literal_none_extraction(self):
         spec = spec_by_key("mathvision")
@@ -400,6 +473,72 @@ class TraceFinal25ContractTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "run_mme_reasoning_eval"):
             _run_score_for_spec(args, spec_by_key("mme_reasoning"), "model", "slug", None)
 
+    def test_llm_extraction_finalizer_writes_canonical_and_analysis_score_paths(self):
+        item = {
+            "job_id": "countbenchqa__test-model__0",
+            "benchmark": "countbenchqa",
+            "model_slug": "test-model",
+            "index": "0",
+            "ordinal": 0,
+            "answer": "4",
+            "answer_kind": "number",
+            "valid_letters": [],
+            "options": {},
+            "prediction": "The final answer is 4.",
+            "extracted": "4",
+            "extraction_status": "resolved",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                output_root=root / "llm_extracted",
+                queue_name="queue",
+                benchmarks=["countbenchqa"],
+                model_entries=[("test-model", "/models/test-model")],
+                benchmark_root=root / "benchmark",
+                run_root=root / "runs",
+                judge_model="/models/qwen3-32b-judge",
+                seed=42,
+            )
+            with (
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.load_manifest",
+                    return_value=[item],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._load_results",
+                    return_value=[item],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._score_with_category_breakdowns",
+                    return_value={"Overall": 100.0},
+                ),
+                mock.patch.dict(os.environ, {"TRACE_FINAL25_HF_SPOOL_ROOT": ""}),
+            ):
+                finalize_llm_extracted(args)
+
+            canonical = score_path(spec_by_key("countbenchqa"), "test-model", args.benchmark_root)
+            analysis = (
+                args.benchmark_root
+                / "countbenchqa"
+                / "test-model"
+                / "llm_extracted"
+                / "scores.json"
+            )
+            self.assertNotEqual(canonical, analysis)
+            self.assertTrue(canonical.is_file())
+            self.assertTrue(analysis.is_file())
+            canonical_payload = json.loads(canonical.read_text(encoding="utf-8"))
+            analysis_payload = json.loads(analysis.read_text(encoding="utf-8"))
+            self.assertEqual(canonical_payload, analysis_payload)
+            self.assertEqual(canonical_payload["score"], 100.0)
+            self.assertEqual(canonical_payload["rows"], 1)
+            self.assertEqual(canonical_payload["benchmark_score_path"], str(canonical))
+            self.assertEqual(
+                canonical_payload["llm_extracted_benchmark_score_path"],
+                str(analysis),
+            )
+
     def test_multi_model_queue_reports_exhausted_failed_jobs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -438,6 +577,792 @@ class TraceFinal25ContractTests(unittest.TestCase):
         raw = '```json\n{"score": 0, "answer": "E = \\\\frac{a}{b}"}\n```'
         self.assertEqual(_parse_json_object(raw), {"score": 0, "answer": r"E = \frac{a}{b}"})
 
+    def test_strict_judge_envelope_preserves_valid_legacy_forms(self):
+        cases = (
+            ("option", '{"answer":"B"}', "B", "judge_json", False, None),
+            ("option", '```json\n{"answer":"B"}\n```', "B", "judge_fenced_json", False, None),
+            ("option", 'Result follows: {"extracted_answer":"B"}', "B", "judge_embedded_json", False, None),
+            ("option", '{"answer":"B"}\n{"extracted_answer":"B"}', "B", "judge_embedded_json", False, None),
+            ("option", '{"answer":"E"}', "Z", "judge_json", True, None),
+            ("option_value", '{"answer":"B"}', "B", "judge_json", False, None),
+            ("number", '{"answer":4}', "4", "judge_json", False, None),
+            ("number", '{"answer":""}', "", "judge_json", True, None),
+            ("short", '{"answer":12.5}', "12.5", "judge_json", False, None),
+            ("short", '{"answer":""}', "", "judge_json", True, None),
+            ("braced", '{"answer":"{Yes}"}', "yes", "judge_json", False, None),
+            ("judge_binary", '{"score":0,"answer":""}', "", "judge_json", True, 0.0),
+            (
+                "judge_binary",
+                '```json\n{"score":0,"answer":"E = \\\\frac{a}{b}"}\n```',
+                r"E = \frac{a}{b}",
+                "judge_fenced_json",
+                False,
+                0.0,
+            ),
+            ("judge_binary", "Final Judgement: **1**", "", "judge_atomic_binary", True, 1.0),
+        )
+        for kind, raw, expected, method, abstention, score in cases:
+            with self.subTest(kind=kind, raw=raw):
+                result = _result_from_judge_output(_judge_extraction_item(kind), raw)
+                self.assertEqual(result["extracted"], expected)
+                self.assertEqual(result["extraction_status"], "resolved")
+                self.assertEqual(result["extraction_method"], method)
+                self.assertEqual(result["explicit_abstention"], abstention)
+                self.assertEqual(result.get("judge_score"), score)
+                self.assertEqual(result["validation_contract_version"], EXTRACTION_CONTRACT_VERSION)
+
+    def test_strict_judge_envelope_rejects_malformed_or_conflicting_output(self):
+        cases = (
+            ("option", "B", "missing_json"),
+            ("option", "answer: B", "missing_json"),
+            ("option", '{"foo":"B"}', "missing_answer"),
+            ("option", '{"answer":"B"', "malformed_json"),
+            ("option", '[{"answer":"B"}]', "malformed_json"),
+            ("option", '{"answer":["B"]}', "answer_type"),
+            ("option", '{"answer":"A","extracted_answer":"B"}', "conflicting_answers"),
+            ("option", '{"answer":"A","answer":"B"}', "duplicate_json_field"),
+            ("option", '{"answer":"A or B"}', "conflicting_answers"),
+            ("option", '{"answer":"a or b"}', "conflicting_answers"),
+            ("option", '{"answer":"Either C, maybe D"}', "conflicting_answers"),
+            ("option", '{"answer":"AB"}', "conflicting_answers"),
+            ("option", 'Final answer: A\n{"answer":"B"}', "conflicting_answers"),
+            ("option", '{"answer":"B"}\nFinal answer: A', "conflicting_answers"),
+            ("option", '{"answer":"yellow"}', "answer_value"),
+            ("number", '{"answer":"none"}', "answer_value"),
+            ("number", '{"answer":"4 or 5"}', "conflicting_answers"),
+            ("judge_binary", "This looks correct to me", "missing_binary_score"),
+            ("judge_binary", "Score: 1. Judgment: 0.", "missing_binary_score"),
+            ("judge_binary", '{"score":1', "malformed_json"),
+            ("judge_binary", '{"score":2}', "binary_score_value"),
+            ("judge_binary", '{"score":"Score: 1. Judgment: 0."}', "binary_score_value"),
+            ("judge_binary", '{"score":0} {"judgement":1}', "conflicting_binary_scores"),
+            ("judge_binary", '{"score":1,"score":0}', "duplicate_json_field"),
+            ("judge_binary", 'Score: 1\n{"score":0}', "conflicting_binary_scores"),
+        )
+        for kind, raw, code in cases:
+            with self.subTest(kind=kind, raw=raw):
+                with self.assertRaises(JudgeOutputValidationError) as raised:
+                    _result_from_judge_output(_judge_extraction_item(kind), raw)
+                self.assertEqual(raised.exception.code, code)
+
+    def test_chartqapro_conversational_extraction_targets_only_final_turn(self):
+        questions = [
+            "who is ranked as the highest-paid athlete in 2023?",
+            "how many soccer players are in the top 50?",
+            "is this more than the number of baseball players?",
+            "which sport has the most athletes in the top 50 list?",
+            "is serena ahead of most other athletes on the list?",
+        ]
+        answers = ["Cristiano Ronaldo", "10", "Yes", "Basketball", "No"]
+        item = {
+            **_judge_extraction_item("short"),
+            "benchmark": "chartqapro",
+            "question": repr(questions),
+            "answer": repr(answers),
+            "prediction": "The answer is: no",
+        }
+
+        self.assertEqual(_answer_kind("chartqapro", item), "short")
+        prompt = _build_prompt(item)
+        question_section = prompt.split("Question:\n", 1)[1].split("\n\nModel response:", 1)[0]
+        self.assertEqual(question_section, questions[-1])
+        self.assertIn("scores only the final turn", prompt)
+        self.assertIn("ignore answers to earlier turns", prompt)
+
+        result = _result_from_judge_output(item, '{"answer":"no"}')
+        self.assertEqual(result["extracted"], "no")
+
+        conflicting = "\n".join(
+            f'{{"answer": {json.dumps(answer)}}}' for answer in answers
+        )
+        with self.assertRaises(JudgeOutputValidationError) as raised:
+            _result_from_judge_output(item, conflicting)
+        self.assertEqual(raised.exception.code, "conflicting_answers")
+        self.assertEqual(raised.exception.status, "ambiguous")
+
+    def test_pinned_chartqapro_scorer_uses_only_final_conversational_answer(self):
+        module_path = VLMEVAL_ROOT / "vlmeval" / "dataset" / "utils" / "chartqapro.py"
+        spec = importlib.util.spec_from_file_location("pinned_chartqapro_utils_test", module_path)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        anls_module = types.ModuleType("anls")
+        anls_module.anls_score = lambda prediction, gold_labels, threshold: float(
+            prediction in gold_labels
+        )
+        row = {
+            "Answer": ["Cristiano Ronaldo", "10", "Yes", "Basketball", "No"],
+            "Question Type": "Conversational",
+            "Year": ["NO", "NO", "NO", "NO", "NO"],
+        }
+        with mock.patch.dict(sys.modules, {"anls": anls_module}):
+            final_only = module.evaluate_predictions_chartqapro(
+                [{**row, "prediction": "No"}]
+            )
+            all_turns = module.evaluate_predictions_chartqapro(
+                [{**row, "prediction": repr(row["Answer"])}]
+            )
+
+        self.assertEqual(final_only["Overall"], 1.0)
+        self.assertEqual(all_turns["Overall"], 0.0)
+
+    def test_countqa_prompt_requests_combined_total_without_relaxing_validation(self):
+        item = {
+            **_judge_extraction_item("number"),
+            "benchmark": "countqa",
+            "question": "How many chairs, tables, and heaters are there?",
+            "answer": "13",
+            "prediction": "Final answer: 6 chairs, 2 tables, and 2 heaters.",
+        }
+
+        prompt = _build_prompt(item)
+        self.assertIn("CountQA expects one combined total", prompt)
+        self.assertIn("one labeled count for every requested category", prompt)
+        self.assertIn("cover every requested category exactly once", prompt)
+        self.assertIn("Do not infer a missing category", prompt)
+        self.assertIn("3 cups and 2 plates", prompt)
+
+        result = _result_from_judge_output(item, '{"answer":"10"}')
+        self.assertEqual(result["extracted"], "10")
+
+        with self.assertRaises(JudgeOutputValidationError) as raised:
+            _result_from_judge_output(
+                item,
+                '{"answer":"6 chairs, 2 tables, and 2 heaters"}',
+            )
+        self.assertEqual(raised.exception.code, "conflicting_answers")
+        self.assertEqual(raised.exception.status, "ambiguous")
+
+    def test_countqa_combined_total_prompt_is_scoped_to_explicit_component_answers(self):
+        self.assertTrue(
+            _countqa_needs_combined_total_instruction(
+                "How many bananas and kinderjoys are there?",
+                r"The final answer is \boxed{7 bananas and 4 Kinder Joy eggs}.",
+            )
+        )
+        self.assertFalse(
+            _countqa_needs_combined_total_instruction(
+                "How many bananas and kinderjoys are there?",
+                r"The final answer is \boxed{11}.",
+            )
+        )
+        self.assertFalse(
+            _countqa_needs_combined_total_instruction(
+                "How many tiles are on the wall with the shower?",
+                r"The final answer is \boxed{18}.",
+            )
+        )
+
+    def test_countqa_combined_total_instruction_is_not_used_for_countbenchqa(self):
+        item = {
+            **_judge_extraction_item("number"),
+            "benchmark": "countbenchqa",
+            "question": "How many chairs are there?",
+            "answer": "6",
+            "prediction": "Final answer: 6 chairs.",
+        }
+
+        prompt = _build_prompt(item)
+        self.assertNotIn("combined total", prompt)
+
+    def test_physics_final25_contract_uses_the_dedicated_official_like_scorer(self):
+        contract = CONTRACT_BY_KEY["physics"]
+        self.assertIn("official VLMEvalKit boxed-answer", contract.extraction)
+        self.assertIn("official VLMEvalKit is_equiv", contract.scoring)
+        self.assertEqual(contract.runner, "run_external_benchmark_score_queue.py:physics_local_judge")
+        self.assertIn("physics", DIRECT_SCORE_KEYS)
+        self.assertNotIn("physics", LLM_EXTRACT_SCORE_KEYS)
+
+    def test_strict_judge_envelope_preserves_equivalent_and_json_internal_wrappers(self):
+        cases = (
+            ("option", 'Final answer: B\n{"answer":"B"}', "B"),
+            ("option", '{"answer":"B because C is wrong"}', "B"),
+            ("option", '{"answer":"B, a triangle"}', "B"),
+            ("number", '{"answer":"1,000"}', "1000"),
+            ("number", '{"answer":"about $4.0%"}', "4"),
+            ("short", '{"answer":"<answer>B</answer>"}', "<answer>B</answer>"),
+            ("short", 'Final answer: \\boxed{42}\n{"answer":"42"}', "42"),
+            ("judge_binary", '{"score":1,"answer":"\\\\boxed{42}"}', r"\boxed{42}"),
+        )
+        for kind, raw, expected in cases:
+            with self.subTest(kind=kind, raw=raw):
+                result = _result_from_judge_output(_judge_extraction_item(kind), raw)
+                self.assertEqual(result["extracted"], expected)
+
+    def test_v2_done_cache_revalidates_the_judge_envelope(self):
+        item = _judge_extraction_item("option")
+        with tempfile.TemporaryDirectory() as tmp:
+            args = SimpleNamespace(output_root=Path(tmp), queue_name="strict-cache")
+            write_done_result(args, item, _result_from_judge_output(item, '{"answer":"B"}'))
+            self.assertTrue(_done_result_is_current(args, item))
+
+            path = _done_path(args, item["job_id"])
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["judge_output"] = "B"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertFalse(_done_result_is_current(args, item))
+
+            write_done_result(args, item, _result_from_judge_output(item, '{"answer":"B"}'))
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload["answer"] = "A"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertFalse(_done_result_is_current(args, item))
+
+    def test_extraction_request_hash_binds_backend_and_api_tokenizer(self):
+        item = {
+            **_judge_extraction_item("option"),
+            "model_path": "model",
+            "question": "Which option?",
+        }
+        common = {
+            "judge_model": "judge",
+            "api_model": "served-judge",
+            "api_tokenizer_model": "tokenizer-a",
+            "judge_max_tokens": 64,
+        }
+        api_hash = _request_hash_for_item(
+            SimpleNamespace(**common, execution_backend="api"), item
+        )
+        tokenizer_hash = _request_hash_for_item(
+            SimpleNamespace(
+                **{**common, "api_tokenizer_model": "tokenizer-b"},
+                execution_backend="api",
+            ),
+            item,
+        )
+        local_hash = _request_hash_for_item(
+            SimpleNamespace(**common, execution_backend="local"), item
+        )
+        self.assertNotEqual(api_hash, tokenizer_hash)
+        self.assertNotEqual(api_hash, local_hash)
+
+    def test_legacy_unbound_failed_output_is_not_promoted(self):
+        item = _judge_extraction_item("option")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                output_root=root / "out",
+                queue_name="strict-recovery",
+                queue_root=root / "queue",
+                judge_model="judge",
+            )
+            args.queue_root.mkdir(parents=True)
+            (args.queue_root / "llm_extract_strict-recovery.json").write_text(
+                json.dumps(
+                    {
+                        "jobs": {
+                            item["job_id"]: {
+                                "status": "failed",
+                                "error": "legacy failure",
+                            }
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            failure_path = _failure_path(args, item["job_id"])
+            failure_path.parent.mkdir(parents=True)
+            failure_path.write_text(
+                json.dumps({"raw_output": '{"answer":"B"}'}), encoding="utf-8"
+            )
+
+            recovered, unrecoverable = _recover_failed_outputs(args, [item])
+
+            self.assertEqual((recovered, unrecoverable), (0, 1))
+            self.assertFalse(_done_path(args, item["job_id"]).exists())
+
+            failure_path.write_text(
+                json.dumps(
+                    {
+                        "raw_output": '{"answer":"B"}',
+                        "request_hash": item["request_hash"],
+                        "response_sha256": item["response_sha256"],
+                        "contract_version": EXTRACTION_CONTRACT_VERSION,
+                        "validation_failure": {"code": "incomplete_generation"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            recovered, unrecoverable = _recover_failed_outputs(args, [item])
+            self.assertEqual((recovered, unrecoverable), (0, 1))
+            self.assertFalse(_done_path(args, item["job_id"]).exists())
+
+    def test_terminal_validation_failure_keeps_structured_metadata(self):
+        item = _judge_extraction_item("option")
+        with self.assertRaises(JudgeOutputValidationError) as raised:
+            _result_from_judge_output(item, "answer: B")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                output_root=root / "out",
+                queue_name="strict-failure",
+                queue_root=root / "queue",
+                worker_id="test-worker",
+            )
+            mark_failed(
+                args,
+                item,
+                repr(raised.exception),
+                raw_output="answer: B",
+                validation_failure=raised.exception.as_dict(),
+            )
+            failure = json.loads(_failure_path(args, item["job_id"]).read_text(encoding="utf-8"))
+            self.assertEqual(failure["validation_failure"]["status"], "invalid")
+            self.assertEqual(failure["validation_failure"]["code"], "missing_json")
+            self.assertEqual(failure["contract_version"], EXTRACTION_CONTRACT_VERSION)
+
+    def test_api_pool_retries_schema_invalid_output_before_writing_done(self):
+        item = _judge_extraction_item("option")
+
+        class FakeJudge:
+            calls = 0
+
+            def __init__(self, _args):
+                self.cleaned = False
+
+            def _get_endpoint_health(self):
+                return object()
+
+            def _call_api_completion_batch(self, _health, _start, prompts, **_kwargs):
+                type(self).calls += 1
+                raw = "B" if type(self).calls == 1 else '{"answer":"B"}'
+                return [
+                    {
+                        "judge_output": raw,
+                        "judge_finish_reason": "stop",
+                        "judge_output_token_count": 4,
+                        "judge_api_endpoint": "http://judge",
+                    }
+                    for _ in prompts
+                ]
+
+            def cleanup(self):
+                self.cleaned = True
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                output_root=root / "out",
+                queue_name="strict-api",
+                queue_root=root / "queue",
+                worker_id="test-worker",
+                api_bases=["http://judge"],
+                api_parallelism=1,
+                api_batches_per_endpoint=1,
+                api_batch_size=1,
+                api_max_batch_chars=10_000,
+                api_model="judge",
+                api_tokenizer_model="judge",
+                api_timeout=1.0,
+                api_max_retries=1,
+                api_endpoint_failure_threshold=1,
+                api_endpoint_cooldown_seconds=0.0,
+                api_retry_base_delay=0.0,
+                judge_model="judge",
+                judge_max_tokens=64,
+            )
+            FakeJudge.calls = 0
+            with (
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.load_manifest",
+                    return_value=[item],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._request_hash_for_item",
+                    return_value=item["request_hash"],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._load_api_tokenizer",
+                    return_value=object(),
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._render_api_prompt",
+                    return_value="rendered prompt",
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._judge_retry_token_limits",
+                    return_value=[64, 128],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.PersistentJudge",
+                    FakeJudge,
+                ),
+            ):
+                run_api_pool(args)
+
+            payload = json.loads(_done_path(args, item["job_id"]).read_text(encoding="utf-8"))
+            self.assertEqual(FakeJudge.calls, 2)
+            self.assertEqual(payload["extracted"], "B")
+            self.assertEqual(payload["judge_retry_count"], 1)
+            self.assertTrue(_done_result_is_current(args, item))
+
+    def test_api_batch_iterator_is_lazy_and_preserves_batch_boundaries(self):
+        items = [
+            {"job_id": str(index), "prompt": prompt}
+            for index, prompt in enumerate(("aa", "bb", "cccc", "xxxxxx", "z"))
+        ]
+        rendered = []
+
+        def render(_tokenizer, prompt):
+            rendered.append(prompt)
+            return prompt
+
+        with mock.patch(
+            "run_llm_extracted_benchmark_score_queue._render_api_prompt",
+            side_effect=render,
+        ):
+            batches = _iter_api_batches(
+                items,
+                object(),
+                batch_size=2,
+                max_batch_chars=5,
+            )
+            self.assertEqual(rendered, [])
+            first = next(iter(batches))
+            self.assertEqual(rendered, ["aa", "bb"])
+            remaining = list(batches)
+
+        self.assertEqual(
+            [[item["job_id"] for item, _ in batch] for batch in [first, *remaining]],
+            [["0", "1"], ["2"], ["3"], ["4"]],
+        )
+        self.assertEqual(rendered, ["aa", "bb", "cccc", "xxxxxx", "z"])
+
+    def test_api_pool_requests_first_batch_before_rendering_remaining_rows(self):
+        items = []
+        for index in range(6):
+            item = _judge_extraction_item("option")
+            item.update(
+                {
+                    "job_id": f"synthetic__option__{index}",
+                    "index": str(index),
+                    "ordinal": index,
+                    "prompt": f"prompt {index}",
+                    "request_hash": f"{index + 1:064x}",
+                }
+            )
+            items.append(item)
+
+        render_count = 0
+
+        def render(_tokenizer, prompt):
+            nonlocal render_count
+            render_count += 1
+            return f"rendered:{prompt}"
+
+        class FakeJudge:
+            calls = []
+            instance = None
+
+            def __init__(self, _args):
+                self.cleaned = False
+                type(self).instance = self
+
+            def _get_endpoint_health(self):
+                return object()
+
+            def _call_api_completion_batch(self, _health, _start, prompts, **_kwargs):
+                if not type(self).calls:
+                    self.assert_first_request_is_streamed()
+                type(self).calls.append(list(prompts))
+                return [
+                    {
+                        "judge_output": '{"answer":"B"}',
+                        "judge_finish_reason": "stop",
+                        "judge_output_token_count": 4,
+                        "judge_api_endpoint": "http://judge",
+                    }
+                    for _ in prompts
+                ]
+
+            def assert_first_request_is_streamed(self):
+                if render_count != 2:
+                    raise AssertionError(
+                        f"first request started after rendering {render_count} rows instead of one batch"
+                    )
+
+            def cleanup(self):
+                self.cleaned = True
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                output_root=root / "out",
+                queue_name="streaming-api",
+                queue_root=root / "queue",
+                worker_id="test-worker",
+                api_bases=["http://judge"],
+                api_parallelism=1,
+                api_batches_per_endpoint=1,
+                api_batch_size=2,
+                api_max_batch_chars=10_000,
+                api_queue_capacity=1,
+                api_model="judge",
+                api_tokenizer_model="judge",
+                api_timeout=1.0,
+                api_max_retries=1,
+                api_endpoint_failure_threshold=1,
+                api_endpoint_cooldown_seconds=0.0,
+                api_retry_base_delay=0.0,
+                judge_model="judge",
+                judge_max_tokens=64,
+            )
+            FakeJudge.calls = []
+            with (
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.load_manifest",
+                    return_value=items,
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._request_hash_for_item",
+                    side_effect=lambda _args, item: item["request_hash"],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._load_api_tokenizer",
+                    return_value=object(),
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._render_api_prompt",
+                    side_effect=render,
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._judge_retry_token_limits",
+                    return_value=[64],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.PersistentJudge",
+                    FakeJudge,
+                ),
+            ):
+                run_api_pool(args)
+
+            self.assertEqual(render_count, len(items))
+            self.assertEqual([len(batch) for batch in FakeJudge.calls], [2, 2, 2])
+            self.assertTrue(FakeJudge.instance.cleaned)
+            self.assertTrue(all(_done_path(args, item["job_id"]).exists() for item in items))
+
+    def test_api_pool_bounds_render_ahead_by_queue_capacity(self):
+        items = []
+        for index in range(8):
+            item = _judge_extraction_item("option")
+            item.update(
+                {
+                    "job_id": f"synthetic__bounded__{index}",
+                    "index": str(index),
+                    "ordinal": index,
+                    "prompt": f"prompt {index}",
+                    "request_hash": f"{index + 1:064x}",
+                }
+            )
+            items.append(item)
+
+        render_count = 0
+        wait_observations = []
+
+        def render(_tokenizer, prompt):
+            nonlocal render_count
+            render_count += 1
+            return f"rendered:{prompt}"
+
+        original_wait = concurrent.futures.wait
+
+        def observe_wait(futures, **kwargs):
+            wait_observations.append((len(futures), render_count))
+            return original_wait(futures, **kwargs)
+
+        class FakeJudge:
+            calls = 0
+
+            def __init__(self, _args):
+                pass
+
+            def _get_endpoint_health(self):
+                return object()
+
+            def _call_api_completion_batch(self, _health, _start, prompts, **_kwargs):
+                type(self).calls += 1
+                return [
+                    {
+                        "judge_output": '{"answer":"B"}',
+                        "judge_finish_reason": "stop",
+                        "judge_output_token_count": 4,
+                        "judge_api_endpoint": "http://judge",
+                    }
+                    for _ in prompts
+                ]
+
+            def cleanup(self):
+                pass
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                output_root=root / "out",
+                queue_name="bounded-api",
+                queue_root=root / "queue",
+                worker_id="test-worker",
+                api_bases=["http://judge"],
+                api_parallelism=1,
+                api_batches_per_endpoint=1,
+                api_batch_size=2,
+                api_max_batch_chars=10_000,
+                api_queue_capacity=2,
+                api_model="judge",
+                api_tokenizer_model="judge",
+                api_timeout=1.0,
+                api_max_retries=1,
+                api_endpoint_failure_threshold=1,
+                api_endpoint_cooldown_seconds=0.0,
+                api_retry_base_delay=0.0,
+                judge_model="judge",
+                judge_max_tokens=64,
+            )
+            FakeJudge.calls = 0
+            with (
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.load_manifest",
+                    return_value=items,
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._request_hash_for_item",
+                    side_effect=lambda _args, item: item["request_hash"],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._load_api_tokenizer",
+                    return_value=object(),
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._render_api_prompt",
+                    side_effect=render,
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._judge_retry_token_limits",
+                    return_value=[64],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.PersistentJudge",
+                    FakeJudge,
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.concurrent.futures.wait",
+                    side_effect=observe_wait,
+                ),
+            ):
+                run_api_pool(args)
+
+        self.assertEqual(render_count, len(items))
+        self.assertEqual(FakeJudge.calls, 4)
+        self.assertTrue(wait_observations)
+        self.assertEqual(wait_observations[0], (2, 4))
+        self.assertTrue(all(in_flight <= 2 for in_flight, _ in wait_observations))
+
+    def test_api_pool_cleans_up_and_propagates_lazy_render_failure(self):
+        items = []
+        for index in range(3):
+            item = _judge_extraction_item("option")
+            item.update(
+                {
+                    "job_id": f"synthetic__render_failure__{index}",
+                    "index": str(index),
+                    "ordinal": index,
+                    "prompt": f"prompt {index}",
+                    "request_hash": f"{index + 1:064x}",
+                }
+            )
+            items.append(item)
+
+        def render(_tokenizer, prompt):
+            if prompt == "prompt 1":
+                raise RuntimeError("synthetic render failure")
+            return f"rendered:{prompt}"
+
+        class FakeJudge:
+            calls = 0
+            instance = None
+
+            def __init__(self, _args):
+                self.cleanup_calls = 0
+                type(self).instance = self
+
+            def _get_endpoint_health(self):
+                return object()
+
+            def _call_api_completion_batch(self, _health, _start, prompts, **_kwargs):
+                type(self).calls += 1
+                return [
+                    {
+                        "judge_output": '{"answer":"B"}',
+                        "judge_finish_reason": "stop",
+                        "judge_output_token_count": 4,
+                        "judge_api_endpoint": "http://judge",
+                    }
+                    for _ in prompts
+                ]
+
+            def cleanup(self):
+                self.cleanup_calls += 1
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                output_root=root / "out",
+                queue_name="render-failure-api",
+                queue_root=root / "queue",
+                worker_id="test-worker",
+                api_bases=["http://judge"],
+                api_parallelism=1,
+                api_batches_per_endpoint=1,
+                api_batch_size=1,
+                api_max_batch_chars=10_000,
+                api_queue_capacity=2,
+                api_model="judge",
+                api_tokenizer_model="judge",
+                api_timeout=1.0,
+                api_max_retries=1,
+                api_endpoint_failure_threshold=1,
+                api_endpoint_cooldown_seconds=0.0,
+                api_retry_base_delay=0.0,
+                judge_model="judge",
+                judge_max_tokens=64,
+            )
+            FakeJudge.calls = 0
+            with (
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.load_manifest",
+                    return_value=items,
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._request_hash_for_item",
+                    side_effect=lambda _args, item: item["request_hash"],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._load_api_tokenizer",
+                    return_value=object(),
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._render_api_prompt",
+                    side_effect=render,
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue._judge_retry_token_limits",
+                    return_value=[64],
+                ),
+                mock.patch(
+                    "run_llm_extracted_benchmark_score_queue.PersistentJudge",
+                    FakeJudge,
+                ),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "synthetic render failure"):
+                    run_api_pool(args)
+
+            self.assertEqual(FakeJudge.calls, 1)
+            self.assertEqual(FakeJudge.instance.cleanup_calls, 1)
+            self.assertTrue(_done_path(args, items[0]["job_id"]).exists())
+            self.assertFalse(_done_path(args, items[1]["job_id"]).exists())
+            self.assertFalse(_done_path(args, items[2]["job_id"]).exists())
+
     def test_invalid_single_choice_extractions_become_abstentions(self):
         self.assertEqual(_normalize_option("E", "ABCD"), "Z")
         self.assertEqual(_normalize_option("HD", "ABCDEFGHIJ"), "Z")
@@ -470,11 +1395,12 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(_normalize_logicvista_judgement("BD", "B, D"), ("BD", True, False))
         self.assertIsNone(_normalize_logicvista_judgement("The answer is B", "B"))
 
-    def test_chartmuseum_parser_accepts_explicit_markdown_or_final_decision(self):
+    def test_chartmuseum_parser_matches_pinned_yes_substring_rule(self):
         self.assertEqual(_parse_chartmuseum_judgement_output("**Yes**"), 1)
         self.assertEqual(_parse_chartmuseum_judgement_output("**No**\n\nThe answers differ."), 0)
         self.assertEqual(_parse_chartmuseum_judgement_output("Reasoning\nFinal Answer: Yes"), 1)
-        self.assertIsNone(_parse_chartmuseum_judgement_output("The answers are not equivalent"))
+        self.assertEqual(_parse_chartmuseum_judgement_output("The answers are not equivalent"), 0)
+        self.assertIsNone(_parse_chartmuseum_judgement_output(""))
 
     def test_charxiv_empty_judge_extraction_falls_back_to_canonical_prediction(self):
         self.assertEqual(
@@ -511,13 +1437,16 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(extract_click_point("pyautogui.click(12, 34)"), (12.0, 34.0))
         self.assertEqual(extract_click_point(r"\\boxed{[0.25, 0.75]}"), (0.25, 0.75))
 
-    def test_screenspot_patch_raises_instead_of_scoring_unparsed_as_zero_zero(self):
-        _patch_screenspot_point_parser(spec_by_key("screenspot"))
+    def test_screenspot_patch_keeps_pinned_named_coordinate_parser(self):
         from vlmeval.dataset.GUI import screenspot
 
-        self.assertEqual(screenspot.parse_bbox_aguvis("pyautogui.click(12, 34)"), [12.0, 34.0])
-        with self.assertRaises(ValueError):
-            screenspot.parse_bbox_aguvis("I cannot find the target")
+        pinned_parser = screenspot.parse_bbox_aguvis
+        _patch_screenspot_point_parser(spec_by_key("screenspot"))
+
+        self.assertIs(screenspot.parse_bbox_aguvis, pinned_parser)
+        self.assertEqual(screenspot.parse_bbox_aguvis("pyautogui.click(x=12, y=34)"), [12.0, 34.0])
+        self.assertEqual(screenspot.parse_bbox_aguvis("pyautogui.click(12, 34)"), [0.0, 0.0])
+        self.assertEqual(screenspot.parse_bbox_aguvis("I cannot find the target"), [0.0, 0.0])
 
     def test_screenspot_compact_table_restores_image_path_from_source(self):
         spec = spec_by_key("screenspot")
@@ -544,12 +1473,12 @@ class TraceFinal25ContractTests(unittest.TestCase):
             restored = pd.read_excel(pred_table)
             self.assertEqual(restored["image_path"].tolist(), ["first.png", "second.png"])
 
-    def test_tablevqabench_route_uses_wrapper_parser_and_official_split_scorers(self):
+    def test_tablevqabench_route_uses_only_pinned_answer_prefix_cleanup(self):
         rows = [
-            {"index": 0, "split": "fintabnetqa", "prediction": "<answer>100</answer>", "answer": "100"},
-            {"index": 1, "split": "vtabfact", "prediction": r"\\boxed{True}", "answer": "1"},
-            {"index": 2, "split": "vwtq", "prediction": '{"answer": "Apple"}', "answer": "Apple"},
-            {"index": 3, "split": "vwtq_syn", "prediction": "Final answer: Banana", "answer": "Banana"},
+            {"index": 0, "split": "fintabnetqa", "prediction": "Answer: 100", "answer": "100"},
+            {"index": 1, "split": "vtabfact", "prediction": "Answer: True", "answer": "1"},
+            {"index": 2, "split": "vwtq", "prediction": "Answer: Apple", "answer": "Apple"},
+            {"index": 3, "split": "vwtq_syn", "prediction": "Answer: Banana", "answer": "Banana"},
         ]
         with tempfile.TemporaryDirectory() as tmp:
             output_dir = Path(tmp)
@@ -562,6 +1491,7 @@ class TraceFinal25ContractTests(unittest.TestCase):
                 )
         self.assertAlmostEqual(summary["score"], 100.0)
         self.assertEqual(summary["rows"], 4)
+        self.assertEqual(summary["extraction"]["changed_predictions"], 4)
 
     def test_mme_extraction_rejects_empty_judge_output(self):
         self.assertEqual(_validate_extraction("choice_prompt", ""), (False, ""))

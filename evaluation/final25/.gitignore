@@ -1,0 +1,9 @@
+# This directory is configuration-only. Runtime artifacts belong in tmpfs and
+# the private HF archive.
+*.csv
+*.jsonl
+*.parquet
+*.xlsx
+results/
+runs/
+scores/

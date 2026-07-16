@@ -13,6 +13,7 @@ if str(VLMEVAL_ROOT) not in sys.path:
 
 
 from vlmeval.dataset.evochart import EvoChart, score_prediction  # noqa: E402
+from vlmeval.dataset.trace_local_vqa import CountQA, GameQALite  # noqa: E402
 
 
 def test_evochart_aliases_are_registered() -> None:
@@ -43,9 +44,6 @@ def test_evochart_qwen3_prompt_suffix() -> None:
 
 
 def test_evochart_boxed_prompt_suffix() -> None:
-    dataset = object.__new__(EvoChart)
-    dataset.dataset_name = "EvoChart_boxed"
-    dataset.meta_only = True
     row = pd.Series(
         {
             "index": "0",
@@ -54,9 +52,37 @@ def test_evochart_boxed_prompt_suffix() -> None:
         }
     )
 
-    prompt = dataset.build_prompt(row)
+    for dataset_name in ("EvoChart", "EvoChart_boxed"):
+        dataset = object.__new__(EvoChart)
+        dataset.dataset_name = dataset_name
+        dataset.meta_only = True
+        prompt = dataset.build_prompt(row)
 
-    assert prompt[-1]["value"].endswith("Put the final answer inside \\boxed{}.")
+        assert prompt[-1]["value"].endswith("Put the final answer inside \\boxed{}.")
+
+
+def test_countqa_boxed_prompt_does_not_change_gameqa_lite() -> None:
+    row = pd.Series(
+        {
+            "index": "0",
+            "question": "How many objects are visible?",
+            "image_path": "/tmp/fake.png",
+        }
+    )
+
+    countqa = object.__new__(CountQA)
+    countqa.dataset_name = "CountQA"
+    countqa.meta_only = True
+    countqa_prompt = countqa.build_prompt(row)
+
+    gameqa = object.__new__(GameQALite)
+    gameqa.dataset_name = "Game-QA-Lite"
+    gameqa.meta_only = True
+    gameqa_prompt = gameqa.build_prompt(row)
+
+    assert countqa_prompt[-1]["value"].endswith("Put the final answer inside \\boxed{}.")
+    assert "Put only" not in countqa_prompt[-1]["value"]
+    assert gameqa_prompt[-1]["value"].endswith("Put only the final answer inside \\boxed{}.")
 
 
 def test_evochart_scoring_matches_vero_style_cases() -> None:

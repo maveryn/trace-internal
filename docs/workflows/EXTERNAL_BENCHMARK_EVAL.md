@@ -21,9 +21,14 @@ comparison and coverage analysis.
 
 - Subsets are manifest-only: source indices and hashes are stored, not benchmark
   images/media.
-- Image cap: requests are resized to at most 1,000,000 pixels and max side
-  1280, then encoded as JPEG payloads so the 4096-token vLLM endpoint is
-  usable on high-resolution benchmark images.
+- Final25 image transport is the materialized source file via `file://`; the
+  client does not resize, convert, or recompress it. The vLLM Qwen processor is
+  pinned to the upstream VLMEvalKit bounds of 1,003,520 to 12,845,056 pixels.
+  Dataset preparation records each source SHA-256 and an ordered per-row media
+  hash, and vLLM must be started with the matching allowed local media root.
+  Generation contract v4 also binds full/subset/limit selection, immutable model
+  revision, dataset revision, and evaluation code hash; only the full selection
+  is accepted as a completed frozen campaign run.
 - Judge-required benchmarks are generation first, then scored with the local
   judge path after responses are collected.
 
@@ -308,17 +313,23 @@ The root `README.md` contains a cross-benchmark table.
 
 The frozen Final25 suite and category ordering live in
 `scripts/benchmark_queue_lib.py` as `TRACE_FINAL25_BENCHMARK_CATEGORIES`.
-The machine-readable extraction/scoring matrix is
-`scripts/trace_final25_contract.py`. The three scoring routes are disjoint and
-must cover all 25 benchmarks:
+The machine-readable scoring matrix is `scripts/trace_final25_contract.py`.
+The frozen suite has 10 benchmark-specific direct routes, 14 pinned
+VLMEvalKit routes, and one dedicated MME-Reasoning route. The provisional
+all26 view adds MMVP to the pinned VLMEvalKit route:
 
-- `DIRECT_SCORE_KEYS`: official deterministic scorers or benchmark-specific
-  Qwen3-32B judge wrappers in `run_external_benchmark_score_queue.py`.
-- `LLM_EXTRACT_SCORE_KEYS`: Qwen3-32B answer extraction followed by an
-  explicit deterministic scorer in
-  `run_llm_extracted_benchmark_score_queue.py`.
-- `DEDICATED_SCORE_KEYS`: MME-Reasoning's mixed official evaluator in
+- `DIRECT_SCORE_KEYS`: benchmark-specific pinned/direct evaluation for the 10
+  cases that cannot use the common saved-workbook wrapper. Changes from the
+  pinned evaluator are limited to the documented narrow fixes below.
+- `OFFICIAL_VLMEVAL_SCORE_KEYS`: call the pinned dataset object's
+  `evaluate(prediction_xlsx, ...)` method directly. This is 14 frozen
+  benchmarks plus provisional MMVP, for 15 all26 contracts.
+- `DEDICATED_SCORE_KEYS`: MME-Reasoning's official task-specific scorer in
   `run_mme_reasoning_eval.py`.
+
+`LLM_EXTRACT_SCORE_KEYS` remains only as a compatibility alias for older queue
+code. It does not describe the final evaluation route, and the generic TRACE
+Qwen extraction queue must not be used for final scores.
 
 `trace_final25` is a first-class run set for both generation queues. Generate
 all 25 prediction tables once through the endpoint pool:
@@ -337,7 +348,7 @@ python scripts/run_external_benchmark_generation_api_queue.py \
 ```
 
 Score those tables through the three explicit routes. The direct queue
-automatically selects only its 9 contracts when `trace_final25` is used:
+automatically selects only its 10 contracts when `trace_final25` is used:
 
 ```bash
 python scripts/run_external_benchmark_score_queue.py \
@@ -347,12 +358,12 @@ python scripts/run_external_benchmark_score_queue.py \
   --queue-name <model-slug>_final25_direct --stop-on-error \
   --judge-api-base http://127.0.0.1:<qwen3-judge-port>/v1
 
-python scripts/run_llm_extracted_benchmark_score_queue.py \
-  --queue-name <model-slug>_final25_extract \
-  --final25 --model-entry <model-slug>=<model-path> \
-  --run-root <run-root> --benchmark-root <score-root> \
-  --prepare --api-run --finalize \
-  --api-base http://127.0.0.1:<qwen3-judge-port>/v1
+python scripts/run_official_vlmevalkit_saved_score.py \
+  --benchmark-key <official-route-key> \
+  --prediction-xlsx <saved-prediction.xlsx> \
+  --output-dir <score-root>/<benchmark>/<model-slug>/<run-name> \
+  --model <model-path> --model-slug <model-slug> \
+  --judge-kwargs-json '<pinned-evaluator-arguments>'
 
 python scripts/run_mme_reasoning_eval.py score \
   --model <model-path> --model-slug <model-slug> \
@@ -360,18 +371,29 @@ python scripts/run_mme_reasoning_eval.py score \
   --judge-api-base http://127.0.0.1:<qwen3-judge-port>/v1
 ```
 
-The direct scorer rejects LLM-extraction and dedicated contracts if they are
-explicitly passed with `--only`; it cannot silently score them through a less
-appropriate VLMEvalKit fallback. The multi-model direct queue applies the same
-restriction.
+The saved-workbook wrapper owns staging, provenance, canonical result
+serialization, and the narrow ChartQAPro and PhyX adapters documented below.
+It does not replace judge prompts, judge output parsing, scoring, or
+aggregation. Those stay inside the pinned `dataset.evaluate` implementation.
+Evaluated model generation uses the
+Final25 setting (`temperature=0.6`, `top_p=1`, `top_k=-1`, no penalties,
+`max_tokens=4096`, seed 42 unless running the documented multi-seed
+comparison); evaluator judge settings follow each pinned benchmark contract.
 
-Do not send a benchmark from `LLM_EXTRACT_SCORE_KEYS` through the generic
-VLMEvalKit score queue. That queue rejects the operation so verbose reasoning
-cannot be mis-scored by a bare first-letter or exact-string parser. Judge
-generation is deterministic (`temperature=0`) even when evaluated model
-generation uses the Final25 setting (`temperature=0.6`, `top_p=1`,
-`top_k=-1`, no penalties, `max_tokens=4096`, seed 42 unless running the
-documented multi-seed comparison).
+Four official-route selections are explicit:
+
+- ChartQAPro COT passes only the benchmark-mandated final `The answer is X`
+  sentence to its pinned evaluator; it does not run generic LLM extraction.
+- WeMath reports the official `Score (Strict)` field, which is already a
+  percentage.
+- PhyX mini MC deterministically normalizes a final `A`-`D` option before the
+  pinned evaluator runs. This fixes the pinned string parser rejecting atomic
+  option responses and prevents option-list text from overriding the final
+  answer.
+- ERQA constructs the pinned EASI `ERQABench` class and calls its `evaluate`
+  method. This avoids the duplicate `ERQA` registry entry whose
+  `ERQADataset.evaluate` is broken; row identities and generation prompts were
+  verified to match.
 
 Dataset construction must go through `build_vlmeval_dataset(spec)`. This pins
 `ERQA` to the 400-row EASI `ERQABench` class despite VLMEvalKit registering two
@@ -384,34 +406,49 @@ labels without exposing those choices in the generation prompt. Do not force
 TreeBench to A-D: the official OCR rows include an A-C question and a source
 image with a duplicated C label.
 
+ChartMuseum generation uses the pinned VLMEvalKit implementation's
+`dump_image(...)[0]` image and `get_question(...)` model prompt in both API and
+local batched paths. Generation contract v5 rejects any resumable response
+created by the earlier bare-question prompt path.
+
 Resumed API generation keys each row by source-content hash. Before preparing
 jobs it removes stale row-result files whose hashes no longer match the active
 dataset, and finalization derives row counts and token statistics only from
 the active row identities. A repaired or replaced dataset row is regenerated
 once; its older response cannot inflate summary counts or enter scoring.
 
-The active deterministic repairs are part of the scorer, not post-processing:
+The approved narrow direct-route differences are part of the scorer, not
+post-processing:
 
-- ScreenSpot accepts named and positional `pyautogui.click`/`moveTo` calls,
-  `<answer>` and boxed wrappers, and coordinate pairs. Parse failure raises;
-  it is never converted to the point `(0, 0)`.
-- TableVQABench unwraps `<answer>`, `\\boxed{}`, JSON `answer`, and explicit
-  final-answer markers before calling the official FinTabNetQA, VTabFact,
-  VWTQ, and VWTQ-Syn scorers. Its reported TRACE score remains the macro mean
-  over all official split `average_scores` values.
-- PhyX parses the explicit inline `OPTION: A: ...` block before treating
-  line-leading prose such as `A. H. Pfund` as a choice.
-- Every Final25 MCQ extraction row must include parsed choice text. The
-  extractor never invents a valid option by adding the ground-truth letter;
-  fixed A-D datasets must expose all four options, and every ground truth must
-  map to a parsed choice before any judge request is sent.
-- MathVerse accepts explicit `Judgement: 0/1` decisions and validates every
-  extraction and binary judge result.
+- ChartMuseum uses the pinned `extract_answer`, `COMPARE_ANSWER_PROMPT`, and
+  official yes-substring decision rule.
+- ScreenSpot uses the pinned named x/y coordinate parser and point-in-box
+  geometry unchanged; no additional coordinate syntax is accepted.
+- ScreenSpot archive records reconstruct each binary point-in-box result with
+  the pinned VLMEvalKit geometry and original LMUData image dimensions. The
+  archive job fails before emission unless their pooled accuracy exactly
+  matches the unchanged official aggregate score.
+- TableVQABench applies only the pinned leading `Answer: ` cleanup before the
+  official FinTabNetQA, VTabFact, VWTQ, and VWTQ-Syn scorers. The TRACE primary
+  metric remains the macro mean over all official split `average_scores`
+  values.
+- EvoChart uses a local deterministic evaluator extension because commit
+  `a8b12bf1c3737a33fc1de967c202f9c592b22e86` has no EvoChart evaluator. Its
+  plain alias and the local CountQA adapter append the exact generation suffix
+  `Put the final answer inside \\boxed{}.`.
+- LogicVista follows the pinned option-set evaluator except for a narrow
+  numeric-label case: numeric source labels are mapped to their corresponding
+  choice letters before the unchanged exact-set comparison.
+- MathVerse follows the pinned extraction and scoring prompts/parsers;
+  malformed judge output retries and then fails the job rather than scoring
+  zero.
 
 All direct semantic judges and MME-Reasoning judge stages fail the scoring job
 when output is empty or does not satisfy the expected decision contract.
 MME-Reasoning choice extractions are normalized from either `A` or bracketed
 multi-select forms such as `[A, C]` to the official scorer's `A,C` contract.
+Its extraction/open-answer retries use the pinned temperature schedule
+`0, 0.5, 1, 1.5, 2`.
 Judge-format and infrastructure failures must never be counted as incorrect
 model answers. Every final run must preserve the row-level prediction table,
 raw judge output, parsed answer/decision, and per-row score.
@@ -427,11 +464,8 @@ python scripts/audit_trace_final25_scoring_artifacts.py \
   --output results/trace_final25_historical_llm_artifact_audit.json
 ```
 
-The artifact audit is diagnostic for old runs. Historical queues may report
-issues that the current code now rejects; a clean Final25 run must have zero
-malformed option extractions, missing binary decisions, and ground truths
-excluded from valid options or parsed choice text, with no required choice text
-missing.
+The artifact audit is diagnostic for old generic-extraction runs. Those
+artifacts are not inputs to final pinned `dataset.evaluate` scoring.
 
 ### Final25 three-seed comparison campaign
 
@@ -444,13 +478,19 @@ baselines. The campaign is resumable and has four ordered phases:
    the campaign tree;
 2. load each evaluated model once across all eight GPUs and generate only
    missing or prompt-invalidated rows for all three seeds;
-3. load eight Qwen3-32B judge endpoints once and run all direct, extraction,
-   and MME-Reasoning scoring jobs;
+3. load eight Qwen3-32B judge endpoints once and run all direct, pinned
+   `dataset.evaluate`, and MME-Reasoning scoring jobs;
 4. verify all 600 model/seed/benchmark scores and write a three-seed mean/std
    workbook and Markdown report.
 
+Prediction-workbook discovery and evaluator staging may run on `EVAL_CPUSET`
+while judge endpoints load, but judge-backed scoring remains behind endpoint
+readiness checks. Independent benchmark/model evaluator processes may be
+distributed across endpoints; this scheduling does not alter pinned prompts,
+parsing, scoring, or aggregation.
+
 The default stable run root is
-`/dev/shm/trace_rlvr/trace_final25_temp06_seed42_44_8models_v1`. Re-running the
+`/dev/shm/trace_rlvr/trace_final25_temp06_seed42_44_8models_v2`. Re-running the
 same launcher resumes that root and skips complete model/seed phases:
 
 ```bash
@@ -470,6 +510,12 @@ Campaign verification can be run independently:
 
 ```bash
 python scripts/verify_trace_final25_campaign.py \
-  --campaign-root /dev/shm/trace_rlvr/trace_final25_temp06_seed42_44_8models_v1 \
-  --phase generation --model-slug qwen25vl7b-base --seeds 42 43 44
+  --campaign-root /dev/shm/trace_rlvr/trace_final25_temp06_seed42_44_8models_v2 \
+  --phase generation \
+  --model-slug qwen25vl7b-base \
+  --model-entry qwen25vl7b-base=/dev/shm/trace_rlvr/final25_models/qwen25vl7b-base=cc594898137f460bfe9f0759e9844b3ce807cfb5 \
+  --dataset-revision "${TRACE_FINAL25_DATASET_REVISION}" \
+  --dataset-snapshot-sha256 "${TRACE_FINAL25_DATASET_SNAPSHOT}" \
+  --final25-code-hash "${TRACE_FINAL25_CODE_HASH}" \
+  --seeds 42 43 44
 ```

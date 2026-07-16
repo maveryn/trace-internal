@@ -35,6 +35,58 @@ def insert_symbol_once(text: str, anchor: str, symbol: str, present: str) -> str
     return text.replace(anchor, f"{anchor} {symbol},", 1)
 
 
+def patch_physics_text_only_prompts(text: str) -> str:
+    prefix, marker, physics = text.partition("class Physics_yale")
+    if not marker:
+        raise RuntimeError("Could not find Physics_yale in image_vqa.py")
+    physics = replace_once(
+        physics,
+        """        if 'image' in data:
+            images = [toliststr(x) for x in data['image']]
+            data['image'] = [x[0] if len(x) == 1 else x for x in images]
+            self.meta_only = False
+""",
+        """        if 'image' in data:
+            images = [
+                None if np.isscalar(x) and pd.isna(x) else toliststr(x)
+                for x in data['image']
+            ]
+            data['image'] = [None if x is None else x[0] if len(x) == 1 else x for x in images]
+            self.meta_only = False
+""",
+    )
+    physics = replace_once(
+        physics,
+        """        if self.meta_only:
+            tgt_path = toliststr(line['image_path'])
+        else:
+            tgt_path = self.dump_image(line)
+""",
+        """        if not self.meta_only and pd.isna(line['image']):
+            tgt_path = None
+        elif self.meta_only:
+            tgt_path = toliststr(line['image_path'])
+        else:
+            tgt_path = self.dump_image(line)
+""",
+    )
+    physics = replace_once(
+        physics,
+        """        if isinstance(tgt_path, list):
+            msgs.extend([{"type": "image", "value": p} for p in tgt_path])
+        else:
+            msgs.append({"type": "image", "value": tgt_path})
+""",
+        """        if tgt_path is not None:
+            if isinstance(tgt_path, list):
+                msgs.extend([{"type": "image", "value": p} for p in tgt_path])
+            else:
+                msgs.append({"type": "image", "value": tgt_path})
+""",
+    )
+    return prefix + marker + physics
+
+
 def apply_extensions(vlmeval_root: Path) -> None:
     dataset_root = vlmeval_root / "vlmeval" / "dataset"
     if not dataset_root.exists():
@@ -47,6 +99,10 @@ def apply_extensions(vlmeval_root: Path) -> None:
         shutil.copy2(EXT_ROOT / name, dataset_root / name)
     for name in ("batched_chartmuseum_vllm.py", "batched_chartqapro_vllm.py", "batched_vlmevalkit_qwen3vl.py"):
         shutil.copy2(EXT_ROOT / "scripts" / name, scripts_root / name)
+
+    image_vqa_path = dataset_root / "image_vqa.py"
+    if image_vqa_path.exists():
+        image_vqa_path.write_text(patch_physics_text_only_prompts(image_vqa_path.read_text()))
 
     init_path = dataset_root / "__init__.py"
     text = init_path.read_text()

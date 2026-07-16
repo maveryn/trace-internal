@@ -8,7 +8,7 @@ from typing import Any
 
 from PIL import Image
 
-from vlmeval.dataset.chartmuseum import COMPARE_ANSWER_PROMPT
+from vlmeval.dataset.chartmuseum import COMPARE_ANSWER_PROMPT, get_question
 
 DEFAULT_DATA_ROOT = Path.home() / "LMUData"
 
@@ -48,6 +48,12 @@ def format_compare_prompt(question: str, answer: str, prediction: str) -> str:
     )
 
 
+def format_question_prompt(question: str) -> str:
+    """Use ChartMuseum's official model-facing question template."""
+
+    return get_question(str(question))
+
+
 def parse_judge_output(text: str) -> bool:
     clean = str(text or "").strip().lower()
     if re.search(r"\b(no|false|different|not equivalent)\b", clean):
@@ -84,7 +90,12 @@ def make_vl_requests(processor: Any, rows: list[dict[str, Any]], max_pixels: int
         if image_path:
             images.append(Image.open(image_path).convert("RGB"))
             content.append({"type": "image"})
-        content.append({"type": "text", "text": str(row.get("question", ""))})
+        content.append(
+            {
+                "type": "text",
+                "text": format_question_prompt(str(row.get("question", ""))),
+            }
+        )
         prompt = processor.apply_chat_template(
             [{"role": "user", "content": content}],
             tokenize=False,

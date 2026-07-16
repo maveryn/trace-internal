@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical extraction and scoring contracts for TRACE Final25 evaluation."""
+"""Canonical scoring contracts for TRACE Final25 and provisional MMVP."""
 
 from __future__ import annotations
 
@@ -18,22 +18,33 @@ class Final25Contract:
     runner: str
 
 
+def _pinned_vlmeval_contract(key: str, output_type: str) -> Final25Contract:
+    return Final25Contract(
+        key,
+        output_type,
+        "benchmark-defined handling inside pinned VLMEvalKit dataset.evaluate",
+        "benchmark-defined metric from pinned VLMEvalKit dataset.evaluate",
+        "benchmark-defined",
+        "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
+    )
+
+
 CONTRACTS: tuple[Final25Contract, ...] = (
     Final25Contract(
         "chartmuseum",
         "short/free-form answer",
-        "preserve response; unwrap <answer> when present",
-        "Qwen3-32B semantic correctness against reference",
+        "pinned ChartMuseum extract_answer",
+        "pinned COMPARE_ANSWER_PROMPT and yes-substring decision",
         "scoring",
         "run_external_benchmark_score_queue.py:chartmuseum_local_judge",
     ),
     Final25Contract(
         "chartqapro",
         "short answer after reasoning",
-        "Qwen3-32B final-answer extraction",
-        "ChartQAPro official/local normalized scorer",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
+        "mandated final 'The answer is X' sentence",
+        "pinned ChartQAPro dataset.evaluate",
+        "benchmark-defined",
+        "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
     ),
     Final25Contract(
         "charxivreason",
@@ -46,18 +57,18 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     Final25Contract(
         "tablevqabench",
         "short text/number/boolean",
-        "deterministic <answer>/boxed/JSON/final-answer wrapper parser",
-        "official FinTabNetQA, VTabFact, VWTQ, and VWTQ-Syn scorers",
+        "pinned parser (only the official leading 'Answer: ' cleanup)",
+        "pinned FinTabNetQA, VTabFact, VWTQ, and VWTQ-Syn scorers",
         "none",
         "run_external_benchmark_score_queue.py:tablevqabench_local_score",
     ),
     Final25Contract(
         "evochart",
         "short/free-form chart answer",
-        "Qwen3-32B extracts final answer while judging",
-        "Qwen3-32B semantic correctness with numeric-format tolerance",
-        "both",
-        "run_external_benchmark_score_queue.py:evochart_local_judge",
+        "deterministic final-answer parsing in the TRACE dataset extension",
+        "local deterministic EvoChart extension (pinned upstream has no evaluator)",
+        "none",
+        "run_external_benchmark_score_queue.py:evochart_local_score",
     ),
     Final25Contract(
         "mathvision",
@@ -86,128 +97,58 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     Final25Contract(
         "wemath",
         "MCQ option",
-        "Qwen3-32B selected-option extraction",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
+        "benchmark-defined handling inside pinned VLMEvalKit dataset.evaluate",
+        "pinned WeMath dataset.evaluate Score (Strict) percent metric",
+        "benchmark-defined",
+        "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
     ),
     Final25Contract(
         "phyx_mini_mc",
         "MCQ option",
-        "Qwen3-32B selected-option extraction with fixed A-D contract",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
+        "deterministic final-option extraction before pinned VLMEvalKit evaluation",
+        "pinned PhyX aggregation after deterministic option normalization",
+        "none",
+        "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
     ),
     Final25Contract(
         "physics",
         "free-form physics answer",
-        "Qwen3-32B extracts answer while judging",
-        "strict Qwen3-32B semantic correctness decision",
-        "both",
-        "run_llm_extracted_benchmark_score_queue.py:judge_binary",
+        "official VLMEvalKit boxed-answer extraction",
+        "official VLMEvalKit is_equiv with Qwen3-32B fallback",
+        "scoring",
+        "run_external_benchmark_score_queue.py:physics_local_judge",
     ),
-    Final25Contract(
-        "mmmu_pro_vision",
-        "MCQ option",
-        "Qwen3-32B selected-option extraction",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
-    Final25Contract(
-        "mmstar",
-        "MCQ option",
-        "Qwen3-32B selected-option extraction using source-provided choice labels",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
+    _pinned_vlmeval_contract("mmmu_pro_vision", "MCQ option"),
+    _pinned_vlmeval_contract("mmstar", "MCQ option"),
     Final25Contract(
         "screenspot",
         "GUI click point",
-        "deterministic named/positional pyautogui or coordinate-pair parser",
-        "official point-inside-target-box accuracy",
+        "pinned named x/y coordinate parser",
+        "pinned point-inside-target-box accuracy",
         "none",
         "run_external_benchmark_score_queue.py:screenspot",
     ),
-    Final25Contract(
-        "spatialvizbench_cot",
-        "MCQ option",
-        "Qwen3-32B selected-option extraction",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
-    Final25Contract(
-        "cvbench_3d",
-        "MCQ option",
-        "Qwen3-32B selected-option extraction",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
+    _pinned_vlmeval_contract("spatialvizbench_cot", "MCQ option"),
+    _pinned_vlmeval_contract("cvbench_3d", "MCQ option"),
     Final25Contract(
         "erqa",
         "MCQ option",
-        "Qwen3-32B selected-option extraction using source-provided choice labels",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
+        "benchmark-defined handling inside pinned ERQABench.evaluate",
+        "pinned EASI ERQABench metric (duplicate ERQADataset registry entry bypassed)",
+        "benchmark-defined",
+        "run_official_vlmevalkit_saved_score.py:dataset.evaluate",
     ),
-    Final25Contract(
-        "blink",
-        "MCQ option",
-        "Qwen3-32B selected-option extraction",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
-    Final25Contract(
-        "countbenchqa",
-        "integer count",
-        "Qwen3-32B final integer extraction",
-        "normalized exact integer match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
-    Final25Contract(
-        "countqa",
-        "integer count",
-        "Qwen3-32B final integer extraction",
-        "normalized exact integer match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
-    Final25Contract(
-        "treebench",
-        "MCQ option",
-        "Qwen3-32B selected-option extraction using source option labels",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
-    Final25Contract(
-        "puzzlevqa",
-        "MCQ option or option value",
-        "Qwen3-32B extraction and option-value-to-letter mapping",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
-    Final25Contract(
-        "visualpuzzles",
-        "MCQ option",
-        "Qwen3-32B selected-option extraction with fixed A-D contract",
-        "exact option-letter match",
-        "extraction",
-        "run_llm_extracted_benchmark_score_queue.py",
-    ),
+    _pinned_vlmeval_contract("blink", "MCQ option"),
+    _pinned_vlmeval_contract("countbenchqa", "integer count"),
+    _pinned_vlmeval_contract("countqa", "integer count"),
+    _pinned_vlmeval_contract("treebench", "MCQ option"),
+    _pinned_vlmeval_contract("puzzlevqa", "MCQ option or option value"),
+    _pinned_vlmeval_contract("visualpuzzles", "MCQ option"),
     Final25Contract(
         "logicvista",
         "one or more MCQ letters",
-        "Qwen3-32B option-set extraction",
-        "official exact normalized option-set comparison",
+        "pinned option-set extraction with a numeric-label-only exception",
+        "pinned exact normalized option-set comparison",
         "extraction",
         "run_external_benchmark_score_queue.py:logicvista_local_judge",
     ),
@@ -221,8 +162,12 @@ CONTRACTS: tuple[Final25Contract, ...] = (
     ),
 )
 
+MMVP_CONTRACT = _pinned_vlmeval_contract("mmvp", "paired MCQ option")
+ALL26_CONTRACTS = (*CONTRACTS, MMVP_CONTRACT)
+
 
 CONTRACT_BY_KEY = {contract.key: contract for contract in CONTRACTS}
+ALL26_CONTRACT_BY_KEY = {contract.key: contract for contract in ALL26_CONTRACTS}
 CATEGORY_BY_KEY = {
     key: category
     for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()
@@ -237,14 +182,14 @@ DIRECT_SCORE_KEYS = (
     "mathvision",
     "mathvista",
     "mathverse",
+    "physics",
     "screenspot",
     "logicvista",
 )
-LLM_EXTRACT_SCORE_KEYS = (
+FROZEN_OFFICIAL_VLMEVAL_SCORE_KEYS = (
     "chartqapro",
     "wemath",
     "phyx_mini_mc",
-    "physics",
     "mmmu_pro_vision",
     "mmstar",
     "spatialvizbench_cot",
@@ -257,14 +202,17 @@ LLM_EXTRACT_SCORE_KEYS = (
     "puzzlevqa",
     "visualpuzzles",
 )
+OFFICIAL_VLMEVAL_SCORE_KEYS = (*FROZEN_OFFICIAL_VLMEVAL_SCORE_KEYS, "mmvp")
 DEDICATED_SCORE_KEYS = ("mme_reasoning",)
 
-# These routes require the actual choice text, not merely a guessed range of
-# option letters. A row is invalid when its parsed choices omit the ground
-# truth or, for fixed contracts, any expected option. TreeBench labels are
-# source-derived because its image-embedded OCR questions include both A-C and
-# A-D rows. VisualPuzzles is intentionally absent: many rows put the labeled
-# A-D choices only in the image and therefore have no source choice text.
+# Compatibility alias for older queue code. These frozen-suite keys no longer
+# use TRACE's generic Qwen extraction queue; the final route is pinned
+# VLMEvalKit ``dataset.evaluate`` on the saved prediction workbook.
+LLM_EXTRACT_SCORE_KEYS = FROZEN_OFFICIAL_VLMEVAL_SCORE_KEYS
+
+# Compatibility metadata used only by the retired generic extraction queue
+# and its historical artifact audit. Final scoring for these keys is pinned
+# VLMEvalKit ``dataset.evaluate``.
 OPTION_TEXT_REQUIRED_KEYS = (
     "wemath",
     "phyx_mini_mc",
@@ -278,10 +226,8 @@ OPTION_TEXT_REQUIRED_KEYS = (
     "puzzlevqa",
 )
 
-# The official MMStar TSV has two malformed rows where the gold answer is A
-# but option A is empty. The missing choice was also absent from the model
-# prompt, so post-hoc repair would not be a fair evaluation. Exclude these
-# source rows consistently for every model and seed.
+# Compatibility metadata for the retired extraction queue's historical
+# artifact audit. The final pinned evaluator receives the saved workbook.
 SOURCE_ROW_EXCLUSIONS = {
     "mmstar": {
         "268": "official source omits the gold A option text",

@@ -12,7 +12,7 @@ while read -r pid port group log; do
   [[ -n "${pid:-}" ]] || continue
   if kill -0 "${pid}" 2>/dev/null; then
     echo "[stop] pid=${pid} port=${port:-?} gpus=${group:-?}"
-    kill "${pid}" 2>/dev/null || true
+    kill -TERM -- "-${pid}" 2>/dev/null || kill -TERM "${pid}" 2>/dev/null || true
   fi
 done < "${PID_FILE}"
 
@@ -22,7 +22,6 @@ while read -r pid port group log; do
   [[ -n "${pid:-}" ]] || continue
   if kill -0 "${pid}" 2>/dev/null; then
     echo "[kill] pid=${pid} port=${port:-?} gpus=${group:-?}"
-    kill -9 "${pid}" 2>/dev/null || true
+    kill -KILL -- "-${pid}" 2>/dev/null || kill -KILL "${pid}" 2>/dev/null || true
   fi
 done < "${PID_FILE}"
-

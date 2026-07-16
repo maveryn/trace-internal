@@ -18,10 +18,64 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 from benchmark_queue_lib import (  # noqa: E402
     TRACE_FINAL25_BENCHMARK_CATEGORIES,
+    TRACE_FINAL25_BENCHMARKS,
+    TRACE_FINAL26_BENCHMARKS,
     extract_score_and_rows,
     score_path,
     spec_by_key,
 )
+
+
+SUITE_BENCHMARKS: dict[str, tuple[str, ...]] = {
+    "frozen": TRACE_FINAL25_BENCHMARKS,
+    "all26": TRACE_FINAL26_BENCHMARKS,
+}
+SUITE_IDS = {
+    "frozen": "trace_final25",
+    "all26": "trace_final26",
+}
+SUITE_DISPLAY_NAMES = {
+    "frozen": "Final25",
+    "all26": "All26",
+}
+
+
+def _categories_for_suite(suite: str) -> dict[str, tuple[str, ...]]:
+    categories = {
+        category: tuple(keys)
+        for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()
+    }
+    if suite == "all26":
+        categories["Perception & Counting"] = (
+            *categories["Perception & Counting"],
+            "mmvp",
+        )
+
+    selected = SUITE_BENCHMARKS[suite]
+    categorized = tuple(key for keys in categories.values() for key in keys)
+    if len(categorized) != len(set(categorized)) or set(categorized) != set(selected):
+        raise RuntimeError(f"Category coverage does not match the {suite!r} suite")
+    return categories
+
+
+def _benchmark_rows_for_suite(suite: str) -> list[tuple[str, str]]:
+    categories = _categories_for_suite(suite)
+    category_by_key = {
+        key: category
+        for category, keys in categories.items()
+        for key in keys
+    }
+    return [(category_by_key[key], key) for key in SUITE_BENCHMARKS[suite]]
+
+
+def _default_title(suite: str, seeds: list[int]) -> str:
+    if len(seeds) == 1:
+        seed_label = "Single-Seed"
+    elif len(seeds) == 3:
+        seed_label = "Three-Seed"
+    else:
+        seed_label = f"{len(seeds)}-Seed"
+    return f"TRACE {SUITE_DISPLAY_NAMES[suite]} Temp0.6 {seed_label} Results"
 
 
 def _parse_model_entry(value: str) -> tuple[str, str]:
@@ -43,21 +97,26 @@ def _fmt(value: float) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Summarize a strict three-seed TRACE Final25 campaign.")
+    parser = argparse.ArgumentParser(description="Summarize a strict multi-seed TRACE evaluation campaign.")
     parser.add_argument("--score-root-base", type=Path, required=True)
     parser.add_argument("--model-entry", action="append", type=_parse_model_entry, required=True)
     parser.add_argument("--seeds", nargs="+", type=int, default=[42, 43, 44])
+    parser.add_argument(
+        "--suite",
+        choices=tuple(SUITE_BENCHMARKS),
+        default="frozen",
+        help="Benchmark coverage to summarize (default: frozen Final25).",
+    )
     parser.add_argument("--excel", type=Path, required=True)
     parser.add_argument("--markdown", type=Path, required=True)
-    parser.add_argument("--title", default="TRACE Final25 Temp0.6 Three-Seed Results")
+    parser.add_argument("--title", help="Report title (defaults to a suite-specific title).")
     args = parser.parse_args()
 
     model_entries = list(dict(args.model_entry).items())
-    benchmark_rows: list[tuple[str, str]] = [
-        (category, key)
-        for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()
-        for key in keys
-    ]
+    categories_for_suite = _categories_for_suite(args.suite)
+    benchmark_rows = _benchmark_rows_for_suite(args.suite)
+    suite_title = args.title or _default_title(args.suite, args.seeds)
+    suite_display = SUITE_DISPLAY_NAMES[args.suite]
     seed_records: list[dict[str, Any]] = []
     missing: list[str] = []
     for seed in args.seeds:
@@ -88,7 +147,7 @@ def main() -> None:
                 )
     if missing:
         preview = "\n".join(missing[:20])
-        raise FileNotFoundError(f"Missing {len(missing)} Final25 score files; first paths:\n{preview}")
+        raise FileNotFoundError(f"Missing {len(missing)} {suite_display} score files; first paths:\n{preview}")
 
     seed_values = pd.DataFrame(seed_records)
     summary_rows: list[dict[str, Any]] = []
@@ -125,7 +184,9 @@ def main() -> None:
 
     metadata = pd.DataFrame(
         [
-            {"key": "suite", "value": "trace_final25"},
+            {"key": "suite", "value": SUITE_IDS[args.suite]},
+            {"key": "suite_view", "value": args.suite},
+            {"key": "benchmark_count", "value": len(benchmark_rows)},
             {"key": "seeds", "value": ",".join(map(str, args.seeds))},
             {"key": "decoding", "value": "temperature=0.6, top_p=1, top_k=-1, no penalties, max_tokens=4096"},
             {"key": "judge", "value": "Qwen/Qwen3-32B, temperature=0"},
@@ -139,7 +200,7 @@ def main() -> None:
     categories = pd.DataFrame(
         [
             {"Category": category, "Benchmarks": ", ".join(spec_by_key(key).display for key in keys), "Count": len(keys)}
-            for category, keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.items()
+            for category, keys in categories_for_suite.items()
         ]
     )
     _write_excel(
@@ -152,7 +213,7 @@ def main() -> None:
         },
     )
 
-    lines = [f"# {args.title}", "", f"Seeds: `{', '.join(map(str, args.seeds))}`", ""]
+    lines = [f"# {suite_title}", "", f"Seeds: `{', '.join(map(str, args.seeds))}`", ""]
     headers = ["Category", "Benchmark", "Rows"] + [label for _, label in model_entries]
     lines.append("| " + " | ".join(headers) + " |")
     lines.append("|" + "|".join(["---"] * len(headers)) + "|")
@@ -161,16 +222,22 @@ def main() -> None:
         for _, label in model_entries:
             values.append(f"{_fmt(float(row[f'{label} mean']))} +/- {_fmt(float(row[f'{label} std']))}")
         lines.append("| " + " | ".join(values) + " |")
+    scoring_note = (
+        "Judge: Qwen3-32B at temperature 0 through the frozen Final25 scoring contracts."
+        if args.suite == "frozen"
+        else "Scoring: frozen Final25 contracts plus the official VLMEvalKit MMVP paired-option evaluation."
+    )
     lines.extend(
         [
             "",
             "Decoding: temperature 0.6, top-p 1, top-k -1, no penalties, maximum 4096 generated tokens.",
-            "Judge: Qwen3-32B at temperature 0 through the frozen Final25 scoring contracts.",
+            scoring_note,
         ]
     )
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     args.markdown.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"[final25-summary:done] rows={len(summary_rows)} models={len(model_entries)} excel={args.excel} markdown={args.markdown}")
+    log_tag = "final25" if args.suite == "frozen" else "all26"
+    print(f"[{log_tag}-summary:done] rows={len(summary_rows)} models={len(model_entries)} excel={args.excel} markdown={args.markdown}")
 
 
 if __name__ == "__main__":

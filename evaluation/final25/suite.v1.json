@@ -1,0 +1,338 @@
+{
+  "schema_version": "trace-final25-suite-v1",
+  "suite_name": "trace_final25",
+  "description": "Configuration only. Runtime responses, extractions, judge outputs, scores, and aggregates must not be stored in this directory.",
+  "vlmevalkit": {
+    "repository": "https://github.com/open-compass/VLMEvalKit",
+    "commit": "a8b12bf1c3737a33fc1de967c202f9c592b22e86",
+    "checkout": "external/VLMEvalKit",
+    "trace_extension_command": "python scripts/apply_vlmevalkit_trace_extensions.py"
+  },
+  "generation": {
+    "temperature": 0.6,
+    "top_p": 1.0,
+    "top_k": -1,
+    "presence_penalty": 0.0,
+    "repetition_penalty": 1.0,
+    "max_tokens": 4096,
+    "seeds": [42, 43, 44]
+  },
+  "judge": {
+    "model": "Qwen/Qwen3-32B",
+    "temperature": 0.0,
+    "mme_reasoning_retry_temperatures": [0.0, 0.5, 1.0, 1.5, 2.0],
+    "malformed_output_policy": "retry_then_fail_job",
+    "silent_zero_on_failure": false
+  },
+  "aggregation": {
+    "overall": "unweighted_macro_average_of_25_benchmarks",
+    "category_means_are_not_overall": true
+  },
+  "suites": {
+    "frozen": [
+      "chartmuseum",
+      "chartqapro",
+      "charxivreason",
+      "tablevqabench",
+      "evochart",
+      "mathvision",
+      "mathvista",
+      "mathverse",
+      "wemath",
+      "phyx_mini_mc",
+      "physics",
+      "mmmu_pro_vision",
+      "mmstar",
+      "screenspot",
+      "spatialvizbench_cot",
+      "cvbench_3d",
+      "erqa",
+      "blink",
+      "countbenchqa",
+      "countqa",
+      "treebench",
+      "puzzlevqa",
+      "visualpuzzles",
+      "logicvista",
+      "mme_reasoning"
+    ],
+    "provisional_mmvp": [
+      "chartmuseum",
+      "chartqapro",
+      "charxivreason",
+      "tablevqabench",
+      "evochart",
+      "mathvision",
+      "mathvista",
+      "mathverse",
+      "wemath",
+      "phyx_mini_mc",
+      "physics",
+      "mmmu_pro_vision",
+      "mmstar",
+      "screenspot",
+      "spatialvizbench_cot",
+      "cvbench_3d",
+      "erqa",
+      "blink",
+      "countbenchqa",
+      "mmvp",
+      "treebench",
+      "puzzlevqa",
+      "visualpuzzles",
+      "logicvista",
+      "mme_reasoning"
+    ]
+  },
+  "provisional_replacement": {
+    "candidate": "mmvp",
+    "replaces": "countqa",
+    "status": "pending_base_vs_trained_evaluation",
+    "expected_rows": 300,
+    "primary_metric": "Overall",
+    "secondary_metric": "Average",
+    "promotion_gate": "review full base-versus-trained result and reject replacement if the trained checkpoint regresses"
+  },
+  "benchmarks": [
+    {
+      "key": "chartmuseum",
+      "display_name": "ChartMuseum",
+      "category": "Charts & Tables",
+      "vlmeval_alias": "ChartMuseum_test",
+      "route": "direct_score",
+      "answer_contract": "short",
+      "score_contract": "pinned_chartmuseum_compare_answer"
+    },
+    {
+      "key": "chartqapro",
+      "display_name": "ChartQAPro",
+      "category": "Charts & Tables",
+      "vlmeval_alias": "ChartQAPro_CoT",
+      "route": "official_vlmevalkit",
+      "answer_contract": "mandated_final_the_answer_is_sentence",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "charxivreason",
+      "display_name": "CharXivReason",
+      "category": "Charts & Tables",
+      "vlmeval_alias": "CharXiv_reasoning_val",
+      "route": "direct_score",
+      "answer_contract": "short",
+      "score_contract": "pinned_charxivreason_rubric"
+    },
+    {
+      "key": "tablevqabench",
+      "display_name": "TableVQABench",
+      "category": "Charts & Tables",
+      "vlmeval_alias": "TableVQABench",
+      "route": "direct_score",
+      "answer_contract": "short",
+      "score_contract": "pinned_tablevqabench"
+    },
+    {
+      "key": "evochart",
+      "display_name": "EvoChart",
+      "category": "Charts & Tables",
+      "vlmeval_alias": "EvoChart",
+      "route": "direct_score",
+      "answer_contract": "short",
+      "score_contract": "trace_deterministic_evochart_extension"
+    },
+    {
+      "key": "mathvision",
+      "display_name": "MathVision",
+      "category": "Visual Math",
+      "vlmeval_alias": "MathVision",
+      "route": "direct_score",
+      "answer_contract": "math_short",
+      "score_contract": "official_mathvision"
+    },
+    {
+      "key": "mathvista",
+      "display_name": "MathVista",
+      "category": "Visual Math",
+      "vlmeval_alias": "MathVista_MINI",
+      "route": "direct_score",
+      "answer_contract": "math_or_option",
+      "score_contract": "official_mathvista"
+    },
+    {
+      "key": "mathverse",
+      "display_name": "MathVerse",
+      "category": "Visual Math",
+      "vlmeval_alias": "MathVerse_MINI_Vision_Only_cot",
+      "route": "direct_score",
+      "answer_contract": "math_short",
+      "score_contract": "official_mathverse_with_strict_judge_fallback"
+    },
+    {
+      "key": "wemath",
+      "display_name": "WeMath",
+      "category": "Visual Math",
+      "vlmeval_alias": "WeMath_COT",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate",
+      "primary_metric": "Score (Strict)",
+      "primary_metric_scale": "percent"
+    },
+    {
+      "key": "phyx_mini_mc",
+      "display_name": "PhyX mini MC",
+      "category": "Science & General Reasoning",
+      "vlmeval_alias": "PhyX_mini_MC",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_with_deterministic_option_adapter"
+    },
+    {
+      "key": "physics",
+      "display_name": "Physics",
+      "category": "Science & General Reasoning",
+      "vlmeval_alias": "Physics",
+      "route": "direct_score",
+      "answer_contract": "official_boxed_answer",
+      "score_contract": "official_physics_is_equiv_with_strict_qwen3_fallback"
+    },
+    {
+      "key": "mmmu_pro_vision",
+      "display_name": "MMMU-ProVis",
+      "category": "Science & General Reasoning",
+      "vlmeval_alias": "MMMU_Pro_V_COT",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "mmstar",
+      "display_name": "MMStar",
+      "category": "Science & General Reasoning",
+      "vlmeval_alias": "MMStar",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "screenspot",
+      "display_name": "ScreenSpot",
+      "category": "Spatial & Grounding",
+      "vlmeval_alias": "ScreenSpot",
+      "route": "direct_score",
+      "answer_contract": "point",
+      "score_contract": "pinned_point_inside_target_box"
+    },
+    {
+      "key": "spatialvizbench_cot",
+      "display_name": "SpatialVizBench COT",
+      "category": "Spatial & Grounding",
+      "vlmeval_alias": "SpatialVizBench_CoT",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "cvbench_3d",
+      "display_name": "CV-Bench 3D",
+      "category": "Spatial & Grounding",
+      "vlmeval_alias": "CV-Bench-3D",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "erqa",
+      "display_name": "ERQA",
+      "category": "Spatial & Grounding",
+      "vlmeval_alias": "ERQA",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_erqabench_dataset_evaluate",
+      "dataset_class": "vlmeval.dataset.erqabench.ERQABench"
+    },
+    {
+      "key": "blink",
+      "display_name": "BLINK",
+      "category": "Perception & Counting",
+      "vlmeval_alias": "BLINK",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "countbenchqa",
+      "display_name": "CountBenchQA",
+      "category": "Perception & Counting",
+      "vlmeval_alias": "CountBenchQA",
+      "route": "official_vlmevalkit",
+      "answer_contract": "integer",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "countqa",
+      "display_name": "CountQA",
+      "category": "Perception & Counting",
+      "vlmeval_alias": "CountQA",
+      "route": "official_vlmevalkit",
+      "answer_contract": "integer",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate",
+      "membership": "frozen_only"
+    },
+    {
+      "key": "mmvp",
+      "display_name": "MMVP",
+      "category": "Perception & Counting",
+      "vlmeval_alias": "MMVP",
+      "route": "official_vlmevalkit",
+      "answer_contract": "paired_option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate_mmvp_paired",
+      "membership": "provisional_only",
+      "replaces": "countqa"
+    },
+    {
+      "key": "treebench",
+      "display_name": "TreeBench",
+      "category": "Perception & Counting",
+      "vlmeval_alias": "TreeBench",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "puzzlevqa",
+      "display_name": "PuzzleVQA",
+      "category": "Puzzles & Logic",
+      "vlmeval_alias": "PuzzleVQA",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option_or_value",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "visualpuzzles",
+      "display_name": "VisualPuzzles",
+      "category": "Puzzles & Logic",
+      "vlmeval_alias": "VisualPuzzles",
+      "route": "official_vlmevalkit",
+      "answer_contract": "option",
+      "score_contract": "pinned_vlmevalkit_dataset_evaluate"
+    },
+    {
+      "key": "logicvista",
+      "display_name": "LogicVista",
+      "category": "Puzzles & Logic",
+      "vlmeval_alias": "LogicVista",
+      "route": "direct_score",
+      "answer_contract": "option_set",
+      "score_contract": "pinned_exact_option_set_with_numeric_label_fix"
+    },
+    {
+      "key": "mme_reasoning",
+      "display_name": "MME-Reasoning",
+      "category": "Puzzles & Logic",
+      "vlmeval_alias": "MME-Reasoning",
+      "route": "dedicated_score",
+      "answer_contract": "mixed",
+      "score_contract": "official_task_specific_with_open_answer_judge"
+    }
+  ]
+}

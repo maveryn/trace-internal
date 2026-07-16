@@ -15,9 +15,11 @@ import sys
 import threading
 import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote, urlparse
 
 import pandas as pd
 import requests
@@ -53,6 +55,18 @@ from benchmark_queue_lib import (  # noqa: E402
     run_dir,
     write_json,
 )
+from final25_media_contract import (  # noqa: E402
+    DATASET_MANIFEST_SCHEMA,
+    GENERATION_CONTRACT_VERSION,
+    MEDIA_CONTRACT_VERSION,
+    MEDIA_TRANSPORT,
+    QWEN_MAX_IMAGE_PIXELS,
+    QWEN_MIN_IMAGE_PIXELS,
+    load_dataset_manifest,
+    media_set_sha256,
+    row_lookup_key,
+    source_record_sha256,
+)
 from run_external_benchmark_generation_queue import (  # noqa: E402
     _apply_subset_frame,
     _apply_subset_rows,
@@ -73,9 +87,72 @@ class RowJob:
     output_dir: Path
     result_path: Path
     kind: str
+    source_ordinal: int | None = None
     mirror_result_path: Path | None = None
     attempted_endpoints: tuple[str, ...] = ()
     attempt_count: int = 0
+
+
+@dataclass(frozen=True)
+class PreparedJob:
+    job: RowJob
+    messages: list[dict[str, Any]]
+    request_hash: str | None = None
+    media_provenance: dict[str, Any] | None = None
+
+
+@dataclass(frozen=True)
+class PersistenceJob:
+    job: RowJob
+    payload: dict[str, Any]
+    error: dict[str, Any] | None = None
+
+
+class PipelineMetrics:
+    """Small thread-safe timing and queue telemetry for generation stages."""
+
+    def __init__(self) -> None:
+        self.started_at = time.monotonic()
+        self._stages: dict[str, dict[str, float | int]] = {}
+        self._queue_high_watermarks: dict[str, int] = {}
+        self._counters: Counter[str] = Counter()
+        self._lock = threading.Lock()
+
+    def observe_stage(self, stage: str, seconds: float) -> None:
+        value = max(0.0, float(seconds))
+        with self._lock:
+            stats = self._stages.setdefault(stage, {"count": 0, "total_seconds": 0.0, "max_seconds": 0.0})
+            stats["count"] = int(stats["count"]) + 1
+            stats["total_seconds"] = float(stats["total_seconds"]) + value
+            stats["max_seconds"] = max(float(stats["max_seconds"]), value)
+
+    def observe_queue(self, name: str, value: int) -> None:
+        with self._lock:
+            self._queue_high_watermarks[name] = max(self._queue_high_watermarks.get(name, 0), int(value))
+
+    def increment(self, name: str, value: int = 1) -> None:
+        with self._lock:
+            self._counters[name] += int(value)
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            stages = {
+                name: {
+                    **stats,
+                    "mean_seconds": (
+                        float(stats["total_seconds"]) / int(stats["count"]) if int(stats["count"]) else 0.0
+                    ),
+                }
+                for name, stats in self._stages.items()
+            }
+            queues = dict(self._queue_high_watermarks)
+            counters = dict(self._counters)
+        return {
+            "elapsed_seconds": max(0.0, time.monotonic() - self.started_at),
+            "stages": stages,
+            "queue_high_watermarks": queues,
+            "counters": counters,
+        }
 
 
 class PermanentAPIError(RuntimeError):
@@ -149,11 +226,55 @@ class EndpointHealth:
             }
 
 
+class EndpointRouter:
+    """Bound concurrent calls per endpoint while allowing prepared-job failover."""
+
+    def __init__(self, endpoints: list[str], parallelism_per_endpoint: int, health: EndpointHealth):
+        self.endpoints = tuple(endpoints)
+        self.health = health
+        self._slots = {
+            endpoint: threading.BoundedSemaphore(max(1, int(parallelism_per_endpoint))) for endpoint in self.endpoints
+        }
+        self._cursor = 0
+        self._lock = threading.Lock()
+
+    def acquire(self, attempted_endpoints: tuple[str, ...], timeout: float = 0.25) -> str | None:
+        attempted = set(attempted_endpoints)
+        deadline = time.monotonic() + max(0.0, timeout)
+        while True:
+            with self._lock:
+                start = self._cursor
+                self._cursor = (self._cursor + 1) % len(self.endpoints)
+            ordered = [self.endpoints[(start + offset) % len(self.endpoints)] for offset in range(len(self.endpoints))]
+            available = [endpoint for endpoint in ordered if not self.health.is_disabled(endpoint)]
+            preferred = [endpoint for endpoint in available if endpoint not in attempted]
+            for endpoint in preferred or available:
+                if self._slots[endpoint].acquire(blocking=False):
+                    return endpoint
+            if time.monotonic() >= deadline:
+                return None
+            time.sleep(0.002)
+
+    def release(self, endpoint: str) -> None:
+        self._slots[endpoint].release()
+
+
 class DatasetHandle:
-    def __init__(self, spec: BenchmarkSpec, dataset: Any = None, rows: list[dict[str, Any]] | None = None):
+    def __init__(
+        self,
+        spec: BenchmarkSpec,
+        dataset: Any = None,
+        rows: list[dict[str, Any]] | None = None,
+        media_rows: dict[tuple[int, str, str], dict[str, Any]] | None = None,
+        dataset_snapshot_sha256: str | None = None,
+        source_ordinals: list[int] | None = None,
+    ):
         self.spec = spec
         self.dataset = dataset
         self.rows = rows
+        self.media_rows = media_rows
+        self.dataset_snapshot_sha256 = dataset_snapshot_sha256
+        self.source_ordinals = source_ordinals
         self.lock = threading.Lock()
 
 
@@ -169,6 +290,7 @@ COMPACT_MEDIA_COLUMNS = frozenset(
         "video_paths",
     }
 )
+SOURCE_ORDINAL_COLUMN = "__trace_source_ordinal__"
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -250,11 +372,12 @@ def _persist_worker_result(
     payload: dict[str, Any],
     errors: list[dict[str, Any]],
     error_lock: threading.Lock,
-) -> None:
+) -> bool:
     """Persist a final row result and surface storage failures in the suite result."""
 
     try:
         _write_job_result(job, payload)
+        return True
     except OSError as exc:
         error = {
             "benchmark_key": job.spec.key,
@@ -267,11 +390,234 @@ def _persist_worker_result(
         with error_lock:
             errors.append(error)
         print(f"[api-generate:persistence-error] row_key={job.row_key} error={exc!r}")
+        return False
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(8 * 1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _local_media_path(value: Any, allowed_root: Path | None = None) -> Path:
+    if not isinstance(value, (str, Path)):
+        raise TypeError(
+            "file-url media transport requires a materialized local path; "
+            f"received {type(value).__name__}"
+        )
+    text = str(value)
+    parsed = urlparse(text)
+    if parsed.scheme == "file":
+        path = Path(unquote(parsed.path))
+    elif parsed.scheme:
+        raise ValueError(f"file-url media transport rejects non-local URL: {text[:160]}")
+    else:
+        path = Path(text).expanduser()
+        if not path.is_absolute():
+            path = REPO_ROOT / path
+    path = path.resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"missing prompt media: {path}")
+    if allowed_root is not None:
+        root = allowed_root.expanduser().resolve()
+        if not path.is_relative_to(root):
+            raise ValueError(f"prompt media {path} is outside allowed local media path {root}")
+    return path
+
+
+def _image_to_file_url(value: Any, *, allowed_root: Path | None = None) -> str:
+    """Return an exact local source URL without decoding or re-encoding pixels."""
+
+    return _local_media_path(value, allowed_root).as_uri()
+
+
+def _image_transport_url(
+    args: argparse.Namespace,
+    value: Any,
+    *,
+    metrics: PipelineMetrics | None = None,
+) -> str:
+    if getattr(args, "media_transport", "data-url") == MEDIA_TRANSPORT:
+        return _image_to_file_url(
+            value,
+            allowed_root=getattr(args, "allowed_local_media_path", None),
+        )
+    return _image_to_data_url(
+        value,
+        quality=int(args.image_jpeg_quality),
+        max_pixels=int(args.max_image_pixels),
+        max_side=int(args.max_image_side),
+        cache_dir=getattr(args, "media_cache_dir", None),
+        metrics=metrics,
+    )
+
+
+def _load_generation_dataset_manifest(args: argparse.Namespace) -> dict[str, Any] | None:
+    cached = getattr(args, "_loaded_dataset_manifest", None)
+    if cached is not None:
+        return cached
+    path = getattr(args, "dataset_manifest", None)
+    if path is None:
+        return None
+    manifest = load_dataset_manifest(Path(path).expanduser().resolve())
+    view = str(getattr(args, "dataset_manifest_view", "frozen") or "frozen")
+    view_snapshots = manifest.get("view_snapshot_sha256") or {}
+    if view not in view_snapshots:
+        raise RuntimeError(f"Final25 dataset manifest has no complete snapshot for view {view!r}")
+    snapshot = str(view_snapshots[view])
+    configured_revision = os.environ.get("TRACE_FINAL25_DATASET_REVISION", "").strip()
+    expected_revision = f"{DATASET_MANIFEST_SCHEMA}:{snapshot}"
+    if configured_revision and configured_revision != expected_revision:
+        raise RuntimeError(
+            "TRACE_FINAL25_DATASET_REVISION does not match the prepared media snapshot: "
+            f"{configured_revision!r} != {expected_revision!r}"
+        )
+    args._loaded_dataset_manifest = manifest
+    args.dataset_snapshot_sha256 = snapshot
+    return manifest
+
+
+def _media_rows_for_spec(
+    manifest: dict[str, Any] | None,
+    spec: BenchmarkSpec,
+) -> tuple[dict[tuple[int, str, str], dict[str, Any]] | None, str | None]:
+    if manifest is None:
+        return None, None
+    receipt = (manifest.get("datasets") or {}).get(spec.key)
+    if not isinstance(receipt, dict) or receipt.get("status") != "ready":
+        raise RuntimeError(f"Final25 dataset manifest has no ready receipt for {spec.key}")
+    rows = receipt.get("row_media")
+    if not isinstance(rows, list) or not rows:
+        raise RuntimeError(f"Final25 dataset manifest has no row media records for {spec.key}")
+    index: dict[tuple[int, str, str], dict[str, Any]] = {}
+    for row in rows:
+        key = row_lookup_key(
+            int(row.get("ordinal")),
+            row.get("index"),
+            str(row.get("source_row_hash") or ""),
+        )
+        if key in index:
+            raise RuntimeError(f"duplicate Final25 media row identity for {spec.key}: {key}")
+        index[key] = row
+    return index, str(receipt.get("dataset_snapshot_sha256") or "")
+
+
+def _image_paths_from_messages(messages: list[dict[str, Any]]) -> list[Path]:
+    paths: list[Path] = []
+    for message in messages:
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+        for item in content:
+            if not isinstance(item, dict) or item.get("type") != "image_url":
+                continue
+            image_url = item.get("image_url") or {}
+            url = image_url.get("url") if isinstance(image_url, dict) else None
+            if not isinstance(url, str) or not url.startswith("file://"):
+                raise RuntimeError("official Final25 media requests must contain local file:// image URLs")
+            paths.append(_local_media_path(url))
+    return paths
+
+
+def _media_provenance(
+    args: argparse.Namespace,
+    handle: DatasetHandle,
+    row: dict[str, Any],
+    messages: list[dict[str, Any]],
+    source_ordinal: int,
+) -> dict[str, Any]:
+    source_row_hash = _row_hash(row)
+    if getattr(args, "media_transport", "data-url") != MEDIA_TRANSPORT:
+        ordered_media = []
+        for message in messages:
+            content = message.get("content")
+            if not isinstance(content, list):
+                continue
+            for item in content:
+                if not isinstance(item, dict) or item.get("type") != "image_url":
+                    continue
+                image_url = item.get("image_url") or {}
+                url = image_url.get("url") if isinstance(image_url, dict) else ""
+                ordered_media.append(
+                    {
+                        "type": "image",
+                        "sha256": hashlib.sha256(str(url).encode("utf-8")).hexdigest(),
+                    }
+                )
+        media_hash = media_set_sha256(ordered_media)
+        return {
+            "source_row_hash": source_row_hash,
+            "ordered_media_sha256": [item["sha256"] for item in ordered_media],
+            "media_set_sha256": media_hash,
+            "source_record_sha256": source_record_sha256(source_row_hash, media_hash),
+            "dataset_snapshot_sha256": str(
+                getattr(args, "dataset_snapshot_sha256", "") or ""
+            ),
+        }
+    paths = _image_paths_from_messages(messages)
+    if handle.media_rows is not None:
+        manifest_row = handle.media_rows.get(
+            row_lookup_key(source_ordinal, row.get("index"), source_row_hash)
+        )
+        if manifest_row is None:
+            raise RuntimeError(
+                f"prepared media manifest has no current row for {handle.spec.key}/{row.get('index')}"
+            )
+        expected_media = list(manifest_row.get("media") or [])
+        if len(expected_media) != len(paths):
+            raise RuntimeError(
+                f"prepared media count changed for {handle.spec.key}/{row.get('index')}: "
+                f"{len(paths)} != {len(expected_media)}"
+            )
+        ordered_media = []
+        for path, expected in zip(paths, expected_media):
+            expected_path = Path(str(expected.get("path") or "")).resolve()
+            if path != expected_path:
+                raise RuntimeError(
+                    f"prepared media path changed for {handle.spec.key}/{row.get('index')}: "
+                    f"{path} != {expected_path}"
+                )
+            size = path.stat().st_size
+            if size != int(expected.get("size_bytes") or -1):
+                raise RuntimeError(f"prepared media size changed; rerun dataset verification: {path}")
+            current_sha256 = _sha256_file(path)
+            if current_sha256 != str(expected.get("sha256") or ""):
+                raise RuntimeError(f"prepared media content changed; rerun dataset verification: {path}")
+            ordered_media.append(
+                {
+                    "type": str(expected.get("type") or "image"),
+                    "sha256": current_sha256,
+                }
+            )
+        media_hash = media_set_sha256(ordered_media)
+        if media_hash != manifest_row.get("media_set_sha256"):
+            raise RuntimeError(f"prepared media hash list is corrupt for {handle.spec.key}/{row.get('index')}")
+        record_hash = source_record_sha256(source_row_hash, media_hash)
+        if record_hash != manifest_row.get("source_record_sha256"):
+            raise RuntimeError(f"prepared source record is stale for {handle.spec.key}/{row.get('index')}")
+    else:
+        ordered_media = [{"type": "image", "sha256": _sha256_file(path)} for path in paths]
+        media_hash = media_set_sha256(ordered_media)
+        record_hash = source_record_sha256(source_row_hash, media_hash)
+    return {
+        "source_row_hash": source_row_hash,
+        "ordered_media_sha256": [item["sha256"] for item in ordered_media],
+        "media_set_sha256": media_hash,
+        "source_record_sha256": record_hash,
+        "dataset_snapshot_sha256": (
+            str(getattr(args, "dataset_snapshot_sha256", "") or "")
+            or str(handle.dataset_snapshot_sha256 or "")
+        ),
+    }
 
 
 def _load_image(value: Any) -> Image.Image:
     if isinstance(value, Image.Image):
         return value.convert("RGB")
+    if isinstance(value, bytes):
+        return Image.open(io.BytesIO(value)).convert("RGB")
     if isinstance(value, (str, Path)):
         text = str(value)
         if text.startswith("data:image/"):
@@ -283,7 +629,7 @@ def _load_image(value: Any) -> Image.Image:
     raise TypeError(f"Unsupported image value type: {type(value)!r}")
 
 
-def _image_to_data_url(
+def _encode_image_data_url(
     value: Any,
     *,
     image_format: str = "JPEG",
@@ -318,6 +664,81 @@ def _image_to_data_url(
     return f"data:{mime};base64,{base64.b64encode(buf.getvalue()).decode('ascii')}"
 
 
+def _cacheable_image_source(value: Any) -> tuple[Any, str]:
+    """Return a stable source value and content digest for media caching."""
+
+    if isinstance(value, bytes):
+        return value, hashlib.sha256(value).hexdigest()
+    if isinstance(value, (str, Path)):
+        text = str(value)
+        if text.startswith("data:image/"):
+            _, encoded = text.split(",", 1)
+            raw = base64.b64decode(encoded)
+            return raw, hashlib.sha256(raw).hexdigest()
+        raw = Path(value).read_bytes()
+        return raw, hashlib.sha256(raw).hexdigest()
+    image = _load_image(value)
+    digest = hashlib.sha256()
+    digest.update(image.mode.encode("ascii"))
+    digest.update(f"{image.width}x{image.height}".encode("ascii"))
+    digest.update(image.tobytes())
+    return image, digest.hexdigest()
+
+
+def _image_to_data_url(
+    value: Any,
+    *,
+    image_format: str = "JPEG",
+    quality: int = 85,
+    max_pixels: int = 1_000_000,
+    max_side: int = 1280,
+    cache_dir: Path | None = None,
+    metrics: PipelineMetrics | None = None,
+) -> str:
+    if cache_dir is None:
+        return _encode_image_data_url(
+            value,
+            image_format=image_format,
+            quality=quality,
+            max_pixels=max_pixels,
+            max_side=max_side,
+        )
+
+    source, source_digest = _cacheable_image_source(value)
+    contract = {
+        "version": 1,
+        "source_sha256": source_digest,
+        "image_format": image_format.upper(),
+        "quality": int(quality),
+        "max_pixels": int(max_pixels),
+        "max_side": int(max_side),
+    }
+    cache_key = hashlib.sha256(
+        json.dumps(contract, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    cache_path = Path(cache_dir) / cache_key[:2] / f"{cache_key}.txt"
+    try:
+        cached = cache_path.read_text(encoding="ascii")
+    except FileNotFoundError:
+        cached = ""
+    if cached.startswith("data:image/"):
+        if metrics is not None:
+            metrics.increment("media_cache_hits")
+        return cached
+
+    data_url = _encode_image_data_url(
+        source,
+        image_format=image_format,
+        quality=quality,
+        max_pixels=max_pixels,
+        max_side=max_side,
+    )
+    _atomic_write_bytes(cache_path, data_url.encode("ascii"))
+    if metrics is not None:
+        metrics.increment("media_cache_misses")
+    return data_url
+
+
 def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict[str, Any]) -> list[dict[str, Any]]:
     runner, _ = _import_vlmeval_runner()
     row_series = pd.Series(row)
@@ -338,11 +759,10 @@ def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": _image_to_data_url(
+                        "url": _image_transport_url(
+                            args,
                             value,
-                            quality=int(args.image_jpeg_quality),
-                            max_pixels=int(args.max_image_pixels),
-                            max_side=int(args.max_image_side),
+                            metrics=getattr(args, "_pipeline_metrics", None),
                         )
                     },
                 }
@@ -357,6 +777,7 @@ def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict
 
 
 def _chartmuseum_messages(args: argparse.Namespace, row: dict[str, Any]) -> list[dict[str, Any]]:
+    _, chartmuseum = _import_vlmeval_runner()
     image_path = row.get("image_path") or row.get("image")
     content: list[dict[str, Any]] = []
     if image_path:
@@ -364,16 +785,20 @@ def _chartmuseum_messages(args: argparse.Namespace, row: dict[str, Any]) -> list
             {
                 "type": "image_url",
                 "image_url": {
-                    "url": _image_to_data_url(
+                    "url": _image_transport_url(
+                        args,
                         image_path,
-                        quality=int(args.image_jpeg_quality),
-                        max_pixels=int(args.max_image_pixels),
-                        max_side=int(args.max_image_side),
+                        metrics=getattr(args, "_pipeline_metrics", None),
                     )
                 },
             }
         )
-    content.append({"type": "text", "text": str(row.get("question", ""))})
+    content.append(
+        {
+            "type": "text",
+            "text": chartmuseum.format_question_prompt(str(row.get("question", ""))),
+        }
+    )
     return [{"role": "user", "content": content}]
 
 
@@ -384,7 +809,36 @@ def _completion_url(endpoint: str) -> str:
     return endpoint + "/v1/chat/completions"
 
 
-def _call_endpoint(args: argparse.Namespace, endpoint: str, messages: list[dict[str, Any]]) -> dict[str, Any]:
+def _resolve_image_pixel_defaults(args: argparse.Namespace) -> None:
+    if getattr(args, "min_image_pixels", None) is None:
+        args.min_image_pixels = QWEN_MIN_IMAGE_PIXELS
+    if getattr(args, "max_image_pixels", None) is None:
+        args.max_image_pixels = (
+            QWEN_MAX_IMAGE_PIXELS
+            if getattr(args, "media_transport", "data-url") == MEDIA_TRANSPORT
+            else 1_000_000
+        )
+
+
+_HTTP_LOCAL = threading.local()
+
+
+def _http_session() -> requests.Session:
+    session = getattr(_HTTP_LOCAL, "session", None)
+    if session is None:
+        session = requests.Session()
+        _HTTP_LOCAL.session = session
+    return session
+
+
+def _close_http_session() -> None:
+    session = getattr(_HTTP_LOCAL, "session", None)
+    if session is not None:
+        session.close()
+        delattr(_HTTP_LOCAL, "session")
+
+
+def _api_payload(args: argparse.Namespace, messages: list[dict[str, Any]]) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "model": args.api_model,
         "messages": messages,
@@ -394,15 +848,174 @@ def _call_endpoint(args: argparse.Namespace, endpoint: str, messages: list[dict[
         "presence_penalty": float(args.presence_penalty),
         "stream": False,
     }
+    if getattr(args, "media_transport", "data-url") == MEDIA_TRANSPORT:
+        min_pixels = int(getattr(args, "min_image_pixels", QWEN_MIN_IMAGE_PIXELS))
+        max_pixels = int(getattr(args, "max_image_pixels", QWEN_MAX_IMAGE_PIXELS))
+        if min_pixels <= 0 or max_pixels < min_pixels:
+            raise ValueError(
+                f"invalid Qwen image processor bounds: min_pixels={min_pixels}, max_pixels={max_pixels}"
+            )
+        payload["mm_processor_kwargs"] = {
+            "min_pixels": min_pixels,
+            "max_pixels": max_pixels,
+        }
     if args.top_k is not None:
         payload["top_k"] = int(args.top_k)
     if args.repetition_penalty is not None:
         payload["repetition_penalty"] = float(args.repetition_penalty)
     if args.seed is not None:
         payload["seed"] = int(args.seed)
+    return payload
+
+
+def _request_hash(args: argparse.Namespace, messages: list[dict[str, Any]]) -> str:
+    encoded = json.dumps(
+        _api_payload(args, messages),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        default=json_default,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _configured_model_revision(args: argparse.Namespace) -> str:
+    from final25_archive_hooks import resolve_model_revision
+
+    return resolve_model_revision(str(args.model_slug), str(args.model))
+
+
+def _selection_contract(args: argparse.Namespace) -> dict[str, Any]:
+    cached = getattr(args, "_selection_contract", None)
+    if isinstance(cached, dict):
+        return cached
+
+    subset_root = getattr(args, "subset_root", None)
+    limit = getattr(args, "limit", None)
+    if subset_root is not None:
+        root = Path(subset_root).expanduser().resolve()
+        manifests = []
+        for path in sorted(root.rglob("*.jsonl")):
+            if path.is_file():
+                manifests.append(
+                    {
+                        "path": path.relative_to(root).as_posix(),
+                        "sha256": _sha256_file(path),
+                    }
+                )
+        material = {
+            "mode": "subset",
+            "limit": int(limit) if limit is not None else None,
+            "sample_seed": int(getattr(args, "sample_seed", 0)),
+            "subset_manifest_sha256": hashlib.sha256(
+                json.dumps(
+                    manifests,
+                    ensure_ascii=True,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ).hexdigest(),
+        }
+    elif limit is not None:
+        material = {
+            "mode": "limit",
+            "limit": int(limit),
+            "sample_seed": int(getattr(args, "sample_seed", 0)),
+            "subset_manifest_sha256": None,
+        }
+    else:
+        material = {
+            "mode": "full",
+            "limit": None,
+            "sample_seed": None,
+            "subset_manifest_sha256": None,
+        }
+    args._selection_contract = material
+    return material
+
+
+def _generation_contract_hash(
+    args: argparse.Namespace,
+    *,
+    model_revision: str | None = None,
+    dataset_revision: str | None = None,
+    final25_code_hash: str | None = None,
+) -> str:
+    """Hash every non-row input that can change a generation response."""
+
+    media_transport = str(getattr(args, "media_transport", "data-url"))
+    material = {
+        "contract_version": GENERATION_CONTRACT_VERSION,
+        "model": str(args.model),
+        "model_slug": str(args.model_slug),
+        "model_revision": model_revision or _configured_model_revision(args),
+        "api_model": str(args.api_model),
+        "temperature": float(args.temperature),
+        "top_p": float(args.top_p),
+        "top_k": int(args.top_k) if args.top_k is not None else None,
+        "presence_penalty": float(args.presence_penalty),
+        "repetition_penalty": (
+            float(args.repetition_penalty) if args.repetition_penalty is not None else None
+        ),
+        "max_tokens": int(args.max_tokens),
+        "seed": int(args.seed) if args.seed is not None else None,
+        "media_contract_version": MEDIA_CONTRACT_VERSION,
+        "media_transport": media_transport,
+        "min_image_pixels": (
+            int(getattr(args, "min_image_pixels", QWEN_MIN_IMAGE_PIXELS))
+            if media_transport == MEDIA_TRANSPORT
+            else None
+        ),
+        "max_image_pixels": int(args.max_image_pixels),
+        "max_image_side": int(args.max_image_side) if media_transport != MEDIA_TRANSPORT else None,
+        "image_jpeg_quality": (
+            int(args.image_jpeg_quality) if media_transport != MEDIA_TRANSPORT else None
+        ),
+        "dataset_snapshot_sha256": str(
+            getattr(args, "dataset_snapshot_sha256", "") or ""
+        ),
+        "dataset_revision": (
+            dataset_revision
+            if dataset_revision is not None
+            else os.environ.get("TRACE_FINAL25_DATASET_REVISION", "unknown")
+        ),
+        "final25_code_hash": (
+            final25_code_hash
+            if final25_code_hash is not None
+            else os.environ.get("TRACE_FINAL25_CODE_HASH", "unknown")
+        ),
+        "selection": _selection_contract(args),
+    }
+    return hashlib.sha256(
+        json.dumps(material, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    ).hexdigest()
+
+
+def _text_prompt_from_messages(messages: list[dict[str, Any]]) -> str:
+    """Persist prompt text for provenance without retaining encoded media."""
+
+    chunks: list[str] = []
+    for message in messages:
+        content = message.get("content")
+        if isinstance(content, str):
+            if content:
+                chunks.append(content)
+            continue
+        if not isinstance(content, list):
+            continue
+        for item in content:
+            if isinstance(item, dict) and item.get("type") == "text":
+                text = str(item.get("text") or "")
+                if text:
+                    chunks.append(text)
+    return "\n".join(chunks)
+
+
+def _call_endpoint(args: argparse.Namespace, endpoint: str, messages: list[dict[str, Any]]) -> dict[str, Any]:
+    payload = _api_payload(args, messages)
     headers = {"Authorization": f"Bearer {args.api_key}"}
     try:
-        response = requests.post(
+        response = _http_session().post(
             _completion_url(endpoint),
             json=payload,
             headers=headers,
@@ -426,11 +1039,21 @@ def _call_endpoint(args: argparse.Namespace, endpoint: str, messages: list[dict[
         raise RetryableAPIError(endpoint, f"invalid JSON response: {detail}") from exc
 
 
-def _result_from_response(job: RowJob, response: dict[str, Any], endpoint: str) -> dict[str, Any]:
+def _result_from_response(
+    job: RowJob,
+    response: dict[str, Any],
+    endpoint: str,
+    request_hash: str | None = None,
+    messages: list[dict[str, Any]] | None = None,
+    generation_contract_hash: str | None = None,
+    model_revision: str | None = None,
+    media_provenance: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     choice = response.get("choices", [{}])[0]
     message = choice.get("message") or {}
     usage = response.get("usage") or {}
     text = message.get("content") or ""
+    provenance = media_provenance or {}
     return {
         "index": str(job.row["index"]),
         "row_key": job.row_key,
@@ -440,7 +1063,20 @@ def _result_from_response(job: RowJob, response: dict[str, Any], endpoint: str) 
         "prompt_token_count": usage.get("prompt_tokens"),
         "api_endpoint": endpoint,
         "rank": int(job.rank),
+        "source_ordinal": int(job.source_ordinal if job.source_ordinal is not None else job.rank),
+        "source_row_hash": provenance.get("source_row_hash") or _row_hash(job.row),
+        "source_record_sha256": provenance.get("source_record_sha256"),
+        "media_set_sha256": provenance.get("media_set_sha256"),
+        "ordered_media_sha256": provenance.get("ordered_media_sha256") or [],
+        "dataset_snapshot_sha256": provenance.get("dataset_snapshot_sha256"),
         "benchmark_key": job.spec.key,
+        "request_hash": request_hash,
+        "prompt": _text_prompt_from_messages(messages or []),
+        "usage": usage,
+        "generation_contract_hash": generation_contract_hash,
+        "generation_contract_version": GENERATION_CONTRACT_VERSION,
+        "media_contract_version": MEDIA_CONTRACT_VERSION,
+        "model_revision": model_revision,
     }
 
 
@@ -452,34 +1088,119 @@ def _load_existing_result_paths(output_dir: Path) -> dict[str, Path]:
         except Exception:
             continue
         key = row.get("row_key")
-        if key is None and row.get("index") is not None:
-            key = str(row["index"])
         if key is not None and not row.get("error"):
             out[str(key)] = path
-            identity = _row_identity_from_key(row.get("index"), row.get("row_key"))
-            if identity is not None:
-                out[identity] = path
     return out
 
 
-def _prune_stale_row_results(output_dir: Path, row_records: list[dict[str, Any]]) -> int:
+def _manifest_row_provenance(
+    handle: DatasetHandle,
+    row: dict[str, Any],
+    source_ordinal: int,
+) -> dict[str, Any] | None:
+    if handle.media_rows is None:
+        return None
+    source_row_hash = _row_hash(row)
+    record = handle.media_rows.get(
+        row_lookup_key(source_ordinal, row.get("index"), source_row_hash)
+    )
+    if record is None:
+        raise RuntimeError(
+            f"prepared media manifest has no current row for {handle.spec.key}/{row.get('index')}"
+        )
+    ordered_media = []
+    for media in record.get("media") or []:
+        path = Path(str(media.get("path") or "")).resolve()
+        if not path.is_file() or path.stat().st_size != int(media.get("size_bytes") or -1):
+            raise RuntimeError(f"prepared media file is missing or changed: {path}")
+        current_sha256 = _sha256_file(path)
+        if current_sha256 != str(media.get("sha256") or ""):
+            raise RuntimeError(f"prepared media content changed; rerun dataset verification: {path}")
+        ordered_media.append(
+            {"type": str(media.get("type") or "image"), "sha256": current_sha256}
+        )
+    media_hash = media_set_sha256(ordered_media)
+    if media_hash != str(record.get("media_set_sha256") or ""):
+        raise RuntimeError(f"prepared media hash list is corrupt for {handle.spec.key}/{row.get('index')}")
+    record_hash = source_record_sha256(source_row_hash, media_hash)
+    if record_hash != str(record.get("source_record_sha256") or ""):
+        raise RuntimeError(f"prepared source record is stale for {handle.spec.key}/{row.get('index')}")
+    return {
+        "source_row_hash": source_row_hash,
+        "source_record_sha256": record_hash,
+        "media_set_sha256": media_hash,
+        "ordered_media_sha256": [item["sha256"] for item in ordered_media],
+    }
+
+
+def _matches_int(value: Any, expected: int) -> bool:
+    try:
+        return int(value) == int(expected)
+    except (TypeError, ValueError):
+        return False
+
+
+def _prune_stale_row_results(
+    args: argparse.Namespace,
+    output_dir: Path,
+    row_records: list[dict[str, Any]],
+    handle: DatasetHandle | None = None,
+) -> int:
     """Remove successful/error artifacts that no longer match current source rows."""
 
-    current_keys = {_row_key(row, rank) for rank, row in enumerate(row_records)}
-    current_identities = {_row_identity(row) for row in row_records}
-    current_indices = {str(row.get("index")) for row in row_records}
+    current_rows: dict[str, tuple[dict[str, Any], int]] = {}
+    for rank, row in enumerate(row_records):
+        source_ordinal = (
+            int(handle.source_ordinals[rank])
+            if handle is not None and handle.source_ordinals is not None
+            else rank
+        )
+        current_rows[_row_key(row, rank)] = (row, source_ordinal)
+    expected_contract_hash = _generation_contract_hash(args)
+    expected_model_revision = _configured_model_revision(args)
     removed = 0
     for path in (output_dir / "api_row_results").glob("*.json"):
         try:
             result = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             continue
-        row_key = result.get("row_key")
-        if row_key is None:
-            keep = str(result.get("index")) in current_indices
-        else:
-            identity = _row_identity_from_key(result.get("index"), row_key)
-            keep = str(row_key) in current_keys or identity in current_identities
+        row_key = str(result.get("row_key") or "")
+        source_entry = current_rows.get(row_key)
+        source_row = source_entry[0] if source_entry is not None else None
+        source_ordinal = source_entry[1] if source_entry is not None else -1
+        expected_provenance = (
+            _manifest_row_provenance(handle, source_row, source_ordinal)
+            if handle is not None and source_row is not None
+            else None
+        )
+        keep = bool(
+            source_row is not None
+            and not result.get("error")
+            and _matches_int(result.get("source_ordinal"), source_ordinal)
+            and str(result.get("source_row_hash") or "") == _row_hash(source_row)
+            and str(result.get("request_hash") or "").strip()
+            and str(result.get("generation_contract_version") or "")
+            == GENERATION_CONTRACT_VERSION
+            and str(result.get("media_contract_version") or "") == MEDIA_CONTRACT_VERSION
+            and str(result.get("generation_contract_hash") or "") == expected_contract_hash
+            and str(result.get("model_revision") or "") == expected_model_revision
+            and (
+                expected_provenance is None
+                or (
+                    str(result.get("source_record_sha256") or "")
+                    == expected_provenance["source_record_sha256"]
+                    and str(result.get("media_set_sha256") or "")
+                    == expected_provenance["media_set_sha256"]
+                    and list(result.get("ordered_media_sha256") or [])
+                    == expected_provenance["ordered_media_sha256"]
+                )
+            )
+            and (
+                not str(getattr(args, "dataset_snapshot_sha256", "") or "")
+                or str(result.get("dataset_snapshot_sha256") or "")
+                == str(args.dataset_snapshot_sha256)
+            )
+        )
         if not keep:
             path.unlink()
             removed += 1
@@ -505,10 +1226,12 @@ def _restore_mirrored_row_results(row_result_dir: Path, mirror_row_result_dir: P
 
 def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpec]) -> tuple[dict[str, DatasetHandle], list[RowJob]]:
     runner, chartmuseum = _import_vlmeval_runner()
+    dataset_manifest = _load_generation_dataset_manifest(args)
 
     handles: dict[str, DatasetHandle] = {}
     jobs_by_spec: list[list[RowJob]] = []
     for spec in specs:
+        media_rows, dataset_snapshot = _media_rows_for_spec(dataset_manifest, spec)
         output_dir = run_dir(spec, args.model_slug, args.run_root)
         output_dir.mkdir(parents=True, exist_ok=True)
         row_result_dir = output_dir / "api_row_results"
@@ -528,30 +1251,50 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
 
         if spec.kind == "chartmuseum" or spec.key == "chartmuseum":
             rows = chartmuseum.load_chartmuseum_rows(spec.split or "test", chartmuseum.DEFAULT_DATA_ROOT, args.limit, args.sample_seed)
+            rows = [
+                {**row, SOURCE_ORDINAL_COLUMN: ordinal}
+                for ordinal, row in enumerate(rows)
+            ]
             if subset_manifest:
                 rows = _apply_subset_rows(rows, subset_entries)
-            handle = DatasetHandle(spec=spec, rows=rows)
+            source_ordinals = [int(row.pop(SOURCE_ORDINAL_COLUMN)) for row in rows]
+            handle = DatasetHandle(
+                spec=spec,
+                rows=rows,
+                media_rows=media_rows,
+                dataset_snapshot_sha256=dataset_snapshot,
+                source_ordinals=source_ordinals,
+            )
             row_records = rows
             kind = "chartmuseum"
         else:
             dataset = build_vlmeval_dataset(spec)
+            dataset.data = dataset.data.copy()
+            dataset.data[SOURCE_ORDINAL_COLUMN] = list(range(len(dataset.data)))
             if subset_manifest:
                 dataset.data = _apply_subset_frame(dataset.data, subset_entries)
             else:
                 dataset.data = _limit_frame(dataset.data, args.limit, args.sample_seed)
-            handle = DatasetHandle(spec=spec, dataset=dataset)
+            source_ordinals = [int(value) for value in dataset.data[SOURCE_ORDINAL_COLUMN].tolist()]
+            dataset.data = dataset.data.drop(columns=[SOURCE_ORDINAL_COLUMN])
+            handle = DatasetHandle(
+                spec=spec,
+                dataset=dataset,
+                media_rows=media_rows,
+                dataset_snapshot_sha256=dataset_snapshot,
+                source_ordinals=source_ordinals,
+            )
             row_records = [row.to_dict() for _, row in dataset.data.iterrows()]
             kind = "vlmeval"
         handles[spec.key] = handle
 
-        pruned = _prune_stale_row_results(output_dir, row_records)
+        pruned = _prune_stale_row_results(args, output_dir, row_records, handle)
         existing = {} if args.no_resume else _load_existing_result_paths(output_dir)
         pending = 0
         spec_jobs: list[RowJob] = []
         for rank, row in enumerate(row_records):
             row_key = _row_key(row, rank)
-            legacy_index = str(row["index"])
-            if row_key in existing or _row_identity(row) in existing or legacy_index in existing:
+            if row_key in existing:
                 continue
             spec_jobs.append(
                 RowJob(
@@ -562,6 +1305,7 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
                     output_dir=output_dir,
                     result_path=row_result_dir / _safe_result_name_for_row(row, rank),
                     kind=kind,
+                    source_ordinal=source_ordinals[rank],
                     mirror_result_path=(
                         mirror_row_result_dir / _safe_result_name_for_row(row, rank)
                         if mirror_row_result_dir is not None
@@ -583,6 +1327,219 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
             if offset < len(spec_jobs):
                 jobs.append(spec_jobs[offset])
     return handles, jobs
+
+
+def _row_error(job: RowJob, error: BaseException, endpoint: str | None = None) -> dict[str, Any]:
+    return {
+        "benchmark_key": job.spec.key,
+        "index": str(job.row.get("index")),
+        "row_key": job.row_key,
+        "error": repr(error),
+        "endpoint": endpoint,
+        "result_path": str(job.result_path),
+    }
+
+
+def _put_persistence_job(
+    persistence_jobs: "queue.Queue[PersistenceJob]",
+    item: PersistenceJob,
+    metrics: PipelineMetrics,
+) -> None:
+    persistence_jobs.put(item)
+    metrics.observe_queue("persistence", persistence_jobs.qsize())
+
+
+def _preparation_worker_loop(
+    *,
+    args: argparse.Namespace,
+    handles: dict[str, DatasetHandle],
+    jobs: "queue.Queue[RowJob]",
+    prepared_jobs: "queue.Queue[PreparedJob]",
+    persistence_jobs: "queue.Queue[PersistenceJob]",
+    metrics: PipelineMetrics,
+    stop_event: threading.Event,
+) -> None:
+    while not stop_event.is_set():
+        try:
+            job = jobs.get(timeout=0.25)
+        except queue.Empty:
+            continue
+        started = time.monotonic()
+        try:
+            handle = handles[job.spec.key]
+            messages = (
+                _chartmuseum_messages(args, job.row)
+                if job.kind == "chartmuseum"
+                else _vlmeval_messages(args, handle, job.row)
+            )
+            provenance = _media_provenance(
+                args,
+                handle,
+                job.row,
+                messages,
+                int(job.source_ordinal if job.source_ordinal is not None else job.rank),
+            )
+            prepared_jobs.put(
+                PreparedJob(
+                    job=job,
+                    messages=messages,
+                    request_hash=_request_hash(args, messages),
+                    media_provenance=provenance,
+                )
+            )
+            metrics.observe_queue("prepared", prepared_jobs.qsize())
+        except Exception as exc:
+            error = _row_error(job, exc)
+            _put_persistence_job(
+                persistence_jobs,
+                PersistenceJob(
+                    job=job,
+                    payload={**error, "prediction": "", "finish_reason": "error"},
+                    error=error,
+                ),
+                metrics,
+            )
+            metrics.increment("preparation_errors")
+        finally:
+            metrics.observe_stage("preparation", time.monotonic() - started)
+            jobs.task_done()
+
+
+def _request_worker_loop(
+    *,
+    args: argparse.Namespace,
+    prepared_jobs: "queue.Queue[PreparedJob]",
+    persistence_jobs: "queue.Queue[PersistenceJob]",
+    endpoint_router: EndpointRouter,
+    endpoint_health: EndpointHealth,
+    metrics: PipelineMetrics,
+    stop_event: threading.Event,
+) -> None:
+    try:
+        while not stop_event.is_set():
+            try:
+                prepared = prepared_jobs.get(timeout=0.25)
+            except queue.Empty:
+                continue
+            job = prepared.job
+            try:
+                while True:
+                    endpoint = endpoint_router.acquire(job.attempted_endpoints)
+                    if endpoint is None:
+                        if stop_event.is_set():
+                            break
+                        continue
+                    started = time.monotonic()
+                    try:
+                        response = _call_endpoint(args, endpoint, prepared.messages)
+                        endpoint_health.record_success(endpoint)
+                        result = _result_from_response(
+                            job,
+                            response,
+                            endpoint,
+                            prepared.request_hash,
+                            prepared.messages,
+                            _generation_contract_hash(args),
+                            _configured_model_revision(args),
+                            prepared.media_provenance,
+                        )
+                        _put_persistence_job(
+                            persistence_jobs,
+                            PersistenceJob(job=job, payload=result),
+                            metrics,
+                        )
+                        metrics.increment("request_successes")
+                        break
+                    except PermanentAPIError as exc:
+                        error = _row_error(job, exc, endpoint)
+                        _put_persistence_job(
+                            persistence_jobs,
+                            PersistenceJob(
+                                job=job,
+                                payload={**error, "prediction": "", "finish_reason": "error"},
+                                error=error,
+                            ),
+                            metrics,
+                        )
+                        metrics.increment("permanent_api_errors")
+                        break
+                    except RetryableAPIError as exc:
+                        disabled = endpoint_health.record_failure(endpoint) if exc.affects_health else False
+                        if disabled:
+                            print(f"[api-generate:endpoint-disabled] endpoint={endpoint} reason={exc.detail}")
+                        job = replace(
+                            job,
+                            attempted_endpoints=tuple(dict.fromkeys((*job.attempted_endpoints, endpoint))),
+                            attempt_count=job.attempt_count + 1,
+                        )
+                        metrics.increment("request_retries")
+                        if job.attempt_count >= int(args.api_max_retries):
+                            error = _row_error(job, exc, endpoint)
+                            _put_persistence_job(
+                                persistence_jobs,
+                                PersistenceJob(
+                                    job=job,
+                                    payload={**error, "prediction": "", "finish_reason": "error"},
+                                    error=error,
+                                ),
+                                metrics,
+                            )
+                            metrics.increment("retry_exhausted_errors")
+                            break
+                        time.sleep(min(5.0, 0.25 * job.attempt_count))
+                    except Exception as exc:
+                        error = _row_error(job, exc, endpoint)
+                        _put_persistence_job(
+                            persistence_jobs,
+                            PersistenceJob(
+                                job=job,
+                                payload={**error, "prediction": "", "finish_reason": "error"},
+                                error=error,
+                            ),
+                            metrics,
+                        )
+                        metrics.increment("unexpected_request_errors")
+                        break
+                    finally:
+                        metrics.observe_stage("request", time.monotonic() - started)
+                        endpoint_router.release(endpoint)
+            finally:
+                prepared_jobs.task_done()
+    finally:
+        _close_http_session()
+
+
+def _persistence_worker_loop(
+    *,
+    jobs: "queue.Queue[PersistenceJob]",
+    errors: list[dict[str, Any]],
+    error_lock: threading.Lock,
+    progress: tqdm,
+    metrics: PipelineMetrics,
+    stop_event: threading.Event,
+) -> None:
+    while not stop_event.is_set():
+        try:
+            item = jobs.get(timeout=0.25)
+        except queue.Empty:
+            continue
+        started = time.monotonic()
+        try:
+            persisted = _persist_worker_result(item.job, item.payload, errors, error_lock)
+            if item.error is not None:
+                with error_lock:
+                    errors.append(item.error)
+            metrics.increment("persisted_rows" if persisted else "persistence_errors")
+        except Exception as exc:
+            error = _row_error(item.job, RuntimeError(f"result persistence failed: {exc!r}"))
+            with error_lock:
+                errors.append(error)
+            metrics.increment("persistence_errors")
+            print(f"[api-generate:persistence-error] row_key={item.job.row_key} error={exc!r}")
+        finally:
+            metrics.observe_stage("persistence", time.monotonic() - started)
+            progress.update(1)
+            jobs.task_done()
 
 
 def _worker_loop(
@@ -618,7 +1575,22 @@ def _worker_loop(
             )
             response = _call_endpoint(args, endpoint, messages)
             endpoint_health.record_success(endpoint)
-            result = _result_from_response(job, response, endpoint)
+            result = _result_from_response(
+                job,
+                response,
+                endpoint,
+                request_hash=_request_hash(args, messages),
+                messages=messages,
+                generation_contract_hash=_generation_contract_hash(args),
+                model_revision=_configured_model_revision(args),
+                media_provenance=_media_provenance(
+                    args,
+                    handle,
+                    job.row,
+                    messages,
+                    int(job.source_ordinal if job.source_ordinal is not None else job.rank),
+                ),
+            )
             _persist_worker_result(job, result, errors, error_lock)
             finalized = True
         except PermanentAPIError as exc:
@@ -736,6 +1708,90 @@ def _token_stats(pred_map: dict[str, dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _archive_generation_slice(
+    args: argparse.Namespace,
+    handle: DatasetHandle,
+    row_records: list[dict[str, Any]],
+    pred_map: dict[str, dict[str, Any]],
+    summary: dict[str, Any],
+) -> Path | None:
+    if not os.environ.get("TRACE_FINAL25_HF_SPOOL_ROOT", "").strip():
+        return None
+    from final25_archive_hooks import emit_generation_slice, resolve_model_source
+
+    spec = handle.spec
+    sampling = {
+        "temperature": float(args.temperature),
+        "top_p": float(args.top_p),
+        "top_k": int(args.top_k) if args.top_k is not None else None,
+        "presence_penalty": float(args.presence_penalty),
+        "repetition_penalty": (
+            float(args.repetition_penalty) if args.repetition_penalty is not None else None
+        ),
+        "max_tokens": int(args.max_tokens),
+        "seed": int(args.seed) if args.seed is not None else None,
+    }
+    records: list[dict[str, Any]] = []
+    for rank, row in enumerate(row_records):
+        result = _prediction_for_row(pred_map, row, rank)
+        request_hash = str(result.get("request_hash") or "").strip()
+        if not request_hash:
+            raise RuntimeError(
+                f"generation row {spec.key}/{row.get('index', rank)} has no request_hash; "
+                "stale row artifacts must be regenerated"
+            )
+        options = {
+            key: value
+            for key, value in row.items()
+            if isinstance(key, str) and len(key) == 1 and "A" <= key <= "Z" and value is not None
+        }
+        records.append(
+            {
+                "source_index": str(row.get("index", rank)),
+                "source_ordinal": int(result.get("source_ordinal", rank)),
+                "source_row_hash": str(result.get("source_row_hash") or _row_hash(row)),
+                "request_hash": request_hash,
+                "question": row.get("question"),
+                "ground_truth": row.get("answer"),
+                "options": options,
+                "source_row": row,
+                "prompt": result.get("prompt") or row.get("question") or "",
+                "model_response": result.get("prediction", ""),
+                "sampling": sampling,
+                "finish_reason": result.get("finish_reason"),
+                "usage": result.get("usage")
+                or {
+                    "prompt_tokens": result.get("prompt_token_count"),
+                    "completion_tokens": result.get("output_token_count"),
+                },
+                "metadata": {
+                    "source_record_sha256": result.get("source_record_sha256"),
+                    "media_hash": result.get("media_set_sha256"),
+                    "image_hash": result.get("ordered_media_sha256") or [],
+                    "image_count": len(result.get("ordered_media_sha256") or []),
+                    "dataset_snapshot_sha256": result.get("dataset_snapshot_sha256"),
+                    "transport_contract_version": result.get("media_contract_version"),
+                },
+            }
+        )
+    return emit_generation_slice(
+        records=records,
+        model=resolve_model_source(str(args.model_slug), str(args.model)),
+        model_slug=str(args.model_slug),
+        model_revision=_configured_model_revision(args),
+        seed=int(args.seed if args.seed is not None else 0),
+        benchmark=spec.key,
+        dataset_alias=spec.alias,
+        dataset_split=spec.split or "default",
+        dataset_revision=os.environ.get(
+            "TRACE_FINAL25_DATASET_REVISION",
+            os.environ.get("TRACE_VLMEVALKIT_GIT_COMMIT", "unknown"),
+        ),
+        contract_version=GENERATION_CONTRACT_VERSION,
+        aggregate=summary,
+    )
+
+
 def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str, Any]:
     runner, chartmuseum = _import_vlmeval_runner()
     spec = handle.spec
@@ -762,8 +1818,12 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
                     "source": row.get("source"),
                     "raw_prediction": raw,
                     "prediction": chartmuseum.extract_answer(raw),
+                    "source_ordinal": int(pred.get("source_ordinal", rank)),
+                    "source_row_hash": pred.get("source_row_hash") or _row_hash(row),
+                    "prompt": pred.get("prompt", ""),
                     "finish_reason": pred.get("finish_reason"),
                     "output_token_count": pred.get("output_token_count"),
+                    "request_hash": pred.get("request_hash"),
                 }
             )
         frame = pd.DataFrame(records)
@@ -791,6 +1851,10 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
                     "finish_reason": pred.get("finish_reason", ""),
                     "output_token_count": pred.get("output_token_count"),
                     "prompt_token_count": pred.get("prompt_token_count"),
+                    "request_hash": pred.get("request_hash"),
+                    "source_ordinal": int(pred.get("source_ordinal", rank)),
+                    "source_row_hash": pred.get("source_row_hash") or _row_hash(row_dict),
+                    "prompt": pred.get("prompt", ""),
                 }
                 persisted_row = {**row_dict, **record}
                 if getattr(args, "compact_prediction_tables", False):
@@ -819,6 +1883,16 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
         "rows": len(unique_predictions),
         "expected_rows": expected_rows,
         "generation": {
+            "contract_version": GENERATION_CONTRACT_VERSION,
+            "contract_hash": _generation_contract_hash(args),
+            "media_contract_version": MEDIA_CONTRACT_VERSION,
+            "media_transport": str(getattr(args, "media_transport", "data-url")),
+            "dataset_snapshot_sha256": str(
+                getattr(args, "dataset_snapshot_sha256", "") or ""
+            ),
+            "dataset_revision": os.environ.get("TRACE_FINAL25_DATASET_REVISION", "unknown"),
+            "model_revision": _configured_model_revision(args),
+            "selection": _selection_contract(args),
             "backend": "openai_compatible_vllm_endpoint_pool",
             "temperature": float(args.temperature),
             "top_p": float(args.top_p),
@@ -830,10 +1904,28 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
             "api_model": args.api_model,
             "endpoint_count": len(args.api_bases),
             "parallelism_per_endpoint": int(args.parallelism_per_endpoint),
+            "min_image_pixels": int(
+                getattr(args, "min_image_pixels", QWEN_MIN_IMAGE_PIXELS)
+            ),
             "max_image_pixels": int(args.max_image_pixels),
-            "max_image_side": int(args.max_image_side),
-            "image_jpeg_quality": int(args.image_jpeg_quality),
+            "max_image_side": (
+                int(args.max_image_side)
+                if getattr(args, "media_transport", "data-url") != MEDIA_TRANSPORT
+                else None
+            ),
+            "image_jpeg_quality": (
+                int(args.image_jpeg_quality)
+                if getattr(args, "media_transport", "data-url") != MEDIA_TRANSPORT
+                else None
+            ),
             "compact_prediction_tables": bool(getattr(args, "compact_prediction_tables", False)),
+            "preparation_workers": int(getattr(args, "preparation_workers", 32)),
+            "queue_capacity": int(getattr(args, "queue_capacity", 256)),
+            "persistence_workers": int(getattr(args, "persistence_workers", 16)),
+            "finalization_workers": int(getattr(args, "finalization_workers", 4)),
+            "media_cache_dir": (
+                str(args.media_cache_dir) if getattr(args, "media_cache_dir", None) is not None else None
+            ),
         },
         "subset_manifest": str(_subset_manifest_path(args.subset_root, spec)) if args.subset_root else None,
         "finish_reason": dict(finish_reasons),
@@ -843,6 +1935,11 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
     if len(unique_predictions) != expected_rows:
         summary["warning"] = f"missing {expected_rows - len(unique_predictions)} predictions"
     write_json(output_dir / "generation_summary.json", summary)
+    if len(unique_predictions) == expected_rows:
+        archive_path = _archive_generation_slice(args, handle, row_records, pred_map, summary)
+        if archive_path is not None:
+            summary["archive_descriptor"] = str(archive_path)
+            write_json(output_dir / "generation_summary.json", summary)
     print(
         "[api-generate:finalize] "
         f"{spec.key} rows={len(unique_predictions)}/{expected_rows} "
@@ -853,6 +1950,7 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
 
 
 def run(args: argparse.Namespace) -> None:
+    _resolve_image_pixel_defaults(args)
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
     if args.exact_only and args.only:
         keep = {str(key) for key in args.only}
@@ -862,48 +1960,183 @@ def run(args: argparse.Namespace) -> None:
         specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
     if not specs:
         raise ValueError("No benchmark specs selected")
+    if not getattr(args, "finalize_only", False) and not args.api_bases:
+        raise ValueError("At least one API endpoint is required")
+    if int(args.parallelism_per_endpoint) < 1:
+        raise ValueError("--parallelism-per-endpoint must be at least 1")
+    if getattr(args, "media_transport", "data-url") == MEDIA_TRANSPORT:
+        if getattr(args, "allowed_local_media_path", None) is None:
+            raise ValueError("--allowed-local-media-path is required for file-url media transport")
+        if int(getattr(args, "min_image_pixels", 0)) <= 0:
+            raise ValueError("--min-image-pixels must be positive")
+        if int(args.max_image_pixels) < int(args.min_image_pixels):
+            raise ValueError("--max-image-pixels must be at least --min-image-pixels")
     materialize_grounding_benchmark_files(specs)
     handles, pending = _prepare_handles_and_jobs(args, specs)
-    q: queue.Queue[RowJob] = queue.Queue()
-    for job in pending:
-        q.put(job)
+    metrics = PipelineMetrics()
+    args._pipeline_metrics = metrics
+    queue_capacity = max(1, int(getattr(args, "queue_capacity", 256)))
+    preparation_workers = max(1, int(getattr(args, "preparation_workers", 32)))
+    persistence_workers = max(1, int(getattr(args, "persistence_workers", 16)))
+    finalization_workers = max(1, int(getattr(args, "finalization_workers", 4)))
+    if getattr(args, "finalize_only", False):
+        if pending:
+            raise RuntimeError(
+                f"cannot finalize {args.model_slug}: {len(pending)} generation rows are missing or stale"
+            )
+
+        def finalize_existing(handle: DatasetHandle) -> dict[str, Any]:
+            started = time.monotonic()
+            try:
+                return _finalize_spec(args, handle)
+            finally:
+                metrics.observe_stage("finalization", time.monotonic() - started)
+
+        with ThreadPoolExecutor(max_workers=min(finalization_workers, len(specs))) as executor:
+            summaries = [
+                future.result()
+                for future in [executor.submit(finalize_existing, handles[spec.key]) for spec in specs]
+            ]
+        pipeline_metrics = metrics.snapshot()
+        write_json(
+            args.run_root / f"{args.model_slug}_api_generation_suite_summary.json",
+            {
+                "model": args.model,
+                "model_slug": args.model_slug,
+                "run_root": str(args.run_root),
+                "benchmarks": summaries,
+                "errors": [],
+                "error_count": 0,
+                "endpoint_health": {},
+                "pipeline_metrics": pipeline_metrics,
+                "mode": "finalize_only",
+            },
+        )
+        print(
+            f"[api-generate:finalize-only] slug={args.model_slug} benchmarks={len(summaries)} "
+            f"elapsed={pipeline_metrics['elapsed_seconds']:.1f}s"
+        )
+        return
+    input_jobs: queue.Queue[RowJob] = queue.Queue(maxsize=queue_capacity)
+    prepared_jobs: queue.Queue[PreparedJob] = queue.Queue(maxsize=queue_capacity)
+    persistence_jobs: queue.Queue[PersistenceJob] = queue.Queue(maxsize=queue_capacity)
     errors: list[dict[str, Any]] = []
     error_lock = threading.Lock()
     endpoint_health = EndpointHealth(args.api_bases, args.endpoint_failure_threshold)
-    stop_event = threading.Event()
-    workers = []
     total_workers = len(args.api_bases) * int(args.parallelism_per_endpoint)
+    endpoint_router = EndpointRouter(args.api_bases, args.parallelism_per_endpoint, endpoint_health)
     print(
         "[api-generate:start] "
         f"model={args.model} slug={args.model_slug} specs={len(specs)} pending_rows={len(pending)} "
-        f"endpoints={len(args.api_bases)} workers={total_workers} run_root={args.run_root}"
+        f"endpoints={len(args.api_bases)} request_workers={total_workers} prep_workers={preparation_workers} "
+        f"write_workers={persistence_workers} queue_capacity={queue_capacity} run_root={args.run_root}"
     )
     with tqdm(total=len(pending), desc=f"{args.model_slug} api generate") as progress:
-        for endpoint in args.api_bases:
-            for _ in range(int(args.parallelism_per_endpoint)):
-                thread = threading.Thread(
-                    target=_worker_loop,
-                    kwargs={
-                        "args": args,
-                        "endpoint": endpoint,
-                        "handles": handles,
-                        "jobs": q,
-                        "errors": errors,
-                        "error_lock": error_lock,
-                        "progress": progress,
-                        "endpoint_health": endpoint_health,
-                        "stop_event": stop_event,
-                    },
-                    daemon=True,
-                )
-                thread.start()
-                workers.append(thread)
-        q.join()
-        stop_event.set()
-        for thread in workers:
+        preparation_stop = threading.Event()
+        request_stop = threading.Event()
+        persistence_stop = threading.Event()
+        preparation_threads = [
+            threading.Thread(
+                target=_preparation_worker_loop,
+                kwargs={
+                    "args": args,
+                    "handles": handles,
+                    "jobs": input_jobs,
+                    "prepared_jobs": prepared_jobs,
+                    "persistence_jobs": persistence_jobs,
+                    "metrics": metrics,
+                    "stop_event": preparation_stop,
+                },
+                name=f"api-prepare-{worker}",
+                daemon=True,
+            )
+            for worker in range(preparation_workers)
+        ]
+        request_threads = [
+            threading.Thread(
+                target=_request_worker_loop,
+                kwargs={
+                    "args": args,
+                    "prepared_jobs": prepared_jobs,
+                    "persistence_jobs": persistence_jobs,
+                    "endpoint_router": endpoint_router,
+                    "endpoint_health": endpoint_health,
+                    "metrics": metrics,
+                    "stop_event": request_stop,
+                },
+                name=f"api-request-{worker}",
+                daemon=True,
+            )
+            for worker in range(total_workers)
+        ]
+        persistence_threads = [
+            threading.Thread(
+                target=_persistence_worker_loop,
+                kwargs={
+                    "jobs": persistence_jobs,
+                    "errors": errors,
+                    "error_lock": error_lock,
+                    "progress": progress,
+                    "metrics": metrics,
+                    "stop_event": persistence_stop,
+                },
+                name=f"api-persist-{worker}",
+                daemon=True,
+            )
+            for worker in range(persistence_workers)
+        ]
+        for thread in (*persistence_threads, *request_threads, *preparation_threads):
+            thread.start()
+        for job in pending:
+            input_jobs.put(job)
+            metrics.observe_queue("input", input_jobs.qsize())
+
+        input_jobs.join()
+        preparation_stop.set()
+        for thread in preparation_threads:
+            thread.join(timeout=5)
+        prepared_jobs.join()
+        request_stop.set()
+        for thread in request_threads:
+            thread.join(timeout=5)
+        persistence_jobs.join()
+        persistence_stop.set()
+        for thread in persistence_threads:
             thread.join(timeout=5)
 
-    summaries = [_finalize_spec(args, handles[spec.key]) for spec in specs]
+    if getattr(args, "defer_finalization", False):
+        pipeline_metrics = metrics.snapshot()
+        suite_summary = {
+            "model": args.model,
+            "model_slug": args.model_slug,
+            "run_root": str(args.run_root),
+            "benchmarks": [],
+            "errors": errors[:100],
+            "error_count": len(errors),
+            "endpoint_health": endpoint_health.snapshot(),
+            "pipeline_metrics": pipeline_metrics,
+            "mode": "finalization_deferred",
+        }
+        write_json(args.run_root / f"{args.model_slug}_api_generation_suite_summary.json", suite_summary)
+        if errors:
+            raise RuntimeError(f"{len(errors)} row generation errors; first error: {errors[0]}")
+        print(
+            f"[api-generate:deferred] slug={args.model_slug} durable_rows={len(pending)} "
+            f"elapsed={pipeline_metrics['elapsed_seconds']:.1f}s"
+        )
+        return
+
+    def finalize(handle: DatasetHandle) -> dict[str, Any]:
+        started = time.monotonic()
+        try:
+            return _finalize_spec(args, handle)
+        finally:
+            metrics.observe_stage("finalization", time.monotonic() - started)
+
+    with ThreadPoolExecutor(max_workers=min(finalization_workers, len(specs))) as executor:
+        futures = [executor.submit(finalize, handles[spec.key]) for spec in specs]
+        summaries = [future.result() for future in futures]
+    pipeline_metrics = metrics.snapshot()
     suite_summary = {
         "model": args.model,
         "model_slug": args.model_slug,
@@ -912,18 +2145,24 @@ def run(args: argparse.Namespace) -> None:
         "errors": errors[:100],
         "error_count": len(errors),
         "endpoint_health": endpoint_health.snapshot(),
+        "pipeline_metrics": pipeline_metrics,
     }
     write_json(args.run_root / f"{args.model_slug}_api_generation_suite_summary.json", suite_summary)
+    print(
+        "[api-generate:metrics] "
+        f"elapsed={pipeline_metrics['elapsed_seconds']:.1f}s "
+        f"queues={pipeline_metrics['queue_high_watermarks']} counters={pipeline_metrics['counters']}"
+    )
     if errors:
         raise RuntimeError(f"{len(errors)} row generation errors; first error: {errors[0]}")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
     parser.add_argument("--model-slug", required=True)
     parser.add_argument("--api-model", required=True)
-    parser.add_argument("--api-base", action="append", dest="api_bases", required=True)
+    parser.add_argument("--api-base", action="append", dest="api_bases", default=[])
     parser.add_argument("--api-key", default=os.environ.get("OPENAI_API_KEY", "EMPTY"))
     parser.add_argument("--api-timeout", type=float, default=300.0)
     parser.add_argument(
@@ -939,6 +2178,59 @@ def main() -> None:
         help="Consecutive transport/server failures before an endpoint is quarantined for the remainder of the run.",
     )
     parser.add_argument("--parallelism-per-endpoint", type=int, default=4)
+    parser.add_argument(
+        "--preparation-workers",
+        type=int,
+        default=32,
+        help="Threads that build prompts and encode media ahead of endpoint requests.",
+    )
+    parser.add_argument(
+        "--queue-capacity",
+        type=int,
+        default=256,
+        help="Maximum buffered rows between each preparation, request, and persistence stage.",
+    )
+    parser.add_argument(
+        "--persistence-workers",
+        type=int,
+        default=16,
+        help="Threads dedicated to atomic row-result and mirror writes.",
+    )
+    parser.add_argument(
+        "--finalization-workers",
+        type=int,
+        default=4,
+        help="Benchmarks finalized concurrently after all row results are durable.",
+    )
+    parser.add_argument(
+        "--media-cache-dir",
+        type=Path,
+        default=None,
+        help="Optional content-addressed data-URL cache, preferably on local tmpfs.",
+    )
+    parser.add_argument(
+        "--media-transport",
+        choices=("data-url", MEDIA_TRANSPORT),
+        default="data-url",
+        help="Use exact local file URLs for Final25, or the legacy resized data-URL path.",
+    )
+    parser.add_argument(
+        "--allowed-local-media-path",
+        type=Path,
+        default=None,
+        help="Root shared with vLLM --allowed-local-media-path for file-url requests.",
+    )
+    parser.add_argument(
+        "--dataset-manifest",
+        type=Path,
+        default=None,
+        help="Prepared Final25 dataset manifest containing ordered media hashes.",
+    )
+    parser.add_argument(
+        "--dataset-manifest-view",
+        choices=("frozen", "provisional-mmvp", "all26"),
+        default="frozen",
+    )
     parser.add_argument(
         "--run-set",
         choices=BENCHMARK_RUN_SETS,
@@ -963,7 +2255,13 @@ def main() -> None:
     parser.add_argument("--subset-root", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--sample-seed", type=int, default=0)
-    parser.add_argument("--max-image-pixels", type=int, default=1_000_000)
+    parser.add_argument("--min-image-pixels", type=int, default=QWEN_MIN_IMAGE_PIXELS)
+    parser.add_argument(
+        "--max-image-pixels",
+        type=int,
+        default=None,
+        help="Defaults to 12,845,056 for file-url transport and 1,000,000 for legacy data URLs.",
+    )
     parser.add_argument("--max-image-side", type=int, default=1280)
     parser.add_argument("--image-jpeg-quality", type=int, default=85)
     parser.add_argument("--temperature", type=float, default=0.0)
@@ -979,7 +2277,23 @@ def main() -> None:
         help="Exclude duplicated image/video payload columns from finalized prediction tables.",
     )
     parser.add_argument("--no-resume", action="store_true")
-    args = parser.parse_args()
+    finalization_mode = parser.add_mutually_exclusive_group()
+    finalization_mode.add_argument(
+        "--defer-finalization",
+        action="store_true",
+        help="Return after row results are durable so CPU finalization can run in a separate process.",
+    )
+    finalization_mode.add_argument(
+        "--finalize-only",
+        action="store_true",
+        help="Finalize and archive complete row results without contacting a model endpoint.",
+    )
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    _resolve_image_pixel_defaults(args)
     if args.trace_candidate37_200:
         args.run_set = "trace_candidate37_200"
         if not args.only:

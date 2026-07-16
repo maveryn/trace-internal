@@ -24,6 +24,7 @@ from benchmark_queue_lib import (  # noqa: E402
     TRACE_GROUNDING_BENCHMARKS,
     benchmark_specs_for_run_set,
     claim_next_job,
+    file_lock,
     filter_benchmark_specs,
     json_default,
     load_json,
@@ -33,6 +34,7 @@ from benchmark_queue_lib import (  # noqa: E402
     write_json,
 )
 from run_external_benchmark_score_queue import (  # noqa: E402
+    PERSISTENT_JUDGE_CACHE_CONTRACT_VERSION,
     PersistentJudge,
     _maybe_write_screenspot_aggregate,
     _run_score_for_spec,
@@ -69,6 +71,7 @@ def _score_job(args: argparse.Namespace, job_id: str, judge: PersistentJudge) ->
                 "rows": summary.get("rows"),
                 "score": summary.get("score"),
                 "scores": summary.get("scores"),
+                "archive_descriptors": summary.get("archive_descriptors", []),
             }
         )
         _maybe_write_screenspot_aggregate(slug, args.benchmark_root)
@@ -81,6 +84,84 @@ def _score_job(args: argparse.Namespace, job_id: str, judge: PersistentJudge) ->
     path = _sentinel_path(args.benchmark_root, args.queue_name, job_id)
     write_json(path, sentinel)
     return sentinel
+
+
+def _archive_sentinel_current(args: argparse.Namespace, path: Path, benchmark_key: str) -> bool:
+    spool_root = str(os.environ.get("TRACE_FINAL25_HF_SPOOL_ROOT", "")).strip()
+    if not spool_root:
+        return path.exists()
+    try:
+        sentinel = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    expected_models = {slug for slug, _ in args.model_entries}
+    models = sentinel.get("models")
+    if not isinstance(models, list) or {str(item.get("model_slug")) for item in models} != expected_models:
+        return False
+    expected_run = str(os.environ.get("TRACE_FINAL25_RUN_ID", "")).strip()
+    expected_campaign = str(os.environ.get("TRACE_FINAL25_CAMPAIGN_CONFIG_HASH", "")).strip()
+    expected_dataset = str(os.environ.get("TRACE_FINAL25_DATASET_REVISION", "")).strip()
+    for model in models:
+        slug = str(model.get("model_slug"))
+        descriptors = model.get("archive_descriptors")
+        if not isinstance(descriptors, list) or len(descriptors) != 2:
+            return False
+        seen_stages: set[str] = set()
+        for descriptor_text in descriptors:
+            descriptor_path = Path(str(descriptor_text))
+            try:
+                descriptor = json.loads(descriptor_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                return False
+            identity = descriptor.get("identity") or {}
+            provenance = descriptor.get("provenance") or {}
+            try:
+                descriptor_seed = int(identity.get("seed", -1))
+            except (TypeError, ValueError):
+                return False
+            if (
+                str(identity.get("run_id")) != expected_run
+                or str(identity.get("model_slug")) != slug
+                or descriptor_seed != int(args.seed)
+                or str(identity.get("benchmark")) != benchmark_key
+                or str(identity.get("dataset_revision")) != expected_dataset
+                or str(provenance.get("campaign_config_hash")) != expected_campaign
+            ):
+                return False
+            seen_stages.add(str(identity.get("stage")))
+        if seen_stages != {"extraction", "score"}:
+            return False
+    return True
+
+
+def _repair_stale_archive_sentinels(
+    args: argparse.Namespace,
+    queue_path: Path,
+    jobs: list[tuple[str, Path]],
+) -> None:
+    if not str(os.environ.get("TRACE_FINAL25_HF_SPOOL_ROOT", "")).strip():
+        return
+    lock_path = queue_path.with_suffix(queue_path.suffix + ".lock")
+    with file_lock(lock_path):
+        state = load_json(queue_path, {"jobs": {}})
+        state_jobs = state.setdefault("jobs", {})
+        changed = False
+        for job_id, sentinel in jobs:
+            if _archive_sentinel_current(args, sentinel, job_id):
+                continue
+            info = state_jobs.get(job_id, {})
+            if info.get("status") == "running":
+                try:
+                    os.kill(int(info.get("pid")), 0)
+                except (OSError, TypeError, ValueError):
+                    pass
+                else:
+                    continue
+            sentinel.unlink(missing_ok=True)
+            state_jobs[job_id] = {"status": "pending", "attempts": 0, "reason": "archive_backfill"}
+            changed = True
+        if changed:
+            write_json(queue_path, state)
 
 
 def _terminal_failed_jobs(
@@ -124,6 +205,7 @@ def run_worker(args: argparse.Namespace) -> None:
     materialize_grounding_benchmark_files(specs)
     queue_path = args.queue_root / f"score_multi_{args.queue_name}.json"
     jobs = [(spec.key, _sentinel_path(args.benchmark_root, args.queue_name, spec.key)) for spec in specs]
+    _repair_stale_archive_sentinels(args, queue_path, jobs)
     print(
         "[score-multi:init] "
         f"gpu={os.environ.get('CUDA_VISIBLE_DEVICES', '')} jobs={len(jobs)} "
@@ -180,6 +262,7 @@ def main() -> None:
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--worker-id", default=f"score-multi-{os.getpid()}")
     parser.add_argument("--queue-name", required=True)
+    parser.add_argument("--seed", type=int, default=int(os.environ.get("TRACE_FINAL25_SEED", "42")))
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)
     parser.add_argument("--run-root", type=Path, default=LIB_REPO_ROOT / "runs")
     parser.add_argument("--benchmark-root", type=Path, default=DEFAULT_BENCHMARK_ROOT)
@@ -200,8 +283,19 @@ def main() -> None:
     parser.add_argument("--judge-api-model", default="qwen3-32b-judge")
     parser.add_argument("--judge-api-tokenizer-model", default="Qwen/Qwen3-32B")
     parser.add_argument("--judge-api-parallelism", type=int, default=128)
+    parser.add_argument(
+        "--judge-api-batch-size",
+        type=int,
+        default=1,
+        help="Prompts per /completions request; one preserves the historical request shape.",
+    )
+    parser.add_argument("--judge-api-batches-per-endpoint", type=int, default=1)
+    parser.add_argument("--judge-api-max-batch-chars", type=int, default=100_000)
+    parser.add_argument("--judge-api-endpoint-failure-threshold", type=int, default=3)
+    parser.add_argument("--judge-api-endpoint-cooldown-seconds", type=float, default=30.0)
     parser.add_argument("--judge-api-timeout", type=float, default=120.0)
     parser.add_argument("--judge-api-max-retries", type=int, default=5)
+    parser.add_argument("--judge-cache-contract-version", default=PERSISTENT_JUDGE_CACHE_CONTRACT_VERSION)
     parser.add_argument("--attention-backend", default="FLASH_ATTN")
     parser.add_argument("--stale-after-sec", type=float, default=900)
     parser.add_argument("--max-attempts", type=int, default=2)

@@ -257,9 +257,11 @@
       "max_num_seqs": 256,
       "max_num_batched_tokens": 32768,
       "parallelism_per_endpoint": 32,
-      "max_image_pixels": 1000000,
-      "max_image_side": 1280,
-      "image_jpeg_quality": 85,
+      "media_transport": "file-url",
+      "media_contract_version": "trace-final25-media-v1",
+      "min_image_pixels": 1003520,
+      "max_image_pixels": 12845056,
+      "client_resize_or_reencode": false,
       "trace_training_system_prompt_injected": false
     },
     "judge": {
@@ -327,7 +329,7 @@
     "benchmark_contracts": [
       {
         "key": "chartmuseum",
-        "category": "Charts, Tables & Structured Figures",
+        "category": "Charts & Tables",
         "display": "ChartMuseum",
         "alias": "ChartMuseum_test",
         "run_name": "vlmevalkit_defaults_qwen32b_judge_test",
@@ -340,7 +342,7 @@
       },
       {
         "key": "chartqapro",
-        "category": "Charts, Tables & Structured Figures",
+        "category": "Charts & Tables",
         "display": "ChartQAPro",
         "alias": "ChartQAPro_CoT",
         "run_name": "vlmevalkit_faithful_cot",
@@ -353,7 +355,7 @@
       },
       {
         "key": "charxivreason",
-        "category": "Charts, Tables & Structured Figures",
+        "category": "Charts & Tables",
         "display": "CharXivReason",
         "alias": "CharXiv_reasoning_val",
         "run_name": "vlmevalkit_defaults_qwen32b_judge",
@@ -366,7 +368,7 @@
       },
       {
         "key": "tablevqabench",
-        "category": "Charts, Tables & Structured Figures",
+        "category": "Charts & Tables",
         "display": "TableVQABench",
         "alias": "TableVQABench",
         "run_name": "vlmevalkit_defaults",
@@ -379,7 +381,7 @@
       },
       {
         "key": "evochart",
-        "category": "Charts, Tables & Structured Figures",
+        "category": "Charts & Tables",
         "display": "EvoChart",
         "alias": "EvoChart",
         "run_name": "vlmevalkit_defaults_qwen32b_judge",
@@ -392,7 +394,7 @@
       },
       {
         "key": "mathvision",
-        "category": "Visual Mathematics",
+        "category": "Visual Math",
         "display": "MathVision",
         "alias": "MathVision",
         "run_name": "vlmevalkit_defaults_qwen32b_judge",
@@ -405,7 +407,7 @@
       },
       {
         "key": "mathvista",
-        "category": "Visual Mathematics",
+        "category": "Visual Math",
         "display": "MathVista",
         "alias": "MathVista_MINI",
         "run_name": "vlmevalkit_defaults_qwen32b_judge",
@@ -418,7 +420,7 @@
       },
       {
         "key": "mathverse",
-        "category": "Visual Mathematics",
+        "category": "Visual Math",
         "display": "MathVerse",
         "alias": "MathVerse_MINI_Vision_Only_cot",
         "run_name": "vlmevalkit_defaults_qwen32b_judge",
@@ -431,7 +433,7 @@
       },
       {
         "key": "wemath",
-        "category": "Visual Mathematics",
+        "category": "Visual Math",
         "display": "WeMath",
         "alias": "WeMath_COT",
         "run_name": "vlmevalkit_cot_qwen32b_judge",
@@ -444,7 +446,7 @@
       },
       {
         "key": "phyx_mini_mc",
-        "category": "Science & Academic Reasoning",
+        "category": "Science & General Reasoning",
         "display": "PhyX mini MC",
         "alias": "PhyX_mini_MC",
         "run_name": "vlmevalkit_defaults",
@@ -457,7 +459,7 @@
       },
       {
         "key": "physics",
-        "category": "Science & Academic Reasoning",
+        "category": "Science & General Reasoning",
         "display": "Physics",
         "alias": "Physics",
         "run_name": "vlmevalkit_reasoning",
@@ -470,7 +472,7 @@
       },
       {
         "key": "mmmu_pro_vision",
-        "category": "Science & Academic Reasoning",
+        "category": "Science & General Reasoning",
         "display": "MMMU-ProVis",
         "alias": "MMMU_Pro_V_COT",
         "run_name": "vlmevalkit_cot_max2048",
@@ -483,7 +485,7 @@
       },
       {
         "key": "mmstar",
-        "category": "Science & Academic Reasoning",
+        "category": "Science & General Reasoning",
         "display": "MMStar",
         "alias": "MMStar",
         "run_name": "vlmevalkit_defaults",
@@ -496,7 +498,7 @@
       },
       {
         "key": "screenspot",
-        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "category": "Spatial & Grounding",
         "display": "ScreenSpot",
         "alias": "ScreenSpot",
         "run_name": "vlmevalkit_defaults_sample200",
@@ -509,7 +511,7 @@
       },
       {
         "key": "spatialvizbench_cot",
-        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "category": "Spatial & Grounding",
         "display": "SpatialVizBench COT",
         "alias": "SpatialVizBench_CoT",
         "run_name": "vlmevalkit_cot",
@@ -522,7 +524,7 @@
       },
       {
         "key": "cvbench_3d",
-        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "category": "Spatial & Grounding",
         "display": "CV-Bench 3D",
         "alias": "CV-Bench-3D",
         "run_name": "vlmevalkit_defaults",
@@ -535,7 +537,7 @@
       },
       {
         "key": "erqa",
-        "category": "Spatial, 3D, Embodied & UI Grounding",
+        "category": "Spatial & Grounding",
         "display": "ERQA",
         "alias": "ERQA",
         "run_name": "vlmevalkit_defaults",
@@ -548,7 +550,7 @@
       },
       {
         "key": "blink",
-        "category": "Visual Perception, Counting & Evidence Grounding",
+        "category": "Perception & Counting",
         "display": "Blink",
         "alias": "BLINK",
         "run_name": "vlmevalkit_defaults",
@@ -561,7 +563,7 @@
       },
       {
         "key": "countbenchqa",
-        "category": "Visual Perception, Counting & Evidence Grounding",
+        "category": "Perception & Counting",
         "display": "CountBenchQA",
         "alias": "CountBenchQA",
         "run_name": "vlmevalkit_defaults",
@@ -574,7 +576,7 @@
       },
       {
         "key": "countqa",
-        "category": "Visual Perception, Counting & Evidence Grounding",
+        "category": "Perception & Counting",
         "display": "CountQA",
         "alias": "CountQA",
         "run_name": "vlmevalkit_cot_boxed",
@@ -587,7 +589,7 @@
       },
       {
         "key": "treebench",
-        "category": "Visual Perception, Counting & Evidence Grounding",
+        "category": "Perception & Counting",
         "display": "TreeBench",
         "alias": "TreeBench",
         "run_name": "vlmevalkit_defaults",
@@ -600,7 +602,7 @@
       },
       {
         "key": "puzzlevqa",
-        "category": "Puzzles & Abstract Logic",
+        "category": "Puzzles & Logic",
         "display": "PuzzleVQA",
         "alias": "PuzzleVQA",
         "run_name": "vlmevalkit_reasoning",
@@ -613,7 +615,7 @@
       },
       {
         "key": "visualpuzzles",
-        "category": "Puzzles & Abstract Logic",
+        "category": "Puzzles & Logic",
         "display": "VisualPuzzles",
         "alias": "VisualPuzzles",
         "run_name": "vlmevalkit_reasoning",
@@ -626,7 +628,7 @@
       },
       {
         "key": "logicvista",
-        "category": "Puzzles & Abstract Logic",
+        "category": "Puzzles & Logic",
         "display": "LogicVista",
         "alias": "LogicVista",
         "run_name": "vlmevalkit_defaults_qwen32b_judge",
@@ -639,7 +641,7 @@
       },
       {
         "key": "mme_reasoning",
-        "category": "Puzzles & Abstract Logic",
+        "category": "Puzzles & Logic",
         "display": "MME-Reasoning",
         "alias": "MME-Reasoning",
         "run_name": "vlmevalkit_defaults_qwen32b_judge",

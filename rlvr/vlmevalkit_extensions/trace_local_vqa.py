@@ -16,6 +16,7 @@ BOXED_POST_PROMPT = (
     "\nThink through the visual evidence carefully. "
     "Put only the final answer inside \\boxed{}."
 )
+COUNTQA_BOXED_POST_PROMPT = "\nPut the final answer inside \\boxed{}."
 
 
 def _last_boxed(text: str) -> str | None:
@@ -174,7 +175,7 @@ class CountQA(ImageBaseDataset):
     def build_prompt(self, line):
         msgs = super().build_prompt(line)
         assert msgs[-1]["type"] == "text"
-        msgs[-1]["value"] = str(msgs[-1]["value"]).strip() + BOXED_POST_PROMPT
+        msgs[-1]["value"] = str(msgs[-1]["value"]).strip() + COUNTQA_BOXED_POST_PROMPT
         return msgs
 
     def evaluate(self, eval_file, **judge_kwargs):

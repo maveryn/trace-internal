@@ -1,0 +1,53 @@
+{
+  "schema_version": "trace-screenspot-controlled-comparison-v1",
+  "status": "complete",
+  "run_id": "trace_screenspot_vlmeval_native_temp06_seed42_3models_20260716T151214Z",
+  "seed": 42,
+  "rows": 1272,
+  "splits": {
+    "mobile": 502,
+    "desktop": 334,
+    "web": 436
+  },
+  "dataset_snapshot_sha256": "1c42105db6b58238b755017c490422024516bb3011093f3260fad7859c0cdf5b",
+  "screenspot_snapshot_sha256": "236d7dc4a075337607ddc59fb6a9b89d5d59f497eb40f9f88d5e55be43220d74",
+  "screenspot_unique_media": 610,
+  "generation_contract_version": "trace-final25-generation-v7",
+  "media_contract_version": "trace-final25-media-v2",
+  "media_transport": "file-url",
+  "min_image_pixels": 3136,
+  "max_image_pixels": 12845056,
+  "prompt_source": "external/VLMEvalKit/vlmeval/dataset/GUI/screenspot.py",
+  "prompt_transport": "pinned build_prompt items flattened in order into one user message",
+  "prompt_corpus_sha256": "c82e949bc7b3175f2f8959f002e2e5e077ac814ac550a315332b1d082a404d66",
+  "sampling": {
+    "temperature": 0.6,
+    "top_p": 1.0,
+    "top_k": -1,
+    "presence_penalty": 0.0,
+    "repetition_penalty": 1.0,
+    "max_tokens": 16384
+  },
+  "model_revisions": {
+    "qwen25vl7b-base": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+    "trace-qwen25vl7b-answer-step500-rerun-20260715": "sha256set:8396b0be6a760ff7cbbdff02b3017b6b5bc352c87291480aba18fd3e3b6a13b5",
+    "vero-qwen25-7b": "180e84be5acb2aa887cf51015b84b6a6e453ee90"
+  },
+  "generation_elapsed_seconds": {
+    "qwen25vl7b-base": 163.04041796601086,
+    "trace-qwen25vl7b-answer-step500-rerun-20260715": 201.0141193800082,
+    "vero-qwen25-7b": 235.14364612400823
+  },
+  "scorer": {
+    "parser_contract": "screenspot-unresolved-explicit-action-v1",
+    "geometry": "pinned VLMEvalKit ScreenSpot point-in-box",
+    "vlmevalkit_commit": "a8b12bf1c3737a33fc1de967c202f9c592b22e86"
+  },
+  "controlled_reference": {
+    "run_root": "/dev/shm/trace_rlvr/trace_final26_treebench_screenspot_adapter_rescore_seed42_20260716",
+    "min_image_pixels": 1003520,
+    "prompt_corpus_sha256": "c82e949bc7b3175f2f8959f002e2e5e077ac814ac550a315332b1d082a404d66"
+  },
+  "workspace_implementation_commit": "360a5d90a3f1d212b059bd00e9e5181f25386d18",
+  "live_run_root": "/dev/shm/trace_rlvr/trace_screenspot_vlmeval_native_temp06_seed42_3models_20260716T151214Z"
+}

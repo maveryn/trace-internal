@@ -1,0 +1,42 @@
+{
+  "dataset": "ScreenSpot",
+  "model": "/dev/shm/trace_rlvr/final25_models/vero-qwen25-7b",
+  "rows": 1272,
+  "score": 69.0251572327044,
+  "scores": {
+    "ScreenSpot_Mobile:icon:cnt": 229,
+    "ScreenSpot_Mobile:text:cnt": 273,
+    "ScreenSpot_Mobile:Overall_Accuracy": 68.52589641434263,
+    "ScreenSpot_Mobile:Format_Err_Rate": 0.0,
+    "ScreenSpot_Mobile:Text_Accuracy": 73.992673992674,
+    "ScreenSpot_Mobile:Icon_Accuracy": 62.00873362445415,
+    "ScreenSpot_Desktop:icon:cnt": 140,
+    "ScreenSpot_Desktop:text:cnt": 194,
+    "ScreenSpot_Desktop:Overall_Accuracy": 63.47305389221557,
+    "ScreenSpot_Desktop:Format_Err_Rate": 0.0,
+    "ScreenSpot_Desktop:Text_Accuracy": 67.5257731958763,
+    "ScreenSpot_Desktop:Icon_Accuracy": 57.85714285714286,
+    "ScreenSpot_Web:text:cnt": 230,
+    "ScreenSpot_Web:icon:cnt": 206,
+    "ScreenSpot_Web:Overall_Accuracy": 73.85321100917432,
+    "ScreenSpot_Web:Format_Err_Rate": 0.0,
+    "ScreenSpot_Web:Text_Accuracy": 74.34782608695653,
+    "ScreenSpot_Web:Icon_Accuracy": 73.30097087378641
+  },
+  "artifacts": {
+    "prediction_table": "/dev/shm/trace_rlvr/trace_screenspot_vlmeval_native_temp06_seed42_3models_20260716T151214Z/seed_42/runs/screenspot/vero-qwen25-7b/vlmevalkit_defaults_sample200/ScreenSpot_predictions.xlsx"
+  },
+  "harness": "Pinned VLMEvalKit ScreenSpot scorer with unresolved explicit-action adapter",
+  "parser": "trace explicit-action adapter, then vlmeval.dataset.GUI.screenspot.parse_bbox_aguvis",
+  "prediction_adapter": {
+    "contract": "screenspot-unresolved-explicit-action-v1",
+    "changed_rows": 481,
+    "method_counts": {
+      "vlmevalkit_named_xy": 553,
+      "answer_boxed_explicit_action": 403,
+      "unresolved": 238,
+      "answer_unique_explicit_action": 78
+    },
+    "rows": 1272
+  }
+}

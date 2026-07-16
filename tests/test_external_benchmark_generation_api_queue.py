@@ -195,7 +195,7 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
         self.assertLessEqual(resized.width * resized.height, 1_000_000)
         self.assertLessEqual(max(resized.size), 1280)
 
-    def test_final25_file_transport_preserves_source_and_sets_official_processor_bounds(self):
+    def test_final25_file_transport_preserves_source_and_sets_native_processor_bounds(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             image_path = root / "chart.png"
@@ -219,7 +219,7 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
             self.assertEqual(
                 payload["mm_processor_kwargs"],
                 {
-                    "min_pixels": 1_003_520,
+                    "min_pixels": 3_136,
                     "max_pixels": 12_845_056,
                 },
             )
@@ -261,6 +261,45 @@ class ExternalBenchmarkGenerationAPIQueueTests(unittest.TestCase):
                         ],
                     }
                 ],
+            )
+
+    def test_screenspot_uses_vero_reasoning_prompt_with_original_image(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            image_path = root / "screen.png"
+            Image.new("RGB", (960, 540), "white").save(image_path)
+
+            class Dataset:
+                def build_prompt(self, _row, video_llm):
+                    del video_llm
+                    return [
+                        {"type": "image", "value": image_path},
+                        {"type": "text", "value": "old VLMEvalKit prompt"},
+                    ]
+
+            handle = runner.DatasetHandle(
+                spec=BenchmarkSpec("screenspot", "ScreenSpot", "ScreenSpot", "run"),
+                dataset=Dataset(),
+                rows=[],
+            )
+            args = _args(
+                media_transport=runner.MEDIA_TRANSPORT,
+                allowed_local_media_path=root,
+            )
+            with patch.object(runner, "_import_vlmeval_runner", return_value=(object(), object())):
+                messages = runner._vlmeval_messages(
+                    args,
+                    handle,
+                    {"question": "open settings", "image_path": str(image_path)},
+                )
+
+            self.assertEqual(messages[0]["role"], "system")
+            self.assertEqual(messages[0]["content"][0]["text"], "You are a helpful assistant.")
+            self.assertEqual(messages[1]["content"][0]["image_url"]["url"], image_path.as_uri())
+            self.assertEqual(
+                messages[1]["content"][1]["text"],
+                "Provide the point for the command: open settings. "
+                'Output the point in a JSON array format: [{"point_2d": [x, y]}].',
             )
 
     def test_manifest_lookup_uses_ordinal_for_duplicate_row_identity(self):

@@ -1,0 +1,37 @@
+{
+  "schema_version": "trace-screenspot-comparison-v1",
+  "status": "complete",
+  "run_id": "trace_screenspot_vero_native_temp06_seed42_3models_20260716T144252Z",
+  "seed": 42,
+  "rows": 1272,
+  "splits": {
+    "mobile": 502,
+    "desktop": 334,
+    "web": 436
+  },
+  "dataset_snapshot_sha256": "1c42105db6b58238b755017c490422024516bb3011093f3260fad7859c0cdf5b",
+  "screenspot_snapshot_sha256": "236d7dc4a075337607ddc59fb6a9b89d5d59f497eb40f9f88d5e55be43220d74",
+  "screenspot_unique_media": 610,
+  "generation_contract_version": "trace-final25-generation-v6",
+  "media_contract_version": "trace-final25-media-v2",
+  "media_transport": "file-url",
+  "min_image_pixels": 3136,
+  "max_image_pixels": 12845056,
+  "prompt": "Provide the point for the command: {instruction}. Output the point in a JSON array format: [{\"point_2d\": [x, y]}].",
+  "system_prompt": "You are a helpful assistant.",
+  "sampling": {
+    "temperature": 0.6,
+    "top_p": 1.0,
+    "top_k": -1,
+    "presence_penalty": 0.0,
+    "repetition_penalty": 1.0,
+    "max_tokens": 16384
+  },
+  "scorer": {
+    "parser_contract": "screenspot-vero-absolute-point-v2",
+    "geometry": "pinned VLMEvalKit ScreenSpot point-in-box",
+    "vlmevalkit_commit": "a8b12bf1c3737a33fc1de967c202f9c592b22e86"
+  },
+  "workspace_commit": "93e8191a3a7a40fff8f45795df5faf2cd50dd8b4",
+  "live_run_root": "/dev/shm/trace_rlvr/trace_screenspot_vero_native_temp06_seed42_3models_20260716T144252Z"
+}

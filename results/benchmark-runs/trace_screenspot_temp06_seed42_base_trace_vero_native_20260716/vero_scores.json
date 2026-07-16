@@ -1,0 +1,39 @@
+{
+  "dataset": "ScreenSpot",
+  "model": "/dev/shm/trace_rlvr/final25_models/vero-qwen25-7b",
+  "rows": 1272,
+  "score": 89.70125786163521,
+  "scores": {
+    "ScreenSpot_Mobile:icon:cnt": 229,
+    "ScreenSpot_Mobile:text:cnt": 273,
+    "ScreenSpot_Mobile:Overall_Accuracy": 91.43426294820716,
+    "ScreenSpot_Mobile:Format_Err_Rate": 0.0,
+    "ScreenSpot_Mobile:Text_Accuracy": 97.06959706959707,
+    "ScreenSpot_Mobile:Icon_Accuracy": 84.71615720524017,
+    "ScreenSpot_Desktop:icon:cnt": 140,
+    "ScreenSpot_Desktop:text:cnt": 194,
+    "ScreenSpot_Desktop:Overall_Accuracy": 87.72455089820359,
+    "ScreenSpot_Desktop:Format_Err_Rate": 0.0,
+    "ScreenSpot_Desktop:Text_Accuracy": 92.78350515463917,
+    "ScreenSpot_Desktop:Icon_Accuracy": 80.71428571428572,
+    "ScreenSpot_Web:text:cnt": 230,
+    "ScreenSpot_Web:icon:cnt": 206,
+    "ScreenSpot_Web:Overall_Accuracy": 89.22018348623854,
+    "ScreenSpot_Web:Format_Err_Rate": 0.0,
+    "ScreenSpot_Web:Text_Accuracy": 93.91304347826087,
+    "ScreenSpot_Web:Icon_Accuracy": 83.98058252427184
+  },
+  "artifacts": {
+    "prediction_table": "/dev/shm/trace_rlvr/trace_screenspot_vero_native_temp06_seed42_3models_20260716T144252Z/seed_42/runs/screenspot/vero-qwen25-7b/vlmevalkit_defaults_sample200/ScreenSpot_predictions.xlsx"
+  },
+  "harness": "VERO absolute-point parser with pinned VLMEvalKit ScreenSpot point-in-box geometry",
+  "parser": "VERO JSON/fenced JSON/point_2d/pair/final-number fallbacks, then normalized named-x/y adapter",
+  "prediction_adapter": {
+    "contract": "screenspot-vero-absolute-point-v2",
+    "changed_rows": 1272,
+    "method_counts": {
+      "vero_absolute_point_to_normalized": 1272
+    },
+    "rows": 1272
+  }
+}

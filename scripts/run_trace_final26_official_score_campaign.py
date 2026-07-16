@@ -25,6 +25,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from final25_media_contract import (
+    GENERATION_CONTRACT_VERSION,
+    MEDIA_CONTRACT_VERSION,
+    MEDIA_TRANSPORT,
+    QWEN_MAX_IMAGE_PIXELS,
+    QWEN_MIN_IMAGE_PIXELS,
+)
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
@@ -252,6 +260,19 @@ def _primary_workbook(workbooks: dict[str, list[Workbook]], slug: str, key: str)
     return matches[0]
 
 
+def _validate_media_generation_contract(generation: dict[str, Any]) -> None:
+    expected = {
+        "contract_version": GENERATION_CONTRACT_VERSION,
+        "media_contract_version": MEDIA_CONTRACT_VERSION,
+        "media_transport": MEDIA_TRANSPORT,
+        "min_image_pixels": QWEN_MIN_IMAGE_PIXELS,
+        "max_image_pixels": QWEN_MAX_IMAGE_PIXELS,
+    }
+    for field, value in expected.items():
+        if generation.get(field) != value:
+            raise ValueError(f"generation.{field}={generation.get(field)!r}, expected {value!r}")
+
+
 def _validate_generation_inputs(
     campaigns: list[Campaign],
     workbooks: dict[str, list[Workbook]],
@@ -296,15 +317,7 @@ def _validate_generation_inputs(
                         )
                 if generation.get("api_model") != campaign.slug:
                     raise ValueError(f"generation.api_model={generation.get('api_model')!r}")
-                if generation.get("contract_version") != "trace-final25-generation-v5":
-                    raise ValueError(
-                        f"generation.contract_version={generation.get('contract_version')!r}"
-                    )
-                if generation.get("media_contract_version") != "trace-final25-media-v1":
-                    raise ValueError(
-                        "generation.media_contract_version="
-                        f"{generation.get('media_contract_version')!r}"
-                    )
+                _validate_media_generation_contract(generation)
                 snapshot = str(generation.get("dataset_snapshot_sha256") or "")
                 if len(snapshot) != 64:
                     raise ValueError(f"invalid dataset snapshot {snapshot!r}")

@@ -11,10 +11,35 @@ SCRIPTS_ROOT = Path(__file__).resolve().parents[1] / "scripts"
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from run_trace_final26_official_score_campaign import Workbook, _stage_workbooks  # noqa: E402
+from final25_media_contract import (  # noqa: E402
+    GENERATION_CONTRACT_VERSION,
+    MEDIA_CONTRACT_VERSION,
+    MEDIA_TRANSPORT,
+    QWEN_MAX_IMAGE_PIXELS,
+    QWEN_MIN_IMAGE_PIXELS,
+)
+from run_trace_final26_official_score_campaign import (  # noqa: E402
+    Workbook,
+    _stage_workbooks,
+    _validate_media_generation_contract,
+)
 
 
 class TraceFinal26ScoreCampaignTests(unittest.TestCase):
+    def test_generation_contract_requires_native_processor_bounds(self):
+        generation = {
+            "contract_version": GENERATION_CONTRACT_VERSION,
+            "media_contract_version": MEDIA_CONTRACT_VERSION,
+            "media_transport": MEDIA_TRANSPORT,
+            "min_image_pixels": QWEN_MIN_IMAGE_PIXELS,
+            "max_image_pixels": QWEN_MAX_IMAGE_PIXELS,
+        }
+
+        _validate_media_generation_contract(generation)
+        generation["min_image_pixels"] = 1_003_520
+        with self.assertRaisesRegex(ValueError, "generation.min_image_pixels"):
+            _validate_media_generation_contract(generation)
+
     def test_resume_restores_mutated_staged_workbook_from_source(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

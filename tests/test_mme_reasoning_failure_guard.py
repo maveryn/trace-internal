@@ -258,7 +258,7 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
             self.assertEqual(generated.allowed_local_media_path, root)
             self.assertEqual(generated.dataset_manifest, root / "datasets.json")
             self.assertEqual(generated.dataset_manifest_view, "frozen")
-            self.assertEqual(generated.min_image_pixels, 1_003_520)
+            self.assertEqual(generated.min_image_pixels, 3_136)
             self.assertEqual(generated.max_image_pixels, 12_845_056)
 
     def test_explicit_false_is_incorrect_and_scores_manifest_is_written_last(self):

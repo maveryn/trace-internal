@@ -1,0 +1,58 @@
+{
+  "dataset": "ScreenSpot",
+  "display": "ScreenSpot",
+  "model": "/dev/shm/trace_rlvr/final25_models/vero-qwen25-7b",
+  "model_slug": "vero-qwen25-7b",
+  "rows": 1272,
+  "expected_rows": 1272,
+  "generation": {
+    "contract_version": "trace-final25-generation-v6",
+    "contract_hash": "910e18e32672914b39fead37c377bbaf72f7a87f3e1bcbe19a6d2d55f36a8496",
+    "media_contract_version": "trace-final25-media-v2",
+    "media_transport": "file-url",
+    "dataset_snapshot_sha256": "1c42105db6b58238b755017c490422024516bb3011093f3260fad7859c0cdf5b",
+    "dataset_revision": "trace-final25-datasets-v2:1c42105db6b58238b755017c490422024516bb3011093f3260fad7859c0cdf5b",
+    "model_revision": "180e84be5acb2aa887cf51015b84b6a6e453ee90",
+    "selection": {
+      "mode": "full",
+      "limit": null,
+      "sample_seed": null,
+      "subset_manifest_sha256": null
+    },
+    "backend": "openai_compatible_vllm_endpoint_pool",
+    "temperature": 0.6,
+    "top_p": 1.0,
+    "top_k": -1,
+    "presence_penalty": 0.0,
+    "repetition_penalty": 1.0,
+    "max_tokens": 16384,
+    "seed": 42,
+    "api_model": "vero-qwen25-7b",
+    "endpoint_count": 1,
+    "parallelism_per_endpoint": 32,
+    "min_image_pixels": 3136,
+    "max_image_pixels": 12845056,
+    "max_image_side": null,
+    "image_jpeg_quality": null,
+    "compact_prediction_tables": true,
+    "preparation_workers": 16,
+    "queue_capacity": 256,
+    "persistence_workers": 8,
+    "finalization_workers": 1,
+    "media_cache_dir": null
+  },
+  "subset_manifest": null,
+  "finish_reason": {
+    "stop": 1272
+  },
+  "output_token_stats": {
+    "mean": 96.91823899371069,
+    "median": 93.0,
+    "max": 235,
+    "length_cap_fraction": 0.0
+  },
+  "artifacts": {
+    "predictions_jsonl": "/dev/shm/trace_rlvr/trace_screenspot_vero_native_temp06_seed42_3models_20260716T144252Z/seed_42/runs/screenspot/vero-qwen25-7b/vlmevalkit_defaults_sample200/predictions.jsonl",
+    "eval_file": "/dev/shm/trace_rlvr/trace_screenspot_vero_native_temp06_seed42_3models_20260716T144252Z/seed_42/runs/screenspot/vero-qwen25-7b/vlmevalkit_defaults_sample200/ScreenSpot_predictions.xlsx"
+  }
+}

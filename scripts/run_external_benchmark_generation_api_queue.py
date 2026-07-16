@@ -78,6 +78,12 @@ from run_external_benchmark_generation_queue import (  # noqa: E402
 )
 
 
+SCREENSPOT_VERO_SYSTEM_PROMPT = "You are a helpful assistant."
+SCREENSPOT_VERO_POINT_SUFFIX = (
+    ' Output the point in a JSON array format: [{"point_2d": [x, y]}].'
+)
+
+
 @dataclass(frozen=True)
 class RowJob:
     spec: BenchmarkSpec
@@ -739,6 +745,13 @@ def _image_to_data_url(
     return data_url
 
 
+def _screenspot_vero_prompt(row: dict[str, Any]) -> str:
+    instruction = str(row.get("question") or row.get("instruction") or "").strip()
+    if instruction and not instruction.endswith((".", "?", "!")):
+        instruction += "."
+    return f"Provide the point for the command: {instruction}{SCREENSPOT_VERO_POINT_SUFFIX}"
+
+
 def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict[str, Any]) -> list[dict[str, Any]]:
     runner, _ = _import_vlmeval_runner()
     row_series = pd.Series(row)
@@ -751,6 +764,7 @@ def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict
         else:
             struct = runner.build_prompt_for_runner(handle.dataset, row_series, video_llm=handle.spec.video_llm)
     content: list[dict[str, Any]] = []
+    screenspot_vero_prompt = handle.spec.key == "screenspot"
     for item in struct:
         typ = item.get("type")
         value = item.get("value")
@@ -770,9 +784,20 @@ def _vlmeval_messages(args: argparse.Namespace, handle: DatasetHandle, row: dict
         elif typ == "video":
             raise NotImplementedError(f"OpenAI endpoint video prompts are not supported for {handle.spec.key}")
         else:
+            if screenspot_vero_prompt:
+                continue
             text = "" if value is None else str(value)
             if text:
                 content.append({"type": "text", "text": text})
+    if screenspot_vero_prompt:
+        content.append({"type": "text", "text": _screenspot_vero_prompt(row)})
+        return [
+            {
+                "role": "system",
+                "content": [{"type": "text", "text": SCREENSPOT_VERO_SYSTEM_PROMPT}],
+            },
+            {"role": "user", "content": content},
+        ]
     return [{"role": "user", "content": content or [{"type": "text", "text": ""}]}]
 
 

@@ -1,0 +1,58 @@
+{
+  "dataset": "ScreenSpot",
+  "display": "ScreenSpot",
+  "model": "/dev/shm/trace_rlvr/easyr1_checkpoints/trace_qwen25vl7b_easyr1_all1000_answer_nokl_step500_bsz128_rollout8_iidval2000_rerun_20260715T161252Z/global_step_500/actor/huggingface",
+  "model_slug": "trace-qwen25vl7b-answer-step500-rerun-20260715",
+  "rows": 1272,
+  "expected_rows": 1272,
+  "generation": {
+    "contract_version": "trace-final25-generation-v6",
+    "contract_hash": "5ecc931464d0ca3e10e6cb25a2a9b4b81caf16fadb408cedb7956e0eec244271",
+    "media_contract_version": "trace-final25-media-v2",
+    "media_transport": "file-url",
+    "dataset_snapshot_sha256": "1c42105db6b58238b755017c490422024516bb3011093f3260fad7859c0cdf5b",
+    "dataset_revision": "trace-final25-datasets-v2:1c42105db6b58238b755017c490422024516bb3011093f3260fad7859c0cdf5b",
+    "model_revision": "sha256set:8396b0be6a760ff7cbbdff02b3017b6b5bc352c87291480aba18fd3e3b6a13b5",
+    "selection": {
+      "mode": "full",
+      "limit": null,
+      "sample_seed": null,
+      "subset_manifest_sha256": null
+    },
+    "backend": "openai_compatible_vllm_endpoint_pool",
+    "temperature": 0.6,
+    "top_p": 1.0,
+    "top_k": -1,
+    "presence_penalty": 0.0,
+    "repetition_penalty": 1.0,
+    "max_tokens": 16384,
+    "seed": 42,
+    "api_model": "trace-qwen25vl7b-answer-step500-rerun-20260715",
+    "endpoint_count": 1,
+    "parallelism_per_endpoint": 32,
+    "min_image_pixels": 3136,
+    "max_image_pixels": 12845056,
+    "max_image_side": null,
+    "image_jpeg_quality": null,
+    "compact_prediction_tables": true,
+    "preparation_workers": 16,
+    "queue_capacity": 256,
+    "persistence_workers": 8,
+    "finalization_workers": 1,
+    "media_cache_dir": null
+  },
+  "subset_manifest": null,
+  "finish_reason": {
+    "stop": 1272
+  },
+  "output_token_stats": {
+    "mean": 137.65408805031447,
+    "median": 130.0,
+    "max": 561,
+    "length_cap_fraction": 0.0
+  },
+  "artifacts": {
+    "predictions_jsonl": "/dev/shm/trace_rlvr/trace_screenspot_vero_native_temp06_seed42_3models_20260716T144252Z/seed_42/runs/screenspot/trace-qwen25vl7b-answer-step500-rerun-20260715/vlmevalkit_defaults_sample200/predictions.jsonl",
+    "eval_file": "/dev/shm/trace_rlvr/trace_screenspot_vero_native_temp06_seed42_3models_20260716T144252Z/seed_42/runs/screenspot/trace-qwen25vl7b-answer-step500-rerun-20260715/vlmevalkit_defaults_sample200/ScreenSpot_predictions.xlsx"
+  }
+}

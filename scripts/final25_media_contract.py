@@ -9,10 +9,10 @@ from typing import Any, Iterable, Mapping
 
 
 DATASET_MANIFEST_SCHEMA = "trace-final25-datasets-v2"
-MEDIA_CONTRACT_VERSION = "trace-final25-media-v1"
-GENERATION_CONTRACT_VERSION = "trace-final25-generation-v5"
+MEDIA_CONTRACT_VERSION = "trace-final25-media-v2"
+GENERATION_CONTRACT_VERSION = "trace-final25-generation-v6"
 MEDIA_TRANSPORT = "file-url"
-QWEN_MIN_IMAGE_PIXELS = 1280 * 28 * 28
+QWEN_MIN_IMAGE_PIXELS = 4 * 28 * 28
 QWEN_MAX_IMAGE_PIXELS = 16384 * 28 * 28
 
 

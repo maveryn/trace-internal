@@ -62,7 +62,8 @@ python scripts/prepare_trace_final25_datasets.py --view frozen --verify-only
 The manifest keeps separate snapshot hashes for the frozen and provisional
 views, so adding or repairing MMVP does not invalidate a frozen Final25 run.
 Generation sends these verified files via `file://` and lets the pinned Qwen
-processor perform the upstream VLMEvalKit resize.
+processor apply the suite-wide checkpoint-native bounds of 3,136 to
+12,845,056 pixels with normal 28-pixel grid alignment.
 
 ## Environment Setup
 

@@ -1,7 +1,8 @@
-# Final24 External Evaluation
+# Final24 External Evaluation (Historical)
 
-Final24 is the active external-comparison reporting suite. It is an additive
-selection over the pinned All31 contracts in
+Final24 is a frozen historical reporting selection. New campaigns use the
+independent [`../trace_eval/suite.v1.json`](../trace_eval/suite.v1.json)
+contract. This historical selection was additive over the pinned contracts in
 [`../final25/suite.v1.json`](../final25/suite.v1.json); it changes no prompts,
 generation settings, parsers, judges, or scorers.
 

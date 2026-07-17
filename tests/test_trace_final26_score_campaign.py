@@ -182,6 +182,78 @@ class TraceFinal26ScoreCampaignTests(unittest.TestCase):
         self.assertEqual({endpoint for group in groups for endpoint in group}, set(endpoints))
         self.assertEqual(sum(map(len, groups)), len(endpoints))
 
+    def test_score_validation_uses_established_mme_accuracy_field(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            campaign = Campaign(model="Qwen/Test", slug="test-model", root=root)
+            score_file = root / "benchmark" / "mme_reasoning" / "test-model" / "run" / "scores.json"
+            score_file.parent.mkdir(parents=True)
+            score_file.write_text(
+                json.dumps(
+                    {
+                        "model": campaign.model,
+                        "model_slug": campaign.slug,
+                        "rows": 3,
+                        "accuracy": 100.0 / 3.0,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            completed = score_campaign._validate_score_outputs(
+                [campaign],
+                ("mme_reasoning",),
+                benchmark_root=root / "benchmark",
+                specs={"mme_reasoning": SimpleNamespace(run_name="run")},
+                generation_inputs={"test-model": {"mme_reasoning": {"rows": 3}}},
+            )
+
+            self.assertEqual(len(completed), 1)
+            self.assertAlmostEqual(completed[0]["score"], 100.0 / 3.0)
+
+    def test_non_mme_score_validation_still_requires_score_field(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            campaign = Campaign(model="Qwen/Test", slug="test-model", root=root)
+            score_file = root / "benchmark" / "mmstar" / "test-model" / "run" / "scores.json"
+            score_file.parent.mkdir(parents=True)
+            score_file.write_text(
+                json.dumps({"rows": 1, "accuracy": 100.0}),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(RuntimeError, "'score'"):
+                score_campaign._validate_score_outputs(
+                    [campaign],
+                    ("mmstar",),
+                    benchmark_root=root / "benchmark",
+                    specs={"mmstar": SimpleNamespace(run_name="run")},
+                    generation_inputs={"test-model": {"mmstar": {"rows": 1}}},
+                )
+
+    def test_direct_resume_requires_two_existing_archive_descriptors(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            score_file = root / "scores.json"
+            descriptors = [root / "extraction.ready.json", root / "score.ready.json"]
+            score_file.write_text(
+                json.dumps({"archive_descriptors": [str(path) for path in descriptors]})
+            )
+            args = SimpleNamespace(emit_archive=True)
+
+            self.assertFalse(
+                score_campaign._direct_archive_descriptors_current(args, score_file)
+            )
+            for path in descriptors:
+                path.write_text("{}")
+            self.assertTrue(
+                score_campaign._direct_archive_descriptors_current(args, score_file)
+            )
+            descriptors[0].unlink()
+            self.assertFalse(
+                score_campaign._direct_archive_descriptors_current(args, score_file)
+            )
+
     def test_mme_resume_assigns_all_endpoints_to_only_pending_campaign(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -267,6 +339,89 @@ class TraceFinal26ScoreCampaignTests(unittest.TestCase):
             self.assertEqual(scores[0]["score"], 1.0)
             self.assertEqual(scores[1]["score"], 0.0)
             self.assertEqual(scores[0]["identity_column"], "source_row_hash")
+
+    def test_archive_reads_hash_columns_as_strings_and_emits_exact_identity(self):
+        request_hash = "194e088947465066b916808afc8c3ad82814f55231c1dc210af8907dead6e2b1"
+        source_row_hash = "f" * 64
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            staged = root / "source.xlsx"
+            pd.DataFrame(
+                [
+                    {
+                        "index": 9,
+                        "question": "Choose one.",
+                        "answer": "A",
+                        "prediction": "A",
+                        "request_hash": request_hash,
+                        "source_row_hash": source_row_hash,
+                    }
+                ]
+            ).to_excel(staged, index=False)
+            prediction = root / "official_predictions.xlsx"
+            pd.DataFrame(
+                [{"index": 9, "answer": "A", "prediction": "A"}]
+            ).to_excel(prediction, index=False)
+            output_dir = root / "score"
+            output_dir.mkdir()
+            (output_dir / "scores.json").write_text(
+                json.dumps(
+                    {
+                        "rows": 1,
+                        "score": 100.0,
+                        "primary_metric": {"key": "accuracy"},
+                        "artifacts": {
+                            "prediction_table": str(prediction),
+                            "official_outputs": [],
+                        },
+                        "provenance": {
+                            "contract": "test-official",
+                            "prediction_adapter": None,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            campaign = Campaign(model="Qwen/Test", slug="test-model", root=root)
+            workbook = Workbook(
+                benchmark_key="countbenchqa",
+                alias="CountBench",
+                run_name="run",
+                source=staged,
+                staged=staged,
+                sha256=hashlib.sha256(staged.read_bytes()).hexdigest(),
+                primary=True,
+            )
+            job = score_campaign.OfficialJob(
+                campaign=campaign,
+                workbook=workbook,
+                output_dir=output_dir,
+                judge_kwargs={"model": "exact_matching"},
+                primary_metric=None,
+                primary_value_scale="auto",
+            )
+
+            with (
+                patch("final25_archive_hooks.emit_extraction_slice") as emit_extraction,
+                patch("final25_archive_hooks.emit_score_slice") as emit_score,
+                patch(
+                    "final25_archive_hooks.resolve_model_source",
+                    return_value="Qwen/Test",
+                ),
+                patch(
+                    "final25_archive_hooks.resolve_model_revision",
+                    return_value="test-revision",
+                ),
+            ):
+                score_campaign._archive_official_job(
+                    SimpleNamespace(emit_archive=True, seed=42),
+                    job,
+                )
+
+            extraction = emit_extraction.call_args.kwargs["records"][0]
+            self.assertEqual(extraction["request_hash"], request_hash)
+            self.assertEqual(extraction["source_row_hash"], source_row_hash)
+            emit_score.assert_called_once()
 
 
 if __name__ == "__main__":

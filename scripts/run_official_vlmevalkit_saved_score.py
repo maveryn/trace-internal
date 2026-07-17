@@ -38,6 +38,8 @@ TREEBENCH_OPTION_ADAPTER_CONTRACT = "treebench-explicit-final-boxed-option-v1"
 REALWORLDQA_OPTION_ADAPTER_CONTRACT = "realworldqa-deterministic-final-option-v1"
 VSTARBENCH_OPTION_ADAPTER_CONTRACT = "vstarbench-deterministic-final-option-v1"
 SCREENSPOT_MEDIA_RESTORE_CONTRACT = "screenspot-official-dataset-image-path-v1"
+EVALUATOR_INPUT_FILTER_CONTRACT = "official-evaluator-drop-queue-columns-v1"
+QUEUE_ONLY_PREDICTION_COLUMNS = ("request_hash", "source_row_hash")
 
 
 def _sha256(path: Path) -> str:
@@ -198,6 +200,53 @@ def _stage_prediction(
     else:
         shutil.copy2(source, target)
     return target
+
+
+def _xlsx_header(path: Path) -> list[Any]:
+    from openpyxl import load_workbook
+
+    workbook = load_workbook(path, read_only=True, data_only=False)
+    try:
+        worksheet = workbook.active
+        return [cell.value for cell in next(worksheet.iter_rows(min_row=1, max_row=1))]
+    finally:
+        workbook.close()
+
+
+def _filter_evaluator_input(prediction: Path) -> dict[str, Any]:
+    """Remove queue-only identities from the copy passed to VLMEvalKit."""
+
+    from openpyxl import load_workbook
+
+    workbook = load_workbook(prediction, read_only=False, data_only=False)
+    worksheet = workbook.active
+    header = [cell.value for cell in next(worksheet.iter_rows(min_row=1, max_row=1))]
+    positions = {
+        column: header.index(column) + 1
+        for column in QUEUE_ONLY_PREDICTION_COLUMNS
+        if column in header
+    }
+    removed = [column for column in QUEUE_ONLY_PREDICTION_COLUMNS if column in positions]
+    rows = max(worksheet.max_row - 1, 0)
+    temporary = prediction.with_suffix(f".tmp.{os.getpid()}.xlsx")
+    try:
+        for position in sorted(positions.values(), reverse=True):
+            worksheet.delete_cols(position)
+        if removed:
+            workbook.save(temporary)
+    except Exception:
+        temporary.unlink(missing_ok=True)
+        raise
+    finally:
+        workbook.close()
+    if removed:
+        temporary.replace(prediction)
+    return {
+        "contract": EVALUATOR_INPUT_FILTER_CONTRACT,
+        "removed_columns": removed,
+        "rows": rows,
+        "evaluator_input_sha256": _sha256(prediction),
+    }
 
 
 _CHARTQAPRO_FINAL_MARKER = re.compile(
@@ -589,19 +638,28 @@ def run_saved_score(
         raise ValueError(f"VLMEvalKit built {official_name!r} for alias {dataset_alias!r}")
 
     output_dir.mkdir(parents=True, exist_ok=True)
+    source_columns = _xlsx_header(prediction_xlsx)
+    has_queue_only_columns = any(
+        column in source_columns for column in QUEUE_ONLY_PREDICTION_COLUMNS
+    )
     prediction = _stage_prediction(
         prediction_xlsx,
         output_dir,
         official_name,
-        replace=benchmark_key in {
-            "chartqapro",
-            "phyx_mini_mc",
-            "realworldqa",
-            "treebench",
-            "vstarbench",
-        }
-        or is_screenspot_json_key(benchmark_key),
+        replace=(
+            benchmark_key
+            in {
+                "chartqapro",
+                "phyx_mini_mc",
+                "realworldqa",
+                "treebench",
+                "vstarbench",
+            }
+            or is_screenspot_json_key(benchmark_key)
+            or has_queue_only_columns
+        ),
     )
+    evaluator_input_filter = _filter_evaluator_input(prediction)
     prediction_adapter: dict[str, Any] | None = None
     if benchmark_key == "chartqapro":
         prediction_adapter = _adapt_chartqapro_prediction(prediction, table_loader)
@@ -669,6 +727,7 @@ def run_saved_score(
             "contract": CONTRACT,
             "source_prediction_sha256": source_prediction_sha256,
             "prediction_sha256": _sha256(prediction),
+            "evaluator_input_filter": evaluator_input_filter,
             "prediction_adapter": prediction_adapter,
             "dataset_override": dataset_override,
             "dataset_kwargs": _redact(dataset_kwargs),

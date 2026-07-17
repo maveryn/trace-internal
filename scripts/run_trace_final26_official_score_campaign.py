@@ -32,18 +32,26 @@ from final25_media_contract import (
     QWEN_MAX_IMAGE_PIXELS,
     QWEN_MIN_IMAGE_PIXELS,
 )
+from trace_eval_evaluator_provenance import build_evaluator_provenance
+from trace_eval_code_provenance import trace_eval_code_manifest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
 DEFAULT_VLMEVAL_ROOT = REPO_ROOT / "external" / "VLMEvalKit"
 DEFAULT_EVAL_DEPS = REPO_ROOT / ".tmp" / "eval_deps"
-DEFAULT_PYTHON = Path("/home/shadeform/venv/bin/python")
-DEFAULT_LMU_DATA = Path("/dev/shm/trace_rlvr/LMUData")
-DEFAULT_HF_HOME = Path("/dev/shm/trace_rlvr/huggingface")
-DEFAULT_JUDGE_MODEL = Path("/dev/shm/trace_rlvr/final25_models/qwen3-32b-judge")
+DEFAULT_PYTHON = Path(sys.executable)
+DEFAULT_LMU_DATA = Path(os.environ.get("LMUData", REPO_ROOT / ".tmp" / "LMUData"))
+DEFAULT_HF_HOME = Path(os.environ.get("HF_HOME", DEFAULT_LMU_DATA / ".hf-cache"))
+DEFAULT_JUDGE_MODEL = Path(
+    os.environ.get(
+        "TRACE_EVAL_JUDGE_MODEL",
+        REPO_ROOT / ".tmp" / "models" / "qwen3-32b-judge",
+    )
+)
 PINNED_VLMEVALKIT_COMMIT = "a8b12bf1c3737a33fc1de967c202f9c592b22e86"
 CONTRACT_VERSION = "trace-final26-official-score-campaign-v1"
+TRACE_EVAL_SUITE_PATH = REPO_ROOT / "evaluation" / "trace_eval" / "suite.v1.json"
 
 # These routes are intentionally explicit. Do not derive them from the legacy
 # generic-extraction registry: this campaign replaces that route with the
@@ -98,7 +106,21 @@ def _activate_suite(suite: str) -> None:
     global OFFICIAL_SCORE_KEYS, DIRECT_SCORE_KEYS, ALL_SCORE_KEYS
     global GENERATION_MAX_TOKENS_BY_KEY
 
-    if suite == "all26":
+    if suite == "trace_eval_v1":
+        from trace_eval_suite import load_trace_eval_suite
+
+        selected = load_trace_eval_suite(TRACE_EVAL_SUITE_PATH)
+        ACTIVE_SUITE = selected.suite_id
+        ACTIVE_RUN_SET = selected.suite_id
+        ACTIVE_DATASET_VIEW = selected.dataset_manifest_view
+        CONTRACT_VERSION = "trace-eval-score-campaign-v1"
+        OFFICIAL_SCORE_KEYS = selected.routes["official_vlmevalkit"]
+        DIRECT_SCORE_KEYS = selected.routes["direct_score"]
+        dedicated = selected.routes["dedicated_score"]
+        if dedicated != (MME_SCORE_KEY,):
+            raise ValueError("trace_eval_v1 dedicated route must contain only MME-Reasoning")
+        GENERATION_MAX_TOKENS_BY_KEY = {}
+    elif suite == "all26":
         ACTIVE_SUITE = "all26"
         ACTIVE_RUN_SET = "trace_final26"
         ACTIVE_DATASET_VIEW = "all26"
@@ -216,27 +238,33 @@ def _load_specs() -> dict[str, Any]:
     from trace_final25_contract import (
         DEDICATED_SCORE_KEYS as CONTRACT_DEDICATED_KEYS,
         DIRECT_SCORE_KEYS as CONTRACT_DIRECT_KEYS,
+        FINAL24_DEDICATED_SCORE_KEYS as CONTRACT_TRACE_EVAL_DEDICATED_KEYS,
+        FINAL24_DIRECT_SCORE_KEYS as CONTRACT_TRACE_EVAL_DIRECT_KEYS,
+        FINAL24_OFFICIAL_VLMEVAL_SCORE_KEYS as CONTRACT_TRACE_EVAL_OFFICIAL_KEYS,
         FINAL31_DEDICATED_SCORE_KEYS as CONTRACT_FINAL31_DEDICATED_KEYS,
         FINAL31_DIRECT_SCORE_KEYS as CONTRACT_FINAL31_DIRECT_KEYS,
         FINAL31_OFFICIAL_VLMEVAL_SCORE_KEYS as CONTRACT_FINAL31_OFFICIAL_KEYS,
         OFFICIAL_VLMEVAL_SCORE_KEYS as CONTRACT_OFFICIAL_KEYS,
     )
 
-    expected_direct = (
-        CONTRACT_FINAL31_DIRECT_KEYS if ACTIVE_SUITE == "all31" else CONTRACT_DIRECT_KEYS
-    )
-    expected_official = (
-        CONTRACT_FINAL31_OFFICIAL_KEYS if ACTIVE_SUITE == "all31" else CONTRACT_OFFICIAL_KEYS
-    )
-    expected_dedicated = (
-        CONTRACT_FINAL31_DEDICATED_KEYS if ACTIVE_SUITE == "all31" else CONTRACT_DEDICATED_KEYS
-    )
+    if ACTIVE_SUITE == "trace_eval_v1":
+        expected_direct = CONTRACT_TRACE_EVAL_DIRECT_KEYS
+        expected_official = CONTRACT_TRACE_EVAL_OFFICIAL_KEYS
+        expected_dedicated = CONTRACT_TRACE_EVAL_DEDICATED_KEYS
+    elif ACTIVE_SUITE == "all31":
+        expected_direct = CONTRACT_FINAL31_DIRECT_KEYS
+        expected_official = CONTRACT_FINAL31_OFFICIAL_KEYS
+        expected_dedicated = CONTRACT_FINAL31_DEDICATED_KEYS
+    else:
+        expected_direct = CONTRACT_DIRECT_KEYS
+        expected_official = CONTRACT_OFFICIAL_KEYS
+        expected_dedicated = CONTRACT_DEDICATED_KEYS
     if set(DIRECT_SCORE_KEYS) != set(expected_direct):
-        raise RuntimeError("Final26 direct route disagrees with trace_final25_contract")
+        raise RuntimeError("active direct route disagrees with the pinned scoring contract")
     if set(OFFICIAL_SCORE_KEYS) != set(expected_official):
-        raise RuntimeError("Final26 official route disagrees with trace_final25_contract")
+        raise RuntimeError("active official route disagrees with the pinned scoring contract")
     if set(expected_dedicated) != {MME_SCORE_KEY}:
-        raise RuntimeError("Final26 dedicated route must contain only MME-Reasoning")
+        raise RuntimeError("active dedicated route must contain only MME-Reasoning")
 
     return {key: spec_by_key(key) for key in ALL_SCORE_KEYS}
 
@@ -450,7 +478,9 @@ def _validate_dataset_manifest(path: Path, lmu_data: Path) -> dict[str, Any]:
             f"failed={manifest.get('failed')}"
         )
     view = manifest.get("dataset_views", {}).get(ACTIVE_DATASET_VIEW)
-    if not isinstance(view, list) or set(view) != set(ALL_SCORE_KEYS):
+    expected_keys = set(ALL_SCORE_KEYS)
+    view_matches = isinstance(view, list) and set(view) == expected_keys
+    if not view_matches:
         raise RuntimeError(
             f"Dataset manifest {ACTIVE_DATASET_VIEW} view does not match the scoring route"
         )
@@ -588,9 +618,53 @@ def _contract(
                     "primary": workbook.primary,
                 }
             )
-    return {
+    scoring_paths = [
+        Path(__file__).resolve(),
+        SCRIPTS_ROOT / "run_official_vlmevalkit_saved_score.py",
+        SCRIPTS_ROOT / "run_external_benchmark_score_queue.py",
+        SCRIPTS_ROOT / "run_mme_reasoning_eval.py",
+        SCRIPTS_ROOT / "trace_final25_contract.py",
+    ]
+    selection: dict[str, Any] | None = None
+    if ACTIVE_SUITE == "trace_eval_v1":
+        from trace_eval_suite import load_trace_eval_suite
+
+        suite = load_trace_eval_suite(TRACE_EVAL_SUITE_PATH)
+        scoring_paths.extend(
+            (
+                SCRIPTS_ROOT / "trace_eval_suite.py",
+                SCRIPTS_ROOT / "trace_eval_evaluator_provenance.py",
+                SCRIPTS_ROOT / "trace_eval_score_receipts.py",
+                SCRIPTS_ROOT / "run_trace_eval_score_campaign.py",
+                suite.path,
+            )
+        )
+        selection = {
+            "path": str(suite.path),
+            "sha256": suite.manifest_sha256,
+            "benchmarks": list(suite.benchmark_keys),
+        }
+    else:
+        scoring_paths.append(REPO_ROOT / "evaluation" / "final25" / "suite.v1.json")
+
+    evaluator_provenance = build_evaluator_provenance(
+        repo_root=REPO_ROOT,
+        vlmeval_root=args.vlmeval_root,
+    )
+    trace_code_provenance = (
+        trace_eval_code_manifest(
+            repo_root=REPO_ROOT,
+            vlmeval_root=args.vlmeval_root,
+            evaluator_sha256=evaluator_provenance["sha256"],
+        )
+        if ACTIVE_SUITE == "trace_eval_v1"
+        else None
+    )
+
+    contract = {
         "contract_version": CONTRACT_VERSION,
         "suite": ACTIVE_SUITE,
+        "selection": selection,
         "dataset_view": ACTIVE_DATASET_VIEW,
         "seed": args.seed,
         "routes": {
@@ -615,6 +689,26 @@ def _contract(
             "all26_snapshot_sha256": dataset_manifest.get("view_snapshot_sha256", {}).get("all26"),
             "vlmevalkit_commit": dataset_manifest.get("vlmevalkit_commit"),
         },
+        "evaluator_provenance": {
+            "schema_version": evaluator_provenance["schema_version"],
+            "sha256": evaluator_provenance["sha256"],
+            "vlmevalkit_git_head": evaluator_provenance["vlmevalkit"]["git_head"],
+            "vlmevalkit_file_records": len(evaluator_provenance["vlmevalkit"]["files"]),
+            "trace_extension_file_records": len(
+                evaluator_provenance["trace_extensions"]["files"]
+            ),
+        },
+        "trace_eval_code_provenance": (
+            {
+                "schema_version": trace_code_provenance["schema_version"],
+                "sha256": trace_code_provenance["sha256"],
+                "evaluator_provenance_sha256": trace_code_provenance[
+                    "evaluator_provenance_sha256"
+                ],
+            }
+            if trace_code_provenance is not None
+            else None
+        ),
         "judge": {
             "api_model": args.judge_api_model,
             "model_path": str(args.judge_model),
@@ -628,17 +722,14 @@ def _contract(
             "api_max_batch_chars": args.judge_api_max_batch_chars,
             "cache_contract_version": args.judge_cache_contract_version,
         },
-        "scoring_implementation": {
-            str(path.relative_to(REPO_ROOT)): _sha256(path)
-            for path in (
-                Path(__file__).resolve(),
-                SCRIPTS_ROOT / "run_official_vlmevalkit_saved_score.py",
-                SCRIPTS_ROOT / "run_external_benchmark_score_queue.py",
-                SCRIPTS_ROOT / "run_mme_reasoning_eval.py",
-                SCRIPTS_ROOT / "trace_final25_contract.py",
-                REPO_ROOT / "evaluation" / "final25" / "suite.v1.json",
-            )
-        },
+        "scoring_implementation": (
+            trace_code_provenance["files"]
+            if trace_code_provenance is not None
+            else {
+                str(path.relative_to(REPO_ROOT)): _sha256(path)
+                for path in scoring_paths
+            }
+        ),
         "runtime": {
             "python": str(args.python),
             "eval_deps": str(args.eval_deps),
@@ -647,6 +738,7 @@ def _contract(
             "hf_home": str(args.hf_home),
         },
     }
+    return contract
 
 
 def _prepare_score_root(
@@ -906,7 +998,10 @@ def _archive_official_job(args: argparse.Namespace, job: OfficialJob) -> None:
         resolve_model_source,
     )
 
-    source = pd.read_excel(job.workbook.staged)
+    source = pd.read_excel(
+        job.workbook.staged,
+        converters={"request_hash": str, "source_row_hash": str},
+    )
     adapted = pd.read_excel(prediction_path)
     if len(source) != len(adapted):
         raise RuntimeError(
@@ -1067,7 +1162,8 @@ def _validate_score_outputs(
             ) / "scores.json"
             try:
                 payload = json.loads(path.read_text(encoding="utf-8"))
-                score = float(payload["score"])
+                score_key = "accuracy" if key == MME_SCORE_KEY else "score"
+                score = float(payload[score_key])
                 if not math.isfinite(score):
                     raise ValueError(f"non-finite score {score!r}")
                 rows = int(payload["rows"])
@@ -1186,6 +1282,51 @@ def _direct_command(
     return command
 
 
+def _direct_archive_command(
+    args: argparse.Namespace,
+    campaign: Campaign,
+    benchmark_key: str,
+    *,
+    staged_run_root: Path,
+    benchmark_root: Path,
+    queue_root: Path,
+    contract_sha256: str,
+) -> list[str]:
+    command = _direct_command(
+        args,
+        campaign,
+        benchmark_key,
+        staged_run_root=staged_run_root,
+        benchmark_root=benchmark_root,
+        queue_root=queue_root,
+        endpoints=[],
+        contract_sha256=contract_sha256,
+    )
+    command.append("--archive-only")
+    return command
+
+
+def _direct_archive_descriptors_current(
+    args: argparse.Namespace,
+    score_file: Path,
+) -> bool:
+    """Require both recorded archive descriptors before resuming past a direct job."""
+
+    if not getattr(args, "emit_archive", False):
+        return True
+    try:
+        summary = json.loads(score_file.read_text(encoding="utf-8"))
+        descriptor_values = summary.get("archive_descriptors")
+        if not isinstance(descriptor_values, list) or len(descriptor_values) != 2:
+            return False
+        return all(
+            isinstance(value, str) and value.strip() and Path(value).is_file()
+            for value in descriptor_values
+        )
+    except (OSError, ValueError, TypeError):
+        return False
+
+
 def _mme_command(
     args: argparse.Namespace,
     campaign: Campaign,
@@ -1251,6 +1392,7 @@ def _run_direct_phase(
 
     def execute(job: tuple[Campaign, str]) -> None:
         campaign, key = job
+        archive_backfill = False
         score_file = _run_dir(
             benchmark_root, key, campaign.slug, specs[key].run_name
         ) / "scores.json"
@@ -1263,8 +1405,38 @@ def _run_direct_phase(
             except RuntimeError:
                 print(f"[score:rerun] direct/{campaign.slug}/{key}", flush=True)
             else:
-                print(f"[score:skip] direct/{campaign.slug}/{key}", flush=True)
-                return
+                if _direct_archive_descriptors_current(args, score_file):
+                    print(f"[score:skip] direct/{campaign.slug}/{key}", flush=True)
+                    return
+                print(
+                    f"[score:rerun] direct/{campaign.slug}/{key} archive_backfill",
+                    flush=True,
+                )
+                archive_backfill = True
+        if archive_backfill:
+            _run_logged(
+                _direct_archive_command(
+                    args,
+                    campaign,
+                    key,
+                    staged_run_root=staged_run_root,
+                    benchmark_root=benchmark_root,
+                    queue_root=queue_root,
+                    contract_sha256=contract_sha256,
+                ),
+                env=env,
+                log_path=log_root / "direct" / campaign.slug / f"{key}.log",
+                label=f"direct-archive/{campaign.slug}/{key}",
+            )
+            _validate_score_outputs(
+                [campaign], (key,), benchmark_root=benchmark_root, specs=specs,
+                generation_inputs=generation_inputs,
+            )
+            if not _direct_archive_descriptors_current(args, score_file):
+                raise RuntimeError(
+                    f"Direct archive backfill produced no descriptor receipt: {score_file}"
+                )
+            return
         endpoint = endpoint_pool.get()
         try:
             command = _direct_command(
@@ -1535,7 +1707,7 @@ def _print_plan(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Score three saved TRACE campaigns in an isolated official-evaluation tree."
+        description="Score one or more saved TRACE campaigns in an isolated evaluation tree."
     )
     parser.add_argument(
         "--campaign",
@@ -1543,10 +1715,14 @@ def build_parser() -> argparse.ArgumentParser:
         nargs=3,
         required=True,
         metavar=("MODEL", "MODEL_SLUG", "CAMPAIGN_ROOT"),
-        help="Repeat exactly three times; CAMPAIGN_ROOT contains seed_<seed>/runs.",
+        help="Repeat once or more; CAMPAIGN_ROOT contains seed_<seed>/runs.",
     )
     parser.add_argument("--score-root", type=Path, required=True)
-    parser.add_argument("--suite", choices=("all26", "all31"), default="all26")
+    parser.add_argument(
+        "--suite",
+        choices=("trace_eval_v1", "all26", "all31"),
+        default="all26",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--python", type=Path, default=DEFAULT_PYTHON)
     parser.add_argument("--eval-deps", type=Path, default=DEFAULT_EVAL_DEPS)
@@ -1582,11 +1758,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
-    args = build_parser().parse_args()
+def main(argv: list[str] | None = None) -> None:
+    args = build_parser().parse_args(argv)
     _activate_suite(args.suite)
-    if len(args.campaign) != 3:
-        raise SystemExit(f"error: pass exactly three --campaign descriptors, got {len(args.campaign)}")
+    if not args.campaign:
+        raise SystemExit("error: pass at least one --campaign descriptor")
     if (
         args.seed < 0
         or args.eval_nproc < 1
@@ -1619,9 +1795,13 @@ def main() -> None:
         if args.dataset_manifest
         else args.lmu_data
         / (
-            "trace_final31_dataset_manifest.json"
-            if args.suite == "all31"
-            else "trace_final25_dataset_manifest.json"
+            "trace_eval_v1_dataset_manifest.json"
+            if args.suite == "trace_eval_v1"
+            else (
+                "trace_final31_dataset_manifest.json"
+                if args.suite == "all31"
+                else "trace_final25_dataset_manifest.json"
+            )
         )
     )
     endpoints = list(dict.fromkeys(_normalize_endpoint(item) for item in (args.judge_endpoint or _default_endpoints())))

@@ -25,6 +25,8 @@ from typing import Any, Iterable, Mapping
 try:
     from scripts.final25_hf_archive_lib import (
         MEDIA_SUFFIXES,
+        OPAQUE_TEXT_RECORD_KEYS,
+        OPAQUE_TEXT_RECORD_PATHS,
         SAFE_MEDIA_METADATA_KEYS,
         SECRET_KEY_PARTS,
         ArchiveValidationError,
@@ -35,6 +37,8 @@ try:
 except ModuleNotFoundError:  # Supports direct ``python scripts/...`` imports.
     from final25_hf_archive_lib import (
         MEDIA_SUFFIXES,
+        OPAQUE_TEXT_RECORD_KEYS,
+        OPAQUE_TEXT_RECORD_PATHS,
         SAFE_MEDIA_METADATA_KEYS,
         SECRET_KEY_PARTS,
         ArchiveValidationError,
@@ -340,7 +344,11 @@ def generation_archive_record(record: Mapping[str, Any], row_number: int = 0) ->
             "usage": record.get("usage", {}),
         }
     )
-    return sanitize_archive_value(result, path=f"generation_records[{row_number}]")
+    return sanitize_archive_value(
+        result,
+        path=f"generation_records[{row_number}]",
+        opaque_text_keys=OPAQUE_TEXT_RECORD_KEYS["generation"],
+    )
 
 
 def extraction_archive_record(record: Mapping[str, Any], row_number: int = 0) -> dict[str, Any]:
@@ -358,7 +366,12 @@ def extraction_archive_record(record: Mapping[str, Any], row_number: int = 0) ->
             "retries": record.get("retries", []),
         }
     )
-    return sanitize_archive_value(result, path=f"extraction_records[{row_number}]")
+    return sanitize_archive_value(
+        result,
+        path=f"extraction_records[{row_number}]",
+        opaque_text_keys=OPAQUE_TEXT_RECORD_KEYS["extraction"],
+        opaque_text_paths=OPAQUE_TEXT_RECORD_PATHS["extraction"],
+    )
 
 
 def score_archive_record(record: Mapping[str, Any], row_number: int = 0) -> dict[str, Any]:
@@ -373,7 +386,11 @@ def score_archive_record(record: Mapping[str, Any], row_number: int = 0) -> dict
             "excluded": record.get("excluded", False),
         }
     )
-    return sanitize_archive_value(result, path=f"score_records[{row_number}]")
+    return sanitize_archive_value(
+        result,
+        path=f"score_records[{row_number}]",
+        opaque_text_keys=OPAQUE_TEXT_RECORD_KEYS["score"],
+    )
 
 
 def _provenance(

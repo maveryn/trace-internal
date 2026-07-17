@@ -29,6 +29,7 @@ BENCHMARK_RUN_SETS = (
     "trace_candidate37_200",
     "trace_grounding",
     "trace_video4",
+    "trace_eval_v1",
     "trace_final25",
     "trace_final26",
     "trace_final31",
@@ -159,6 +160,16 @@ TRACE_FINAL25_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
 TRACE_FINAL25_BENCHMARKS = tuple(
     key for category_keys in TRACE_FINAL25_BENCHMARK_CATEGORIES.values() for key in category_keys
 )
+try:
+    from scripts.trace_eval_suite import load_trace_eval_suite
+except ModuleNotFoundError:  # Supports direct ``python scripts/...`` imports.
+    from trace_eval_suite import load_trace_eval_suite
+
+_TRACE_EVAL_V1_SUITE = load_trace_eval_suite()
+TRACE_EVAL_V1_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = dict(
+    _TRACE_EVAL_V1_SUITE.categories
+)
+TRACE_EVAL_V1_BENCHMARKS = _TRACE_EVAL_V1_SUITE.benchmark_keys
 TRACE_FINAL24_BENCHMARK_CATEGORIES: dict[str, tuple[str, ...]] = {
     "Charts & Tables": ("chartqapro", "charxivreason", "tablevqabench", "evochart"),
     "Visual Math": ("mathvision", "mathvista", "mathverse", "wemath"),
@@ -752,6 +763,8 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
         return [spec_by_key(key) for key in TRACE_GROUNDING_COUNTING_EXTRA_BENCHMARKS]
     if run_set == "trace_video4":
         return [spec_by_key(key) for key in TRACE_VIDEO4_BENCHMARKS]
+    if run_set == "trace_eval_v1":
+        return [spec_by_key(key) for key in TRACE_EVAL_V1_BENCHMARKS]
     if run_set == "trace_final25":
         return [spec_by_key(key) for key in TRACE_FINAL25_BENCHMARKS]
     if run_set == "trace_final26":

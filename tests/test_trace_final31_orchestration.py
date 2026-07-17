@@ -11,7 +11,7 @@ from scripts.benchmark_queue_lib import (
     spec_by_key,
 )
 from scripts.run_external_benchmark_generation_api_queue import build_parser
-from scripts.status_trace_final31_campaign import collect_status
+from scripts.status_trace_final31_campaign import _score_complete, collect_status
 
 
 def test_generation_parser_accepts_all31_manifest_view() -> None:
@@ -50,7 +50,8 @@ def test_status_requires_all_31_response_and_score_slices(tmp_path: Path) -> Non
         (row_dir / "row.json").write_text("{}", encoding="utf-8")
         score = score_path(spec, "model", benchmark_root)
         score.parent.mkdir(parents=True, exist_ok=True)
-        score.write_text(json.dumps({"score": 50.0, "rows": 1}), encoding="utf-8")
+        metric = {"accuracy": 50.0} if key == "mme_reasoning" else {"score": 50.0}
+        score.write_text(json.dumps({**metric, "rows": 1}), encoding="utf-8")
 
     args = argparse.Namespace(
         campaign_root=campaign_root,
@@ -68,6 +69,18 @@ def test_status_requires_all_31_response_and_score_slices(tmp_path: Path) -> Non
     assert report["expected_rows"] == 31
     assert report["score_slices"] == 31
     assert report["complete"] is True
+
+
+def test_score_complete_requires_finite_metric_and_expected_rows(tmp_path: Path) -> None:
+    score = tmp_path / "scores.json"
+    score.write_text(json.dumps({"accuracy": 25.0, "rows": 4}), encoding="utf-8")
+    assert _score_complete(score, 4) is True
+
+    score.write_text(json.dumps({"accuracy": float("inf"), "rows": 4}), encoding="utf-8")
+    assert _score_complete(score, 4) is False
+
+    score.write_text(json.dumps({"accuracy": 25.0, "rows": 3}), encoding="utf-8")
+    assert _score_complete(score, 4) is False
 
 
 def test_launcher_pins_schema_revision_and_qwen3_judge_contract() -> None:

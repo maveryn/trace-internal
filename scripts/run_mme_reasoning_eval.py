@@ -225,12 +225,40 @@ def _normalize_choice_extraction(output: str) -> str | None:
         no_choice == "none"
         or no_choice == "none of the above"
         or no_choice.startswith("none of the given options ")
+        or no_choice.startswith("none of the options ")
     ):
         return MME_NO_CHOICE_SENTINEL
+
+    placeholder = text
+    if text.startswith("[") or text.startswith("("):
+        closing = "]" if text.startswith("[") else ")"
+        if not text.endswith(closing) or any(token in text[1:-1] for token in "[]()"):
+            placeholder = ""
+        else:
+            placeholder = text[1:-1].strip()
+    elif any(token in text for token in "[]()"):
+        placeholder = ""
+    if placeholder and re.fullmatch(r"\?(?:(?:\s*,\s*|\s+)\?)*", placeholder):
+        return MME_NO_CHOICE_SENTINEL
+
+    repeated_label = re.fullmatch(
+        r"([A-Ga-g])\s*(?:\r?\n)+\s*Extracted answer:\s*([A-Ga-g])",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if repeated_label is not None:
+        first, second = (value.upper() for value in repeated_label.groups())
+        return first if first == second else text
 
     # MME-Reasoning labels three choice rows with numeric identifiers (2, 4,
     # and 44).  The pinned evaluator treats these exactly like letter labels.
     if re.fullmatch(r"[+-]?\d+(?:\.\d+)?", text):
+        return text
+
+    # The official choice extractor accepts any nonempty response before
+    # choice_function compares it with the option label. Preserve a boxed
+    # atomic symbol as one response, while keeping nested LaTeX/prose invalid.
+    if re.fullmatch(r"\\boxed\{\\[A-Za-z]+\}", text):
         return text
 
     try:
@@ -252,13 +280,42 @@ def _normalize_choice_extraction(output: str) -> str | None:
     # echo an unambiguous label as "B." or "B. <option text>".  Preserve the
     # official scorer's label semantics without accepting conflicting labels.
     prefixed = re.fullmatch(r"([A-Za-z])\s*[.)]\s*(.*)", text, flags=re.DOTALL)
-    if prefixed is None:
-        return None
-    label = prefixed.group(1).upper()
-    tail = prefixed.group(2).strip()
-    if re.search(r"(?:^|[\s,;/])(?:or|and)?\s*[A-Za-z]\s*[.)](?:\s|$)", tail, re.IGNORECASE):
-        return None
-    return label
+    if prefixed is not None:
+        label = prefixed.group(1).upper()
+        tail = prefixed.group(2).strip()
+        if re.search(r"(?:^|[\s,;/])(?:or|and)?\s*[A-Za-z]\s*[.)](?:\s|$)", tail, re.IGNORECASE):
+            return text
+        return label
+
+    # The pinned MME choice extractor accepts any nonempty response and lets
+    # choice_function determine correctness. Preserve short atomic option text
+    # while still rejecting wrappers, prose labels, and conflicting candidates.
+    if (
+        len(text) <= 128
+        and "\n" not in text
+        and "\r" not in text
+        and len(text.split()) <= 12
+        and re.search(r"[`\\<>{}\[\]]", text) is None
+        and re.search(
+            r"\b(?:answer|choice|extracted|none|option)\b",
+            text,
+            re.IGNORECASE,
+        )
+        is None
+        and re.search(r"(?<![A-Za-z0-9])[A-G](?![A-Za-z0-9])", text) is None
+        and re.fullmatch(
+            r"\s*[A-Ga-g]\s*(?:(?:,|/|\bor\b|\band\b)\s*[A-Ga-g]\s*)+",
+            text,
+            re.IGNORECASE,
+        )
+        is None
+        and re.fullmatch(r"[A-Z]{1,7}", text) is None
+    ):
+        return text
+    # Pinned VLMEvalKit accepts every nonempty choice extraction and delegates
+    # correctness to choice_function. Preserve its raw fallback instead of
+    # turning verbose or conflicting judge text into an evaluation failure.
+    return text
 
 
 def _validate_extraction(eval_prompt: str, output: str) -> tuple[bool, str]:
@@ -832,7 +889,11 @@ def _run_score_impl(
             output_dir=benchmark_output_dir,
             prompts=pending,
             cache_name=cache_name,
-            max_tokens=args.extract_max_tokens,
+            max_tokens=(
+                args.extract_max_tokens
+                if attempt == 0
+                else max(args.extract_max_tokens, min(args.extract_max_tokens * 2, 2048))
+            ),
             temperature=temperature,
             top_p=1.0,
             no_resume=args.no_resume,

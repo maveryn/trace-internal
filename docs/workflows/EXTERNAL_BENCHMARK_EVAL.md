@@ -1,7 +1,7 @@
 # External Benchmark Evaluation
 
-This workflow runs fixed external benchmark subsets for Trace checkpoint
-comparison and coverage analysis.
+This workflow covers external benchmark comparison and historical subset-based
+failure analysis. The canonical full-split comparison is `trace_eval_v1`.
 
 ## Scope
 
@@ -311,7 +311,42 @@ For each benchmark, the analyzer writes:
 
 The root `README.md` contains a cross-benchmark table.
 
-## TRACE Final25 scoring contract
+## Canonical TRACE Evaluation
+
+The active suite is the self-contained
+[`evaluation/trace_eval/suite.v1.json`](../../evaluation/trace_eval/suite.v1.json)
+contract: 24 full-split benchmarks, six categories of four, and 32,805 rows per
+model and decoding seed. It pins benchmark order, aliases, row counts, answer
+and scoring contracts, route ownership, generation settings, and the immutable
+VLMEvalKit revision.
+
+Set up the evaluator and materialize the exact native dataset manifest:
+
+```bash
+bash scripts/setup_trace_eval_env.sh
+python scripts/prepare_trace_eval_manifest.py
+```
+
+Launch one or more explicit models and seeds with `scripts/run_trace_eval.sh`.
+The launcher uses the `trace_eval_v1` run set and manifest view, then delegates
+to the existing benchmark-specific direct routes, pinned VLMEvalKit evaluators,
+and dedicated MME-Reasoning scorer. Monitor and verify with
+`scripts/status_trace_eval.py` and `scripts/verify_trace_eval.py`. The launcher
+keeps the legacy raw archive spool local and fails closed if a raw remote target
+is configured. After the run, `scripts/trace_eval_public_export.py` builds an
+allowlisted neutral export; the guarded
+`scripts/migrate_trace_eval_archive.py upload-paper-run` command appends and
+verifies that sanitized run in the private `maveryn/trace-eval-runs`
+repository. Prompts, ground truth, options, source rows, and media paths are
+never uploaded there.
+
+## Historical Evaluation Contracts
+
+The remaining numbered-suite sections document completed campaigns and old
+artifact interpretation. They are retained for reproducibility, not as the
+selection or launcher for new evaluation runs.
+
+### TRACE Final25 scoring contract
 
 The frozen Final25 suite and category ordering live in
 `scripts/benchmark_queue_lib.py` as `TRACE_FINAL25_BENCHMARK_CATEGORIES`.

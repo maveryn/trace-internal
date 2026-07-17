@@ -5,9 +5,10 @@ evaluated capability. The short category names are intended for result tables,
 plots, and evaluation summaries. Each benchmark appears in exactly one
 category.
 
-The canonical selection is `evaluation/final24/suite.v1.json`. Executable route
-definitions live in `scripts/trace_final25_contract.py`; Final24 inherits those
-benchmark-specific contracts unchanged from the pinned All31 source campaign.
+The canonical selection and complete benchmark-level route contract are in
+`evaluation/trace_eval/suite.v1.json`. The neutral loader is
+`scripts/trace_eval_suite.py`; execution delegates to the pinned route
+implementations without changing prompts, parsers, judges, or scorers.
 
 Final scoring has three routes. Seven benchmarks use benchmark-specific
 pinned/direct evaluators, 16 use the pinned VLMEvalKit dataset object's
@@ -47,8 +48,7 @@ queue is not a final scoring route.
   `VStarBench` alias uses the normal generation route; scoring applies the same
   deterministic explicit-option normalization as RealWorldQA before the pinned
   VLMEvalKit `dataset.evaluate` exact-matching route.
-- **MMVP** remains in the historical All31 diagnostic view but is not a
-  Final24 member; Final24 retains CountQA.
+- **MMVP** is not a `trace_eval_v1` member; the canonical suite retains CountQA.
 - **EvoChart** uses a local deterministic evaluator extension because the
   pinned VLMEvalKit commit has no EvoChart evaluator.
 - **LogicVista** follows the pinned evaluator with one narrow exception for
@@ -60,5 +60,5 @@ queue is not a final scoring route.
   avoid VLMEvalKit's broken duplicate registry class.
 
 For an overall score, macro-average the 24 benchmark scores directly. Because
-every Final24 category contains four benchmarks, averaging the six category
+every `trace_eval_v1` category contains four benchmarks, averaging the six category
 means produces the same overall value.

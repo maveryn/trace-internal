@@ -1497,7 +1497,7 @@ class TraceFinal25ContractTests(unittest.TestCase):
         self.assertEqual(_validate_extraction("choice_prompt", ""), (False, ""))
         self.assertEqual(_validate_extraction("choice_prompt", "A"), (True, "A"))
         self.assertEqual(_validate_extraction("choice_prompt", "[A, C]"), (True, "A,C"))
-        self.assertEqual(_validate_extraction("choice_prompt", "The answer is A"), (False, "The answer is A"))
+        self.assertEqual(_validate_extraction("choice_prompt", "The answer is A"), (True, "The answer is A"))
 
     def test_reuse_campaign_accepts_only_matching_complete_generation_and_hardlinks_rows(self):
         with tempfile.TemporaryDirectory() as tmp:

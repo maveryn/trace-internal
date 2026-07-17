@@ -18,6 +18,8 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from benchmark_queue_lib import (  # noqa: E402
+    TRACE_EVAL_V1_BENCHMARK_CATEGORIES,
+    TRACE_EVAL_V1_BENCHMARKS,
     TRACE_FINAL24_BENCHMARK_CATEGORIES,
     TRACE_FINAL24_BENCHMARKS,
     TRACE_FINAL25_BENCHMARK_CATEGORIES,
@@ -32,28 +34,37 @@ from benchmark_queue_lib import (  # noqa: E402
 
 
 SUITE_BENCHMARKS: dict[str, tuple[str, ...]] = {
+    "trace_eval_v1": TRACE_EVAL_V1_BENCHMARKS,
     "final24": TRACE_FINAL24_BENCHMARKS,
     "frozen": TRACE_FINAL25_BENCHMARKS,
     "all26": TRACE_FINAL26_BENCHMARKS,
     "all31": TRACE_FINAL31_BENCHMARKS,
 }
 SUITE_IDS = {
+    "trace_eval_v1": "trace_eval_v1",
     "final24": "trace_final24",
     "frozen": "trace_final25",
     "all26": "trace_final26",
     "all31": "trace_final31",
 }
 SUITE_DISPLAY_NAMES = {
+    "trace_eval_v1": "Eval v1",
     "final24": "Final24",
     "frozen": "Final25",
     "all26": "All26",
     "all31": "Final31",
 }
 FINAL24_SELECTION_PATH = REPO_ROOT / "evaluation" / "final24" / "suite.v1.json"
+TRACE_EVAL_SELECTION_PATH = REPO_ROOT / "evaluation" / "trace_eval" / "suite.v1.json"
 
 
 def _categories_for_suite(suite: str) -> dict[str, tuple[str, ...]]:
-    if suite == "final24":
+    if suite == "trace_eval_v1":
+        categories = {
+            category: tuple(keys)
+            for category, keys in TRACE_EVAL_V1_BENCHMARK_CATEGORIES.items()
+        }
+    elif suite == "final24":
         categories = {
             category: tuple(keys)
             for category, keys in TRACE_FINAL24_BENCHMARK_CATEGORIES.items()
@@ -141,8 +152,8 @@ def main() -> None:
     parser.add_argument(
         "--suite",
         choices=tuple(SUITE_BENCHMARKS),
-        default="frozen",
-        help="Benchmark coverage to summarize (default: frozen Final25).",
+        default="trace_eval_v1",
+        help="Benchmark coverage to summarize (default: canonical trace_eval_v1).",
     )
     parser.add_argument("--excel", type=Path, required=True)
     parser.add_argument("--markdown", type=Path, required=True)
@@ -269,18 +280,32 @@ def main() -> None:
         {"key": "judge", "value": "Qwen/Qwen3-32B, temperature=0"},
         {"key": "score_root_base", "value": str(args.score_root_base)},
     ]
-    final24_selection_sha256 = ""
-    if args.suite == "final24":
-        selection = json.loads(FINAL24_SELECTION_PATH.read_text(encoding="utf-8"))
-        final24_selection_sha256 = hashlib.sha256(FINAL24_SELECTION_PATH.read_bytes()).hexdigest()
+    selection_manifest_sha256 = ""
+    selection_path: Path | None = None
+    source_contract_sha256 = ""
+    if args.suite in {"trace_eval_v1", "final24"}:
+        selection_path = (
+            TRACE_EVAL_SELECTION_PATH
+            if args.suite == "trace_eval_v1"
+            else FINAL24_SELECTION_PATH
+        )
+        selection = json.loads(selection_path.read_text(encoding="utf-8"))
+        selection_manifest_sha256 = hashlib.sha256(selection_path.read_bytes()).hexdigest()
+        source_contract = selection.get("source_contract")
+        source_contract_sha256 = (
+            str(source_contract["sha256"])
+            if isinstance(source_contract, dict)
+            else ""
+        )
         metadata_rows.extend(
             [
-                {"key": "selection_manifest", "value": str(FINAL24_SELECTION_PATH)},
-                {"key": "selection_manifest_sha256", "value": final24_selection_sha256},
-                {
-                    "key": "source_contract_sha256",
-                    "value": selection["source_contract"]["sha256"],
-                },
+                {"key": "selection_manifest", "value": str(selection_path)},
+                {"key": "selection_manifest_sha256", "value": selection_manifest_sha256},
+                *(
+                    [{"key": "source_contract_sha256", "value": source_contract_sha256}]
+                    if source_contract_sha256
+                    else []
+                ),
             ]
         )
     metadata = pd.DataFrame(
@@ -336,7 +361,9 @@ def main() -> None:
         for label, _, _ in args.delta:
             values.append(_fmt(float(row[label])))
         lines.append("| " + " | ".join(values) + " |")
-    if args.suite == "final24":
+    if args.suite == "trace_eval_v1":
+        scoring_note = "Scoring: the pinned benchmark routes selected by canonical trace_eval_v1."
+    elif args.suite == "final24":
         scoring_note = "Scoring: the pinned contracts selected by the canonical Final24 suite."
     elif args.suite == "frozen":
         scoring_note = "Judge: Qwen3-32B at temperature 0 through the frozen Final25 scoring contracts."
@@ -348,8 +375,8 @@ def main() -> None:
     if args.suite == "all31":
         decoding_note += " ScreenSpot, ScreenSpotPro, and ScreenSpot v2 use a 16384-token maximum."
     selection_note = (
-        f"Selection manifest SHA-256: `{final24_selection_sha256}`."
-        if final24_selection_sha256
+        f"Selection manifest SHA-256: `{selection_manifest_sha256}`."
+        if selection_manifest_sha256
         else ""
     )
     lines.extend(
@@ -363,6 +390,7 @@ def main() -> None:
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     args.markdown.write_text("\n".join(lines) + "\n", encoding="utf-8")
     log_tag = {
+        "trace_eval_v1": "trace-eval",
         "final24": "final24",
         "frozen": "final25",
         "all26": "all26",

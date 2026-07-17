@@ -1414,6 +1414,7 @@ def _archive_direct_score_slices(
     extraction_records: list[dict[str, Any]] = []
     score_records: list[dict[str, Any]] = []
     missing_row_scores: list[str] = []
+    physics_row_scores: list[float] = []
     screenspot_row_scores: list[float] = []
     screenspot_image_sizes: dict[Path, tuple[int, int]] = {}
     aggregate_only_scores = spec.key in _ARCHIVE_AGGREGATE_ONLY_SCORE_KEYS
@@ -1540,6 +1541,21 @@ def _archive_direct_score_slices(
             if row.get(key) not in {None, ""}:
                 score_value = row[key]
                 break
+        if spec.key == "physics" and score_value is None and row.get("res") not in {None, ""}:
+            score_value = row["res"]
+        if spec.key == "physics" and score_value is not None:
+            try:
+                physics_score = float(score_value)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise RuntimeError(
+                    f"Physics row {index} has a non-numeric explicit result: {score_value!r}"
+                ) from exc
+            if not math.isfinite(physics_score) or not 0.0 <= physics_score <= 1.0:
+                raise RuntimeError(
+                    f"Physics row {index} has an out-of-range explicit result: {score_value!r}"
+                )
+            score_value = physics_score
+            physics_row_scores.append(physics_score)
         if spec.key == "screenspot":
             sub_dataset = _archive_first_present(
                 row.get("SUB_DATASET"), source_row.get("SUB_DATASET")
@@ -1607,6 +1623,23 @@ def _archive_direct_score_slices(
             f"Refusing to archive {spec.key}: {len(missing_row_scores)} scored rows have no explicit "
             f"per-row score; first indices={missing_row_scores[:10]}"
         )
+    if spec.key == "physics":
+        try:
+            official_score = float(summary["score"])
+        except (KeyError, TypeError, ValueError, OverflowError) as exc:
+            raise RuntimeError("Refusing to archive Physics without an official aggregate score") from exc
+        if not math.isfinite(official_score):
+            raise RuntimeError("Refusing to archive Physics without an official aggregate score")
+        derived_score = (
+            sum(physics_row_scores) / len(physics_row_scores) * 100.0
+            if physics_row_scores
+            else 0.0
+        )
+        if not math.isclose(derived_score, official_score, rel_tol=0.0, abs_tol=1e-9):
+            raise RuntimeError(
+                "Refusing to archive Physics because per-row res values do not match the "
+                f"official aggregate: derived={derived_score} official={official_score}"
+            )
     if spec.key == "screenspot":
         official_score = score_to_percent(summary.get("score"))
         if official_score is None:
@@ -1972,6 +2005,7 @@ def _run_physics_subset_score(
         is_equiv,
     )
     from vlmeval.smp import load
+    from timeout_decorator import TimeoutError as PhysicsExtractionTimeout
 
     pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
     if not pred_table.exists():
@@ -2012,27 +2046,45 @@ def _run_physics_subset_score(
         ground_truths = _physics_ground_truths(source_row.get("answer"))
 
         prediction_text = row.get("prediction")
+        extraction_timed_out = False
         if not isinstance(prediction_text, str) or not prediction_text.strip():
             boxed_predictions: list[str] = []
         else:
-            extracted = extract_final_answer_allform(prediction_text)
-            flattened: list[str] = []
-            for item in extracted:
-                values = item if isinstance(item, (list, tuple)) else [item]
-                flattened.extend(str(value).strip() for value in values if str(value).strip())
-            boxed_predictions = list(dict.fromkeys(flattened))
+            try:
+                extracted = extract_final_answer_allform(prediction_text)
+            except PhysicsExtractionTimeout:
+                extraction_timed_out = True
+                boxed_predictions = []
+                response_sha256 = hashlib.sha256(prediction_text.encode("utf-8")).hexdigest()
+                print(
+                    "[physics:extract-timeout] "
+                    f"index={row_index} response_sha256={response_sha256} fallback=qwen_equivalence_judge"
+                )
+            else:
+                flattened: list[str] = []
+                for item in extracted:
+                    values = item if isinstance(item, (list, tuple)) else [item]
+                    flattened.extend(str(value).strip() for value in values if str(value).strip())
+                boxed_predictions = list(dict.fromkeys(flattened))
+
+        comparison_predictions = [prediction_text] if extraction_timed_out else boxed_predictions
 
         state = {
             "ground_truths": ground_truths,
             "boxed_predictions": boxed_predictions,
-            "comparisons": [[] for _ in boxed_predictions],
+            "comparison_predictions": comparison_predictions,
+            "extraction_timed_out": extraction_timed_out,
+            "comparisons": [[] for _ in comparison_predictions],
         }
         row_states.append(state)
         row["physics_ground_truths"] = json.dumps(ground_truths, ensure_ascii=False)
         row["physics_boxed_predictions"] = json.dumps(boxed_predictions, ensure_ascii=False)
+        if extraction_timed_out:
+            row["physics_extraction_status"] = "parser_timeout_judge_fallback"
+            row["physics_prediction_sha256"] = response_sha256
         rows.append(row.to_dict())
 
-        for pred_ordinal, pred in enumerate(boxed_predictions):
+        for pred_ordinal, pred in enumerate(comparison_predictions):
             for gt_ordinal, gt in enumerate(ground_truths):
                 pair_inputs.append((ordinal, row_index, pred_ordinal, pred, gt_ordinal, gt, state))
 
@@ -2044,6 +2096,8 @@ def _run_physics_subset_score(
         comparison = is_equiv(recorder, pred, gt)
         comparison["pred_ordinal"] = pred_ordinal
         comparison["gt_ordinal"] = gt_ordinal
+        if item[-1]["extraction_timed_out"]:
+            comparison["prediction_source"] = "raw_response_after_extraction_timeout"
         return item, comparison, recorder.calls
 
     probe_workers = max(1, int(getattr(args, "eval_nproc", 16)))
@@ -2106,7 +2160,7 @@ def _run_physics_subset_score(
             any(bool(comparison.get("final_result")) for comparison in comparisons)
             for comparisons in state["comparisons"]
         )
-        prediction_count = len(state["boxed_predictions"])
+        prediction_count = len(state["comparison_predictions"])
         row["res"] = correct_count / prediction_count if prediction_count else 0.0
         row["log"] = json.dumps(state["comparisons"], ensure_ascii=False, default=json_default)
 
@@ -2568,6 +2622,94 @@ def _math_like_judge_cache_policy(
     return policies[route]
 
 
+def _run_logicvista_judge_with_official_retries(
+    *,
+    judge: PersistentJudge,
+    call_args: Any,
+    prompts: list[tuple[str, str]],
+    cache_name: str,
+    max_tokens: int | None,
+    top_p: float,
+    contract_version: str,
+) -> dict[str, dict[str, Any]]:
+    """Apply VLMEvalKit's five-temperature LogicVista extraction schedule."""
+
+    accepted: dict[str, dict[str, Any]] = {}
+    pending = list(prompts)
+    if not pending:
+        return accepted
+
+    cache_path = Path(cache_name)
+    temperatures = (0.0, 0.5, 1.0, 1.5, 2.0)
+    for attempt, temperature in enumerate(temperatures):
+        attempt_cache = (
+            cache_name
+            if attempt == 0
+            else f"{cache_path.stem}_retry_{attempt}{cache_path.suffix}"
+        )
+        judged = judge.run_cached(
+            output_dir=call_args.output_dir,
+            prompts=pending,
+            cache_name=attempt_cache,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            no_resume=call_args.no_resume,
+            desc=f"{call_args.dataset} local judge attempt {attempt + 1}",
+            output_validator=_nonempty_judge_output,
+            contract_version=(
+                contract_version
+                if attempt == 0
+                else f"{contract_version}-official-retry{attempt}"
+            ),
+            retry_on_length=False,
+            return_unresolved=True,
+        )
+
+        unresolved: list[tuple[str, str]] = []
+        for index, prompt in pending:
+            item = judged.get(str(index), {})
+            if _logicvista_label_tokens(item.get("judge_output", "")) is None:
+                unresolved.append((index, prompt))
+                continue
+            accepted[str(index)] = item
+        pending = unresolved
+        if not pending:
+            return accepted
+
+    failed = [str(index) for index, _ in pending]
+    raise RuntimeError(
+        "LogicVista judge produced malformed option extraction after five official "
+        f"temperature attempts; indices={failed[:10]}"
+    )
+
+
+def _load_logicvista_official_retry_outputs(
+    output_dir: Path,
+    runner: Any,
+    cache_name: str = "logicvista_qwen3_32b_extract.jsonl",
+) -> dict[str, dict[str, Any]]:
+    """Select the first valid output without mixing retry-cache identities."""
+
+    cache_path = Path(cache_name)
+    cache_names = [cache_name, *(
+        f"{cache_path.stem}_retry_{attempt}{cache_path.suffix}"
+        for attempt in range(1, 5)
+    )]
+    accepted: dict[str, dict[str, Any]] = {}
+    for candidate_name in cache_names:
+        candidate_path = output_dir / candidate_name
+        if not candidate_path.exists():
+            continue
+        for index, item in runner.load_jsonl_by_index(candidate_path).items():
+            index = str(index)
+            if index in accepted:
+                continue
+            if _logicvista_label_tokens(item.get("judge_output", "")) is not None:
+                accepted[index] = item
+    return accepted
+
+
 def _repair_logicvista_option_summary(
     spec: BenchmarkSpec,
     model_path: str,
@@ -2586,7 +2728,7 @@ def _repair_logicvista_option_summary(
     from vlmeval.smp import dump, get_intermediate_file_path
 
     data = pd.read_excel(judged_table, keep_default_na=False)
-    cached = runner.load_jsonl_by_index(cache_path)
+    cached = _load_logicvista_official_retry_outputs(output_dir, runner)
     malformed: list[str] = []
     normalized_values: list[str] = []
     hits: list[int] = []
@@ -2756,6 +2898,16 @@ def _run_local_math_like(
 
     def persistent_text_judge(call_args, *, prompts, cache_name, max_tokens=None, temperature=0.0, top_p=1.0):
         output_validator, contract_version = _math_like_judge_cache_policy(spec.key, cache_name)
+        if spec.key == "logicvista" and cache_name == "logicvista_qwen3_32b_extract.jsonl":
+            return _run_logicvista_judge_with_official_retries(
+                judge=judge,
+                call_args=call_args,
+                prompts=prompts,
+                cache_name=cache_name,
+                max_tokens=max_tokens,
+                top_p=top_p,
+                contract_version=contract_version,
+            )
         if spec.key == "mathverse" and cache_name == "mathverse_qwen3_32b_score.jsonl":
             accepted: dict[str, dict[str, Any]] = {}
             pending = list(prompts)
@@ -3447,6 +3599,47 @@ def _maybe_write_screenspot_aggregate(model_slug: str, benchmark_root: Path) -> 
     write_json(aggregate_score_path("screenspotpro", "vlmevalkit_defaults_pooled", model_slug, benchmark_root), out)
 
 
+def _archive_existing_score_for_spec(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    model_slug: str,
+) -> dict[str, Any]:
+    """Archive an existing direct-score result without rerunning its evaluator."""
+
+    output_dir = run_dir(spec, model_slug, args.run_root)
+    scores_path = output_dir / "scores.json"
+    summary = json.loads(scores_path.read_text(encoding="utf-8"))
+    score = float(summary["score"])
+    rows = int(summary["rows"])
+    if not math.isfinite(score) or rows < 1:
+        raise ValueError(f"Invalid existing score summary: {scores_path}")
+    if not isinstance(summary.get("artifacts"), dict):
+        raise ValueError(f"Existing score summary has no artifact contract: {scores_path}")
+
+    archive_summary = dict(summary)
+    archive_summary.pop("archive_descriptors", None)
+    archive_paths = _archive_direct_score_slices(
+        args,
+        spec,
+        model_path,
+        model_slug,
+        output_dir,
+        archive_summary,
+    )
+    if len(archive_paths) != 2 or any(path is None for path in archive_paths):
+        raise RuntimeError(f"Archive-only finalization did not emit two descriptors for {spec.key}")
+
+    benchmark_scores_path = score_path(spec, model_slug, args.benchmark_root)
+    summary["benchmark_score_path"] = str(benchmark_scores_path)
+    summary["archive_descriptors"] = [str(path) for path in archive_paths]
+    write_json(scores_path, summary)
+    benchmark_scores_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(scores_path, benchmark_scores_path)
+    print(f"[score-worker:archive-only] {spec.key} descriptors=2")
+    return summary
+
+
 def run_worker(args: argparse.Namespace) -> None:
     if args.gpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -3469,6 +3662,12 @@ def run_worker(args: argparse.Namespace) -> None:
             f"direct={len(specs)} llm_extract={len(LLM_EXTRACT_SCORE_KEYS)} "
             f"dedicated={len(DEDICATED_SCORE_KEYS)}"
         )
+    if getattr(args, "archive_only", False):
+        if not specs:
+            raise ValueError("Archive-only finalization selected no direct benchmarks")
+        for spec in specs:
+            _archive_existing_score_for_spec(args, spec, args.model, args.model_slug)
+        return
     materialize_grounding_benchmark_files(specs)
     queue_path = args.queue_root / f"score_{args.queue_name or args.model_slug + '_' + args.run_set}.json"
     jobs = [(spec.key, score_path(spec, args.model_slug, args.benchmark_root)) for spec in specs]
@@ -3559,6 +3758,11 @@ def main() -> None:
     parser.add_argument("--stale-after-sec", type=float, default=900)
     parser.add_argument("--max-attempts", type=int, default=2)
     parser.add_argument("--stop-on-error", action="store_true")
+    parser.add_argument(
+        "--archive-only",
+        action="store_true",
+        help="Archive existing direct scores without queue claims, scoring, parsing, or judge calls.",
+    )
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
     if args.trace_candidate37_200:

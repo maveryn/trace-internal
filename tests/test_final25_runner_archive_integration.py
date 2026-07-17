@@ -334,6 +334,120 @@ class Final25RunnerArchiveIntegrationTests(unittest.TestCase):
                     },
                 )
 
+    def test_physics_direct_archive_uses_official_res_values(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(
+            os.environ, _archive_env(Path(temporary) / "spool"), clear=False
+        ):
+            root = Path(temporary)
+            output = root / "physics"
+            output.mkdir()
+            judged = output / "Physics_official_judged_qwen3_32b.xlsx"
+            pd.DataFrame(
+                [
+                    {"index": "0", "prediction": "A", "answer": "A", "res": 1.0},
+                    {"index": "1", "prediction": "B", "answer": "C", "res": 0.0},
+                    {"index": "2", "prediction": "D", "answer": "D", "res": 0.5},
+                ]
+            ).to_excel(judged, index=False)
+
+            _archive_direct_score_slices(
+                SimpleNamespace(seed=42, judge_model="Qwen/Judge"),
+                spec_by_key("physics"),
+                "Qwen/Test",
+                "test-model",
+                output,
+                {
+                    "rows": 3,
+                    "score": 50.0,
+                    "harness": "official",
+                    "artifacts": {"judged_table": str(judged)},
+                },
+            )
+
+            score_rows = [row for row in _payloads(root / "spool") if "scorer" in row]
+            self.assertEqual(
+                {row["source_index"]: row["score"] for row in score_rows},
+                {"0": 1.0, "1": 0.0, "2": 0.5},
+            )
+
+    def test_physics_direct_archive_rejects_missing_official_res(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(
+            os.environ, _archive_env(Path(temporary) / "spool"), clear=False
+        ):
+            output = Path(temporary) / "physics"
+            output.mkdir()
+            judged = output / "Physics_official_judged_qwen3_32b.xlsx"
+            pd.DataFrame(
+                [{"index": "0", "prediction": "A", "answer": "A"}]
+            ).to_excel(judged, index=False)
+
+            with self.assertRaisesRegex(RuntimeError, "no explicit per-row score"):
+                _archive_direct_score_slices(
+                    SimpleNamespace(seed=42, judge_model="Qwen/Judge"),
+                    spec_by_key("physics"),
+                    "Qwen/Test",
+                    "test-model",
+                    output,
+                    {
+                        "rows": 1,
+                        "score": 0.0,
+                        "harness": "official",
+                        "artifacts": {"judged_table": str(judged)},
+                    },
+                )
+
+    def test_nonphysics_direct_archive_does_not_treat_res_as_a_score(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(
+            os.environ, _archive_env(Path(temporary) / "spool"), clear=False
+        ):
+            output = Path(temporary) / "chartmuseum"
+            output.mkdir()
+            judged = output / "judged_predictions.xlsx"
+            pd.DataFrame(
+                [{"index": "0", "prediction": "A", "answer": "A", "res": 1.0}]
+            ).to_excel(judged, index=False)
+
+            with self.assertRaisesRegex(RuntimeError, "no explicit per-row score"):
+                _archive_direct_score_slices(
+                    SimpleNamespace(seed=42, judge_model="Qwen/Judge"),
+                    spec_by_key("chartmuseum"),
+                    "Qwen/Test",
+                    "test-model",
+                    output,
+                    {
+                        "rows": 1,
+                        "score": 100.0,
+                        "harness": "official",
+                        "artifacts": {"judged_table": str(judged)},
+                    },
+                )
+
+    def test_physics_direct_archive_rejects_res_aggregate_disagreement(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(
+            os.environ, _archive_env(Path(temporary) / "spool"), clear=False
+        ):
+            output = Path(temporary) / "physics"
+            output.mkdir()
+            judged = output / "Physics_official_judged_qwen3_32b.xlsx"
+            pd.DataFrame(
+                [{"index": "0", "prediction": "A", "answer": "A", "res": 1.0}]
+            ).to_excel(judged, index=False)
+
+            with self.assertRaisesRegex(RuntimeError, "res values do not match"):
+                _archive_direct_score_slices(
+                    SimpleNamespace(seed=42, judge_model="Qwen/Judge"),
+                    spec_by_key("physics"),
+                    "Qwen/Test",
+                    "test-model",
+                    output,
+                    {
+                        "rows": 1,
+                        "score": 0.0,
+                        "harness": "official",
+                        "artifacts": {"judged_table": str(judged)},
+                    },
+                )
+
     def test_screenspot_direct_archive_derives_official_per_row_scores(self):
         with tempfile.TemporaryDirectory() as temporary, patch.dict(
             os.environ,

@@ -2232,7 +2232,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--dataset-manifest-view",
-        choices=("frozen", "provisional-mmvp", "all26", "all31"),
+        choices=("trace_eval_v1", "frozen", "provisional-mmvp", "all26", "all31"),
         default="frozen",
     )
     parser.add_argument(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 import unittest
@@ -16,8 +17,10 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 from benchmark_queue_lib import BenchmarkSpec  # noqa: E402
 from run_external_benchmark_score_queue import (  # noqa: E402
+    _archive_existing_score_for_spec,
     _charxiv_primary_score,
     _math_like_judge_cache_policy,
+    _load_logicvista_official_retry_outputs,
     _parse_chartmuseum_judgement_output,
     _parse_mathverse_score_output,
     _parse_physics_equivalence_output,
@@ -25,9 +28,11 @@ from run_external_benchmark_score_queue import (  # noqa: E402
     _preferred_direct_score,
     _run_chartmuseum_local_judge,
     _run_evochart_local_score,
+    _run_logicvista_judge_with_official_retries,
     _run_physics_subset_score,
     _run_tablevqabench_local_score,
     _screenspot_point_in_box_score,
+    run_worker,
 )
 from screenspot_json_contract import (  # noqa: E402
     SCREENSPOT_JSON_UNRESOLVED,
@@ -37,6 +42,164 @@ from screenspot_json_contract import (  # noqa: E402
 
 
 class ExternalBenchmarkScoreQueueTests(unittest.TestCase):
+    def test_logicvista_judge_uses_official_temperature_retries(self):
+        invalid = {"index": "2", "judge_output": "D\u2297"}
+        valid = {"index": "2", "judge_output": "AD"}
+        judge = mock.Mock()
+        judge.run_cached.side_effect = [
+            {"2": invalid},
+            {"2": invalid},
+            {"2": invalid},
+            {"2": invalid},
+            {"2": valid},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            result = _run_logicvista_judge_with_official_retries(
+                judge=judge,
+                call_args=SimpleNamespace(
+                    output_dir=Path(tmp), no_resume=False, dataset="LogicVista"
+                ),
+                prompts=[("2", "prompt")],
+                cache_name="logicvista_qwen3_32b_extract.jsonl",
+                max_tokens=16,
+                top_p=1.0,
+                contract_version="logicvista-v1",
+            )
+
+        self.assertEqual(result["2"]["judge_output"], "AD")
+        self.assertEqual(
+            [call.kwargs["temperature"] for call in judge.run_cached.call_args_list],
+            [0.0, 0.5, 1.0, 1.5, 2.0],
+        )
+
+    def test_logicvista_retry_selection_keeps_cache_identities_separate(self):
+        primary = {
+            "2": {"index": "2", "judge_output": "D\u2297", "request_hash": "primary"}
+        }
+        retry_one = {
+            "2": {"index": "2", "judge_output": "", "request_hash": "retry-1"}
+        }
+        retry_two = {
+            "2": {"index": "2", "judge_output": "AD", "request_hash": "retry-2"}
+        }
+        runner = mock.Mock()
+        runner.load_jsonl_by_index.side_effect = [primary, retry_one, retry_two]
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            for name in (
+                "logicvista_qwen3_32b_extract.jsonl",
+                "logicvista_qwen3_32b_extract_retry_1.jsonl",
+                "logicvista_qwen3_32b_extract_retry_2.jsonl",
+            ):
+                (output_dir / name).touch()
+
+            selected = _load_logicvista_official_retry_outputs(output_dir, runner)
+
+        self.assertEqual(selected["2"]["judge_output"], "AD")
+        self.assertEqual(selected["2"]["request_hash"], "retry-2")
+        self.assertEqual(runner.load_jsonl_by_index.call_count, 3)
+
+    def test_logicvista_judge_fails_after_official_retries(self):
+        invalid = {"index": "2", "judge_output": "D\u2297"}
+        judge = mock.Mock()
+        judge.run_cached.return_value = {"2": invalid}
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(RuntimeError, "five official temperature attempts"):
+                _run_logicvista_judge_with_official_retries(
+                    judge=judge,
+                    call_args=SimpleNamespace(
+                        output_dir=Path(tmp), no_resume=False, dataset="LogicVista"
+                    ),
+                    prompts=[("2", "prompt")],
+                    cache_name="logicvista_qwen3_32b_extract.jsonl",
+                    max_tokens=16,
+                    top_p=1.0,
+                    contract_version="logicvista-v1",
+                )
+
+        self.assertEqual(judge.run_cached.call_count, 5)
+
+    def test_archive_only_finalizer_updates_run_and_benchmark_receipts(self):
+        spec = BenchmarkSpec("logicvista", "LogicVista", "LogicVista", "run")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = SimpleNamespace(
+                run_root=root / "runs",
+                benchmark_root=root / "benchmark",
+            )
+            output_dir = args.run_root / "logicvista" / "test-model" / "run"
+            output_dir.mkdir(parents=True)
+            stale = root / "missing.ready.json"
+            (output_dir / "scores.json").write_text(
+                json.dumps(
+                    {
+                        "score": 50.0,
+                        "rows": 1,
+                        "artifacts": {"prediction_table": "predictions.xlsx"},
+                        "archive_descriptors": [str(stale), str(stale)],
+                    }
+                )
+            )
+            descriptors = [root / "extraction.ready.json", root / "score.ready.json"]
+            for path in descriptors:
+                path.write_text("{}")
+
+            with mock.patch(
+                "run_external_benchmark_score_queue._archive_direct_score_slices",
+                return_value=tuple(descriptors),
+            ) as archive:
+                summary = _archive_existing_score_for_spec(
+                    args, spec, "Qwen/Test", "test-model"
+                )
+
+            expected = [str(path) for path in descriptors]
+            self.assertEqual(summary["archive_descriptors"], expected)
+            archived_summary = archive.call_args.args[-1]
+            self.assertNotIn("archive_descriptors", archived_summary)
+            benchmark_path = args.benchmark_root / "logicvista" / "test-model" / "run" / "scores.json"
+            self.assertEqual(
+                json.loads(benchmark_path.read_text())["archive_descriptors"], expected
+            )
+
+    def test_archive_only_worker_bypasses_terminal_queue_and_judge(self):
+        spec = BenchmarkSpec("logicvista", "LogicVista", "LogicVista", "run")
+        args = SimpleNamespace(
+            gpu="",
+            attention_backend="FLASH_ATTN",
+            run_set="trace_final25",
+            model="Qwen/Test",
+            model_slug="test-model",
+            only=["logicvista"],
+            exclude=[],
+            archive_only=True,
+        )
+        with (
+            mock.patch(
+                "run_external_benchmark_score_queue.benchmark_specs_for_run_set",
+                return_value=[spec],
+            ),
+            mock.patch(
+                "run_external_benchmark_score_queue.filter_benchmark_specs",
+                return_value=[spec],
+            ),
+            mock.patch(
+                "run_external_benchmark_score_queue._archive_existing_score_for_spec"
+            ) as finalize,
+            mock.patch(
+                "run_external_benchmark_score_queue.claim_next_job",
+                side_effect=AssertionError("terminal queue must not be claimed"),
+            ) as claim,
+            mock.patch(
+                "run_external_benchmark_score_queue.PersistentJudge",
+                side_effect=AssertionError("archive-only must not construct a judge"),
+            ) as judge,
+        ):
+            run_worker(args)
+
+        finalize.assert_called_once_with(args, spec, "Qwen/Test", "test-model")
+        claim.assert_not_called()
+        judge.assert_not_called()
+
     def test_charxiv_summary_exposes_percent_scale_primary_score(self):
         self.assertAlmostEqual(_charxiv_primary_score({"Overall": 0.413}), 41.3)
 
@@ -169,6 +332,69 @@ class ExternalBenchmarkScoreQueueTests(unittest.TestCase):
                         FakeJudge(),
                     )
             self.assertFalse((output_dir / "scores.json").exists())
+
+    def test_physics_extractor_timeout_uses_equivalence_judge_fallback(self):
+        spec = BenchmarkSpec("physics", "Physics", "Physics", "vlmevalkit_reasoning")
+        source = SimpleNamespace(data=pd.DataFrame([{"index": "r0", "answer": [r"\text{target}"]}]))
+        raw_response = "pathological parser input <answer>target</answer>"
+
+        class FakeJudge:
+            def __init__(self):
+                self.calls = []
+
+            def run_cached(self, **kwargs):
+                self.calls.append(kwargs)
+                return {prompt_id: {"judge_output": "True"} for prompt_id, _ in kwargs["prompts"]}
+
+        physics_eval_utils = __import__(
+            "vlmeval.dataset.utils.physics_eval_utils",
+            fromlist=["extract_final_answer_allform"],
+        )
+        __import__("vlmeval.dataset.utils.physic", fromlist=["PHYSIC_acc"])
+        original_extract = physics_eval_utils.extract_final_answer_allform
+        timeout_raised = False
+
+        def timeout_once(response, *args, **kwargs):
+            nonlocal timeout_raised
+            if response == raw_response and not timeout_raised:
+                timeout_raised = True
+                raise physics_eval_utils.timeout_decorator.TimeoutError()
+            return original_extract(response, *args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            pd.DataFrame(
+                [{"index": "r0", "answer": "ignored", "prediction": raw_response}]
+            ).to_excel(output_dir / "Physics_predictions.xlsx", index=False)
+            fake_judge = FakeJudge()
+            with mock.patch(
+                "run_external_benchmark_score_queue.build_vlmeval_dataset",
+                return_value=source,
+            ), mock.patch(
+                "vlmeval.dataset.utils.physics_eval_utils.extract_final_answer_allform",
+                side_effect=timeout_once,
+            ):
+                summary = _run_physics_subset_score(
+                    SimpleNamespace(no_resume=False),
+                    spec,
+                    "model",
+                    output_dir,
+                    fake_judge,
+                )
+
+            self.assertAlmostEqual(summary["score"], 100.0)
+            self.assertEqual(len(fake_judge.calls), 1)
+            prompts = fake_judge.calls[0]["prompts"]
+            self.assertEqual(len(prompts), 1)
+            self.assertIn(raw_response, prompts[0][1])
+            judged = pd.read_excel(output_dir / "Physics_official_judged_qwen3_32b.xlsx")
+            self.assertEqual(judged.loc[0, "physics_boxed_predictions"], "[]")
+            self.assertEqual(judged.loc[0, "physics_extraction_status"], "parser_timeout_judge_fallback")
+            self.assertEqual(
+                judged.loc[0, "physics_prediction_sha256"],
+                "2d6894f92d96526e08f07353c4180dcdaf3b51936e0ffc01c7d80f375b49ddad",
+            )
+            self.assertEqual(judged.loc[0, "res"], 1.0)
 
     def test_screenspot_row_score_matches_official_inclusive_pixel_box(self):
         self.assertEqual(

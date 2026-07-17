@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Report durable Final31 generation, scoring, archive, and GPU progress."""
+"""Report generation, scoring, archive, and GPU progress for trace_eval_v1."""
 
 from __future__ import annotations
 
@@ -13,32 +13,37 @@ import time
 from pathlib import Path
 from typing import Any
 
-from benchmark_queue_lib import (
-    TRACE_FINAL31_BENCHMARKS,
-    extract_score_and_rows,
-    run_dir,
-    score_path,
-    spec_by_key,
-)
+from benchmark_queue_lib import extract_score_and_rows, run_dir, score_path, spec_by_key
+from trace_eval_evaluator_provenance import DEFAULT_VLMEVAL_ROOT, evaluator_provenance_sha256
+from trace_eval_score_receipts import ScoreReceiptError, validate_score_campaign_receipts
+from trace_eval_suite import TraceEvalSuite, load_trace_eval_suite
 
 
-DEFAULT_MODELS = (
-    "qwen25vl7b-base",
-    "trace-qwen25vl7b-answer-step500-rerun-20260715",
-    "vero-qwen25-7b",
-)
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def _manifest_rows(path: Path) -> dict[str, int]:
+def _manifest_rows(path: Path, suite: TraceEvalSuite) -> dict[str, int]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    view = payload.get("dataset_views", {}).get("all31")
-    if view != list(TRACE_FINAL31_BENCHMARKS):
-        raise ValueError("dataset manifest all31 view does not match TRACE_FINAL31_BENCHMARKS")
+    views = payload.get("dataset_views") or {}
+    source_view = views.get(suite.dataset_manifest_view)
+    if source_view != list(suite.benchmark_keys):
+        raise ValueError(
+            "dataset manifest must contain the exact ordered trace_eval_v1 view"
+        )
     datasets = payload.get("datasets") or {}
-    rows = {key: int((datasets.get(key) or {}).get("rows", -1)) for key in view}
-    invalid = {key: value for key, value in rows.items() if value <= 0}
-    if invalid:
-        raise ValueError(f"dataset manifest has invalid Final31 row counts: {invalid}")
+    if set(datasets) != set(suite.benchmark_keys):
+        raise ValueError("dataset manifest receipts must exactly match trace_eval_v1")
+    rows = {
+        key: int((datasets.get(key) or {}).get("rows", -1))
+        for key in suite.benchmark_keys
+    }
+    mismatched = {
+        key: {"expected": suite.rows_by_benchmark[key], "actual": rows[key]}
+        for key in suite.benchmark_keys
+        if rows[key] != suite.rows_by_benchmark[key]
+    }
+    if mismatched:
+        raise ValueError(f"dataset manifest row counts do not match trace_eval_v1: {mismatched}")
     return rows
 
 
@@ -71,8 +76,8 @@ def _score_complete(path: Path, expected_rows: int) -> bool:
     return (
         score is not None
         and rows is not None
-        and math.isfinite(score)
-        and rows == expected_rows
+        and math.isfinite(float(score))
+        and int(rows) == expected_rows
     )
 
 
@@ -106,7 +111,7 @@ def _gpu_status() -> list[dict[str, Any]]:
         output = subprocess.run(command, check=True, capture_output=True, text=True).stdout
     except (OSError, subprocess.CalledProcessError):
         return []
-    records = []
+    records: list[dict[str, Any]] = []
     for line in output.splitlines():
         fields = [field.strip() for field in line.split(",")]
         if len(fields) != 4:
@@ -122,24 +127,52 @@ def _gpu_status() -> list[dict[str, Any]]:
     return records
 
 
-def collect_status(args: argparse.Namespace) -> dict[str, Any]:
-    expected_by_benchmark = _manifest_rows(args.dataset_manifest)
-    expected_per_model_seed = sum(expected_by_benchmark.values())
+def collect_status(
+    args: argparse.Namespace,
+    suite: TraceEvalSuite | None = None,
+) -> dict[str, Any]:
+    active_suite = suite or load_trace_eval_suite(args.suite_manifest)
+    expected_by_benchmark = _manifest_rows(args.dataset_manifest, active_suite)
+    expected_per_model_seed = active_suite.rows_per_model_seed
     recent_window = max(30.0, float(args.rate_window_seconds))
     recent_after = time.time() - recent_window
     records: list[dict[str, Any]] = []
     recent_rows = 0
     durable_rows = 0
     score_slices = 0
+    observed_score_slices = 0
+    score_receipt_errors: dict[int, str] = {}
+    current_evaluator_hash = getattr(args, "_evaluator_provenance_sha256_cache", None)
+    if current_evaluator_hash is None:
+        current_evaluator_hash = evaluator_provenance_sha256(
+            repo_root=REPO_ROOT,
+            vlmeval_root=Path(getattr(args, "vlmeval_root", DEFAULT_VLMEVAL_ROOT)).resolve(),
+        )
+        # A watch process binds to one startup fingerprint; do not rehash the
+        # evaluator worktree on every status poll.
+        setattr(args, "_evaluator_provenance_sha256_cache", current_evaluator_hash)
     for seed in args.seeds:
         run_root = args.campaign_root / f"seed_{seed}" / "runs"
         benchmark_root = args.score_root / f"seed_{seed}" / "benchmark"
+        verified_scores: dict[tuple[str, str], dict[str, Any]] = {}
+        try:
+            verified_scores = validate_score_campaign_receipts(
+                score_root=args.score_root,
+                seed=seed,
+                model_slugs=args.model_slugs,
+                suite=active_suite,
+                evaluator_sha256=current_evaluator_hash,
+                repo_root=REPO_ROOT,
+            )
+        except (ScoreReceiptError, OSError, ValueError, TypeError) as error:
+            score_receipt_errors[int(seed)] = str(error)
         for model_slug in args.model_slugs:
             model_rows = 0
             model_recent = 0
             model_scores = 0
+            model_observed_scores = 0
             complete_benchmarks = 0
-            for key in TRACE_FINAL31_BENCHMARKS:
+            for key in active_suite.benchmark_keys:
                 spec = spec_by_key(key)
                 output_dir = run_dir(spec, model_slug, run_root)
                 summary_path = output_dir / "generation_summary.json"
@@ -155,14 +188,16 @@ def collect_status(args: argparse.Namespace) -> dict[str, Any]:
                             complete_benchmarks += 1
                     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
                         pass
-                rows = min(rows, expected_rows)
-                model_rows += rows
+                model_rows += min(rows, expected_rows)
                 model_recent += recent
                 if _score_complete(score_path(spec, model_slug, benchmark_root), expected_rows):
+                    model_observed_scores += 1
+                if (model_slug, key) in verified_scores:
                     model_scores += 1
             durable_rows += model_rows
             recent_rows += model_recent
             score_slices += model_scores
+            observed_score_slices += model_observed_scores
             records.append(
                 {
                     "seed": seed,
@@ -170,13 +205,17 @@ def collect_status(args: argparse.Namespace) -> dict[str, Any]:
                     "durable_rows": model_rows,
                     "expected_rows": expected_per_model_seed,
                     "generation_benchmarks": complete_benchmarks,
-                    "expected_benchmarks": len(TRACE_FINAL31_BENCHMARKS),
+                    "expected_benchmarks": len(active_suite.benchmark_keys),
                     "score_slices": model_scores,
-                    "expected_score_slices": len(TRACE_FINAL31_BENCHMARKS),
+                    "observed_score_files": model_observed_scores,
+                    "expected_score_slices": len(active_suite.benchmark_keys),
                 }
             )
-    expected_rows_total = expected_per_model_seed * len(args.seeds) * len(args.model_slugs)
-    expected_score_slices = len(TRACE_FINAL31_BENCHMARKS) * len(args.seeds) * len(args.model_slugs)
+
+    combinations = len(args.seeds) * len(args.model_slugs)
+    expected_rows_total = expected_per_model_seed * combinations
+    expected_score_slices = len(active_suite.benchmark_keys) * combinations
+    expected_archive_slices = expected_score_slices * 3
     rate = recent_rows / recent_window
     remaining = max(0, expected_rows_total - durable_rows)
     eta_seconds = remaining / rate if rate > 0 and remaining else (0.0 if not remaining else None)
@@ -186,19 +225,27 @@ def collect_status(args: argparse.Namespace) -> dict[str, Any]:
         warnings.append(
             f"generation incomplete while every GPU is below {args.low_gpu_threshold}% utilization"
         )
+    for seed, error in score_receipt_errors.items():
+        warnings.append(f"seed {seed} score receipt is incomplete or invalid: {error}")
     return {
+        "suite": active_suite.suite_id,
+        "suite_manifest_sha256": active_suite.manifest_sha256,
         "campaign_root": str(args.campaign_root),
         "score_root": str(args.score_root),
         "models": list(args.model_slugs),
         "seeds": list(args.seeds),
-        "benchmarks": len(TRACE_FINAL31_BENCHMARKS),
+        "benchmarks": len(active_suite.benchmark_keys),
+        "rows_per_model_seed": expected_per_model_seed,
         "durable_rows": durable_rows,
         "expected_rows": expected_rows_total,
         "recent_rows": recent_rows,
         "recent_rows_per_second": rate,
         "generation_eta_seconds": eta_seconds,
         "score_slices": score_slices,
+        "observed_score_files": observed_score_slices,
         "expected_score_slices": expected_score_slices,
+        "score_receipt_errors": score_receipt_errors,
+        "expected_archive_slices": expected_archive_slices,
         "records": records,
         "archive": _archive_status(args.archive_spool_root),
         "gpus": gpus,
@@ -218,45 +265,49 @@ def _duration(value: float | None) -> str:
 
 def print_status(report: dict[str, Any]) -> None:
     print(
-        "[final31-status] "
+        "[trace-eval-status] "
         f"generation={report['durable_rows']}/{report['expected_rows']} "
         f"rate={report['recent_rows_per_second']:.2f} rows/s "
         f"eta={_duration(report['generation_eta_seconds'])} "
         f"scores={report['score_slices']}/{report['expected_score_slices']}"
+        f" observed_score_files={report['observed_score_files']}"
     )
     for record in report["records"]:
         print(
-            "[final31-status:slice] "
+            "[trace-eval-status:slice] "
             f"seed={record['seed']} model={record['model_slug']} "
             f"rows={record['durable_rows']}/{record['expected_rows']} "
             f"generated={record['generation_benchmarks']}/{record['expected_benchmarks']} "
             f"scored={record['score_slices']}/{record['expected_score_slices']}"
+            f" observed={record['observed_score_files']}"
         )
     archive = report["archive"]
     print(
-        "[final31-status:archive] "
-        f"descriptors={archive['descriptors']} built={archive['built']} "
-        f"uploaded={archive['uploaded']} failed={archive['failed']}"
+        "[trace-eval-status:archive] "
+        f"descriptors={archive['descriptors']} expected={report['expected_archive_slices']} "
+        f"built={archive['built']} uploaded={archive['uploaded']} failed={archive['failed']}"
     )
     if report["gpus"]:
         print(
-            "[final31-status:gpus] "
+            "[trace-eval-status:gpus] "
             + " ".join(
                 f"gpu{item['index']}={item['utilization']}%/{item['memory_used_mib']}MiB"
                 for item in report["gpus"]
             )
         )
     for warning in report["warnings"]:
-        print(f"[final31-status:warning] {warning}")
+        print(f"[trace-eval-status:warning] {warning}")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--campaign-root", type=Path, required=True)
     parser.add_argument("--score-root", type=Path)
     parser.add_argument("--dataset-manifest", type=Path, required=True)
+    parser.add_argument("--suite-manifest", type=Path, default=None)
+    parser.add_argument("--vlmeval-root", type=Path, default=DEFAULT_VLMEVAL_ROOT)
     parser.add_argument("--archive-spool-root", type=Path)
-    parser.add_argument("--model-slug", action="append", dest="model_slugs")
+    parser.add_argument("--model-slug", action="append", dest="model_slugs", required=True)
     parser.add_argument("--seeds", nargs="+", type=int, default=[42, 43, 44])
     parser.add_argument("--rate-window-seconds", type=float, default=300.0)
     parser.add_argument("--low-gpu-threshold", type=int, default=10)
@@ -264,19 +315,30 @@ def main() -> None:
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--watch", type=float, metavar="SECONDS")
     parser.add_argument("--fail-if-incomplete", action="store_true")
-    args = parser.parse_args()
+    return parser
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = build_parser().parse_args(argv)
     args.campaign_root = args.campaign_root.expanduser().resolve()
     args.score_root = (
         args.score_root.expanduser().resolve()
         if args.score_root
         else args.campaign_root / "scoring"
     )
+    args.dataset_manifest = args.dataset_manifest.expanduser().resolve()
+    args.vlmeval_root = args.vlmeval_root.expanduser().resolve()
+    args.suite_manifest = (
+        args.suite_manifest.expanduser().resolve()
+        if args.suite_manifest
+        else None
+    )
     args.archive_spool_root = (
         args.archive_spool_root.expanduser().resolve()
         if args.archive_spool_root
         else args.campaign_root / "hf_archive"
     )
-    args.model_slugs = tuple(args.model_slugs or DEFAULT_MODELS)
+    args.model_slugs = tuple(dict.fromkeys(args.model_slugs))
     while True:
         report = collect_status(args)
         if args.json:

@@ -30,6 +30,76 @@ class _FakeOfficialDataset:
 
 
 class OfficialVLMEvalSavedScoreTest(unittest.TestCase):
+    def test_official_copy_drops_only_queue_identity_columns(self) -> None:
+        hash_like_request = "194e088947465066b916808afc8c3ad82814f55231c1dc210af8907dead6e2b1"
+        dataset = _FakeOfficialDataset()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            prediction = root / "saved.xlsx"
+            source = pd.DataFrame(
+                [
+                    {
+                        "index": 7,
+                        "prediction": "A",
+                        "answer": "A",
+                        "source_ordinal": 3,
+                        "request_hash": hash_like_request,
+                        "source_row_hash": "f" * 64,
+                        "custom_provenance": "keep-me",
+                    }
+                ]
+            )
+            source.to_excel(prediction, index=False)
+            source_sha256 = runner._sha256(prediction)
+
+            def guarded_loader(path: str) -> pd.DataFrame:
+                columns = runner._xlsx_header(Path(path))
+                remaining = set(columns) & set(runner.QUEUE_ONLY_PREDICTION_COLUMNS)
+                if remaining:
+                    raise AssertionError(f"queue columns reached table loader: {sorted(remaining)}")
+                return pd.read_excel(path)
+
+            summary = runner.run_saved_score(
+                benchmark_key="fake",
+                dataset_alias="OfficialAlias",
+                prediction_xlsx=prediction,
+                output_dir=root / "score",
+                model="model/path",
+                model_slug="model-slug",
+                run_name="official",
+                dataset_kwargs={},
+                judge_kwargs={},
+                primary_metric=None,
+                primary_value_scale="auto",
+                vlmeval_root=runner.DEFAULT_VLMEVAL_ROOT,
+                dataset_builder=lambda _alias, **_kwargs: dataset,
+                table_loader=guarded_loader,
+                flatten_metrics=lambda result: {"split=Overall|acc": result.iloc[0]["acc"]},
+            )
+
+            evaluated = pd.read_excel(dataset.calls[0][0])
+            self.assertEqual(
+                evaluated.columns.tolist(),
+                ["index", "prediction", "answer", "source_ordinal", "custom_provenance"],
+            )
+            self.assertEqual(evaluated.loc[0, "prediction"], "A")
+            self.assertEqual(evaluated.loc[0, "answer"], "A")
+            self.assertEqual(evaluated.loc[0, "custom_provenance"], "keep-me")
+            self.assertEqual(runner._xlsx_header(prediction), source.columns.tolist())
+            from openpyxl import load_workbook
+
+            workbook = load_workbook(prediction, read_only=True, data_only=False)
+            try:
+                self.assertEqual(workbook.active["E2"].value, hash_like_request)
+            finally:
+                workbook.close()
+            self.assertEqual(runner._sha256(prediction), source_sha256)
+            self.assertEqual(
+                summary["provenance"]["evaluator_input_filter"]["removed_columns"],
+                ["request_hash", "source_row_hash"],
+            )
+            self.assertEqual(summary["provenance"]["source_prediction_sha256"], source_sha256)
+
     def test_chartqapro_adapter_extracts_model_wrappers_and_preserves_fallback(self) -> None:
         raw_predictions = [
             "reasoning\nThe Answer Is: **42**.",

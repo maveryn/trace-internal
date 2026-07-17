@@ -1,20 +1,20 @@
-# Final External Evaluation
+# Final25/Final31 Evaluation (Historical)
 
-This directory is the configuration and contract surface for the final external
-benchmark campaign. It intentionally contains no model responses, extracted
+This directory is the immutable configuration and provenance surface for older
+external benchmark campaigns. New campaigns use
+[`../trace_eval/README.md`](../trace_eval/README.md). It intentionally contains no model responses, extracted
 answers, judge outputs, scores, workbooks, or aggregate result tables. Runtime
 artifacts belong in the configured campaign root and the private evaluation
 archive.
 
-This is the immutable source contract for the historical Final25 and All31
-campaigns. The active reporting selection is
-[`../final24/suite.v1.json`](../final24/suite.v1.json).
+This remains the immutable source contract for its historical campaigns; the
+commands and policies below document those runs and are not active defaults.
 
 ## Suite Definition
 
 [`suite.v1.json`](suite.v1.json) defines three explicit suite views:
 
-- `frozen`: the current 25-benchmark comparison suite, including CountQA.
+- `frozen`: the historical 25-benchmark comparison suite, including CountQA.
 - `provisional_mmvp`: the same suite with MMVP replacing CountQA.
 - `all31`: the diagnostic All26 union (both CountQA and MMVP) plus
   ScreenSpotPro, ScreenSpot v2, EmbSpatial, RealWorldQA, and VisuLogic.

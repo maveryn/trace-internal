@@ -168,6 +168,9 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
             r"D. $\frac{3+\sqrt{2}}{2}$": "D",
             "3": "3",
             "44": "44",
+            "C  \nExtracted answer: C": "C",
+            "Right-pointed arrow": "Right-pointed arrow",
+            r"\boxed{\triangle}": r"\boxed{\triangle}",
         }
         for output, expected in cases.items():
             with self.subTest(output=output):
@@ -178,6 +181,12 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
             "None",
             "None of the above",
             "None of the given options can be used to compare the metals.",
+            "None of the options can be confirmed from the description.",
+            "?",
+            "[?]",
+            "[? ? ?]",
+            "[?,?,?]",
+            "(? , ?)",
         ):
             with self.subTest(output=output):
                 self.assertEqual(
@@ -185,19 +194,28 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
                     (True, mme.MME_NO_CHOICE_SENTINEL),
                 )
 
-    def test_choice_extraction_rejects_empty_verbose_or_conflicting_outputs(self):
+    def test_choice_extraction_preserves_official_nonempty_fallbacks(self):
         for output in (
-            "",
             "the answer is A",
             "A or B",
             "A. first, B. second",
             "AA",
             "AH",
             "None whatsoever",
+            "C\nExtracted answer: D",
+            r"\boxed{\text{Right-pointed arrow}}",
+            "[?, A, ?]",
+            '{"answer": "?"}',
+            "[?;?]",
+            "[???]",
         ):
             with self.subTest(output=output):
-                valid, _normalized = mme._validate_extraction("choice_prompt", output)
-                self.assertFalse(valid)
+                self.assertEqual(
+                    mme._validate_extraction("choice_prompt", output),
+                    (True, output),
+                )
+
+        self.assertEqual(mme._validate_extraction("choice_prompt", ""), (False, ""))
 
     def test_choice_normalization_still_delegates_correctness_to_official_scorer(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -208,9 +226,16 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
                     [
                         self._row(index="0", answer="B", function_id="choice_function"),
                         self._row(index="1", answer="4", function_id="choice_function"),
+                        self._row(index="2", answer="C", function_id="choice_function"),
+                        self._row(index="3", answer="B", function_id="choice_function"),
                     ]
                 ),
-                responder=lambda _cache, index: "B. echoed option" if index == "0" else "3",
+                responder=lambda _cache, index: {
+                    "0": "B. echoed option",
+                    "1": "3",
+                    "2": "Right-pointed arrow",
+                    "3": "[? ? ?]",
+                }[index],
                 eval_functions={
                     "choice_function": lambda response, answer: response == str(answer)
                 },
@@ -218,9 +243,11 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
 
             self.assertIsNone(error)
             self.assertEqual(result["evaluation"]["correct"], 1)
-            self.assertEqual(result["evaluation"]["incorrect"], 1)
+            self.assertEqual(result["evaluation"]["incorrect"], 3)
             self.assertEqual(archived[0]["0"]["evaluation_status"], "correct")
             self.assertEqual(archived[0]["1"]["evaluation_status"], "incorrect")
+            self.assertEqual(archived[0]["2"]["evaluation_status"], "incorrect")
+            self.assertEqual(archived[0]["3"]["evaluation_status"], "incorrect")
 
     def test_generation_wrapper_propagates_final25_media_contract(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -368,6 +395,10 @@ class MMEReasoningFailureGuardTests(unittest.TestCase):
             self.assertEqual(
                 [call["temperature"] for call in judge.calls],
                 list(mme.MME_RETRY_TEMPERATURES),
+            )
+            self.assertEqual(
+                [call["max_tokens"] for call in judge.calls],
+                [128, 256, 256, 256, 256],
             )
             self.assertEqual(archived, [])
             self.assertIn("cleanup", events)

@@ -58,6 +58,31 @@ STAGE_RECORD_KEYS = {
     ),
     "score": frozenset({"prediction", "score", "scorer", "excluded"}),
 }
+OPAQUE_TEXT_RECORD_KEYS = {
+    "generation": frozenset(
+        {"question", "ground_truth", "prompt", "model_response"}
+    ),
+    "extraction": frozenset(
+        {
+            "question",
+            "ground_truth",
+            "model_response",
+            "judge_prompt",
+            "judge_response",
+        }
+    ),
+    "score": frozenset({"question", "ground_truth", "prediction"}),
+}
+OPAQUE_TEXT_RECORD_PATHS = {
+    "generation": frozenset(),
+    "extraction": frozenset(
+        {
+            ("retries", "events", "*", "prompt"),
+            ("retries", "events", "*", "response"),
+        }
+    ),
+    "score": frozenset(),
+}
 JSON_COLUMNS = (
     "ground_truth",
     "options",
@@ -300,7 +325,13 @@ def _is_media_path(value: str) -> bool:
     )
 
 
-def sanitize_archive_value(value: Any, *, path: str = "record") -> Any:
+def sanitize_archive_value(
+    value: Any,
+    *,
+    path: str = "record",
+    opaque_text_keys: frozenset[str] = frozenset(),
+    opaque_text_paths: frozenset[tuple[str, ...]] = frozenset(),
+) -> Any:
     """Return a JSON-safe value while rejecting media, paths, bytes, and secrets."""
 
     if isinstance(value, (bytes, bytearray, memoryview, Path)):
@@ -328,10 +359,41 @@ def sanitize_archive_value(value: Any, *, path: str = "record") -> Any:
                     result[key] = None
                     continue
                 raise ArchiveValidationError(f"media field is forbidden at {path}.{key}")
-            result[key] = sanitize_archive_value(child, path=f"{path}.{key}")
+            child_opaque_paths = frozenset(
+                candidate[1:]
+                for candidate in opaque_text_paths
+                if candidate and candidate[0] == normalized
+            )
+            if (
+                normalized in opaque_text_keys
+                or () in child_opaque_paths
+            ) and isinstance(child, str):
+                # Prompt and answer text may legitimately mention a local media
+                # path or contain a data URL emitted by the model. Only an
+                # explicitly declared scalar field receives this exemption;
+                # media-named fields and nested/binary payloads remain strict.
+                result[key] = child
+                continue
+            result[key] = sanitize_archive_value(
+                child,
+                path=f"{path}.{key}",
+                opaque_text_paths=child_opaque_paths,
+            )
         return result
     if isinstance(value, (list, tuple)):
-        return [sanitize_archive_value(child, path=f"{path}[{index}]") for index, child in enumerate(value)]
+        child_opaque_paths = frozenset(
+            candidate[1:]
+            for candidate in opaque_text_paths
+            if candidate and candidate[0] == "*"
+        )
+        return [
+            sanitize_archive_value(
+                child,
+                path=f"{path}[{index}]",
+                opaque_text_paths=child_opaque_paths,
+            )
+            for index, child in enumerate(value)
+        ]
     if hasattr(value, "isoformat"):
         try:
             return value.isoformat()
@@ -480,7 +542,12 @@ def emit_slice_ready(
     for row_number, raw_record in enumerate(records):
         if not isinstance(raw_record, Mapping):
             raise ArchiveValidationError(f"record {row_number} is not a mapping")
-        safe_record = sanitize_archive_value(raw_record, path=f"records[{row_number}]")
+        safe_record = sanitize_archive_value(
+            raw_record,
+            path=f"records[{row_number}]",
+            opaque_text_keys=OPAQUE_TEXT_RECORD_KEYS[stage],
+            opaque_text_paths=OPAQUE_TEXT_RECORD_PATHS[stage],
+        )
         missing = sorted(required_keys - set(safe_record))
         if missing:
             raise ArchiveValidationError(

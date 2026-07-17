@@ -162,6 +162,31 @@ class Final25ArchiveHookTests(unittest.TestCase):
                 },
             )
 
+    def test_generation_preserves_media_like_model_response_as_opaque_text(self):
+        response = (
+            "The screenshot path is /tmp/benchmark/example.png and the literal "
+            "answer is data:image/png;base64,not-an-archive-payload."
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            record = _common() | {
+                "source_row": {"index": "item-7"},
+                "prompt": "Describe /datasets/chart/example.png.",
+                "model_response": response,
+                "sampling": {"temperature": 0.6, "seed": 42},
+                "finish_reason": "stop",
+                "usage": {},
+            }
+
+            descriptor_path = emit_generation_slice(
+                records=[record], env=_env(root), **_identity()
+            )
+            descriptor = json.loads(descriptor_path.read_text())
+            archived = json.loads((root / descriptor["payload_path"]).read_text())
+
+            self.assertEqual(archived["model_response"], response)
+            self.assertEqual(archived["prompt"], record["prompt"])
+
     def test_extraction_and_score_keep_reanalysis_fields(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -203,6 +228,38 @@ class Final25ArchiveHookTests(unittest.TestCase):
             self.assertEqual(score_row["prediction"], "B")
             self.assertEqual(score_row["score"], 1.0)
             self.assertEqual(score_descriptor["aggregate"], {"accuracy": 1.0})
+
+    def test_extraction_preserves_media_like_text_in_retry_judge_exchange(self):
+        media_like_text = "data:image/png;base64,{shaded face}"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            extraction = _common() | {
+                "request_hash": _hash("extract-retry-request"),
+                "model_response": "The answer is C.",
+                "judge_prompt": "Extract one option.",
+                "judge_response": "C",
+                "normalized_extraction": {"answer": "C", "method": "judge"},
+                "retries": {
+                    "events": [
+                        {
+                            "prompt": f"Answer: {media_like_text}",
+                            "response": f"Literal response: {media_like_text}",
+                            "request_hash": _hash("judge-retry"),
+                        }
+                    ],
+                    "total_retries": 0,
+                },
+            }
+
+            descriptor_path = emit_extraction_slice(
+                records=[extraction], env=_env(root), **_identity()
+            )
+            descriptor = json.loads(descriptor_path.read_text())
+            archived = json.loads((root / descriptor["payload_path"]).read_text())
+
+            event = archived["retries"]["events"][0]
+            self.assertEqual(event["prompt"], f"Answer: {media_like_text}")
+            self.assertEqual(event["response"], f"Literal response: {media_like_text}")
 
     def test_generic_emitter_accepts_dataframe_rows(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -86,7 +86,7 @@ def _decoded_json_values(text: str) -> Iterable[Any]:
         start = min(starts)
         try:
             value, end = decoder.raw_decode(text[start:])
-        except json.JSONDecodeError:
+        except ValueError:
             position = start + 1
             continue
         yield value

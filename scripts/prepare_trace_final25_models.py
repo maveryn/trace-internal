@@ -85,22 +85,47 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _model_files(path: Path) -> list[Path]:
-    files = set(path.glob("*.safetensors"))
-    files.update(path.glob("*.bin"))
-    for name in (
-        "config.json",
-        "generation_config.json",
-        "model.safetensors.index.json",
-        "preprocessor_config.json",
-        "processor_config.json",
-        "tokenizer.json",
-        "tokenizer_config.json",
-    ):
-        candidate = path / name
+def _snapshot_files(path: Path) -> list[Path]:
+    files: list[Path] = []
+    for candidate in path.rglob("*"):
+        relative = candidate.relative_to(path)
+        if (
+            candidate.name == MARKER_NAME
+            or candidate.name.startswith(".trace_model_revision.")
+            or ".cache" in relative.parts
+        ):
+            continue
         if candidate.is_file():
-            files.add(candidate)
-    return sorted(files, key=lambda item: item.name)
+            files.append(candidate)
+    return sorted(files, key=lambda item: item.relative_to(path).as_posix())
+
+
+def _relative_hashes(path: Path, files: Iterable[Path]) -> dict[str, str]:
+    return {
+        item.relative_to(path).as_posix(): _sha256_file(item)
+        for item in files
+    }
+
+
+def _repository_file_names(info: object, repo_id: str) -> set[str]:
+    siblings = getattr(info, "siblings", None)
+    if not isinstance(siblings, (list, tuple)) or not siblings:
+        raise RuntimeError(f"pinned repository returned no file inventory: {repo_id}")
+    result: set[str] = set()
+    for sibling in siblings:
+        name = str(getattr(sibling, "rfilename", "") or "")
+        relative = Path(name)
+        if (
+            not name
+            or relative.is_absolute()
+            or ".." in relative.parts
+            or relative.as_posix() != name
+        ):
+            raise RuntimeError(f"unsafe file path in pinned repository {repo_id}: {name!r}")
+        result.add(name)
+    if len(result) != len(siblings):
+        raise RuntimeError(f"duplicate file paths in pinned repository inventory: {repo_id}")
+    return result
 
 
 def _validate_model_shape(path: Path) -> None:
@@ -151,6 +176,7 @@ def download_public(
             raise RuntimeError(
                 f"{model.repo_id}@{model.revision} resolved to unexpected commit {info.sha}"
             )
+        expected_files = _repository_file_names(info, model.repo_id)
         target = model_root / model.target_name
         print(f"[model:download] {model.repo_id}@{model.revision} -> {target}")
         snapshot_download(
@@ -160,6 +186,20 @@ def download_public(
             token=token,
         )
         _validate_model_shape(target)
+        snapshot_files = _snapshot_files(target)
+        current_files = {
+            item.relative_to(target).as_posix(): item for item in snapshot_files
+        }
+        if set(current_files) != expected_files:
+            missing = sorted(expected_files - set(current_files))
+            stale = sorted(set(current_files) - expected_files)
+            raise RuntimeError(
+                f"downloaded model file set differs from pinned repository {model.repo_id}: "
+                f"missing={missing} stale={stale}"
+            )
+        hashes = _relative_hashes(target, current_files.values())
+        if not hashes:
+            raise RuntimeError(f"downloaded model snapshot contains no files: {target}")
         _write_marker(
             target,
             {
@@ -168,6 +208,9 @@ def download_public(
                 "source": model.repo_id,
                 "immutable_revision": model.revision,
                 "resolved_commit": str(info.sha),
+                "model_origin": "public_download",
+                "file_count": len(hashes),
+                "file_sha256": hashes,
                 "registered_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             },
         )
@@ -175,7 +218,9 @@ def download_public(
 
 def register_local(slug: str, path: Path, source: str) -> str:
     _validate_model_shape(path)
-    hashes = {item.name: _sha256_file(item) for item in _model_files(path)}
+    hashes = _relative_hashes(path, _snapshot_files(path))
+    if not hashes:
+        raise RuntimeError(f"local model snapshot contains no files: {path}")
     fingerprint = hashlib.sha256(_canonical_json(hashes).encode("utf-8")).hexdigest()
     revision = f"sha256set:{fingerprint}"
     _write_marker(
@@ -185,6 +230,8 @@ def register_local(slug: str, path: Path, source: str) -> str:
             "slug": slug,
             "source": source,
             "immutable_revision": revision,
+            "model_origin": "local_registration",
+            "file_count": len(hashes),
             "file_sha256": hashes,
             "registered_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         },
@@ -211,9 +258,54 @@ def verify(entries: Iterable[tuple[str, Path, str]], deep: bool) -> None:
             raise RuntimeError(
                 f"model revision mismatch for {slug}: {actual_revision} != {expected_revision}"
             )
-        if deep and isinstance(marker.get("file_sha256"), dict):
-            for relative, expected_hash in marker["file_sha256"].items():
-                candidate = path / str(relative)
+        if deep:
+            recorded_hashes = marker.get("file_sha256")
+            if not isinstance(recorded_hashes, dict) or not recorded_hashes:
+                raise RuntimeError(
+                    f"deep verification requires immutable per-file hashes for {slug}: {path}"
+                )
+            normalized_hashes: dict[str, str] = {}
+            for relative, expected_hash in recorded_hashes.items():
+                relative_text = str(relative)
+                relative_path = Path(relative_text)
+                if (
+                    not relative_text
+                    or relative_path.is_absolute()
+                    or ".." in relative_path.parts
+                    or relative_path.as_posix() != relative_text
+                ):
+                    raise RuntimeError(f"unsafe model content path in marker: {relative_text!r}")
+                expected_hash_text = str(expected_hash)
+                if len(expected_hash_text) != 64 or any(
+                    character not in "0123456789abcdef" for character in expected_hash_text
+                ):
+                    raise RuntimeError(
+                        f"invalid model content hash in marker: {relative_text!r}"
+                    )
+                normalized_hashes[relative_text] = expected_hash_text
+
+            if (
+                marker.get("model_origin") == "public_download"
+                or bool(marker.get("resolved_commit"))
+            ):
+                if str(marker.get("resolved_commit") or "") != expected_revision:
+                    raise RuntimeError(f"model resolved commit mismatch for {slug}")
+            current_names = {
+                item.relative_to(path).as_posix(): item for item in _snapshot_files(path)
+            }
+            if set(current_names) != set(normalized_hashes):
+                missing = sorted(set(normalized_hashes) - set(current_names))
+                added = sorted(set(current_names) - set(normalized_hashes))
+                raise RuntimeError(
+                    f"model snapshot file set mismatch for {slug}: missing={missing} added={added}"
+                )
+            if marker.get("file_count") is not None and int(marker["file_count"]) != len(
+                normalized_hashes
+            ):
+                raise RuntimeError(f"model snapshot file count mismatch for {slug}")
+
+            for relative, expected_hash in normalized_hashes.items():
+                candidate = current_names[relative]
                 if not candidate.is_file() or _sha256_file(candidate) != expected_hash:
                     raise RuntimeError(f"model content hash mismatch: {candidate}")
         print(f"[model:ok] slug={slug} revision={actual_revision} path={path}")

@@ -240,6 +240,88 @@ class Final25HfArchiveTests(unittest.TestCase):
             with self.assertRaisesRegex(ArchiveValidationError, "source_row_hash"):
                 _emit(root, "generation", [incomplete])
 
+    def test_opaque_text_exception_does_not_admit_media_payload_fields(self):
+        media_like_text = "data:image/png;base64,abc /tmp/benchmark/image.png"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+
+            arbitrary_field = _generation_record()
+            arbitrary_field["artifact"] = media_like_text
+            with self.assertRaisesRegex(ArchiveValidationError, "media path"):
+                _emit(root, "generation", [arbitrary_field])
+
+            source_media = _generation_record()
+            source_media["source_row"]["image"] = media_like_text
+            with self.assertRaisesRegex(ArchiveValidationError, "media field"):
+                _emit(root, "generation", [source_media])
+
+            nested_media = _generation_record()
+            nested_media["model_response"] = {"image": media_like_text}
+            with self.assertRaisesRegex(ArchiveValidationError, "media field"):
+                _emit(root, "generation", [nested_media])
+
+            source_row_opaque_name = _generation_record()
+            source_row_opaque_name["source_row"]["model_response"] = media_like_text
+            with self.assertRaisesRegex(ArchiveValidationError, "media path"):
+                _emit(root, "generation", [source_row_opaque_name])
+
+            arbitrary_nested_opaque_name = _generation_record()
+            arbitrary_nested_opaque_name["nested"] = {
+                "model_response": media_like_text
+            }
+            with self.assertRaisesRegex(ArchiveValidationError, "media path"):
+                _emit(root, "generation", [arbitrary_nested_opaque_name])
+
+            nested_list_opaque_name = _generation_record()
+            nested_list_opaque_name["nested"] = [
+                {"model_response": media_like_text}
+            ]
+            with self.assertRaisesRegex(ArchiveValidationError, "media path"):
+                _emit(root, "generation", [nested_list_opaque_name])
+
+    def test_extraction_retry_text_exception_is_limited_to_event_prompt_and_response(self):
+        media_like_text = "data:image/png;base64,{shaded face}"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+
+            allowed = _extraction_record()
+            allowed["retries"] = {
+                "events": [
+                    {
+                        "prompt": media_like_text,
+                        "response": media_like_text,
+                        "retry_count": 0,
+                    }
+                ],
+                "total_retries": 0,
+            }
+            descriptor_path = _emit(root, "extraction", [allowed])
+            descriptor = json.loads(descriptor_path.read_text())
+            archived = json.loads((root / descriptor["payload_path"]).read_text())
+            self.assertEqual(archived["retries"]["events"][0]["prompt"], media_like_text)
+            self.assertEqual(archived["retries"]["events"][0]["response"], media_like_text)
+
+            media_field = _extraction_record()
+            media_field["retries"] = {
+                "events": [{"prompt": "judge", "image": media_like_text}]
+            }
+            with self.assertRaisesRegex(ArchiveValidationError, "media field"):
+                _emit(root, "extraction", [media_field])
+
+            unrecognized_nested_field = _extraction_record()
+            unrecognized_nested_field["retries"] = {
+                "events": [{"details": {"prompt": media_like_text}}]
+            }
+            with self.assertRaisesRegex(ArchiveValidationError, "media path"):
+                _emit(root, "extraction", [unrecognized_nested_field])
+
+            unrecognized_retry_field = _extraction_record()
+            unrecognized_retry_field["retries"] = {
+                "other": {"prompt": media_like_text}
+            }
+            with self.assertRaisesRegex(ArchiveValidationError, "media path"):
+                _emit(root, "extraction", [unrecognized_retry_field])
+
     def test_generation_aggregate_allows_media_contract_metadata_only(self):
         aggregate = {
             "generation": {

@@ -1,0 +1,41 @@
+{
+  "completed_at": "2026-07-17T16:28:26.913209+00:00",
+  "config_sha256": "aa7552ff990e2b292cc3fef4fc7c8775380da9052c742d9f2a77e4be196f4d49",
+  "expected_slices": 648,
+  "models": [
+    "game-rl-qwen25vl7b",
+    "sphinx-qwen7b-500",
+    "pcgrpo-qwen25vl7b-jigsaw-care"
+  ],
+  "phase": "complete",
+  "pid": 1125300,
+  "public_export_manifest_sha256": "ebef0bb8b07e9ec080843545874f5c2a8ca442faf8966102d2b99b65ad36672b",
+  "public_run_id": "qwen2.5-vl-7b-rl-baselines-temp06-seeds42-44-v1",
+  "ready_slices": 648,
+  "schema_version": "trace-eval-publish-worker-status-v1",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "source_run_id": "trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717",
+  "started_at": "2026-07-17T16:16:26.841928+00:00",
+  "suite_id": "trace_eval_v1",
+  "updated_at": "2026-07-17T16:28:26.913404+00:00",
+  "upload_report": {
+    "already_verified": 1,
+    "content_set_sha256": "6f19acf3c9abf7949bfe031433bdcbb75d9cc7e6e7178d37e9a517b3c692f38c",
+    "file_count": 1304,
+    "other_runs": [
+      "qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1",
+      "qwen2.5-vl-7b-comparison-temp06-seeds42-44-v1"
+    ],
+    "private": true,
+    "public_export_manifest_sha256": "ebef0bb8b07e9ec080843545874f5c2a8ca442faf8966102d2b99b65ad36672b",
+    "repo_id": "maveryn/trace-eval-runs",
+    "revision": "4ca25af7a4d7daa644e6f35e070dbed1af078321",
+    "run_id": "qwen2.5-vl-7b-rl-baselines-temp06-seeds42-44-v1",
+    "run_prefix": "runs/qwen2.5-vl-7b-rl-baselines-temp06-seeds42-44-v1",
+    "uploaded": 1303
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "trace-logicvista-terminal-period-repair-v1",
+  "run_id": "trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717",
+  "published_run_id": "qwen2.5-vl-7b-rl-baselines-temp06-seeds42-44-v1",
+  "benchmark": "logicvista",
+  "model_id": "pcgrpo-qwen2.5-vl-7b",
+  "seed": 44,
+  "source_indices": [
+    "135"
+  ],
+  "observed_judge_outputs": [
+    "C."
+  ],
+  "normalization": "strip exactly one terminal ASCII period from an otherwise valid atomic option token",
+  "new_judge_requests": 0,
+  "model_response_changed": false,
+  "judge_cache_changed": false,
+  "campaign_code_sha256": "fe01ffe87c48710a7d126deddce105b515e3bbc3f99192131086ffe561cbd2c8",
+  "repair_code_sha256": "a8d890e5e454610c5ee421c3b0177d342524bd0fe7a7dab1fdbf923c960734b6",
+  "judge_cache_sha256": {
+    "logicvista_qwen3_32b_extract.jsonl": "c6bdfd0d14e84458bb26027d646271398b81bfd6a6cc3aa93287d4deead1d488",
+    "logicvista_qwen3_32b_extract_retry_1.jsonl": "91cafab8097595987010252a3489981fc56ce673e7e84a99223591c2e08f32c9",
+    "logicvista_qwen3_32b_extract_retry_2.jsonl": "c75737ec7fdb0aae498f13581711ce42ef02e3e2cad258616dfee0da54428806",
+    "logicvista_qwen3_32b_extract_retry_3.jsonl": "194f1c092770576fabc37e34d2b10fe29dbeaade548ada63a7ac49e880a469b3",
+    "logicvista_qwen3_32b_extract_retry_4.jsonl": "d7da8385fb4217b5c29e6aa60456f2b5e8b53c0d1c1fb70a8c871dbc51ad3398"
+  },
+  "scope_guards": {
+    "accepts": [
+      "C.",
+      "AB.",
+      "1."
+    ],
+    "rejects": [
+      "C because",
+      "A.B",
+      "C.."
+    ]
+  },
+  "artifact_repository": "maveryn/trace-eval-runs",
+  "artifact_revision": "4ca25af7a4d7daa644e6f35e070dbed1af078321",
+  "documentation_revision": "b61d7702d0c95435869597b1050c8140d5b0d1f2"
+}

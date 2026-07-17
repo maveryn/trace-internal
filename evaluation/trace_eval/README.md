@@ -42,6 +42,32 @@ The route partition is:
 Generation and dataset preparation select only these 24 benchmarks through the
 `trace_eval_v1` run set and dataset-manifest view.
 
+### Scoped fixes and compatibility
+
+Stay on the pinned upstream prompt, extraction, and scoring behavior unless a
+concrete evaluator defect is demonstrated from preserved raw outputs. A scoped
+fix must leave generation unchanged, preserve the raw response and judge
+cache, record its exact affected identities, and be reproducible without
+silently converting an infrastructure or parser failure into an incorrect
+answer.
+
+The completed baseline campaign required one such parser repair. PCGRPO seed
+44, LogicVista row index 135 had five cached judge attempts, each containing
+the otherwise valid label `C.`. `_logicvista_label_tokens` therefore removes
+exactly one terminal period before applying the existing option-set
+normalization. It continues to reject extra prose, internal punctuation, and
+multiple periods. The row was rescored from the unchanged model response and
+existing cache with zero new judge requests; its score aggregate carries the
+old/new evaluator fingerprints, cache hashes, affected identity, and
+`parser_repair` record.
+
+This operational compatibility surface remains internal. Baseline-specific
+processor aliases, runtime views, parser incidents, and recovery fixtures
+belong in internal provenance and documentation, not in public model-specific
+tests or public APIs. A public release may retain a small generic smoke check
+for the released TRACE model, but comparison-model compatibility must not
+become part of the public contract.
+
 ## Running
 
 Set up the pinned VLMEvalKit checkout and CPU-side evaluation dependencies
@@ -111,8 +137,52 @@ changed only `preprocessor_config.json#/image_processor_type` to
 `Qwen2VLImageProcessor`; every other file linked to the pinned upstream
 snapshot. That view had content-set revision
 `sha256set:a9c97c8bd921fcaeaf5160c1ed644b34f292ae05302a00980c4ded899a837f8f`.
+`model_compat/game_rl_qwen25vl7b_processor_alias.v1.json` is an internal
+provenance receipt for that one-file runtime view, not a test fixture or a
+public compatibility contract.
 Set `GAME_PATH` and `GAME_REV` to an equivalently registered view before
 launching on a new host.
+
+### Completed baseline results
+
+The campaign
+`trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717` completed all
+three baselines on the canonical 24-benchmark suite at seeds 42, 43, and 44.
+It generated 295,245 responses, completed 216 model/seed/benchmark scoring
+identities, and produced 648 locally verified
+generation/extraction/score slices. The sanitized private artifact bundle is
+pinned at
+`maveryn/trace-eval-runs@4ca25af7a4d7daa644e6f35e070dbed1af078321`;
+the repository documentation head is
+`b61d7702d0c95435869597b1050c8140d5b0d1f2`.
+
+| Category | Game-RL | Sphinx | PCGRPO |
+| --- | ---: | ---: | ---: |
+| Charts & Tables | 54.81 +/- 0.41 | 54.50 +/- 0.87 | 52.91 +/- 0.99 |
+| Visual Math | 44.37 +/- 0.32 | 44.70 +/- 0.26 | 44.99 +/- 0.40 |
+| Science & General | 51.52 +/- 1.53 | 52.25 +/- 0.88 | 52.28 +/- 0.92 |
+| Spatial Reasoning | 54.31 +/- 0.99 | 56.18 +/- 0.97 | 56.03 +/- 0.55 |
+| Perception & Counting | 48.54 +/- 0.24 | 50.03 +/- 0.17 | 48.70 +/- 0.22 |
+| Puzzles & Logic | 34.72 +/- 0.74 | 38.39 +/- 0.05 | 37.91 +/- 0.79 |
+| Overall | 48.05 +/- 0.45 | 49.34 +/- 0.15 | 48.80 +/- 0.28 |
+
+Values are benchmark-macro means in percent, reported as mean and sample
+standard deviation over the three decoding seeds. The full per-benchmark table
+and machine-readable score records remain the result source; this table is a
+summary.
+
+SpatialVizBench COT used the pinned evaluator's official retry and `INVALID`
+fallback unchanged. Fallback row counts were:
+
+| Model | Seed 42 | Seed 43 | Seed 44 | Total |
+| --- | ---: | ---: | ---: | ---: |
+| Game-RL | 1 | 1 | 1 | 3 |
+| Sphinx | 1 | 2 | 0 | 3 |
+| PCGRPO | 0 | 1 | 0 | 1 |
+
+No post-hoc answer inference or repair was applied to these rows. The
+LogicVista terminal-period repair described above is the only parser repair
+needed by this campaign.
 
 The model source must be an immutable 40- or 64-hex repository commit, including
 for a locally trained model. Upload and pin that model repository before the

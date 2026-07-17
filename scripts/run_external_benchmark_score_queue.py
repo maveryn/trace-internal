@@ -2526,7 +2526,10 @@ def _normalize_mathverse_score_table(score_df: pd.DataFrame) -> dict[str, Any]:
 
 
 def _logicvista_label_tokens(value: Any) -> tuple[str, list[str]] | None:
-    compact = re.sub(r"[\s,;/]+", "", str(value or "").strip().upper())
+    text = str(value or "").strip().upper()
+    if text.endswith(".") and text.count(".") == 1:
+        text = text[:-1].rstrip()
+    compact = re.sub(r"[\s,;/]+", "", text)
     if re.fullmatch(r"[A-KZ]+", compact):
         return "letter", list(compact)
     if re.fullmatch(r"[1-9]+", compact):

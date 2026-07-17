@@ -38,13 +38,14 @@ post-step-500 optimizer-state continuation becomes a requirement.
 
 | Scope | Repository and revision | Coverage |
 | --- | --- | --- |
-| Canonical 7B comparison | `maveryn/trace-eval-runs@4178a839b689babe16f8ac36f0de7b1b2c5ef36c` | Base, TRACE, and VERO; 24 benchmarks; seeds 42/43/44; 648 response/extraction/score slices. Repository documentation head before the pending baseline append: `57d16af543aa47058daf8bed1b5306cf38bbc3cf`. |
+| Canonical 7B comparison | `maveryn/trace-eval-runs@4178a839b689babe16f8ac36f0de7b1b2c5ef36c` | Base, TRACE, and VERO; 24 benchmarks; seeds 42/43/44; 648 response/extraction/score slices. The immutable run prefix remains valid after later repository appends. |
 | Canonical 3B comparison | `maveryn/trace-eval-runs@4178a839b689babe16f8ac36f0de7b1b2c5ef36c` | Base and TRACE; 24 benchmarks; seeds 42/43/44; 432 slices. The immutable run prefix remains valid after repository-level documentation changes. |
+| RL 7B baselines | `maveryn/trace-eval-runs@4ca25af7a4d7daa644e6f35e070dbed1af078321` | Game-RL, Sphinx, and PCGRPO; 24 benchmarks; seeds 42/43/44; 648 response/extraction/score slices. Repository documentation head: `b61d7702d0c95435869597b1050c8140d5b0d1f2`. |
 | Internal supplementary comparison | `maveryn/trace-internal-eval-runs@04267dc31304f1bd5ed41b8930db63b03d3b8d29` | Seven non-paper benchmarks; three 7B models; three seeds; 189 slices. |
 | Historical standalone candidates | `maveryn/trace-internal-eval-runs@67bebe1a23d112b20a0c517e863c750714635ca7` | Noncanonical RealWorldQA and VStarBench seed-42 archives under `historical/standalone-candidate-runs/20260716/`. |
 
 The private internal archive's documented handoff head is
-`69f9229db278f37115f1672e6152e2a28bfe68c6`. It records that legacy slice
+`a8c87dbdba6ec8d1bacff95b9040cd8d541ca2ae`. It records that legacy slice
 manifests and recovery patches may preserve historical machine paths as private
 provenance; new unsanitized paths must not be added.
 
@@ -74,14 +75,86 @@ The 3B and 7B model cards record the actual answer-focused GRPO contract:
 weight `0.05`, annotation reward `0`, and KL disabled. W&B remains the source
 of truth for the full resolved training configurations.
 
-## Pending baseline campaign
+## Completed baseline campaign
 
-The final GPU-host job is
-`trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717`, publishing
-as `qwen2.5-vl-7b-rl-baselines-temp06-seeds42-44-v1`. Do not retire the host
-until generation, scoring, all 648 archive slices, remote HF readback, and the
-publisher completion receipt succeed. Update this section and the internal
-handoff tag after completion.
+The final GPU-host evaluation job,
+`trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717`, completed
+generation and scoring for Game-RL, Sphinx, and PCGRPO on all 24
+`trace_eval_v1` benchmarks and seeds 42, 43, and 44. Generation produced
+295,245 row responses, all 216 model/seed/benchmark score identities completed,
+and all 648 generation/extraction/score archive slices passed local coverage.
+The neutral publication id is
+`qwen2.5-vl-7b-rl-baselines-temp06-seeds42-44-v1`.
+
+The completed local results are mean and sample standard deviation across the
+three decoding seeds:
+
+| Category | Game-RL | Sphinx | PCGRPO |
+| --- | ---: | ---: | ---: |
+| Charts & Tables | 54.81 +/- 0.41 | 54.50 +/- 0.87 | 52.91 +/- 0.99 |
+| Visual Math | 44.37 +/- 0.32 | 44.70 +/- 0.26 | 44.99 +/- 0.40 |
+| Science & General | 51.52 +/- 1.53 | 52.25 +/- 0.88 | 52.28 +/- 0.92 |
+| Spatial Reasoning | 54.31 +/- 0.99 | 56.18 +/- 0.97 | 56.03 +/- 0.55 |
+| Perception & Counting | 48.54 +/- 0.24 | 50.03 +/- 0.17 | 48.70 +/- 0.22 |
+| Puzzles & Logic | 34.72 +/- 0.74 | 38.39 +/- 0.05 | 37.91 +/- 0.79 |
+| Overall 24-benchmark macro-average | 48.05 +/- 0.45 | 49.34 +/- 0.15 | 48.80 +/- 0.28 |
+
+Two evaluator-provenance details must accompany these results:
+
+- PCGRPO seed 44, LogicVista row index 135 exhausted the five existing judge
+  attempts because each cached extraction was `C.`. The pinned parser accepts
+  `C` but rejects the otherwise equivalent terminal-period form. The scoped
+  repair removes exactly one terminal period from an otherwise valid
+  letter/number label token or set; extra prose, internal punctuation, and
+  repeated punctuation remain invalid. The repair reused the unchanged model
+  response and all existing judge-cache files, made zero new judge requests,
+  and is recorded in the score aggregate's `parser_repair` provenance.
+- SpatialVizBench COT retained the pinned evaluator's official fallback to
+  `INVALID` after its extraction retries. The fallback counts for seeds
+  42/43/44 are Game-RL `1/1/1`, Sphinx `1/2/0`, and PCGRPO `0/1/0`, for totals
+  of 3, 3, and 1 rows respectively. These rows were not inferred or repaired
+  after the campaign.
+
+The sanitized private HF upload completed at artifact revision
+`4ca25af7a4d7daa644e6f35e070dbed1af078321`. The publisher verified all 648
+expected slices, 1,304 allowlisted files, content-set SHA-256
+`6f19acf3c9abf7949bfe031433bdcbb75d9cc7e6e7178d37e9a517b3c692f38c`,
+and a private remote readback. Repository-level documentation was then updated
+at `b61d7702d0c95435869597b1050c8140d5b0d1f2` without changing the immutable
+artifact revision.
+
+The compact local handoff copies are:
+
+- `results/trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717_results.md`
+- `results/trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717_results.xlsx`
+- `results/trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717_scores.json`
+- `results/trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717_publish_receipt.json`
+- `results/trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717_logicvista_repair_receipt.json`
+
+## Public release gates
+
+The internal evaluation tree is the provenance and operations source. A
+baseline-specific runtime adapter, processor alias, parser incident, or
+recovery fixture belongs in internal documentation and receipts; it must not
+be copied into the public repository as a model-specific test or public API
+contract. The public evaluation release may include a small generic TRACE
+model smoke check, but it must not encode compatibility behavior for Game-RL,
+Sphinx, PCGRPO, or another comparison model.
+
+Before publishing the paper-facing `rlvr` branch:
+
+1. Pin and record one immutable public `rlvr` source commit.
+2. Preserve the exact answer system-prompt asset at
+   `rlvr/examples/prompts/trace_vero_json_system_prompt_answer.txt`, whose
+   expected SHA-256 is
+   `f394927d9abcfb7a1e43ef48a30c29b8c70e6facdbda314d7b27c59d8c3ae900`.
+3. Publish a complete source revision, split/version, license, and citation
+   matrix for every benchmark in `trace_eval_v1`.
+4. Replace paper citation placeholders with the approved dataset, model,
+   evaluator, and training references.
+5. Bind the released result metadata to the immutable model, judge, suite,
+   evaluator-code, prompt, and HF artifact revisions; spreadsheets remain
+   derived views rather than the source of truth.
 
 ## Resume checklist
 

@@ -247,11 +247,14 @@ The pinned wrapper for the active Qwen2.5-VL 3B run is:
 bash scripts/run_trace_qwen25vl3b_post_training_eval_job.sh
 ```
 
-It evaluates one model on `trace_eval_v1` with seeds `42`, `43`, and `44`.
+It evaluates the trained TRACE model and the pinned Qwen2.5-VL-3B-Instruct base
+on `trace_eval_v1` with seeds `42`, `43`, and `44`. The neutral launcher first
+generates every TRACE seed, then every base-model seed, and only then loads one
+shared Qwen3-32B judge pool for extraction and scoring across both models.
 `GPU_GROUPS="0 1 2 3 4 5 6 7"` gives generation eight independent one-GPU
 vLLM endpoints and retains the established 32 requests per endpoint. The judge
 phase likewise uses eight endpoints. The publisher runs separately under
-`nice -n 10` and waits for all 216 local slices without using a GPU.
+`nice -n 10` and waits for all 432 local slices without using a GPU.
 
 Render the complete static contract without reading the token, contacting HF,
 waiting for training, or creating state:
@@ -272,7 +275,7 @@ For a detached handoff, keep the supervisor log in its durable private state
 directory:
 
 ```bash
-HANDOFF_ROOT=logs/handoff/trace-qwen2.5-vl-3b-eval-v1
+HANDOFF_ROOT=logs/handoff/qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1
 install -d -m 700 "${HANDOFF_ROOT}"
 nohup bash scripts/run_trace_qwen25vl3b_post_training_eval_job.sh \
   >"${HANDOFF_ROOT}/supervisor.log" 2>&1 </dev/null &
@@ -283,9 +286,9 @@ Monitor training, handoff, evaluation, and publication independently:
 ```bash
 tail -f "${HANDOFF_ROOT}/supervisor.log"
 jq '{phase, updated_at, error}' "${HANDOFF_ROOT}/status.json"
-tail -f logs/benchmark/trace_eval_v1_temp06_seed42_43_44_trace-qwen25vl3b-step500-20260716/campaign.log
+tail -f logs/benchmark/trace_eval_v1_temp06_seed42_43_44_qwen25vl3b_base_trace_step500_20260716/campaign.log
 jq '{phase, ready_slices, expected_slices, error}' \
-  logs/publish/trace-qwen2.5-vl-3b-eval-v1/status.json
+  logs/publish/qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1/status.json
 ```
 
 Restart the identical wrapper after a process or network failure on the same

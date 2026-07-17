@@ -10,8 +10,8 @@ CHECKPOINT_ROOT="${CHECKPOINT_ROOT:-/dev/shm/trace_rlvr/easyr1_checkpoints/${EXP
 TEMPORARY_REPO="${TEMPORARY_REPO:-maveryn/trace-qwen25vl3b-rlvr-answer-step500-rerun-${RUN_STAMP}}"
 CANONICAL_REPO="${CANONICAL_REPO:-maveryn/trace-qwen2.5-vl-3b}"
 SOURCE_MODEL_SLUG="${SOURCE_MODEL_SLUG:-trace-qwen25vl3b-answer-step500-20260716}"
-RUN_TAG="${RUN_TAG:-trace_eval_v1_temp06_seed42_43_44_trace-qwen25vl3b-step500-20260716}"
-PUBLIC_RUN_ID="${PUBLIC_RUN_ID:-trace-qwen2.5-vl-3b-eval-v1}"
+RUN_TAG="${RUN_TAG:-trace_eval_v1_temp06_seed42_43_44_qwen25vl3b_base_trace_step500_20260716}"
+PUBLIC_RUN_ID="${PUBLIC_RUN_ID:-qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1}"
 STATE_ROOT="${STATE_ROOT:-${REPO_ROOT}/logs/handoff/${PUBLIC_RUN_ID}}"
 TRAINING_SOURCE_COMMIT="${TRAINING_SOURCE_COMMIT:-847e9f5279f8111fdbfef1c8b8631fc621c23456}"
 
@@ -45,6 +45,10 @@ args=(
   --training-source-commit "${TRAINING_SOURCE_COMMIT}"
   --base-model-id Qwen/Qwen2.5-VL-3B-Instruct
   --base-model-revision 66285546d2b821cf421d4f5eb2576359d3770cd3
+  --base-source-model-slug qwen25vl3b-base
+  --base-model-path /dev/shm/trace_rlvr/final25_models/qwen25vl3b-base
+  --base-public-model-id qwen2.5-vl-3b-base
+  --base-display-name "Qwen2.5-VL-3B Base"
   --dataset-id maveryn/trace
   --dataset-revision e317b746b258630682367cc6a9d87dedd195113c
   --wandb-url https://wandb.ai/llm-reasoning-rl/trace_easyr1/runs/kijsydl8

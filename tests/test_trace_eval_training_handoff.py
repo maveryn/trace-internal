@@ -59,6 +59,10 @@ def _config(tmp_path: Path) -> handoff.Config:
         training_source_commit="e" * 40,
         base_model_id="Qwen/Qwen2.5-VL-3B-Instruct",
         base_model_revision="f" * 40,
+        base_source_model_slug="qwen25vl3b-base",
+        base_model_path=tmp_path / "qwen25vl3b-base",
+        base_public_model_id="qwen2.5-vl-3b-base",
+        base_display_name="Qwen2.5-VL-3B Base",
         dataset_id="example/trace",
         dataset_revision="1" * 40,
         wandb_url="https://wandb.ai/example/project/runs/run-id",
@@ -115,6 +119,14 @@ def _cli_args(config: handoff.Config) -> list[str]:
         config.base_model_id,
         "--base-model-revision",
         config.base_model_revision,
+        "--base-source-model-slug",
+        config.base_source_model_slug,
+        "--base-model-path",
+        str(config.base_model_path),
+        "--base-public-model-id",
+        config.base_public_model_id,
+        "--base-display-name",
+        config.base_display_name,
         "--dataset-id",
         config.dataset_id,
         "--dataset-revision",
@@ -192,8 +204,10 @@ def test_print_config_is_side_effect_free_and_renders_exact_gpu_plan(tmp_path: P
     assert document["seeds"] == [42, 43, 44]
     assert document["gpu_groups"] == [str(index) for index in range(8)]
     assert document["eval_environment"]["GPU_GROUPS"] == "0 1 2 3 4 5 6 7"
-    assert document["eval_command"].count("--model") == 1
-    assert document["eval_command"][document["eval_command"].index("--seeds") + 1 : -2] == [
+    assert document["eval_command"].count("--model") == 2
+    seeds_offset = document["eval_command"].index("--seeds")
+    delta_offset = document["eval_command"].index("--delta")
+    assert document["eval_command"][seeds_offset + 1 : delta_offset] == [
         "42",
         "43",
         "44",
@@ -205,7 +219,10 @@ def test_print_config_is_side_effect_free_and_renders_exact_gpu_plan(tmp_path: P
     )
 
 
-def test_eval_and_publisher_commands_share_exact_model_identity(tmp_path: Path) -> None:
+def test_eval_and_publisher_commands_share_exact_model_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(handoff, "REPO_ROOT", tmp_path)
     config = _config(tmp_path)
     identity = handoff.ModelIdentity(
         local_revision=LOCAL_REVISION,
@@ -224,8 +241,19 @@ def test_eval_and_publisher_commands_share_exact_model_identity(tmp_path: Path) 
         f"{config.canonical_repo}@{FINAL_REPOSITORY_REVISION}",
         config.display_name,
     ]
-    model_offset = publisher.index("--model")
-    assert publisher[model_offset + 1 : model_offset + 9] == [
+    assert evaluation[8:14] == [
+        "--model",
+        config.base_source_model_slug,
+        str(config.base_model_path),
+        config.base_model_revision,
+        f"{config.base_model_id}@{config.base_model_revision}",
+        config.base_display_name,
+    ]
+    assert evaluation.count("--model") == 2
+    model_offsets = [
+        index for index, value in enumerate(publisher) if value == "--model"
+    ]
+    assert publisher[model_offsets[0] + 1 : model_offsets[0] + 9] == [
         config.source_model_slug,
         str(config.model_path),
         LOCAL_REVISION,
@@ -234,6 +262,16 @@ def test_eval_and_publisher_commands_share_exact_model_identity(tmp_path: Path) 
         config.display_name,
         config.canonical_repo,
         FINAL_REPOSITORY_REVISION,
+    ]
+    assert publisher[model_offsets[1] + 1 : model_offsets[1] + 9] == [
+        config.base_source_model_slug,
+        str(config.base_model_path),
+        config.base_model_revision,
+        config.base_public_model_id,
+        config.base_model_revision,
+        config.base_display_name,
+        config.base_model_id,
+        config.base_model_revision,
     ]
     environment = handoff._eval_environment(config)
     assert environment["GPU_GROUPS"] == "0 1 2 3 4 5 6 7"
@@ -253,9 +291,9 @@ def test_eval_and_publisher_commands_share_exact_model_identity(tmp_path: Path) 
             "phase": "complete",
             "source_run_id": config.run_tag,
             "public_run_id": config.public_run_id,
-            "models": [config.source_model_slug],
+            "models": [config.source_model_slug, config.base_source_model_slug],
             "seeds": list(config.seeds),
-            "expected_slices": 216,
+            "expected_slices": 432,
             "public_export_manifest_sha256": manifest_sha,
             "upload_report": {
                 "run_id": config.public_run_id,
@@ -264,6 +302,12 @@ def test_eval_and_publisher_commands_share_exact_model_identity(tmp_path: Path) 
         },
     )
     assert handoff._publisher_complete(config, identity)
+    status = json.loads(
+        (config.publish_root / "status.json").read_text(encoding="utf-8")
+    )
+    status["expected_slices"] = 216
+    handoff._atomic_json(config.publish_root / "status.json", status)
+    assert not handoff._publisher_complete(config, identity)
 
 
 def test_marker_validation_rejects_conflicting_snapshot(tmp_path: Path) -> None:
@@ -655,4 +699,11 @@ def test_pinned_job_wrapper_has_valid_shell_and_exact_three_seed_contract() -> N
     assert "--gpu-group 0 --gpu-group 1 --gpu-group 2 --gpu-group 3" in source
     assert "--gpu-group 4 --gpu-group 5 --gpu-group 6 --gpu-group 7" in source
     assert "maveryn/trace-qwen2.5-vl-3b" in source
-    assert "trace-qwen2.5-vl-3b-eval-v1" in source
+    assert "qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1" in source
+    assert "--base-source-model-slug qwen25vl3b-base" in source
+    assert (
+        "--base-model-path /dev/shm/trace_rlvr/final25_models/qwen25vl3b-base"
+        in source
+    )
+    assert "--base-public-model-id qwen2.5-vl-3b-base" in source
+    assert "66285546d2b821cf421d4f5eb2576359d3770cd3" in source

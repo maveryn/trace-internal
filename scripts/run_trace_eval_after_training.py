@@ -34,6 +34,8 @@ MODEL_MARKER = ".trace_model_revision.json"
 HF_COMMIT_RE = re.compile(r"^[0-9a-f]{40}(?:[0-9a-f]{24})?$")
 LOCAL_REVISION_RE = re.compile(r"^sha256set:[0-9a-f]{64}$")
 REPO_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$")
+TRACE_EVAL_BENCHMARK_COUNT = 24
+ARCHIVE_STAGE_COUNT = 3
 
 
 class HandoffError(RuntimeError):
@@ -45,6 +47,18 @@ class ModelIdentity:
     local_revision: str
     repository_revision: str
     base_repository_revision: str
+
+
+@dataclass(frozen=True)
+class EvaluationModel:
+    source_model_slug: str
+    local_model_path: Path
+    source_revision: str
+    model_id: str
+    model_revision: str
+    display_name: str
+    repository_id: str
+    repository_revision: str
 
 
 @dataclass(frozen=True)
@@ -84,6 +98,10 @@ class Config:
     training_source_commit: str
     base_model_id: str
     base_model_revision: str
+    base_source_model_slug: str
+    base_model_path: Path
+    base_public_model_id: str
+    base_display_name: str
     dataset_id: str
     dataset_revision: str
     wandb_url: str
@@ -140,7 +158,11 @@ class Config:
     def digest_document(self) -> dict[str, Any]:
         return {
             "base_model_id": self.base_model_id,
+            "base_model_path": str(self.base_model_path),
             "base_model_revision": self.base_model_revision,
+            "base_source_model_slug": self.base_source_model_slug,
+            "base_public_model_id": self.base_public_model_id,
+            "base_display_name": self.base_display_name,
             "canonical_repo": self.canonical_repo,
             "checkpoint_root": str(self.checkpoint_root),
             "checkpoint_step": self.checkpoint_step,
@@ -1368,25 +1390,78 @@ def _eval_environment(config: Config) -> dict[str, str]:
     return environment
 
 
+def _campaign_models(
+    config: Config,
+    identity: ModelIdentity,
+) -> tuple[EvaluationModel, ...]:
+    return (
+        EvaluationModel(
+            source_model_slug=config.source_model_slug,
+            local_model_path=config.model_path,
+            source_revision=identity.local_revision,
+            model_id=config.public_model_id,
+            model_revision=identity.repository_revision,
+            display_name=config.display_name,
+            repository_id=config.canonical_repo,
+            repository_revision=identity.repository_revision,
+        ),
+        EvaluationModel(
+            source_model_slug=config.base_source_model_slug,
+            local_model_path=config.base_model_path,
+            source_revision=config.base_model_revision,
+            model_id=config.base_public_model_id,
+            model_revision=config.base_model_revision,
+            display_name=config.base_display_name,
+            repository_id=config.base_model_id,
+            repository_revision=config.base_model_revision,
+        ),
+    )
+
+
+def _model_receipt(model: EvaluationModel) -> dict[str, str]:
+    return {
+        "source_model_slug": model.source_model_slug,
+        "local_model_path": str(model.local_model_path),
+        "source_revision": model.source_revision,
+        "model_id": model.model_id,
+        "model_revision": model.model_revision,
+        "display_name": model.display_name,
+        "repository_id": model.repository_id,
+        "repository_revision": model.repository_revision,
+    }
+
+
 def _eval_command(config: Config, identity: ModelIdentity) -> list[str]:
-    return [
+    command = [
         "bash",
         str(REPO_ROOT / "scripts" / "run_trace_eval.sh"),
-        "--model",
-        config.source_model_slug,
-        str(config.model_path),
-        identity.local_revision,
-        f"{config.canonical_repo}@{identity.repository_revision}",
-        config.display_name,
-        "--seeds",
-        *(str(seed) for seed in config.seeds),
-        "--run-tag",
-        config.run_tag,
     ]
+    for model in _campaign_models(config, identity):
+        command.extend(
+            (
+                "--model",
+                model.source_model_slug,
+                str(model.local_model_path),
+                model.source_revision,
+                f"{model.repository_id}@{model.repository_revision}",
+                model.display_name,
+            )
+        )
+    command.extend(
+        (
+            "--seeds",
+            *(str(seed) for seed in config.seeds),
+            "--delta",
+            f"TRACE-Base={config.source_model_slug}={config.base_source_model_slug}",
+            "--run-tag",
+            config.run_tag,
+        )
+    )
+    return command
 
 
 def _publisher_command(config: Config, identity: ModelIdentity) -> list[str]:
-    return [
+    command = [
         "nice",
         "-n",
         "10",
@@ -1409,33 +1484,43 @@ def _publisher_command(config: Config, identity: ModelIdentity) -> list[str]:
         "--public-run-id",
         config.public_run_id,
         *(item for seed in config.seeds for item in ("--seed", str(seed))),
-        "--model",
-        config.source_model_slug,
-        str(config.model_path),
-        identity.local_revision,
-        config.public_model_id,
-        identity.repository_revision,
-        config.display_name,
-        config.canonical_repo,
-        identity.repository_revision,
-        "--judge",
-        "qwen3-32b-judge",
-        "Qwen/Qwen3-32B",
-        config.judge_revision,
-        "--token-file",
-        str(config.token_file),
-        "--paper-repo",
-        config.paper_repo,
-        "--timeout-seconds",
-        f"{config.publisher_timeout_seconds:g}",
-        "--allow-paper-run-upload",
-        "--confirm-paper-run",
-        f"UPLOAD {config.paper_repo}/{config.public_run_id}",
     ]
+    for model in _campaign_models(config, identity):
+        command.extend(
+            (
+                "--model",
+                model.source_model_slug,
+                str(model.local_model_path),
+                model.source_revision,
+                model.model_id,
+                model.model_revision,
+                model.display_name,
+                model.repository_id,
+                model.repository_revision,
+            )
+        )
+    command.extend(
+        (
+            "--judge",
+            "qwen3-32b-judge",
+            "Qwen/Qwen3-32B",
+            config.judge_revision,
+            "--token-file",
+            str(config.token_file),
+            "--paper-repo",
+            config.paper_repo,
+            "--timeout-seconds",
+            f"{config.publisher_timeout_seconds:g}",
+            "--allow-paper-run-upload",
+            "--confirm-paper-run",
+            f"UPLOAD {config.paper_repo}/{config.public_run_id}",
+        )
+    )
+    return command
 
 
 def _status_command(config: Config) -> list[str]:
-    return [
+    command = [
         str(config.python_bin),
         str(REPO_ROOT / "scripts" / "status_trace_eval.py"),
         "--campaign-root",
@@ -1448,12 +1533,13 @@ def _status_command(config: Config) -> list[str]:
         str(config.archive_spool_root),
         "--vlmeval-root",
         str(config.vlmeval_root),
-        "--model-slug",
-        config.source_model_slug,
-        "--seeds",
-        *(str(seed) for seed in config.seeds),
-        "--fail-if-incomplete",
     ]
+    for slug in (config.source_model_slug, config.base_source_model_slug):
+        command.extend(("--model-slug", slug))
+    command.extend(
+        ("--seeds", *(str(seed) for seed in config.seeds), "--fail-if-incomplete")
+    )
+    return command
 
 
 def _campaign_complete(config: Config) -> bool:
@@ -1675,6 +1761,7 @@ def _child_running(handle: ChildHandle) -> bool:
 
 
 def _publisher_config_sha256(config: Config, identity: ModelIdentity) -> str:
+    models = _campaign_models(config, identity)
     document = {
         "archive_spool_root": str(config.archive_spool_root),
         "campaign_root": str(config.campaign_root),
@@ -1686,15 +1773,16 @@ def _publisher_config_sha256(config: Config, identity: ModelIdentity) -> str:
         },
         "models": [
             {
-                "source_model_id": config.source_model_slug,
-                "local_model_path": str(config.model_path),
-                "source_revision": identity.local_revision,
-                "model_id": config.public_model_id,
-                "model_revision": identity.repository_revision,
-                "display_name": config.display_name,
-                "repository_id": config.canonical_repo,
-                "repository_revision": identity.repository_revision,
+                "source_model_id": model.source_model_slug,
+                "local_model_path": str(model.local_model_path),
+                "source_revision": model.source_revision,
+                "model_id": model.model_id,
+                "model_revision": model.model_revision,
+                "display_name": model.display_name,
+                "repository_id": model.repository_id,
+                "repository_revision": model.repository_revision,
             }
+            for model in models
         ],
         "paper_repo": config.paper_repo,
         "public_run_id": config.public_run_id,
@@ -1718,15 +1806,22 @@ def _publisher_complete(config: Config, identity: ModelIdentity) -> bool:
         return False
     upload_report = status.get("upload_report")
     manifest_sha = status.get("public_export_manifest_sha256")
+    models = _campaign_models(config, identity)
+    expected_slices = (
+        ARCHIVE_STAGE_COUNT
+        * TRACE_EVAL_BENCHMARK_COUNT
+        * len(models)
+        * len(config.seeds)
+    )
     return (
         status.get("schema_version") == "trace-eval-publish-worker-status-v1"
         and status.get("config_sha256") == _publisher_config_sha256(config, identity)
         and status.get("phase") == "complete"
         and status.get("source_run_id") == config.run_tag
         and status.get("public_run_id") == config.public_run_id
-        and status.get("models") == [config.source_model_slug]
+        and status.get("models") == [model.source_model_slug for model in models]
         and status.get("seeds") == list(config.seeds)
-        and status.get("expected_slices") == 216
+        and status.get("expected_slices") == expected_slices
         and isinstance(manifest_sha, str)
         and re.fullmatch(r"[0-9a-f]{64}", manifest_sha) is not None
         and isinstance(upload_report, dict)
@@ -1767,10 +1862,10 @@ def _evaluation_complete(config: Config, identity: ModelIdentity) -> bool:
         return False
     receipt = _load_json(path)
     return (
-        receipt.get("schema_version") == "trace-eval-supervised-launch-v1"
+        receipt.get("schema_version") == "trace-eval-supervised-launch-v2"
         and receipt.get("config_sha256") == config.config_sha256
-        and receipt.get("local_revision") == identity.local_revision
-        and receipt.get("repository_revision") == identity.repository_revision
+        and receipt.get("models")
+        == [_model_receipt(model) for model in _campaign_models(config, identity)]
         and receipt.get("command_sha256")
         == _command_sha256(_eval_command(config, identity))
     )
@@ -1780,12 +1875,12 @@ def _write_evaluation_receipt(config: Config, identity: ModelIdentity) -> None:
     _atomic_json(
         _evaluation_receipt_path(config),
         {
-            "schema_version": "trace-eval-supervised-launch-v1",
+            "schema_version": "trace-eval-supervised-launch-v2",
             "config_sha256": config.config_sha256,
             "run_tag": config.run_tag,
-            "source_model_slug": config.source_model_slug,
-            "local_revision": identity.local_revision,
-            "repository_revision": identity.repository_revision,
+            "models": [
+                _model_receipt(model) for model in _campaign_models(config, identity)
+            ],
             "command_sha256": _command_sha256(_eval_command(config, identity)),
             "completed_at": _utc_now(),
         },
@@ -1880,6 +1975,7 @@ def _validate_static_config(config: Config) -> None:
     for label, repo_id in (
         ("temporary repo", config.temporary_repo),
         ("canonical repo", config.canonical_repo),
+        ("base model repo", config.base_model_id),
         ("paper repo", config.paper_repo),
     ):
         if not REPO_ID_RE.fullmatch(repo_id):
@@ -1890,6 +1986,12 @@ def _validate_static_config(config: Config) -> None:
         raise HandoffError("judge revision must be an immutable HF commit")
     if not HF_COMMIT_RE.fullmatch(config.training_source_commit):
         raise HandoffError("training source commit must be immutable")
+    if not HF_COMMIT_RE.fullmatch(config.base_model_revision):
+        raise HandoffError("base model revision must be an immutable HF commit")
+    if config.source_model_slug == config.base_source_model_slug:
+        raise HandoffError("TRACE and base source model slugs must differ")
+    if config.public_model_id == config.base_public_model_id:
+        raise HandoffError("TRACE and base public model ids must differ")
     if not config.seeds or len(set(config.seeds)) != len(config.seeds):
         raise HandoffError("evaluation seeds must be nonempty and unique")
     if not config.gpu_groups or len(set(config.gpu_groups)) != len(config.gpu_groups):
@@ -1900,6 +2002,7 @@ def _validate_static_config(config: Config) -> None:
         config.python_bin,
         config.dataset_manifest,
         config.judge_model,
+        config.base_model_path,
         config.eval_deps_root,
         config.vlmeval_root,
     ):
@@ -2015,6 +2118,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--training-source-commit", required=True)
     parser.add_argument("--base-model-id", required=True)
     parser.add_argument("--base-model-revision", required=True)
+    parser.add_argument("--base-source-model-slug", required=True)
+    parser.add_argument("--base-model-path", type=Path, required=True)
+    parser.add_argument("--base-public-model-id", required=True)
+    parser.add_argument("--base-display-name", required=True)
     parser.add_argument("--dataset-id", required=True)
     parser.add_argument("--dataset-revision", required=True)
     parser.add_argument("--wandb-url", required=True)
@@ -2062,6 +2169,10 @@ def _config_from_args(args: argparse.Namespace) -> Config:
         training_source_commit=args.training_source_commit,
         base_model_id=args.base_model_id,
         base_model_revision=args.base_model_revision,
+        base_source_model_slug=args.base_source_model_slug,
+        base_model_path=_absolute(args.base_model_path),
+        base_public_model_id=args.base_public_model_id,
+        base_display_name=args.base_display_name,
         dataset_id=args.dataset_id,
         dataset_revision=args.dataset_revision,
         wandb_url=args.wandb_url,

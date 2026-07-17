@@ -137,9 +137,9 @@ changed only `preprocessor_config.json#/image_processor_type` to
 `Qwen2VLImageProcessor`; every other file linked to the pinned upstream
 snapshot. That view had content-set revision
 `sha256set:a9c97c8bd921fcaeaf5160c1ed644b34f292ae05302a00980c4ded899a837f8f`.
-`model_compat/game_rl_qwen25vl7b_processor_alias.v1.json` is an internal
-provenance receipt for that one-file runtime view, not a test fixture or a
-public compatibility contract.
+This baseline-specific compatibility detail is documented here for internal
+reproduction; it is not represented by a public test fixture or compatibility
+contract.
 Set `GAME_PATH` and `GAME_REV` to an equivalently registered view before
 launching on a new host.
 

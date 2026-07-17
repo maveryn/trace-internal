@@ -219,6 +219,85 @@ identical restart exit without another upload. Publication does not use a GPU,
 so another generation campaign can start while export or upload is still
 running.
 
+### Post-training handoff
+
+Use `run_trace_eval_after_training.py` when a locally trained checkpoint should
+enter evaluation as soon as its training wrapper exits. The supervisor is an
+orchestration layer only: it invokes `run_trace_eval.sh` and the background
+publisher unchanged, and does not replace benchmark prompts, generation,
+answer extraction, or scoring.
+
+The supervisor waits on the exact training PID and script identity, verifies
+the retained final checkpoint and merged model, and then establishes two
+separate immutable identities:
+
+- a local `sha256set:` revision covering every model file;
+- the final 40-character commit of the private canonical HF model repository.
+
+It prefers a server-side move from the training run's temporary repository. If
+that upload failed after a valid local merge, it can recover by uploading the
+merged folder directly without rerunning training. Existing canonical content
+is accepted only when its private snapshot matches the local model; unrelated
+content is never overwritten. The local handoff receipt, lock, process
+receipts, and status are mode `0600` under a mode-`0700` state directory.
+
+The pinned wrapper for the active Qwen2.5-VL 3B run is:
+
+```bash
+bash scripts/run_trace_qwen25vl3b_post_training_eval_job.sh
+```
+
+It evaluates one model on `trace_eval_v1` with seeds `42`, `43`, and `44`.
+`GPU_GROUPS="0 1 2 3 4 5 6 7"` gives generation eight independent one-GPU
+vLLM endpoints and retains the established 32 requests per endpoint. The judge
+phase likewise uses eight endpoints. The publisher runs separately under
+`nice -n 10` and waits for all 216 local slices without using a GPU.
+
+Render the complete static contract without reading the token, contacting HF,
+waiting for training, or creating state:
+
+```bash
+TRACE_3B_HANDOFF_PRINT_CONFIG=1 \
+  bash scripts/run_trace_qwen25vl3b_post_training_eval_job.sh
+```
+
+Run a read-only host preflight with the training, GPU, and port state included:
+
+```bash
+TRACE_3B_HANDOFF_DRY_RUN=1 \
+  bash scripts/run_trace_qwen25vl3b_post_training_eval_job.sh
+```
+
+For a detached handoff, keep the supervisor log in its durable private state
+directory:
+
+```bash
+HANDOFF_ROOT=logs/handoff/trace-qwen2.5-vl-3b-eval-v1
+install -d -m 700 "${HANDOFF_ROOT}"
+nohup bash scripts/run_trace_qwen25vl3b_post_training_eval_job.sh \
+  >"${HANDOFF_ROOT}/supervisor.log" 2>&1 </dev/null &
+```
+
+Monitor training, handoff, evaluation, and publication independently:
+
+```bash
+tail -f "${HANDOFF_ROOT}/supervisor.log"
+jq '{phase, updated_at, error}' "${HANDOFF_ROOT}/status.json"
+tail -f logs/benchmark/trace_eval_v1_temp06_seed42_43_44_trace-qwen25vl3b-step500-20260716/campaign.log
+jq '{phase, ready_slices, expected_slices, error}' \
+  logs/publish/trace-qwen2.5-vl-3b-eval-v1/status.json
+```
+
+Restart the identical wrapper after a process or network failure on the same
+host. It validates and reuses the immutable model handoff, attaches to matching
+live child PIDs, uses row-level generation resume and scorer resume, and reuses
+a completed publisher receipt. Transient HF failures retry with bounded
+exponential backoff until the service recovers; permanent authorization or
+contract failures stop immediately. It never kills an unknown GPU process;
+evaluation waits until all eight target GPUs and both endpoint port ranges are
+free. A machine reboot clears the checkpoint and campaign data under
+`/dev/shm`; rehydrate those artifacts before restarting after a reboot.
+
 Monitor or verify an existing campaign with:
 
 ```bash

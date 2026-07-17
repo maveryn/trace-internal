@@ -84,6 +84,36 @@ bash scripts/run_trace_eval.sh \
   --seeds 42 43 44
 ```
 
+### RL baseline queue
+
+`scripts/run_trace_eval_rl_baselines.sh` is the resumable three-model launcher
+used for the Game-RL, Sphinx, and PCGRPO paper baselines. It generates all
+three models sequentially, loads the judge once for shared extraction/scoring,
+and runs the background publisher against the same campaign root. Inspect the
+resolved configuration without acquiring a lock or starting a GPU process:
+
+```bash
+TRACE_RL_BASELINES_PRINT_CONFIG=1 \
+  bash scripts/run_trace_eval_rl_baselines.sh
+```
+
+Paths are derived from the checkout and remain overridable through
+`PYTHON_BIN`, `TMP_ROOT`, `MODEL_ROOT`, `LMUData`, `VLMEVALKIT_ROOT`,
+`EVAL_DEPS_ROOT`, `TOKEN_FILE`, and the per-model `*_PATH` variables. Model and
+judge revisions are pinned in the launcher but may also be overridden for a
+new versioned campaign.
+
+The pinned Game-RL checkpoint at upstream revision
+`205b5934ce70504cfd6ae26b16f705d0b98b9306` declares
+`Qwen2_5_VLImageProcessor`, which is not exported by the pinned evaluation
+runtime. The completed campaign used a registered compatibility view that
+changed only `preprocessor_config.json#/image_processor_type` to
+`Qwen2VLImageProcessor`; every other file linked to the pinned upstream
+snapshot. That view had content-set revision
+`sha256set:a9c97c8bd921fcaeaf5160c1ed644b34f292ae05302a00980c4ded899a837f8f`.
+Set `GAME_PATH` and `GAME_REV` to an equivalently registered view before
+launching on a new host.
+
 The model source must be an immutable 40- or 64-hex repository commit, including
 for a locally trained model. Upload and pin that model repository before the
 evaluation campaign; mutable branches, training-run labels, and local paths are

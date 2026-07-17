@@ -131,7 +131,10 @@ def collect_status(
     args: argparse.Namespace,
     suite: TraceEvalSuite | None = None,
 ) -> dict[str, Any]:
-    active_suite = suite or load_trace_eval_suite(args.suite_manifest)
+    suite_manifest = getattr(args, "suite_manifest", None)
+    active_suite = suite or (
+        load_trace_eval_suite(suite_manifest) if suite_manifest else load_trace_eval_suite()
+    )
     expected_by_benchmark = _manifest_rows(args.dataset_manifest, active_suite)
     expected_per_model_seed = active_suite.rows_per_model_seed
     recent_window = max(30.0, float(args.rate_window_seconds))

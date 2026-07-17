@@ -1,0 +1,39 @@
+{
+  "completed_at": "2026-07-17T13:19:37.871366+00:00",
+  "config_sha256": "114b7cb37fdd0125a33317259f962db7d0e8f48e680cdd02f4de58d145b03ede",
+  "expected_slices": 432,
+  "models": [
+    "trace-qwen25vl3b-answer-step500-20260716",
+    "qwen25vl3b-base"
+  ],
+  "phase": "complete",
+  "pid": 802053,
+  "public_export_manifest_sha256": "73b2799b927526b5ff15b5b0a379d8c35305f704b90ac7722bc532aa0acb7fe8",
+  "public_run_id": "qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1",
+  "ready_slices": 432,
+  "schema_version": "trace-eval-publish-worker-status-v1",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "source_run_id": "trace_eval_v1_temp06_seed42_43_44_qwen25vl3b_base_trace_step500_20260716",
+  "started_at": "2026-07-17T13:11:17.042897+00:00",
+  "suite_id": "trace_eval_v1",
+  "updated_at": "2026-07-17T13:19:37.871540+00:00",
+  "upload_report": {
+    "already_verified": 1,
+    "content_set_sha256": "0e3afa6323d23f3e840850dc5ee51b2933e269230120f611204645ecd170b249",
+    "file_count": 871,
+    "other_runs": [
+      "qwen2.5-vl-7b-comparison-temp06-seeds42-44-v1"
+    ],
+    "private": true,
+    "public_export_manifest_sha256": "73b2799b927526b5ff15b5b0a379d8c35305f704b90ac7722bc532aa0acb7fe8",
+    "repo_id": "maveryn/trace-eval-runs",
+    "revision": "4178a839b689babe16f8ac36f0de7b1b2c5ef36c",
+    "run_id": "qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1",
+    "run_prefix": "runs/qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1",
+    "uploaded": 870
+  }
+}

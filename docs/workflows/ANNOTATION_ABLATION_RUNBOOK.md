@@ -76,6 +76,29 @@ mode selects the matching prompt, system prompt, and reward per row.
 normalized coordinates or model-internal resized tensor coordinates for
 annotation rewards.
 
+### TODO: preserve annotation coordinates during training resize
+
+The current 64K training split contains 1,005 images from 30 tasks whose area
+is below the EasyR1 default `data.min_pixels=262144`. EasyR1's current
+`process_image` path resizes those images but does not rescale `annotation_gt`
+or update `image_sizes`; 1,003 of the images receive different dimensions in
+practice. This creates a coordinate-frame mismatch for annotation rewards.
+Answer-only training is unaffected because it does not score `annotation_gt`.
+
+Before the next annotation-mode run, implement and test one consistent policy:
+
+1. ensure exported images already meet the configured minimum area, with
+   annotations generated in that final exported-image frame; or
+2. keep the dataset immutable and derive a runtime training view that rescales
+   every point, bbox, and segment annotation (including set, sequence, and map
+   forms), updates the corresponding runtime image size, and uses the exact
+   dimensions seen by both actor and rollout preprocessing.
+
+The runtime option must account for the final Qwen patch-grid resize, use exact
+per-axis scale factors after integer rounding, and expose the coordinate-frame
+dimensions in the annotation prompt. Do not rescale only `annotation_gt` while
+leaving the reward's image-size metadata or model prompt in the source frame.
+
 The generic EasyR1 launcher loads `maveryn/trace@train` and
 `maveryn/trace@validation` by default when `TRAIN_FILES` and `VAL_FILES` are unset.
 

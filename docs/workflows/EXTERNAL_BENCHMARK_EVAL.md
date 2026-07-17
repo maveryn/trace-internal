@@ -410,6 +410,9 @@ python scripts/run_mme_reasoning_eval.py score \
 
 The saved-workbook wrapper owns staging, provenance, canonical result
 serialization, and the narrow ChartQAPro and PhyX adapters documented below.
+Its evaluator copy omits the queue-only `request_hash` and `source_row_hash`
+columns; the original prediction workbook and its SHA-256 provenance remain
+unchanged.
 It does not replace judge prompts, judge output parsing, scoring, or
 aggregation. Those stay inside the pinned `dataset.evaluate` implementation.
 Evaluated model generation uses the

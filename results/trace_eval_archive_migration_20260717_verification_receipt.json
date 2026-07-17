@@ -1,0 +1,97 @@
+{
+  "backup_manifest_sha256": "7ad7350472e9ab39013d606543bc0787adea41ec4e599dc9f18bd4a055c97fb3",
+  "coverage": {
+    "disjoint": true,
+    "internal_benchmarks": [
+      "chartmuseum",
+      "mmvp",
+      "physics",
+      "screenspot",
+      "screenspot_v2",
+      "screenspotpro",
+      "visulogic"
+    ],
+    "internal_stage_slices": 189,
+    "paper_benchmarks": [
+      "blink",
+      "chartqapro",
+      "charxivreason",
+      "countbenchqa",
+      "countqa",
+      "cvbench_3d",
+      "embspatial",
+      "erqa",
+      "evochart",
+      "logicvista",
+      "mathverse",
+      "mathvision",
+      "mathvista",
+      "mme_reasoning",
+      "mmmu_pro_vision",
+      "mmstar",
+      "phyx_mini_mc",
+      "puzzlevqa",
+      "realworldqa",
+      "spatialvizbench_cot",
+      "tablevqabench",
+      "treebench",
+      "visualpuzzles",
+      "wemath"
+    ],
+    "paper_stage_slices": 648
+  },
+  "internal": {
+    "benchmarks": [
+      "chartmuseum",
+      "physics",
+      "screenspot",
+      "mmvp",
+      "screenspotpro",
+      "screenspot_v2",
+      "visulogic"
+    ],
+    "content_set_sha256": "9cf334765ba6ed103a8342ad44cda36cdb72756a9764fd3a33fe1bc05006081c",
+    "file_count": 381,
+    "private": true,
+    "repo_id": "maveryn/trace-internal-eval-runs",
+    "revision": "04267dc31304f1bd5ed41b8930db63b03d3b8d29",
+    "stage_slices": 189
+  },
+  "inventory_sha256": "e1093b4427b52d0f0078653b683a7a29752d60c3ec6e3efb16a0b25e7cc7e1cd",
+  "paper": {
+    "content_set_sha256": "1034552d03ccd154c6c56786951cf326b90fe0c63b0219131bf0a9960d821332",
+    "file_count": 1304,
+    "other_runs": [],
+    "private": true,
+    "public_export_manifest_sha256": "0334afa738e441631591197e5e16a379bc6c0380d293122b4036dd5621d47b28",
+    "repo_id": "maveryn/trace-eval-runs",
+    "revision": "3c7884362e8f33167eab60b7454739e6f2805b02",
+    "run_id": "qwen2.5-vl-7b-comparison-temp06-seeds42-44-v1",
+    "run_prefix": "runs/qwen2.5-vl-7b-comparison-temp06-seeds42-44-v1",
+    "stage_slices": 648
+  },
+  "schema_version": "trace-eval-archive-verification-v1",
+  "selection_sha256": "84d341c960e3e1ca725ff87dee5f93edd4ec67d6e317e799b4e3bdf8b7875e82",
+  "source_commit": "21a9b8de75e1192ffe9f9e8896b0ab155e5fcece",
+  "source_refs": {
+    "branches": [
+      {
+        "name": "main",
+        "ref": "refs/heads/main",
+        "target_commit": "21a9b8de75e1192ffe9f9e8896b0ab155e5fcece"
+      }
+    ],
+    "converts": [
+      {
+        "name": "parquet",
+        "ref": "refs/convert/parquet",
+        "target_commit": "5be580a4d3f0a3dfc058824e6b22a60e6132fc4b"
+      }
+    ],
+    "pull_requests": [],
+    "tags": []
+  },
+  "source_repo_id": "maveryn/trace-final25-eval-runs",
+  "verification_sha256": "6b34dbaea52b7c46788729ac27f8535762aa1c6508d8053bb88b7ecb0061fca2",
+  "verified_at": "2026-07-17T01:09:34.455497+00:00"
+}

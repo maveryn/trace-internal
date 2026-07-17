@@ -55,3 +55,8 @@ Validation error-code taxonomy lives in
   source-of-truth placement rules.
 - `DOCS_AND_SKILLS_MAINTENANCE.md` — required docs/skills update workflow,
   code-documentation rules, anti-drift rules, and validation commands.
+
+## Operations
+- `REMOTE_ARTIFACT_HANDOFF.md` - immutable GitHub, Hugging Face, W&B, model,
+  dataset, and evaluation identities required to resume work away from the
+  current GPU host.

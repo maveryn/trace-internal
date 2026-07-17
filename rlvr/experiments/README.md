@@ -18,11 +18,36 @@ Profiles:
   annotation reward and prompt ablations, plus the selected sectioned-reasoning
   follow-up run.
 
-## TRACE Answer-Only RLVR and Final25 Evaluation
+## Current Paper-Training Reruns
 
-This section is the canonical, self-contained experiment record for the
-reported TRACE answer-only Qwen2.5-VL models and the Final25 evaluation suite.
-The machine-readable companion is
+The final reproducibility reruns supersede the earlier checkpoint identities
+recorded below. Both use TRACE dataset revision
+`e317b746b258630682367cc6a9d87dedd195113c`, `prompt_answer`, GRPO, 500 steps,
+answer reward weight `1.0`, JSON-format reward weight `0.05`, annotation reward
+`0`, and disabled KL.
+
+| Model | W&B run | Evaluation-bound merged model |
+| --- | --- | --- |
+| TRACE Qwen2.5-VL-7B | [`usqbkpd6`](https://wandb.ai/llm-reasoning-rl/trace_easyr1/runs/usqbkpd6) | [`maveryn/trace-qwen2.5-vl-7b@4d0f1ae8ee25022058090dbdbff61957ece7331d`](https://huggingface.co/maveryn/trace-qwen2.5-vl-7b/tree/4d0f1ae8ee25022058090dbdbff61957ece7331d) |
+| TRACE Qwen2.5-VL-3B | [`kijsydl8`](https://wandb.ai/llm-reasoning-rl/trace_easyr1/runs/kijsydl8) | [`maveryn/trace-qwen2.5-vl-3b@2ec2374d5c219e6b12e26bda93d3b3adeb1e30c5`](https://huggingface.co/maveryn/trace-qwen2.5-vl-3b/tree/2ec2374d5c219e6b12e26bda93d3b3adeb1e30c5) |
+
+The complete resolved run configurations live in W&B, model-side
+`trace_training_provenance.json` records dataset/base revisions and shard
+hashes, and `.trace_model_revision.json` records the independent content-set
+identity. The merged HF repositories contain inference state, not optimizer or
+FSDP training state.
+
+The current external evaluation contract is
+[`evaluation/trace_eval/README.md`](../../evaluation/trace_eval/README.md): 24
+full benchmark splits, seeds 42/43/44, native Qwen image bounds, and neutral
+content-addressed run bundles in `maveryn/trace-eval-runs`.
+
+## Historical Answer-Only RLVR And Final25 Evaluation
+
+This section preserves the earlier TRACE answer-only checkpoint and Final25
+experiment record. It is retained for audit history and must not be used as the
+current paper checkpoint or evaluation-suite identity. Its machine-readable
+companion is
 [`final_answer_only_manifest.json`](final_answer_only_manifest.json).
 
 ### Canonical implementation
@@ -171,7 +196,7 @@ The recorded Python environment included PyTorch 2.8.0+cu128, Transformers
 4.57.6, vLLM 0.10.2, Ray 2.56.0, Datasets 5.0.0, PyArrow 24.0.0, and W&B
 0.26.1.
 
-## Trained checkpoints
+## Historical Trained Checkpoints
 
 | Model | Base revision | Training run | W&B | Merged checkpoint fingerprint |
 | --- | --- | --- | --- | --- |
@@ -182,7 +207,7 @@ The full SHA-256 values for the merged model shards and metadata are in the
 manifest. The step-500 actor, optimizer, dataloader, and extra state were saved
 before conversion to merged Hugging Face format.
 
-## Final25 evaluation protocol
+## Historical Final25 Evaluation Protocol
 
 Final25 evaluates full benchmark splits, not sampled subsets. Each model is
 generated independently with decoding seeds 42, 43, and 44. These are three

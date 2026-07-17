@@ -83,9 +83,12 @@ Current all-1000-task IID 500-step dataset recipe:
 - validation: `trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
   - `1000` active tasks x `2` samples per task = `2,000` rows
   - uses a different generation seed from train, so it is IID but non-overlapping by construction
-- both splits store answer-only and answer-and-annotation prompt columns plus
-  `trace_supervision_mode`, so the same files can drive global answer, global
-  annotation, and per-task-conditioned EasyR1 runs
+- both splits store answer-only and answer-and-annotation prompt columns, so the
+  same files can drive global answer and global annotation runs
+- the paper-training dataset revision does not contain a
+  `trace_supervision_mode` Parquet column; task-conditioned experiments require
+  the separate draft policy overlay or a later explicitly pinned dataset
+  revision
 - these files are published in the private HF dataset `maveryn/trace`; the
   generic EasyR1 launcher loads `maveryn/trace@train` and
   `maveryn/trace@validation` by default when `TRAIN_FILES` and `VAL_FILES` are unset
@@ -158,6 +161,13 @@ training, merging, or uploading. The generic 3B wrappers retain their existing
 defaults for ablation and resume workflows. The dedicated job permits path,
 run-name, and publication overrides but rejects changes to the frozen 500-step
 training contract or attempts to resume a prior checkpoint.
+
+The completed paper-training reruns are documented by immutable model and
+dataset revisions in
+[`docs/workflows/REMOTE_ARTIFACT_HANDOFF.md`](../docs/workflows/REMOTE_ARTIFACT_HANDOFF.md).
+Their complete resolved configurations remain attached to W&B runs `usqbkpd6`
+(7B) and `kijsydl8` (3B). Do not substitute the earlier experiment-manifest
+checkpoints for these reruns when rebuilding paper tables.
 
 Legacy Vero/split-v1 launchers remain available for reference only:
 

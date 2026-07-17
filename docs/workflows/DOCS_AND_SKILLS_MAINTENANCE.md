@@ -16,6 +16,9 @@ Documentation placement rules live in `docs/workflows/DOC_STRUCTURE.md`.
 5. Repo-local skills under `skills/` are operational overlays. They point to
    source-of-truth docs and may add short review checklists, but they must not
    redefine taxonomy, active task lists, calibration gates, or domain policy.
+6. Future-version proposals under `docs/future/` are non-normative design
+   records. They must not be used as active implementation guidance until an
+   explicit versioned contract change promotes the relevant decisions.
 
 ## Code Documentation Rules
 1. Add docstrings for new modules, classes, and non-trivial functions.

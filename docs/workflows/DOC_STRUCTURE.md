@@ -18,6 +18,9 @@ workflow doc.
   plus dated reference snapshots when a completed review pass should remain
   useful for future comparison. Review docs explain how to judge task quality;
   they do not define public contracts or store generated task-review artifacts.
+- `docs/future/` — non-normative proposals for explicitly versioned future
+  designs. These documents must state that they do not change active runtime,
+  ABI, prompt, reward, or task contracts.
 - `docs/tasks/` — public task contracts at
   `docs/tasks/<domain>/<scene_id>/<task_id>.md`, plus the task-doc template and
   task-doc maintenance guide.

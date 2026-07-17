@@ -32,6 +32,7 @@ ALLOWED_DOCS_TOP_LEVEL = {
     "TODO.md",
     "contracts",
     "domains",
+    "future",
     "review",
     "resources",
     "tasks",

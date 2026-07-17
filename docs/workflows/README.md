@@ -6,6 +6,10 @@ domain-specific rendering rules belong in `../domains/<domain>.md`.
 
 Repo-local workflow skills under `skills/` are operational overlays. The canonical process docs are listed here. Skill-folder maintenance rules live in `../../skills/README.md`.
 
+Forward-looking, non-normative version proposals live under `../future/`.
+They are not workflow instructions and must not be applied to the active
+runtime without an explicit versioned contract change.
+
 ## Authoring
 - `TASK_AUTHORING.md` — task creation checklist and contract guidance.
 Shared text/font/rationale resources live under `../resources/`.

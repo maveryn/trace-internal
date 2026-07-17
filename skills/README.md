@@ -7,6 +7,8 @@ taxonomy rules, task inventories, or historical workflow docs.
 
 Use `docs/README.md` as the canonical documentation navigation entry point.
 Documentation placement rules live in `docs/workflows/DOC_STRUCTURE.md`.
+Non-normative future-version proposals live in `docs/future/` and must not be
+treated as active workflow or contract instructions.
 
 ## Retained Workflow Skills
 - `code-review` — review stance, changed-surface checks, and handoff shape.

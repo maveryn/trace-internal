@@ -17,6 +17,8 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 - `docs/domains/README.md` — domain-specific contract docs.
 - `docs/review/README.md` — reviewer-facing task, scene, and domain audit
   procedures.
+- `docs/future/README.md` — non-normative proposals for explicitly versioned
+  future Trace designs; these do not change active contracts.
 - `docs/tasks/README.md` — task-level docs and template.
 - `docs/ACTIVE_TASK_INVENTORY.md` — generated active public task inventory by domain and scene.
 
@@ -70,7 +72,9 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 8. Public release: `docs/workflows/PUBLIC_RELEASE/README.md` and the assigned
    workstream brief under that folder.
 9. Project backlog and active surface: `docs/TODO.md` and `docs/ACTIVE_TASK_INVENTORY.md`.
-10. Task reviews: the browser app in `docs/workflows/TASK_REVIEW_WEB_APP.md`
+10. Future proposals: `docs/future/README.md`. Treat these as design notes,
+    not current implementation guidance.
+11. Task reviews: the browser app in `docs/workflows/TASK_REVIEW_WEB_APP.md`
    is the default task inspection surface, with generated artifacts under
    `../review/task-reviews/`. External benchmark model-response inspection
    uses `docs/workflows/BENCHMARK_REVIEW_WEB_APP.md`.

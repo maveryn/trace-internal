@@ -159,6 +159,66 @@ The command verifies the complete remote run after its manifest-last upload.
 The sanitized destination is `maveryn/trace-eval-runs`. Benchmark prompts,
 ground truth, options, source rows, and media paths are excluded from it.
 
+### Background publication
+
+For new campaigns, run the publication workflow as a separate low-priority
+CPU/network process alongside `run_trace_eval.sh`. The worker watches the local
+atomic archive descriptors, incrementally builds their Parquet slices, and does
+not initialize an HF client or make a network request while generation or
+scoring is incomplete. It repeats the canonical generation and score-receipt
+verification before sealing a sanitized export.
+
+Use the same campaign root, run id, decoding seeds, model slug, absolute local
+model path, and immutable revision passed to the evaluation launcher. The local
+model path string is part of the generation contract and must match exactly.
+The remaining model fields define the neutral identity and immutable HF source
+recorded in the sanitized export.
+
+```bash
+PUBLISH_ROOT=<durable-private-state>/<neutral-paper-run-id>
+install -d -m 700 "${PUBLISH_ROOT}"
+
+nohup nice -n 10 python scripts/run_trace_eval_publish_worker.py \
+  --campaign-root <campaign-root> \
+  --dataset-manifest /dev/shm/trace_rlvr/LMUData/trace_eval_v1_dataset_manifest.json \
+  --work-root "${PUBLISH_ROOT}" \
+  --source-run-id <campaign-run-tag> \
+  --public-run-id <neutral-paper-run-id> \
+  --seed 42 --seed 43 --seed 44 \
+  --model <source-slug> <exact-absolute-local-model-path> <immutable-revision> \
+    <neutral-model-id> <neutral-model-revision> "<display-name>" \
+    <model-repository-id> <model-repository-revision> \
+  --judge qwen3-32b-judge Qwen/Qwen3-32B \
+    9216db5781bf21249d130ec9da846c4624c16137 \
+  --token-file <mode-600-hf-token-file> \
+  --allow-paper-run-upload \
+  --confirm-paper-run "UPLOAD maveryn/trace-eval-runs/<neutral-paper-run-id>" \
+  >"${PUBLISH_ROOT}/worker.log" 2>&1 </dev/null &
+```
+
+Each `--model` accepts eight fields, and the option may be repeated for a
+multi-model campaign. `--archive-spool-root` defaults to
+`<campaign-root>/hf_archive`, while `--score-root` defaults to
+`<campaign-root>/scoring`. The worker holds a per-campaign lock, serializes local
+uploads to the same HF repository, writes `status.json` atomically with mode
+`0600`, and exits after full remote readback verification. It never uploads the
+raw archive; only the allowlisted tree under `sanitized-export/` is eligible.
+
+Monitor it without touching the evaluation process:
+
+```bash
+tail -f "${PUBLISH_ROOT}/worker.log"
+jq '{phase, ready_slices, expected_slices, updated_at, error}' \
+  "${PUBLISH_ROOT}/status.json"
+```
+
+After a host or HF failure, rerun the identical command with the same work
+root. The private plan and sanitized export are content-bound and reusable, and
+the manifest-last HF append resumes safely. A completed status receipt makes an
+identical restart exit without another upload. Publication does not use a GPU,
+so another generation campaign can start while export or upload is still
+running.
+
 Monitor or verify an existing campaign with:
 
 ```bash

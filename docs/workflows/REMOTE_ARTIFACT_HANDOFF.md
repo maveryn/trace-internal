@@ -4,6 +4,9 @@ This receipt records the durable state required to continue TRACE paper and
 release work after the current GPU host is retired. It intentionally records
 immutable remote identities rather than machine-local paths.
 
+After verifying the remote identities in this receipt, continue with
+[`PUBLIC_RELEASE/RELEASE_COMPLETION_CHECKLIST.md`](PUBLIC_RELEASE/RELEASE_COMPLETION_CHECKLIST.md).
+
 ## Source repositories
 
 - Internal source: `maveryn/trace-internal`, branch `rlvr`. The GPU-host

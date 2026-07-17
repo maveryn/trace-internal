@@ -12,6 +12,9 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
   `docs/workflows/DOC_STRUCTURE.md`.
 - `docs/workflows/PUBLIC_RELEASE/README.md` — public-release workstream briefs,
   ownership boundaries, and integration order.
+- `docs/workflows/PUBLIC_RELEASE/RELEASE_COMPLETION_CHECKLIST.md` — internal
+  coordinator checklist for completing the public `main`, public `rlvr`,
+  paper, and artifact release from the verified remote handoff.
 - `docs/resources/README.md` — shared fonts, labels, context text, and
   rationale-target resources.
 - `docs/domains/README.md` — domain-specific contract docs.

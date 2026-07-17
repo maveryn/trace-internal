@@ -4,6 +4,11 @@ This folder contains the handoff briefs for the Trace public-release cycle.
 Each brief is self-contained enough to give to one agent, but this file is the
 coordination contract shared by all workstreams.
 
+The internal coordinator should track cross-workstream completion in
+[`RELEASE_COMPLETION_CHECKLIST.md`](RELEASE_COMPLETION_CHECKLIST.md). That
+checklist starts from the verified GPU-host handoff and distinguishes internal
+provenance work from the public `main` and `rlvr` release surfaces.
+
 ## Workstreams
 
 1. [`PAPER.md`](PAPER.md) - arXiv technical report, figures, references, and PDF.
@@ -102,4 +107,3 @@ already dirty before that agent began and are outside its ownership.
 5. Finalize the paper using the same canonical results and approved figures.
 6. Run clean-install, package, documentation, link, test, and PDF gates.
 7. Publish only after the user reviews the integrated repository and report.
-

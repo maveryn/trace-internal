@@ -18,6 +18,9 @@ Shared text/font/rationale resources live under `../resources/`.
 - `PUBLIC_RELEASE/README.md` - coordination contract and independent agent
   briefs for the paper, release engineering, public documentation, task
   catalog/gallery, RLVR results, and public API workstreams.
+- `PUBLIC_RELEASE/RELEASE_COMPLETION_CHECKLIST.md` - internal coordinator
+  checklist for next-machine bootstrap, internal/public repository work,
+  artifact cards, validation, and publication.
 
 ## RLVR-specific workflows
 RLVR training/export/validation docs live under:

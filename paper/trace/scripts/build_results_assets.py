@@ -317,8 +317,8 @@ def _fmt_result(
     if delta is not None:
         color = "TraceGain" if delta >= 0 else "TraceLoss"
         score += (
-            "\\raisebox{-0.35ex}{"
-            f"\\fontsize{{5}}{{5}}\\selectfont\\color{{{color}}}{{{delta:+.1f}}}"
+            "\\raisebox{-0.45ex}{"
+            f"\\fontsize{{4.5}}{{4.5}}\\selectfont\\color{{{color}}}{{{delta:+.1f}}}"
             "}"
         )
     return score
@@ -394,7 +394,7 @@ def _write_main_table(
         "  \\renewcommand{\\arraystretch}{1.04}",
         "  \\caption{Per-benchmark transfer on the 24-benchmark \\texttt{trace\\_eval\\_v1} suite. Each score reports the mean and sample standard deviation over decoding seeds 42--44, in percent. Smaller green/red subscripts in the Trace columns give the change from the corresponding base model. Bold marks the best result within each model scale. Category and overall averages are unweighted across benchmarks. External 7B checkpoints use the same evaluation protocol but are not training-compute matched.}",
         "  \\label{tab:main-results}",
-        "  \\begin{tabular}{@{}l *{6}{c} !{\\hspace{2pt}\\vrule width 0.45pt\\hspace{2pt}} *{2}{c}@{}}",
+        "  \\begin{tabularx}{\\textwidth}{@{}>{\\raggedright\\arraybackslash}p{0.17\\textwidth} *{6}{>{\\centering\\arraybackslash}X} !{\\hspace{2pt}\\vrule width 0.45pt\\hspace{2pt}} *{2}{>{\\centering\\arraybackslash}X}@{}}",
         "    \\toprule",
         "     & \\multicolumn{6}{c}{7B checkpoints} & \\multicolumn{2}{c}{3B checkpoints} \\\\",
         "    \\cmidrule(lr){2-7}\\cmidrule(l){8-9}",
@@ -428,7 +428,7 @@ def _write_main_table(
     lines.extend(
         [
             "    \\bottomrule",
-            "  \\end{tabular}",
+            "  \\end{tabularx}",
             "\\end{table*}",
             "",
         ]

@@ -259,6 +259,13 @@ The command verifies the complete remote run after its manifest-last upload.
 The sanitized destination is `maveryn/trace-eval-runs`. Benchmark prompts,
 ground truth, options, source rows, and media paths are excluded from it.
 
+The completed IID-validation run was sealed at data revision
+`cf0d14aed86db2661d397ce8b68b36171873478d` and documented at repository head
+`b3b37f633b4bcfea294185051e05a930191984b3`. Its 60-file immutable run prefix
+contains 24 Parquet parts, 24 matching part manifests, and 12 compact metadata
+files; the export manifest SHA-256 is
+`73fe4d1d5e8008452720206fbbf404960b0490a397823fd3f4c77ddc94634a48`.
+
 ### Internal rich-run publication
 
 Non-paper campaigns that intentionally retain prompts, ground truth, source

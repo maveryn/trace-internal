@@ -76,3 +76,10 @@ belongs under run `trace-iid-validation-2000-answer-seed42-8models-v1` in
 `maveryn/trace-eval-runs`. Raw receipts, prompts, ground truth, media paths,
 judge caches, logs, and machine-local paths are excluded from that export and
 from this Git report.
+
+The run was sealed at Hugging Face data revision
+`cf0d14aed86db2661d397ce8b68b36171873478d` and documented at repository head
+`b3b37f633b4bcfea294185051e05a930191984b3`. Its export manifest SHA-256 is
+`73fe4d1d5e8008452720206fbbf404960b0490a397823fd3f4c77ddc94634a48`, and its
+evaluation harness revision is
+`b7e4bcf2bae88684a442834419d41d74c58e3eac`.

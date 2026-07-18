@@ -296,3 +296,11 @@ Publication destinations are deliberately separate:
 - rich 24-benchmark runs for the annotation-trained 3B/7B models belong in the
   private `maveryn/trace-internal-eval-runs` archive; and
 - the raw IID forensic tree remains local and is not uploaded as a run.
+
+The completed canonical IID data append is
+`maveryn/trace-eval-runs@cf0d14aed86db2661d397ce8b68b36171873478d`;
+the repository head after documenting the run is
+`b3b37f633b4bcfea294185051e05a930191984b3`. Remote readback verified all
+60 run-prefix files, including 24 Parquet parts and 24 part manifests, against
+local content hashes. The sealed public export manifest SHA-256 is
+`73fe4d1d5e8008452720206fbbf404960b0490a397823fd3f4c77ddc94634a48`.

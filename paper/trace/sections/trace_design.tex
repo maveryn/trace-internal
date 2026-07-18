@@ -54,19 +54,8 @@ as normalized typed values. All 1,000 tasks therefore resolve to the same
 answer reward contract, \texttt{answer\_exact\_match\_v0}. Primary training
 requires neither an LLM judge nor a task-specific learned reward model. Task
 programs produce the typed target and verifier state, while the shared scorer
-only parses, normalizes, and compares the submitted answer. The resulting
-answer-interface distribution is summarized in
-Figure~\ref{fig:answer-reward-summary}.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.82\textwidth]{figures/answer_reward_summary.png}
-  \caption{Typed answer interfaces under one deterministic reward contract.
-  Wedge angles are proportional to the number of active tasks. All four
-  interfaces use typed normalization followed by exact-match scoring; none
-  requires an LLM judge or learned reward model.}
-  \label{fig:answer-reward-summary}
-\end{figure}
+only parses, normalizes, and compares the submitted answer. Figure~\ref{fig:environment-statistics}
+reports this answer-interface distribution alongside the domain inventory.
 
 All random choices descend from $z$ through independent seeded streams. The
 task, query, semantic parameters, prompt realization, visual parameters, and

@@ -1,7 +1,7 @@
 {
   "generator": {
     "path": "paper/trace/scripts/build_results_assets.py",
-    "sha256": "63ad712c5bc33dc0bcec7fa48eaaf9fdcae180e73e953b4e46a37aebf17b14d3"
+    "sha256": "09d76d34b8315782ea3b9a91bd5f01506f842876ef53f3d4e9ae51ec0b85b0ee"
   },
   "outputs": {
     "paper/trace/data/trace_eval_v1_paper_results.json": {
@@ -33,8 +33,8 @@
       "sha256": "b115958342f191cbae8eecb1b463b4c35e6eec310e93e453ff81959edd7caae5"
     },
     "paper/trace/tables/training_configuration.tex": {
-      "bytes": 771,
-      "sha256": "c7950dd18c73da355f7fc78e4e2c52a8fdb8d2eedb56ad10f68f2197feb10a14"
+      "bytes": 774,
+      "sha256": "f6863d590cafaee53c0ddf7fe4e94625c737578c547b55f889791555178b4328"
     }
   },
   "schema_version": "trace_paper_result_assets_v1",

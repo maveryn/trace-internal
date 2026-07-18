@@ -2,13 +2,13 @@
 \section{Representative Task Atlas}
 \label{app:task-atlas}
 
-Each page presents twelve seeded examples from one visual domain. Cards pair each rendered instance with its semantic question and typed answer. Rule-heavy questions are condensed only when required for legibility.
+Each page presents twelve seeded examples from one visual domain. Panels pair each rendered instance with its semantic question and typed answer. Rule-heavy questions are condensed only when required for legibility.
 
 \begingroup
 \setlength{\fboxsep}{2pt}
 \setlength{\fboxrule}{0.3pt}
 \definecolor{traceatlasborder}{HTML}{D1D5DB}
-\definecolor{traceatlasanswer}{HTML}{0F766E}
+\definecolor{traceatlasanswer}{HTML}{2A6FB5}
 \newcommand{\traceatlaspromptnormal}{\fontsize{5.5}{6.0}\selectfont}
 \newcommand{\traceatlaspromptdense}{\fontsize{4.75}{5.2}\selectfont}
 \newcommand{\traceatlascard}[5]{%
@@ -32,8 +32,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Charts\par}
-\vspace{3pt}
 \traceatlascard{Error Interval: Reference Containment}{figures/scene_atlas/assets/charts_01_error_interval_reference_containment_count.png}{The image shows a horizontal interval chart with labeled categories, point estimates, and lower-to-upper interval whiskers. Count the intervals whose lower-to-upper span contains reference value 54.}{4}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Region Map: Numeric Interval Region}{figures/scene_atlas/assets/charts_02_region_map_numeric_interval_region_count.png}{This image shows a world map with selected countries colored by value and a color legend. What number of countries fall in value bins between 20 and 99, inclusive?}{6}{\traceatlaspromptnormal}
@@ -67,8 +65,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Games\par}
-\vspace{3pt}
 \traceatlascard{Sokoban: Box Goal Status}{figures/scene_atlas/assets/games_01_sokoban_box_goal_status_count.png}{The figure shows a Sokoban board with walls, a player, colored boxes, and colored goal dots; a box on its matching goal has the goal dot drawn on top of the box. How many boxes are not on their matching colored goal dots?}{3}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Checkers: Max Capture Chain Length}{figures/scene_atlas/assets/games_02_checkers_max_capture_chain_length.png}{Red moves on the shown 8 by 8 checkers board. A jump captures an adjacent opponent and lands on the empty square beyond. The marked piece is a king, so it may jump diagonally in either direction and continue while another capture is available. What is its maximum capture-chain length?}{2}{\traceatlaspromptdense}
@@ -102,8 +98,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Geometry\par}
-\vspace{3pt}
 \traceatlascard{Circle Pair Tangents: External Tangent Segment Length}{figures/scene_atlas/assets/geometry_01_circle_pair_tangents_external_tangent_segment_length_value.png}{This geometry diagram shows two separated non-concentric circles with centers C and D, a common tangent touching them at A and B, radii to the tangent points, and an auxiliary right triangle CED whose leg ED shows the radius difference. Find the center-to-center distance CD.}{225}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Solid Cross Section: Square Pyramid Parallel Slice Area}{figures/scene_atlas/assets/geometry_02_solid_cross_section_square_pyramid_parallel_slice_area.png}{The labeled diagram shows a square pyramid cut by a plane parallel to its base, with the cross-section marked and dimensions labeled. The marked slice is parallel to the base. Use similar solids with scale d/H to find the value of A for the cross-section.}{130}{\traceatlaspromptdense}
@@ -137,8 +131,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Graphs\par}
-\vspace{3pt}
 \traceatlascard{Binary Tree: Local Relative Node}{figures/scene_atlas/assets/graph_01_binary_tree_local_relative_node_label.png}{The image shows a labeled binary tree with the root at the top and left/right children shown by position. Which node shares the same parent as "Max"?}{Dak}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Adjacency: Undirected Component}{figures/scene_atlas/assets/graph_02_adjacency_undirected_component_count.png}{You are shown an undirected graph as an adjacency list. Count the connected components in the undirected graph.}{2}{\traceatlaspromptnormal}
@@ -172,8 +164,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Icons\par}
-\vspace{3pt}
 \traceatlascard{Named Path: Path Neighbor}{figures/scene_atlas/assets/icons_01_named_path_path_neighbor_label.png}{The picture shows a START-to-END icon path with six option icons labeled A-F and other icons. Which labeled icon comes immediately after the first "flag" icon along the path from START to END?}{F}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Wallpaper Panels: Same Pattern As Reference}{figures/scene_atlas/assets/icons_02_wallpaper_panels_same_pattern_as_reference_label.png}{The image shows one Reference wallpaper panel above four labeled wallpaper panels filled with repeated icon motifs. Select the labeled panel whose wallpaper pattern matches the Reference panel.}{C}{\traceatlaspromptnormal}
@@ -207,8 +197,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Illustrations\par}
-\vspace{3pt}
 \traceatlascard{Library: Filtered Book In Section}{figures/scene_atlas/assets/illustrations_01_library_filtered_book_in_section_count.png}{The scene shows a library room containing 5 labeled book sections. How many upright books are in the Music section?}{3}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Indoor Room: Swapped Tile Pair}{figures/scene_atlas/assets/illustrations_02_indoor_room_swapped_tile_pair_label.png}{The scene shows a bedroom with small objects. Find the pair of numbered cells that were swapped in the room image.}{A}{\traceatlaspromptnormal}
@@ -242,8 +230,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Pages\par}
-\vspace{3pt}
 \traceatlascard{Web Action: Action Target}{figures/scene_atlas/assets/pages_01_web_action_action_target_label.png}{The browser page includes a guide-code table and labeled candidate controls. Click the control on the item with category "Home", status "Clearance", and guide code "M2". Which candidate label marks that control?}{S}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Mixed Infographic Page: Two Module Field Total Comparison Module}{figures/scene_atlas/assets/pages_02_mixed_infographic_page_two_module_field_total_comparison_module_label.png}{The image shows a dense mixed infographic page with titled modules, item labels, field labels, printed values, and native context text. Between "Music" and "Logistics", which module has the greater sum of "Score" values?}{Music}{\traceatlaspromptnormal}
@@ -277,8 +263,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Physics\par}
-\vspace{3pt}
 \traceatlascard{Ray Optics: Ray Bounce}{figures/scene_atlas/assets/physics_01_ray_optics_ray_bounce_count.png}{This figure shows a reflected ray setup on a square grid. What is the total number of mirror bounces in the implied ray path?}{4}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Electrostatic Field: Field Direction Choice}{figures/scene_atlas/assets/physics_02_electrostatic_field_field_direction_choice.png}{The diagram shows an electrostatic coordinate grid with fixed point charges, a marked point or labeled candidate points, and visible option arrows or distance labels. Which option A-H points in the direction of the electric field at P?}{B}{\traceatlaspromptdense}
@@ -312,8 +296,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Puzzles\par}
-\vspace{3pt}
 \traceatlascard{Sheet Transform: Fold Projection Result}{figures/scene_atlas/assets/puzzles_01_sheet_transform_fold_projection_result_label.png}{The visual shows an outline-style paper-folding puzzle with a fold diagram above labeled result options. After the shown fold is made, which labeled option shows the visible mark pattern?}{A}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Cube Net: Marked Edge Neighbor Face}{figures/scene_atlas/assets/puzzles_02_cube_net_marked_edge_neighbor_face_label.png}{The puzzle diagram shows a labeled cube net with one red marked edge and labeled face options. Which labeled option touches the red marked edge on the folded cube?}{B}{\traceatlaspromptnormal}
@@ -347,8 +329,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries Symbolic\par}
-\vspace{3pt}
 \traceatlascard{Organic Structure: Bond Order}{figures/scene_atlas/assets/symbolic_01_organic_structure_bond_order_count.png}{The visual panel contains a clean worksheet-style organic skeletal structure with line-angle bonds, rings, and occasional atom or substituent labels. Count only the visible triple bonds.}{4}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Life Automaton: One Step Cell State}{figures/scene_atlas/assets/symbolic_02_life_automaton_one_step_cell_state_count.png}{In the START grid, dark cells are alive. An alive cell survives with two or three live neighbors; an empty cell becomes alive with exactly three; every other cell is empty next. After one update, how many cells are empty?}{9}{\traceatlaspromptdense}
@@ -382,8 +362,6 @@ Each page presents twelve seeded examples from one visual domain. Cards pair eac
 
 \begin{figure}[p]
 \centering
-{\large\sffamily\bfseries 3D\par}
-\vspace{3pt}
 \traceatlascard{Object Cluster: Multi Attribute Exclusion}{figures/scene_atlas/assets/three_d_01_object_cluster_multi_attribute_exclusion_count.png}{The visible scene contains many small 3D objects arranged on a plain surface. Count the cyan [\#34C4E0] clustered objects that are not cups. How many are there?}{1}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Object Scene: Reference Nearest}{figures/scene_atlas/assets/three_d_02_object_scene_reference_nearest_label.png}{The scene shows a large reference object and six smaller candidate objects. Looking at the washing machine, choose the option for the nearest object.}{F}{\traceatlaspromptnormal}

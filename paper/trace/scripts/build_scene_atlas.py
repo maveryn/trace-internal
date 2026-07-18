@@ -446,13 +446,13 @@ def latex_preamble() -> list[str]:
         r"\section{Representative Task Atlas}",
         r"\label{app:task-atlas}",
         "",
-        r"Each page presents twelve seeded examples from one visual domain. Cards pair each rendered instance with its semantic question and typed answer. Rule-heavy questions are condensed only when required for legibility.",
+        r"Each page presents twelve seeded examples from one visual domain. Panels pair each rendered instance with its semantic question and typed answer. Rule-heavy questions are condensed only when required for legibility.",
         "",
         r"\begingroup",
         r"\setlength{\fboxsep}{2pt}",
         r"\setlength{\fboxrule}{0.3pt}",
         r"\definecolor{traceatlasborder}{HTML}{D1D5DB}",
-        r"\definecolor{traceatlasanswer}{HTML}{0F766E}",
+        r"\definecolor{traceatlasanswer}{HTML}{2A6FB5}",
         r"\newcommand{\traceatlaspromptnormal}{\fontsize{5.5}{6.0}\selectfont}",
         r"\newcommand{\traceatlaspromptdense}{\fontsize{4.75}{5.2}\selectfont}",
         r"\newcommand{\traceatlascard}[5]{%",
@@ -498,8 +498,6 @@ def build_atlas(
             [
                 r"\begin{figure}[p]",
                 r"\centering",
-                rf"{{\large\sffamily\bfseries {latex_escape(domain_title)}\par}}",
-                r"\vspace{3pt}",
             ]
         )
         manifest_samples: list[dict[str, Any]] = []

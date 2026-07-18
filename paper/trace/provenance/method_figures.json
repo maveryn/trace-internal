@@ -9790,78 +9790,70 @@
     "bold_sha256": "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895",
     "regular_sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280"
   },
+  "matplotlib_version": "3.10.6",
   "outputs": [
     {
       "media_type": "application/pdf",
       "page_size_points": [
         815.141,
-        398.759
+        373.845
       ],
       "path": "figures/domain_montage.pdf",
-      "sha256": "33c744b9a105cfe5b681e411d4657977c4e4c59d779e60c51f4bc69457fb2666"
+      "sha256": "62c6c14c1213772742d3ab10eda6a53b46773ca22e8a1164f0cfcfb1afc28bec"
     },
     {
       "image_size": [
         3200,
-        900
+        760
       ],
       "media_type": "image/png",
       "path": "figures/reachable_region_pipeline.png",
-      "sha256": "1508305ace0559c13e63190253653ec3290f4e5837cbcb14d2633ee4e191c4b5"
+      "sha256": "c53c4398f27b095fd0c3bc47b03bc920a74c653fba2cc24790845858fe260afa"
     },
     {
       "image_size": [
         3200,
-        1370
+        1080
       ],
       "media_type": "image/png",
       "path": "figures/taxonomy_boundaries.png",
-      "sha256": "69ca46f53931fa6079dd71a072eaf5adb6ba231b070ba35ce80e3d6ad7d9c114"
-    },
-    {
-      "image_size": [
-        1900,
-        1050
-      ],
-      "media_type": "image/png",
-      "path": "figures/answer_reward_summary.png",
-      "sha256": "cc072451e41def34de0a9be5b011d2c9da20a89fca91466f8896863772deaf40"
+      "sha256": "bee738c71a4ef1be03e6f00c22f1d75af149ca520e1af677c0accb2a1412876b"
     },
     {
       "image_size": [
         3000,
-        1800
+        900
       ],
       "media_type": "image/png",
       "path": "figures/rendering_variation_pipeline.png",
-      "sha256": "997f9ca6d62075b8869b0b75d8e9c2dd28d2c7e869be624c994a0613243816a9"
+      "sha256": "7461ba4d518bd0986d36df802dc0e67ee76432739092acf657b91091e8afe795"
     },
     {
       "media_type": "application/pdf",
       "page_size_points": [
         789.94,
-        386.815
+        374.521
       ],
       "path": "figures/rendering_variation_examples.pdf",
-      "sha256": "ccf13447a322bbb482cb8fa3993881f6f7791649652ec839083f3ba500a8bab7"
+      "sha256": "a25bb6cc94bcd3fccbb3c3070c06fe498346b688f6e3d4f2f96e5861e7037cd6"
     },
     {
-      "image_size": [
-        3400,
-        1820
+      "media_type": "application/pdf",
+      "page_size_points": [
+        705.469,
+        301.848
       ],
-      "media_type": "image/png",
-      "path": "figures/domain_operation_matrix.png",
-      "sha256": "de40648bda5da7a4eb9f6fc82ff03705604ce8d93e78983380660302d30042e6"
+      "path": "figures/domain_operation_matrix.pdf",
+      "sha256": "4436b68ceafdfd547566493c6702e75001dee7e59fbbb1492e6433328c415aa1"
     },
     {
-      "image_size": [
-        3200,
-        1900
+      "media_type": "application/pdf",
+      "page_size_points": [
+        682.366,
+        258.175
       ],
-      "media_type": "image/png",
-      "path": "figures/domain_landscape.png",
-      "sha256": "f5f1c6ebe86fb4febc418893ad0aa9ae5fd952bc6dd9f634f6ab1fd254a8d536"
+      "path": "figures/environment_statistics.pdf",
+      "sha256": "1d234f8507c3378f295e3bdb14335cb346b1a6b3abde8acadec52f3699d545ba"
     },
     {
       "line_count": 21,
@@ -10499,8 +10491,8 @@
     "semantic_sha256": "29f15281a86a75d38c693eef721d6518066231ba56a09cebd7ca7fc53b4e208f",
     "task_id": "task_graph__node_link__shortest_path_length"
   },
-  "schema_version": "trace_paper_method_figures_v9",
-  "source_repository_head": "908ceae54a4a1c0eabee9343a82b9ebd93eeef11",
+  "schema_version": "trace_paper_method_figures_v10",
+  "source_repository_head": "8b7485e07e2d9ee98dd6c75b473f5670bf4edb1d",
   "sources": [
     {
       "data_path": "review/task-reviews/charts/multiseries/task_charts__multiseries__category_total_extremum_label/data/largest_category_total_label/0000.json",
@@ -10588,21 +10580,21 @@
       "task_id": "task_icons__icon_field__most_frequent_type_count"
     },
     {
-      "data_path": "review/task-reviews/illustrations/rpg_tactical_map/task_illustrations__rpg_tactical_map__movement_reachable_tile_count/data/single/0000.json",
-      "data_sha256": "efae17e75e550f2992594aa9788c3f70e555c6224219cd6969210758a3f47496",
+      "data_path": "review/task-reviews/illustrations/park_playground/task_illustrations__park_playground__playground_equipment_count/data/single/0000.json",
+      "data_sha256": "59abc40bb38d6065aeb0adceb7ee93f6843dc69823732d2dc3f7dc828e5d1c09",
       "domain": "illustrations",
-      "image_path": "review/task-reviews/illustrations/rpg_tactical_map/task_illustrations__rpg_tactical_map__movement_reachable_tile_count/images/single/0000.png",
-      "image_sha256": "2f125d2b64a93d70c185940a7076d22136b4dcea46d0cb3940a5fa1ba818e5ff",
+      "image_path": "review/task-reviews/illustrations/park_playground/task_illustrations__park_playground__playground_equipment_count/images/single/0000.png",
+      "image_sha256": "c42eec98507f59adceb1bc3c7dc6ec7335a97b375e6e0874ab03b25778f71b7b",
       "image_size": [
-        800,
+        1200,
         800
       ],
       "index": 0,
-      "instance_seed": 5683608548028481,
+      "instance_seed": 261162083042051,
       "label": "Illustrations",
       "query_id": "single",
-      "scene_id": "rpg_tactical_map",
-      "task_id": "task_illustrations__rpg_tactical_map__movement_reachable_tile_count"
+      "scene_id": "park_playground",
+      "task_id": "task_illustrations__park_playground__playground_equipment_count"
     },
     {
       "data_path": "review/task-reviews/pages/record_table/task_pages__record_table__value_threshold_in_group_count/data/single/0000.json",

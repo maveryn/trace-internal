@@ -89,11 +89,10 @@ without rasterization.
 
 Figures `fig:domain-montage`, `fig:reachable-pipeline`, and
 `fig:taxonomy-boundaries` are generated from pinned task-review instances.
-Figure `fig:domain-landscape` is generated from the active inventory. Figure
-`fig:answer-reward-summary` summarizes the typed answer interfaces governed by
-the shared exact-match reward contract. Query-branch counts remain available
-in the coverage manifest but are reported in prose rather than a dedicated
-figure. Figure `fig:domain-operation-matrix` is an
+Figure `fig:environment-statistics` is generated from the active inventory and
+combines domain task counts, scene counts, and typed answer-interface counts.
+Query-branch counts remain available in the coverage manifest but are reported
+in prose rather than a dedicated figure. Figure `fig:domain-operation-matrix` is an
 exhaustive multi-label summary generated from the literal
 `reasoning_operations` declaration in every active task. Task documents mirror
 those declarations; generation fails on missing metadata,

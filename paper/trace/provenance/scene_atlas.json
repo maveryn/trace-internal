@@ -1,6 +1,6 @@
 {
   "artifact": "sections/scene_atlas.tex",
-  "artifact_sha256": "766099dc9902b39bc8b50b4fe4b6e98c6e4d69b5e928f3bc8a3f04bf329120b8",
+  "artifact_sha256": "f690f90f123da3ac73617b884e0cc4d0e9b57727ba1b68f5954192499836618c",
   "domains": [
     {
       "display_name": "Charts",
@@ -2974,7 +2974,7 @@
     }
   ],
   "generator": "scripts/build_scene_atlas.py",
-  "generator_sha256": "3f4d115a5459b7c2d9bd9010dbc0db94a47ea8626c77c15d8531ebb32a7b44b4",
+  "generator_sha256": "7cf8a5a3ef13762b6ceeb22d9b02a73be48abaf288a0120ca7bec265cf45d34f",
   "schema_version": "trace_paper_scene_atlas_v2",
   "selection_seed": 20260714,
   "selection_strategy": {
@@ -2992,6 +2992,6 @@
     "samples_per_domain": 12,
     "scene_policy": "one random task per shuffled scene before scene reuse"
   },
-  "source_repository_head": "323689fb4e048922baff84e89fc5a84676ec5484",
+  "source_repository_head": "8b7485e07e2d9ee98dd6c75b473f5670bf4edb1d",
   "source_root": "review/task-reviews (supplied with --review-root)"
 }

@@ -6,7 +6,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import os
 import re
 import shutil
@@ -18,6 +17,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont, ImageOps, __version__ as pillow_version
 
 
@@ -48,18 +53,30 @@ GREEN = (40, 143, 89)
 PURPLE = (111, 78, 159)
 TEAL = (26, 137, 145)
 
-DOMAIN_COLORS: dict[str, tuple[int, int, int]] = {
-    "charts": (46, 112, 184),
-    "games": (221, 124, 47),
-    "geometry": (46, 145, 93),
-    "graph": (116, 83, 164),
-    "icons": (30, 145, 151),
-    "illustrations": (181, 72, 91),
-    "pages": (191, 143, 35),
-    "physics": (44, 126, 172),
-    "puzzles": (204, 79, 71),
-    "symbolic": (98, 105, 116),
-    "three_d": (73, 88, 166),
+PLOT_INK = "#1f2937"
+PLOT_MUTED = "#667085"
+PLOT_LINE = "#d0d5dd"
+PLOT_GRID = "#e4e7ec"
+PLOT_BLUE = "#2a6fb5"
+PLOT_BLUE_LIGHT = "#8fb3d4"
+PLOT_GRAY = "#98a2b3"
+PLOT_ZERO = "#f2f4f7"
+
+PAPER_PLOT_RC: dict[str, Any] = {
+    "font.family": "DejaVu Sans",
+    "font.size": 8.0,
+    "axes.titlesize": 8.5,
+    "axes.labelsize": 7.5,
+    "xtick.labelsize": 7.0,
+    "ytick.labelsize": 7.0,
+    "legend.fontsize": 7.0,
+    "axes.edgecolor": PLOT_LINE,
+    "axes.labelcolor": PLOT_INK,
+    "xtick.color": PLOT_MUTED,
+    "ytick.color": PLOT_INK,
+    "text.color": PLOT_INK,
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
 }
 
 
@@ -91,7 +108,7 @@ MONTAGE_SPECS = (
     SampleSpec("Geometry", "geometry", "angle_relations", "task_geometry__angle_relations__algebraic_angle_value", "single", 0, 6685141427653421, "1dc26906e16ee63df8b78347348cd47e766e40248a9272926c8af62cf98329b0", "c3b12e974c3a3543e84f785061e9da09b35fa55dd8b94fff827a26fdd7df44fb"),
     SampleSpec("Graphs", "graph", "node_link", "task_graph__node_link__shortest_path_length", "directed_shortest_path_length", 0, 2481365412104608, "c5aaa80bb5f3cd91d01b347908459482f8eb7f7e8727634ba5c26977da431251", "fb10fe9fe7dc784b7025a49ce16b8e28b2fc5e19b182d00d7726cc67916a6da5"),
     SampleSpec("Icons", "icons", "icon_field", "task_icons__icon_field__most_frequent_type_count", "single", 0, 8191844928700627, "d5c5bfb8d3a3a78dcff81e1119f1e887f6177ee61484a717c3c2fd08859ef441", "d9ee0d8eee20037a8534516f682a5de0cdf72c9bbf40cc0c04f58f8e75b03210"),
-    SampleSpec("Illustrations", "illustrations", "rpg_tactical_map", "task_illustrations__rpg_tactical_map__movement_reachable_tile_count", "single", 0, 5683608548028481, "2f125d2b64a93d70c185940a7076d22136b4dcea46d0cb3940a5fa1ba818e5ff", "efae17e75e550f2992594aa9788c3f70e555c6224219cd6969210758a3f47496"),
+    SampleSpec("Illustrations", "illustrations", "park_playground", "task_illustrations__park_playground__playground_equipment_count", "single", 0, 261162083042051, "c42eec98507f59adceb1bc3c7dc6ec7335a97b375e6e0874ab03b25778f71b7b", "59abc40bb38d6065aeb0adceb7ee93f6843dc69823732d2dc3f7dc828e5d1c09"),
     SampleSpec("Pages", "pages", "record_table", "task_pages__record_table__value_threshold_in_group_count", "single", 0, 3621091651242047, "d87de3758165fbf155a48331e80554a8e5e48fd077b577dc7f4edcad61a14354", "f24b689deda9fe25df892144af49f65378acf7b1e1c27f7fa3fc0a45d20f2507"),
     SampleSpec("Physics", "physics", "free_body_forces", "task_physics__free_body_forces__net_force_direction_choice", "single", 0, 8791560635313457, "85f979e35f6958b51e8a778824daa429773dccc0c83da0ff65816ae5d23b1723", "1520372de7b82f2d2906c9ded390b3b54e50ce9734555cf01e40fbd49c23813d"),
     SampleSpec("Puzzles", "puzzles", "raven_matrix", "task_puzzles__raven_matrix__raven_count_progression_label", "single", 0, 8979951069889835, "1979f2ce6e43ada5fd4dbea3f736863e29fd07b2915d12c6825b12c3b684e7e6", "a6ee8053568831f93bca60caa872ee6516a66d2a7b992faf97fd0a32549e4f78"),
@@ -264,10 +281,6 @@ def _load_sample(repo_root: Path, spec: SampleSpec) -> LoadedSample:
     return LoadedSample(spec, image_path, data_path, payload, image)
 
 
-def _rounded_card(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int], *, fill: tuple[int, int, int] = CARD, outline: tuple[int, int, int] = LINE, radius: int = 24, width: int = 3) -> None:
-    draw.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
-
-
 def _text_size(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont) -> tuple[int, int]:
     left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
     return right - left, bottom - top
@@ -367,6 +380,20 @@ def _compile_standalone_pdf(
         shutil.copyfile(build_dir / f"{basename}.pdf", output)
 
 
+def _save_plot_pdf(fig: Any, output: Path) -> None:
+    """Save a deterministic, tightly cropped vector figure."""
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(
+        output,
+        format="pdf",
+        bbox_inches="tight",
+        pad_inches=0.02,
+        metadata={"CreationDate": None, "ModDate": None, "Creator": "Trace"},
+    )
+    plt.close(fig)
+
+
 def _build_domain_montage(samples: list[LoadedSample], output: Path) -> None:
     row_counts = (4, 4, 3)
     if len(samples) != sum(row_counts):
@@ -378,10 +405,12 @@ def _build_domain_montage(samples: list[LoadedSample], output: Path) -> None:
         tiles: list[str] = []
         for _ in range(row_count):
             sample = samples[sample_index]
+            panel_label = chr(ord("a") + sample_index)
             sample_index += 1
             image_path = sample.image_path.resolve().as_posix()
             tiles.append(
-                rf"\montagetile{{\detokenize{{{image_path}}}}}{{{_tex_escape(sample.spec.label)}}}"
+                rf"\montagetile{{\detokenize{{{image_path}}}}}"
+                rf"{{({_tex_escape(panel_label)}) {_tex_escape(sample.spec.label)}}}"
             )
         rows.append(r"\noindent\makebox[\linewidth][c]{" + r"\hspace{0.08in}".join(tiles) + "}")
 
@@ -395,14 +424,14 @@ def _build_domain_montage(samples: list[LoadedSample], output: Path) -> None:
             r"\pdftrailerid{}",
             r"\pdfsuppressptexinfo=-1",
             r"\definecolor{tileborder}{RGB}{205,211,219}",
-            r"\setlength{\fboxsep}{4pt}",
-            r"\setlength{\fboxrule}{0.5pt}",
+            r"\setlength{\fboxsep}{2pt}",
+            r"\setlength{\fboxrule}{0.35pt}",
             r"\newcommand{\montagetile}[2]{%",
             r"  \fcolorbox{tileborder}{white}{%",
             r"    \begin{minipage}[t]{2.52in}%",
             r"      \centering",
             r"      \parbox[c][1.35in][c]{2.48in}{\centering\includegraphics[width=2.48in,height=1.35in,keepaspectratio]{#1}}%",
-            r"      \par\vspace{1pt}{\sffamily\bfseries\fontsize{14}{15}\selectfont #2}\vspace{2pt}%",
+            r"      \par\vspace{1pt}{\sffamily\fontsize{10}{11}\selectfont #2}\vspace{1pt}%",
             r"    \end{minipage}%",
             r"  }%",
             r"}",
@@ -427,64 +456,70 @@ def _build_domain_montage(samples: list[LoadedSample], output: Path) -> None:
 
 
 def _build_reachable_pipeline(sample: LoadedSample, output: Path) -> None:
-    canvas = Image.new("RGB", (3200, 900), PAPER)
+    canvas = Image.new("RGB", (3200, 760), PAPER)
     draw = ImageDraw.Draw(canvas)
-    headings = _font(40, bold=True)
-    body = _font(34)
-    small = _font(30)
-    mono_like = _font(32, bold=True)
-    boxes = ((40, 55, 760, 845), (850, 55, 1520, 845), (1610, 55, 2330, 845), (2420, 55, 3160, 845))
-    titles = ("1  Scene instance", "2  Execute task program", "3  Validate generated instance", "4  Package RLVR instance")
-    for box, title in zip(boxes, titles):
-        _rounded_card(draw, box, radius=26, width=3)
-        draw.text((box[0] + 30, box[1] + 24), title, font=headings, fill=INK)
+    heading = _font(34, bold=True)
+    body = _font(29)
+    small = _font(25)
+    value_font = _font(27, bold=True)
+    boxes = (
+        (35, 35, 760, 725),
+        (835, 35, 1560, 725),
+        (1635, 35, 2360, 725),
+        (2435, 35, 3160, 725),
+    )
+    titles = ("Scene state", "Task execution", "Validation", "RLVR record")
+    for index, (box, title) in enumerate(zip(boxes, titles), start=1):
+        draw.rectangle(box, fill=CARD, outline=LINE, width=2)
+        draw.line((box[0], box[1], box[2], box[1]), fill=BLUE, width=5)
+        draw.text((box[0] + 24, box[1] + 20), str(index), font=heading, fill=BLUE)
+        draw.text((box[0] + 64, box[1] + 20), title, font=heading, fill=INK)
     for left, right in zip(boxes, boxes[1:]):
-        _draw_arrow(draw, (left[2] + 15, 450), (right[0] - 15, 450), fill=PURPLE, width=9)
+        _draw_arrow(draw, (left[2] + 12, 380), (right[0] - 12, 380), fill=MUTED, width=5)
 
-    base, _, _ = _fit_image(sample.image, (640, 515), fill=(245, 246, 247))
-    canvas.paste(base, (80, 155))
-    _center_text(draw, (80, 690, 720, 790), "Cell states and start S", body, fill=MUTED)
+    base, _, _ = _fit_image(sample.image, (645, 485), fill=CARD)
+    canvas.paste(base, (75, 120))
+    _center_text(draw, (75, 620, 720, 690), "cell states and start S", small, fill=MUTED)
 
     x0, y0, x1, _ = boxes[1]
-    y = y0 + 155
-    draw.text((x0 + 42, y), "P_t(x, q)", font=_font(46, bold=True), fill=PURPLE)
-    y += 85
-    for line in ("4-neighbor flood fill", "start at S", "light cells are passable", "dark cells block movement"):
-        draw.ellipse((x0 + 48, y + 11, x0 + 62, y + 25), fill=PURPLE)
-        draw.text((x0 + 82, y), line, font=body, fill=INK)
-        y += 63
-    y += 34
-    draw.rounded_rectangle((x0 + 42, y, x1 - 42, y + 155), radius=18, fill=(244, 239, 250), outline=(194, 178, 216), width=3)
-    draw.text((x0 + 70, y + 24), "v = {c1, c2, c3, c4}", font=mono_like, fill=INK)
-    draw.text((x0 + 70, y + 85), "y = |v| = 4", font=mono_like, fill=INK)
+    y = y0 + 118
+    draw.text((x0 + 36, y), "P_t(x, q)", font=_font(38, bold=True), fill=BLUE)
+    y += 72
+    for line in ("4-neighbor flood fill", "start at S", "light cells pass", "dark cells block"):
+        draw.ellipse((x0 + 40, y + 10, x0 + 50, y + 20), fill=BLUE)
+        draw.text((x0 + 68, y), line, font=body, fill=INK)
+        y += 58
+    draw.rectangle((x0 + 36, 530, x1 - 36, 670), fill=(247, 248, 250), outline=LINE, width=2)
+    draw.text((x0 + 58, 553), "v = {c1, c2, c3, c4}", font=value_font, fill=INK)
+    draw.text((x0 + 58, 610), "y = |v| = 4", font=value_font, fill=INK)
 
-    x0, y0, x1, _ = boxes[2]
-    y = y0 + 150
     checks = (
-        ("program constraints", "satisfied", GREEN),
-        ("answer uniqueness", "one valid result", BLUE),
-        ("render validity", "scene checks pass", ORANGE),
-        ("replay state", "seed + parameters", PURPLE),
+        ("program constraints", "satisfied"),
+        ("answer uniqueness", "one valid result"),
+        ("render validity", "checks pass"),
+        ("replay state", "seed + parameters"),
     )
-    for name, value, color in checks:
-        draw.rounded_rectangle((x0 + 42, y, x1 - 42, y + 125), radius=16, fill=(249, 250, 251), outline=LINE, width=3)
-        draw.text((x0 + 68, y + 22), name, font=small, fill=MUTED)
-        draw.text((x0 + 68, y + 65), value, font=mono_like, fill=color)
-        y += 145
+    x0, y0, x1, _ = boxes[2]
+    y = y0 + 125
+    for name, value in checks:
+        draw.text((x0 + 38, y), name, font=small, fill=MUTED)
+        draw.text((x0 + 38, y + 37), value, font=value_font, fill=GREEN)
+        draw.line((x0 + 38, y + 85, x1 - 38, y + 85), fill=LINE, width=2)
+        y += 125
 
-    x0, y0, x1, _ = boxes[3]
-    y = y0 + 150
     entries = (
-        ("prompt", "versioned template", ORANGE),
-        ("answer", "integer(4)", BLUE),
-        ("reward", "typed exact match", GREEN),
-        ("trace_ref", "sidecar execution record", PURPLE),
+        ("prompt", "versioned template"),
+        ("answer", "integer(4)"),
+        ("reward", "typed exact match"),
+        ("trace_ref", "execution record"),
     )
-    for name, value, color in entries:
-        draw.rounded_rectangle((x0 + 42, y, x1 - 42, y + 125), radius=16, fill=(249, 250, 251), outline=LINE, width=3)
-        draw.text((x0 + 68, y + 22), name, font=small, fill=MUTED)
-        draw.text((x0 + 68, y + 65), value, font=mono_like, fill=color)
-        y += 145
+    x0, y0, x1, _ = boxes[3]
+    y = y0 + 125
+    for name, value in entries:
+        draw.text((x0 + 38, y), name, font=small, fill=MUTED)
+        draw.text((x0 + 38, y + 37), value, font=value_font, fill=BLUE)
+        draw.line((x0 + 38, y + 85, x1 - 38, y + 85), fill=LINE, width=2)
+        y += 125
 
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
@@ -498,64 +533,73 @@ def _draw_image_pair(draw: ImageDraw.ImageDraw, canvas: Image.Image, panel: tupl
     y = y0 + 135
     for index, sample in enumerate(samples):
         x = start_x + index * (image_size[0] + gap)
-        fitted, _, _ = _fit_image(sample.image, image_size, fill=(245, 246, 247))
+        fitted, _, _ = _fit_image(sample.image, image_size, fill=CARD)
         canvas.paste(fitted, (x, y))
-        draw.rounded_rectangle((x, y, x + image_size[0], y + image_size[1]), radius=12, outline=accent, width=5)
-        _center_text(draw, (x, y + image_size[1] + 8, x + image_size[0], y + image_size[1] + 62), sample.spec.label, _font(31, bold=True), fill=INK)
+        draw.rectangle((x, y, x + image_size[0], y + image_size[1]), outline=LINE, width=2)
+        _center_text(draw, (x, y + image_size[1] + 8, x + image_size[0], y + image_size[1] + 58), sample.spec.label, _font(27), fill=INK)
     return y + image_size[1] + 78
 
 
 def _build_taxonomy_boundaries(samples: list[LoadedSample], output: Path) -> None:
     by_label = {sample.spec.label: sample for sample in samples}
-    canvas = Image.new("RGB", (3200, 1370), PAPER)
+    canvas = Image.new("RGB", (3200, 1080), PAPER)
     draw = ImageDraw.Draw(canvas)
-    title = _font(45, bold=True)
-    body = _font(34)
-    small = _font(30)
+    heading = _font(34, bold=True)
+    body = _font(29)
+    small = _font(25)
 
-    _rounded_card(draw, (40, 35, 3160, 470), radius=28, width=3)
-    draw.text((80, 65), "Public hierarchy: visual grammar first, objective contract second", font=title, fill=INK)
-    hierarchy_y = 225
-    domain_box = (120, hierarchy_y - 55, 520, hierarchy_y + 70)
-    scene_box = (700, hierarchy_y - 55, 1160, hierarchy_y + 70)
-    _rounded_card(draw, domain_box, fill=(235, 243, 252), outline=BLUE, radius=18, width=4)
-    _rounded_card(draw, scene_box, fill=(240, 237, 248), outline=PURPLE, radius=18, width=4)
-    _center_text(draw, domain_box, "domain: puzzles", _font(36, bold=True), fill=BLUE)
-    _center_text(draw, scene_box, "scene: cell board", _font(36, bold=True), fill=PURPLE)
-    _draw_arrow(draw, (domain_box[2] + 24, hierarchy_y + 5), (scene_box[0] - 24, hierarchy_y + 5), fill=MUTED, width=7)
+    draw.text((55, 35), "(a) Public hierarchy", font=heading, fill=INK)
+    hierarchy_y = 150
+    domain_box = (65, hierarchy_y - 45, 430, hierarchy_y + 55)
+    scene_box = (570, hierarchy_y - 45, 990, hierarchy_y + 55)
+    draw.rectangle(domain_box, fill=(240, 245, 250), outline=BLUE, width=3)
+    draw.rectangle(scene_box, fill=(245, 246, 248), outline=MUTED, width=2)
+    _center_text(draw, domain_box, "domain: puzzles", _font(29, bold=True), fill=BLUE)
+    _center_text(draw, scene_box, "scene: cell board", _font(29, bold=True), fill=INK)
+    _draw_arrow(draw, (domain_box[2] + 20, hierarchy_y + 5), (scene_box[0] - 20, hierarchy_y + 5), fill=MUTED, width=5)
     task_names = ("reachable region", "shortest path", "largest component", "symmetry violation")
-    task_x = 1380
-    task_w, task_h, task_gap = 390, 105, 32
+    task_group = (1160, 70, 3130, 245)
+    draw.rectangle(task_group, fill=CARD, outline=LINE, width=2)
+    draw.rectangle((1190, 56, 1465, 88), fill=PAPER)
+    draw.text((1200, 55), "public task objectives", font=small, fill=MUTED)
+    task_x = 1200
+    task_w, task_gap = 440, 24
     for index, task_name in enumerate(task_names):
         x = task_x + index * (task_w + task_gap)
-        box = (x, hierarchy_y - 45, x + task_w, hierarchy_y + 60)
+        box = (x, hierarchy_y - 45, x + task_w, hierarchy_y + 55)
         is_selected = index == 0
-        _rounded_card(draw, box, fill=(239, 249, 244) if is_selected else (249, 250, 251), outline=GREEN if is_selected else LINE, radius=16, width=4 if is_selected else 3)
-        _center_text(draw, box, task_name, _font(29, bold=is_selected), fill=GREEN if is_selected else INK)
-    _draw_arrow(draw, (scene_box[2] + 24, hierarchy_y + 5), (task_x - 24, hierarchy_y + 5), fill=MUTED, width=7)
-    draw.text((1380, 365), "Each task fixes a concrete program and output contract.", font=small, fill=MUTED)
+        draw.rectangle(
+            box,
+            fill=(240, 248, 244) if is_selected else CARD,
+            outline=GREEN if is_selected else LINE,
+            width=3 if is_selected else 2,
+        )
+        _center_text(draw, box, task_name, _font(26, bold=is_selected), fill=GREEN if is_selected else INK)
+    _draw_arrow(draw, (scene_box[2] + 20, hierarchy_y + 5), (task_group[0] - 20, hierarchy_y + 5), fill=MUTED, width=5)
 
-    panel_y0, panel_y1 = 520, 1325
-    panel_gap = 30
-    panel_w = (3120 - 2 * panel_gap) // 3
-    panels = tuple((40 + i * (panel_w + panel_gap), panel_y0, 40 + i * (panel_w + panel_gap) + panel_w, panel_y1) for i in range(3))
+    draw.line((55, 285, 3145, 285), fill=LINE, width=2)
+    panel_y0, panel_y1 = 320, 1045
+    panel_gap = 32
+    panel_w = (3090 - 2 * panel_gap) // 3
+    panels = tuple((55 + i * (panel_w + panel_gap), panel_y0, 55 + i * (panel_w + panel_gap) + panel_w, panel_y1) for i in range(3))
     accents = (BLUE, ORANGE, GREEN)
-    headings = ("Query variation", "Public task split", "Generation variation")
-    for panel, accent, heading in zip(panels, accents, headings):
-        _rounded_card(draw, panel, radius=24, width=4, outline=accent)
-        _center_text(draw, (panel[0] + 20, panel[1] + 20, panel[2] - 20, panel[1] + 100), heading, title, fill=accent)
+    headings = ("(b) Query variation", "(c) Public task split", "(d) Generation variation")
+    for index, (panel, accent, panel_heading) in enumerate(zip(panels, accents, headings)):
+        if index:
+            draw.line((panel[0] - panel_gap // 2, panel[1], panel[0] - panel_gap // 2, panel[3]), fill=LINE, width=2)
+        draw.text((panel[0], panel[1]), panel_heading, font=heading, fill=accent)
 
-    y = _draw_image_pair(draw, canvas, panels[0], (by_label["Largest IQR"], by_label["Smallest IQR"]), image_size=(445, 330), accent=BLUE)
-    _center_text(draw, (panels[0][0] + 40, y, panels[0][2] - 40, y + 75), "one task: direction in {largest, smallest}", body, fill=INK)
-    _draw_wrapped(draw, (panels[0][0] + 58, y + 100), "Candidate boxes, IQR computation, answer type, and verifier contract remain unchanged.", small, max_width=panel_w - 116, fill=MUTED, line_gap=8)
+    y = _draw_image_pair(draw, canvas, panels[0], (by_label["Largest IQR"], by_label["Smallest IQR"]), image_size=(430, 315), accent=BLUE)
+    _center_text(draw, (panels[0][0], y, panels[0][2], y + 65), "one task; extremum direction is the query", body, fill=INK)
+    _draw_wrapped(draw, (panels[0][0] + 24, y + 80), "Program, answer type, and verifier roles are unchanged.", small, max_width=panel_w - 48, fill=MUTED, line_gap=6)
 
-    y = _draw_image_pair(draw, canvas, panels[1], (by_label["Shape"], by_label["Shape AND color"]), image_size=(445, 330), accent=ORANGE)
-    _center_text(draw, (panels[1][0] + 40, y, panels[1][2] - 40, y + 75), "two tasks: membership vs conjunction", body, fill=INK)
-    _draw_wrapped(draw, (panels[1][0] + 58, y + 100), "Adding a second attribute changes predicate arity and the visual filtering program.", small, max_width=panel_w - 116, fill=MUTED, line_gap=8)
+    y = _draw_image_pair(draw, canvas, panels[1], (by_label["Shape"], by_label["Shape AND color"]), image_size=(430, 315), accent=ORANGE)
+    _center_text(draw, (panels[1][0], y, panels[1][2], y + 65), "two tasks; predicate arity changes", body, fill=INK)
+    _draw_wrapped(draw, (panels[1][0] + 24, y + 80), "Conjunction changes the selected set and filtering program.", small, max_width=panel_w - 48, fill=MUTED, line_gap=6)
 
-    y = _draw_image_pair(draw, canvas, panels[2], (by_label["Style A"], by_label["Style B"]), image_size=(445, 330), accent=GREEN)
-    _center_text(draw, (panels[2][0] + 40, y, panels[2][2] - 40, y + 75), "one task: rendering parameters vary", body, fill=INK)
-    _draw_wrapped(draw, (panels[2][0] + 58, y + 100), "Palette, board dimensions, and layout vary without changing the reachability program.", small, max_width=panel_w - 116, fill=MUTED, line_gap=8)
+    y = _draw_image_pair(draw, canvas, panels[2], (by_label["Style A"], by_label["Style B"]), image_size=(430, 315), accent=GREEN)
+    _center_text(draw, (panels[2][0], y, panels[2][2], y + 65), "one task; render parameters vary", body, fill=INK)
+    _draw_wrapped(draw, (panels[2][0] + 24, y + 80), "Palette, dimensions, and layout preserve the program.", small, max_width=panel_w - 48, fill=MUTED, line_gap=6)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
@@ -694,178 +738,19 @@ def _load_environment_coverage(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _draw_bar(
-    draw: ImageDraw.ImageDraw,
-    *,
-    label: str,
-    value: int,
-    maximum: int,
-    x: int,
-    y: int,
-    width: int,
-    height: int,
-    color: tuple[int, int, int],
-    label_width: int,
-    value_suffix: str = "",
-    label_font_size: int = 28,
-    value_font_size: int = 27,
-) -> None:
-    label_font = _font(label_font_size)
-    value_font = _font(value_font_size, bold=True)
-    draw.text((x, y + 5), label, font=label_font, fill=INK)
-    bar_x = x + label_width
-    bar_width = max(4, int(round(width * value / maximum)))
-    draw.rounded_rectangle((bar_x, y, bar_x + width, y + height), radius=height // 2, fill=(232, 235, 239))
-    draw.rounded_rectangle((bar_x, y, bar_x + bar_width, y + height), radius=height // 2, fill=color)
-    draw.text((bar_x + width + 16, y + 5), f"{value}{value_suffix}", font=value_font, fill=INK)
-
-
 def _build_domain_landscape(coverage: dict[str, Any], output: Path) -> None:
-    """Render scene and task coverage as paired radial bars by visual domain."""
+    """Render compact domain and answer-interface statistics."""
 
     domains = list(coverage["domains"])
-    domain_keys = tuple(str(row["domain"]) for row in domains)
-    if set(domain_keys) != set(DOMAIN_COLORS):
-        missing = sorted(set(domain_keys) - set(DOMAIN_COLORS))
-        stale = sorted(set(DOMAIN_COLORS) - set(domain_keys))
-        raise RuntimeError(f"domain color inventory drift: missing={missing}, stale={stale}")
     if len(domains) != 11 or int(coverage["task_count"]) != 1000 or int(coverage["scene_count"]) != 277:
-        raise RuntimeError("domain landscape requires the frozen 11-domain, 1,000-task, 277-scene inventory")
+        raise RuntimeError("environment statistics require the frozen 11-domain, 1,000-task, 277-scene inventory")
 
-    canvas = Image.new("RGB", (3200, 1900), PAPER)
-    draw = ImageDraw.Draw(canvas)
-    title_font = _font(58, bold=True)
-    subtitle_font = _font(31)
-    domain_font = _font(34, bold=True)
-    count_font = _font(27)
-    center_title_font = _font(70, bold=True)
-    center_value_font = _font(42, bold=True)
-    center_label_font = _font(29)
-    legend_font = _font(27)
-
-    draw.text((55, 42), "Visual-domain coverage", font=title_font, fill=INK)
-    draw.text(
-        (55, 118),
-        "Equal-angle sectors compare independently scaled task and scene counts; exact values are printed.",
-        font=subtitle_font,
-        fill=MUTED,
-    )
-
-    task_max = max(int(row["tasks"]) for row in domains)
-    scene_max = max(int(row["scenes"]) for row in domains)
-    legend_x = 2440
-    draw.rounded_rectangle((legend_x, 48, legend_x + 34, 82), radius=5, fill=BLUE)
-    draw.text((legend_x + 48, 49), f"Tasks (0-{task_max})", font=legend_font, fill=INK)
-    draw.rounded_rectangle(
-        (legend_x, 98, legend_x + 34, 132),
-        radius=5,
-        fill=_interpolate_rgb(BLUE, PAPER, 0.48),
-        outline=(166, 179, 198),
-        width=2,
-    )
-    draw.text((legend_x + 48, 99), f"Scenes (0-{scene_max})", font=legend_font, fill=INK)
-
-    center_x, center_y = 1600, 1020
-    inner_radius = 245
-    radial_span = 410
-    outer_radius = inner_radius + radial_span
-    label_radius = 805
-    sector_angle = 360.0 / float(len(domains))
-    bar_width = 11.8
-    bar_offset = 6.9
-    track_fill = (231, 234, 238)
-    track_outline = (218, 223, 229)
-
-    def radial_bbox(radius: float) -> tuple[float, float, float, float]:
-        return (
-            center_x - radius,
-            center_y - radius,
-            center_x + radius,
-            center_y + radius,
-        )
-
-    for index, row in enumerate(domains):
-        domain = str(row["domain"])
-        domain_color = DOMAIN_COLORS[domain]
-        scene_color = _interpolate_rgb(domain_color, PAPER, 0.48)
-        center_angle = -90.0 + float(index) * sector_angle
-        task_start = center_angle - bar_offset - bar_width / 2.0
-        task_end = task_start + bar_width
-        scene_start = center_angle + bar_offset - bar_width / 2.0
-        scene_end = scene_start + bar_width
-
-        for start, end in ((task_start, task_end), (scene_start, scene_end)):
-            draw.pieslice(
-                radial_bbox(outer_radius),
-                start=start,
-                end=end,
-                fill=track_fill,
-                outline=track_outline,
-                width=2,
-            )
-
-        task_radius = inner_radius + radial_span * int(row["tasks"]) / float(task_max)
-        scene_radius = inner_radius + radial_span * int(row["scenes"]) / float(scene_max)
-        draw.pieslice(
-            radial_bbox(task_radius),
-            start=task_start,
-            end=task_end,
-            fill=domain_color,
-        )
-        draw.pieslice(
-            radial_bbox(scene_radius),
-            start=scene_start,
-            end=scene_end,
-            fill=scene_color,
-            outline=domain_color,
-            width=2,
-        )
-
-        radians = math.radians(center_angle)
-        line_start = (
-            center_x + math.cos(radians) * (outer_radius + 12),
-            center_y + math.sin(radians) * (outer_radius + 12),
-        )
-        line_end = (
-            center_x + math.cos(radians) * (label_radius - 70),
-            center_y + math.sin(radians) * (label_radius - 70),
-        )
-        draw.line((line_start, line_end), fill=_interpolate_rgb(domain_color, PAPER, 0.35), width=3)
-        label_x = center_x + math.cos(radians) * label_radius
-        label_y = center_y + math.sin(radians) * label_radius
-        domain_label = "3D" if domain == "three_d" else domain.replace("_", " ").title()
-        draw.text((label_x, label_y - 17), domain_label, font=domain_font, fill=domain_color, anchor="mm")
-        draw.text(
-            (label_x, label_y + 25),
-            f"{int(row['tasks'])} tasks / {int(row['scenes'])} scenes",
-            font=count_font,
-            fill=INK,
-            anchor="mm",
-        )
-
-    draw.ellipse(
-        radial_bbox(inner_radius - 4),
-        fill=PAPER,
-        outline=(198, 205, 214),
-        width=4,
-    )
-    draw.text((center_x, center_y - 105), "Trace", font=center_title_font, fill=INK, anchor="mm")
-    center_rows = (("1,000", "tasks", BLUE), ("277", "scenes", PURPLE), ("11", "domains", TEAL))
-    row_y = center_y - 28
-    for value, label, color in center_rows:
-        draw.text((center_x - 8, row_y), value, font=center_value_font, fill=color, anchor="rm")
-        draw.text((center_x + 8, row_y + 1), label, font=center_label_font, fill=MUTED, anchor="lm")
-        row_y += 65
-
-    output.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
-
-
-def _build_answer_reward_summary(coverage: dict[str, Any], output: Path) -> None:
-    """Render the typed answer interfaces governed by one exact-match reward."""
-
-    canvas = Image.new("RGB", (1900, 1050), PAPER)
-    draw = ImageDraw.Draw(canvas)
+    domain_labels = [
+        "3D" if str(row["domain"]) == "three_d" else str(row["domain"]).replace("_", " ").title()
+        for row in domains
+    ]
+    task_values = [int(row["tasks"]) for row in domains]
+    scene_values = [int(row["scenes"]) for row in domains]
     answer_order = ("integer", "option_letter", "string", "number")
     answer_labels = {
         "integer": "Integer",
@@ -873,219 +758,129 @@ def _build_answer_reward_summary(coverage: dict[str, Any], output: Path) -> None
         "string": "String",
         "number": "Numeric",
     }
-    answer_colors = (BLUE, ORANGE, GREEN, PURPLE)
-    values = [int(coverage["answer_types"][key]) for key in answer_order]
-    total = sum(values)
+    answer_values = [int(coverage["answer_types"][key]) for key in answer_order]
+    total = sum(answer_values)
     if total != int(coverage["task_count"]):
         raise RuntimeError("answer-interface counts do not match the active task count")
 
-    center = (520, 525)
-    outer_radius = 400
-    inner_radius = 240
-    outer_bbox = (
-        center[0] - outer_radius,
-        center[1] - outer_radius,
-        center[0] + outer_radius,
-        center[1] + outer_radius,
-    )
-    angle = -90.0
-    for value, color in zip(values, answer_colors):
-        extent = 360.0 * value / total
-        draw.pieslice(
-            outer_bbox,
-            start=angle,
-            end=angle + extent,
-            fill=color,
-            outline=PAPER,
-            width=8,
-        )
-        angle += extent
-    draw.ellipse(
-        (
-            center[0] - inner_radius,
-            center[1] - inner_radius,
-            center[0] + inner_radius,
-            center[1] + inner_radius,
-        ),
-        fill=PAPER,
-    )
+    with plt.rc_context(PAPER_PLOT_RC):
+        fig = plt.figure(figsize=(10.8, 4.15), facecolor="white")
+        grid = fig.add_gridspec(1, 3, width_ratios=(1.30, 1.05, 1.08), wspace=0.36)
+        axes = [fig.add_subplot(grid[0, index]) for index in range(3)]
+        y = np.arange(len(domains))
 
-    draw.text(center, "1,000", font=_font(96, bold=True), fill=INK, anchor="ms")
-    draw.text(
-        (center[0], center[1] + 52),
-        "tasks",
-        font=_font(42, bold=True),
-        fill=MUTED,
-        anchor="mm",
-    )
-    draw.text(
-        (center[0], center[1] + 120),
-        "one exact-match reward",
-        font=_font(31, bold=True),
-        fill=INK,
-        anchor="mm",
-    )
-    draw.text((center[0], center[1] + 166), "no LLM judge", font=_font(29), fill=MUTED, anchor="mm")
+        def style_axis(axis: Any) -> None:
+            axis.set_axisbelow(True)
+            axis.grid(axis="x", color=PLOT_GRID, linewidth=0.5)
+            axis.spines[["top", "right", "left"]].set_visible(False)
+            axis.spines["bottom"].set_color(PLOT_LINE)
+            axis.tick_params(axis="y", length=0)
+            axis.tick_params(axis="x", length=2.5, width=0.5)
 
-    legend_x = 1070
-    legend_y = 220
-    label_font = _font(46, bold=True)
-    value_font = _font(41)
-    for key, value, color in zip(answer_order, values, answer_colors):
-        draw.rounded_rectangle(
-            (legend_x, legend_y + 5, legend_x + 54, legend_y + 59),
-            radius=10,
-            fill=color,
-        )
-        draw.text((legend_x + 82, legend_y), answer_labels[key], font=label_font, fill=INK)
-        percentage = 100.0 * value / total
-        draw.text(
-            (legend_x + 82, legend_y + 61),
-            f"{value:,} tasks  |  {percentage:.1f}%",
-            font=value_font,
-            fill=MUTED,
-        )
-        legend_y += 190
+        axes[0].barh(y, task_values, height=0.62, color=PLOT_BLUE)
+        axes[0].set_yticks(y, domain_labels)
+        axes[0].invert_yaxis()
+        axes[0].set_xlim(0, 200)
+        axes[0].set_xticks((0, 50, 100, 150, 200))
+        axes[0].set_title("(a) Tasks by domain", loc="left", fontweight="bold", pad=6)
+        style_axis(axes[0])
+        for row, value in enumerate(task_values):
+            axes[0].text(value + 3, row, str(value), va="center", fontsize=7, color=PLOT_INK)
 
-    output.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
+        axes[1].barh(y, scene_values, height=0.62, color=PLOT_BLUE_LIGHT)
+        axes[1].set_yticks(y, [])
+        axes[1].invert_yaxis()
+        axes[1].set_xlim(0, 60)
+        axes[1].set_xticks((0, 15, 30, 45, 60))
+        axes[1].set_title("(b) Scenes by domain", loc="left", fontweight="bold", pad=6)
+        style_axis(axes[1])
+        for row, value in enumerate(scene_values):
+            axes[1].text(value + 1.0, row, str(value), va="center", fontsize=7, color=PLOT_INK)
 
+        answer_y = np.arange(len(answer_order))
+        axes[2].barh(answer_y, answer_values, height=0.55, color=PLOT_BLUE)
+        axes[2].set_yticks(answer_y, [answer_labels[key] for key in answer_order])
+        axes[2].invert_yaxis()
+        axes[2].set_xlim(0, 600)
+        axes[2].set_xticks((0, 200, 400, 600))
+        axes[2].set_title("(c) Answer interfaces", loc="left", fontweight="bold", pad=6)
+        style_axis(axes[2])
+        for row, value in enumerate(answer_values):
+            axes[2].text(
+                value + 10,
+                row,
+                f"{value} ({100.0 * value / total:.1f}%)",
+                va="center",
+                fontsize=7,
+                color=PLOT_INK,
+            )
 
-def _interpolate_rgb(
-    start: tuple[int, int, int],
-    end: tuple[int, int, int],
-    amount: float,
-) -> tuple[int, int, int]:
-    amount = max(0.0, min(1.0, amount))
-    return tuple(
-        int(round(left + (right - left) * amount))
-        for left, right in zip(start, end)
-    )
+        _save_plot_pdf(fig, output)
 
 
 def _build_domain_operation_matrix(coverage: dict[str, Any], output: Path) -> None:
     """Render the selected multi-label operation families by domain."""
 
-    canvas = Image.new("RGB", (3400, 1820), PAPER)
-    draw = ImageDraw.Draw(canvas)
-    title_font = _font(54, bold=True)
-    subtitle_font = _font(31)
-    header_font = _font(28, bold=True)
-    domain_font = _font(39, bold=True)
-    total_font = _font(27)
-    count_font = _font(43, bold=True)
-    legend_font = _font(29)
-
-    domains = coverage["domains"]
+    domains = list(coverage["domains"])
     operation_matrix = coverage["operation_matrix"]
-    grid_left = 450
-    grid_right = 3320
-    grid_top = 315
-    row_height = 102
-    row_gap = 8
-    column_gap = 8
-    column_width = (grid_right - grid_left - column_gap * (len(PROGRAM_OPERATION_COLUMNS) - 1)) // len(PROGRAM_OPERATION_COLUMNS)
-
-    shares = [
-        int(operation_matrix[str(row["domain"])][key]) / int(row["tasks"])
-        for row in domains
-        for key, _ in PROGRAM_OPERATION_COLUMNS
-    ]
-    max_share = max(shares)
+    counts = np.asarray(
+        [
+            [int(operation_matrix[str(row["domain"])][key]) for key, _ in PROGRAM_OPERATION_COLUMNS]
+            for row in domains
+        ],
+        dtype=int,
+    )
+    task_totals = np.asarray([int(row["tasks"]) for row in domains], dtype=float)
+    shares = counts / task_totals[:, None]
+    max_share = float(shares.max())
     if max_share <= 0:
         raise RuntimeError("operation matrix contains no classified tasks")
 
-    draw.text((55, 42), "Reasoning-operation coverage", font=title_font, fill=INK)
-    draw.text(
-        (55, 112),
-        "Cell labels are task counts; color is the operation's share of tasks in that domain.",
-        font=subtitle_font,
-        fill=MUTED,
-    )
-    draw.text((55, 210), "Domain", font=header_font, fill=MUTED)
+    row_labels = [
+        f"{'3D' if str(row['domain']) == 'three_d' else str(row['domain']).replace('_', ' ').title()}  ({int(row['tasks'])})"
+        for row in domains
+    ]
+    column_labels = [label for _, label in PROGRAM_OPERATION_COLUMNS]
+    cmap = LinearSegmentedColormap.from_list("trace_operation_share", [PLOT_ZERO, "#9fc0c4", "#176d75"])
 
-    for column_index, (_, label) in enumerate(PROGRAM_OPERATION_COLUMNS):
-        x0 = grid_left + column_index * (column_width + column_gap)
-        x1 = x0 + column_width
-        lines = label.split("\n")
-        line_height = _text_size(draw, "Ag", header_font)[1]
-        block_height = len(lines) * line_height + (len(lines) - 1) * 5
-        y = 210 - block_height / 2
-        for line in lines:
-            width, _ = _text_size(draw, line, header_font)
-            draw.text((x0 + (x1 - x0 - width) / 2, y), line, font=header_font, fill=MUTED)
-            y += line_height + 5
+    with plt.rc_context(PAPER_PLOT_RC):
+        fig, axis = plt.subplots(figsize=(11.4, 4.65), facecolor="white")
+        image = axis.imshow(shares, cmap=cmap, vmin=0.0, vmax=max_share, aspect="auto", interpolation="nearest")
+        axis.set_xticks(np.arange(len(column_labels)), column_labels)
+        axis.set_yticks(np.arange(len(row_labels)), row_labels)
+        axis.xaxis.tick_top()
+        axis.tick_params(axis="x", length=0, pad=5, labelsize=6.8)
+        axis.tick_params(axis="y", length=0, pad=5, labelsize=7.2)
+        axis.set_xticks(np.arange(-0.5, len(column_labels), 1), minor=True)
+        axis.set_yticks(np.arange(-0.5, len(row_labels), 1), minor=True)
+        axis.grid(which="minor", color="white", linewidth=1.2)
+        axis.tick_params(which="minor", bottom=False, left=False)
+        for spine in axis.spines.values():
+            spine.set_visible(False)
 
-    low_color = (239, 245, 246)
-    high_color = (14, 100, 108)
-    for row_index, row in enumerate(domains):
-        domain = str(row["domain"])
-        task_total = int(row["tasks"])
-        y0 = grid_top + row_index * (row_height + row_gap)
-        y1 = y0 + row_height
-        domain_label = "3D" if domain == "three_d" else domain.replace("_", " ").title()
-        draw.text((55, y0 + 13), domain_label, font=domain_font, fill=INK)
-        total_label = f"n = {task_total}"
-        total_width, _ = _text_size(draw, total_label, total_font)
-        draw.text((grid_left - 35 - total_width, y0 + 56), total_label, font=total_font, fill=MUTED)
+        for row_index in range(counts.shape[0]):
+            for column_index in range(counts.shape[1]):
+                text_color = "white" if shares[row_index, column_index] >= 0.52 * max_share else PLOT_INK
+                axis.text(
+                    column_index,
+                    row_index,
+                    str(int(counts[row_index, column_index])),
+                    ha="center",
+                    va="center",
+                    fontsize=7.0,
+                    color=text_color,
+                    fontweight="bold" if shares[row_index, column_index] >= 0.35 * max_share else "normal",
+                )
 
-        for column_index, (key, _) in enumerate(PROGRAM_OPERATION_COLUMNS):
-            count = int(operation_matrix[domain][key])
-            share = count / task_total
-            intensity = share / max_share
-            fill = _interpolate_rgb(low_color, high_color, intensity)
-            x0 = grid_left + column_index * (column_width + column_gap)
-            x1 = x0 + column_width
-            draw.rounded_rectangle(
-                (x0, y0, x1, y1),
-                radius=8,
-                fill=fill,
-                outline=(225, 232, 234),
-                width=2,
-            )
-            text_fill = CARD if intensity >= 0.52 else INK
-            _center_text(draw, (x0, y0, x1, y1), str(count), count_font, fill=text_fill)
+        colorbar = fig.colorbar(image, ax=axis, orientation="horizontal", fraction=0.05, pad=0.10, aspect=45)
+        colorbar.set_label("Share of tasks within domain", fontsize=7.2, color=PLOT_MUTED, labelpad=3)
+        colorbar.set_ticks((0.0, max_share / 2.0, max_share))
+        colorbar.set_ticklabels(("0%", f"{max_share / 2.0:.0%}", f"{max_share:.0%}"))
+        colorbar.ax.tick_params(labelsize=6.8, length=2, colors=PLOT_MUTED)
+        colorbar.outline.set_edgecolor(PLOT_LINE)
+        colorbar.outline.set_linewidth(0.5)
 
-    legend_y = 1643
-    legend_x = 450
-    legend_width = 690
-    legend_height = 30
-    for offset in range(legend_width):
-        fill = _interpolate_rgb(low_color, high_color, offset / (legend_width - 1))
-        draw.line(
-            (legend_x + offset, legend_y, legend_x + offset, legend_y + legend_height),
-            fill=fill,
-            width=1,
-        )
-    draw.rectangle(
-        (legend_x, legend_y, legend_x + legend_width, legend_y + legend_height),
-        outline=(210, 220, 222),
-        width=2,
-    )
-    draw.text((legend_x, legend_y + 46), "0%", font=legend_font, fill=MUTED)
-    max_label = f"{max_share:.0%} (matrix maximum)"
-    max_label_width, _ = _text_size(draw, max_label, legend_font)
-    draw.text(
-        (legend_x + legend_width - max_label_width, legend_y + 46),
-        max_label,
-        font=legend_font,
-        fill=MUTED,
-    )
-    draw.text(
-        (1320, legend_y + 1),
-        "Multi-label: a task can contribute to several operation families.",
-        font=_font(33, bold=True),
-        fill=INK,
-    )
-    draw.text(
-        (1320, legend_y + 53),
-        "Exhaustive: every task has at least one family; direct retrieval is an exclusive fallback.",
-        font=subtitle_font,
-        fill=MUTED,
-    )
-
-    output.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
+        _save_plot_pdf(fig, output)
 
 
 def _deep_merge_mapping(base: Mapping[str, Any], override: Mapping[str, Any]) -> dict[str, Any]:
@@ -1306,7 +1101,7 @@ def _build_rendering_variation_examples(repo_root: Path, output: Path) -> dict[s
             )
             tiles.append(
                 rf"\variationtile{{\detokenize{{{image_path.resolve().as_posix()}}}}}"
-                rf"{{{chr(65 + index)}}}{{{_tex_escape(profile.label)}}}"
+                rf"{{{chr(97 + index)}}}{{{_tex_escape(profile.label)}}}"
             )
 
         if len(semantic_hashes) != 1 or len(prompt_hashes) != 1 or len(answer_records) != 1:
@@ -1324,13 +1119,13 @@ def _build_rendering_variation_examples(repo_root: Path, output: Path) -> dict[s
                 r"\pdftrailerid{}",
                 r"\pdfsuppressptexinfo=-1",
                 r"\definecolor{tileborder}{RGB}{190,198,208}",
-                r"\setlength{\fboxsep}{3pt}",
-                r"\setlength{\fboxrule}{0.5pt}",
+                r"\setlength{\fboxsep}{2pt}",
+                r"\setlength{\fboxrule}{0.35pt}",
                 r"\newcommand{\variationtile}[3]{%",
                 r"  \begin{minipage}[t]{3.48in}%",
                 r"    \centering",
                 r"    \fcolorbox{tileborder}{white}{\parbox[c][2.18in][c]{3.40in}{\centering\includegraphics[width=3.38in,height=2.14in,keepaspectratio]{#1}}}%",
-                r"    \par\vspace{2pt}{\sffamily\bfseries\fontsize{14}{15}\selectfont #2. #3}\vspace{2pt}%",
+                r"    \par\vspace{2pt}{\sffamily\fontsize{10}{11}\selectfont (#2) #3}\vspace{1pt}%",
                 r"  \end{minipage}%",
                 r"}",
                 r"\begin{document}",
@@ -1405,74 +1200,48 @@ def _build_rendering_variation_profile_table(
 
 
 def _build_rendering_variation_pipeline(output: Path) -> None:
-    canvas = Image.new("RGB", (3000, 1800), PAPER)
+    canvas = Image.new("RGB", (3000, 900), PAPER)
     draw = ImageDraw.Draw(canvas)
-    heading = _font(48, bold=True)
-    body = _font(40)
-    small = _font(30)
+    heading = _font(34, bold=True)
+    body = _font(28)
+    small = _font(23)
     stages = (
-        ("1  Semantic state", (40, 45, 910, 665), BLUE, ("objects and values", "relations and operands", "answer-bearing placement")),
-        ("2  Render profile", (1065, 45, 1935, 665), PURPLE, ("canvas and background", "palette and typography", "materials and scene skin")),
-        ("3  Layout realization", (2090, 45, 2960, 665), TEAL, ("panels and spacing", "camera and framing", "unit, offset, scale jitter")),
-        ("4  Draw scene content", (2090, 760, 2960, 1380), ORANGE, ("marks, objects, text", "options and legends", "scene-local context")),
-        ("5  Project and check", (1065, 760, 1935, 1380), GREEN, ("final coordinates", "visibility and contrast", "collision and fit checks")),
-        ("6  Optional finishing", (40, 760, 910, 1380), (176, 75, 87), ("non-answer context", "tone and compression", "noise and texture")),
+        ("Semantic state", (45, 40, 900, 395), ("objects and values", "relations and operands", "answer-bearing placement"), "may change the answer"),
+        ("Render profile", (1070, 40, 1925, 395), ("canvas and background", "palette and typography", "materials and scene skin"), "render-only when unqueried"),
+        ("Layout realization", (2095, 40, 2950, 395), ("panels and spacing", "camera and framing", "offset and scale jitter"), "render-only when unqueried"),
+        ("Draw scene", (2095, 505, 2950, 860), ("marks, objects, and text", "options and legends", "scene-local context"), "realizes the sampled state"),
+        ("Project and check", (1070, 505, 1925, 860), ("final coordinates", "visibility and contrast", "collision and fit"), "uses final geometry"),
+        ("Optional finishing", (45, 505, 900, 860), ("non-answer context", "tone and compression", "noise and texture"), "preserves the answer contract"),
     )
-    for title, box, color, lines in stages:
-        _rounded_card(draw, box, radius=22, width=4, outline=color)
-        draw.rounded_rectangle((box[0], box[1], box[2], box[1] + 96), radius=22, fill=color)
-        draw.rectangle((box[0], box[1] + 70, box[2], box[1] + 96), fill=color)
-        _center_text(draw, (box[0] + 10, box[1] + 10, box[2] - 10, box[1] + 88), title, heading, fill=(255, 255, 255))
-        y = box[1] + 155
+    for index, (title, box, lines, boundary) in enumerate(stages, start=1):
+        draw.rectangle(box, fill=CARD, outline=BLUE if index == 1 else LINE, width=3 if index == 1 else 2)
+        draw.text((box[0] + 24, box[1] + 20), str(index), font=heading, fill=BLUE)
+        draw.text((box[0] + 64, box[1] + 20), title, font=heading, fill=INK)
+        y = box[1] + 100
         for line in lines:
-            draw.ellipse((box[0] + 35, y + 9, box[0] + 49, y + 23), fill=color)
-            draw.text((box[0] + 67, y), line, font=body, fill=INK)
-            y += 105
-        if title.startswith("1"):
-            label = "Can change task result"
-        elif title.startswith("5"):
-            label = "Uses final geometry"
-        elif title.startswith("6"):
-            label = "Answer contract preserved"
-        else:
-            label = "Render-only if unqueried"
-        draw.rounded_rectangle((box[0] + 38, box[3] - 120, box[2] - 38, box[3] - 42), radius=15, fill=(246, 247, 249), outline=LINE, width=2)
-        _center_text(draw, (box[0] + 46, box[3] - 116, box[2] - 46, box[3] - 44), label, small, fill=color)
+            draw.ellipse((box[0] + 28, y + 10, box[0] + 38, y + 20), fill=BLUE)
+            draw.text((box[0] + 55, y), line, font=body, fill=INK)
+            y += 58
+        draw.line((box[0] + 24, box[3] - 72, box[2] - 24, box[3] - 72), fill=LINE, width=2)
+        draw.text((box[0] + 24, box[3] - 52), boundary, font=small, fill=MUTED)
 
     for left_index, right_index in ((0, 1), (1, 2)):
         left = stages[left_index][1]
         right = stages[right_index][1]
-        _draw_arrow(draw, (left[2] + 18, 355), (right[0] - 18, 355), fill=MUTED, width=9)
+        _draw_arrow(draw, (left[2] + 14, 218), (right[0] - 14, 218), fill=MUTED, width=5)
     stage_three = stages[2][1]
     stage_four = stages[3][1]
-    _draw_arrow(draw, ((stage_three[0] + stage_three[2]) // 2, stage_three[3] + 18), ((stage_four[0] + stage_four[2]) // 2, stage_four[1] - 18), fill=MUTED, width=9)
+    _draw_arrow(
+        draw,
+        ((stage_three[0] + stage_three[2]) // 2, stage_three[3] + 14),
+        ((stage_four[0] + stage_four[2]) // 2, stage_four[1] - 14),
+        fill=MUTED,
+        width=5,
+    )
     for start_index, end_index in ((3, 4), (4, 5)):
         start_box = stages[start_index][1]
         end_box = stages[end_index][1]
-        _draw_arrow(draw, (start_box[0] - 18, 1070), (end_box[2] + 18, 1070), fill=MUTED, width=9)
-
-    draw.rounded_rectangle((40, 1460, 2960, 1755), radius=24, fill=(240, 244, 248), outline=(189, 202, 216), width=3)
-    draw.line((1510, 1485, 1510, 1730), fill=(189, 202, 216), width=3)
-    draw.text((82, 1500), "Semantic placement vs. render placement", font=heading, fill=BLUE)
-    _draw_wrapped(
-        draw,
-        (82, 1575),
-        "Placement that determines a spatial answer belongs to scene state; harmless translation, spacing, scale, and camera jitter belong to visual realization.",
-        body,
-        max_width=1350,
-        fill=INK,
-        line_gap=8,
-    )
-    draw.text((1580, 1500), "Deterministic realization", font=heading, fill=PURPLE)
-    _draw_wrapped(
-        draw,
-        (1580, 1575),
-        "Scene-specific finishing order may differ, but every enabled choice derives from the instance seed and is recorded in trace metadata.",
-        body,
-        max_width=1280,
-        fill=INK,
-        line_gap=8,
-    )
+        _draw_arrow(draw, (start_box[0] - 14, 682), (end_box[2] + 14, 682), fill=MUTED, width=5)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, format="PNG", dpi=(300, 300), optimize=True)
@@ -1551,26 +1320,25 @@ def main() -> None:
         figures_dir / "domain_montage.pdf",
         figures_dir / "reachable_region_pipeline.png",
         figures_dir / "taxonomy_boundaries.png",
-        figures_dir / "answer_reward_summary.png",
         figures_dir / "rendering_variation_pipeline.png",
         figures_dir / "rendering_variation_examples.pdf",
-        figures_dir / "domain_operation_matrix.png",
-        figures_dir / "domain_landscape.png",
+        figures_dir / "domain_operation_matrix.pdf",
+        figures_dir / "environment_statistics.pdf",
         tables_dir / "rendering_variation_profiles.tex",
     )
     _build_domain_montage(montage_samples, outputs[0])
     _build_reachable_pipeline(running_sample, outputs[1])
     _build_taxonomy_boundaries(boundary_samples, outputs[2])
-    _build_answer_reward_summary(coverage, outputs[3])
-    _build_rendering_variation_pipeline(outputs[4])
-    rendering_variation = _build_rendering_variation_examples(repo_root, outputs[5])
-    _build_domain_operation_matrix(coverage, outputs[6])
-    _build_domain_landscape(coverage, outputs[7])
-    _build_rendering_variation_profile_table(rendering_variation, outputs[8])
+    _build_rendering_variation_pipeline(outputs[3])
+    rendering_variation = _build_rendering_variation_examples(repo_root, outputs[4])
+    _build_domain_operation_matrix(coverage, outputs[5])
+    _build_domain_landscape(coverage, outputs[6])
+    _build_rendering_variation_profile_table(rendering_variation, outputs[7])
 
     manifest = {
-        "schema_version": "trace_paper_method_figures_v9",
+        "schema_version": "trace_paper_method_figures_v10",
         "source_repository_head": _git_head(repo_root),
+        "matplotlib_version": matplotlib.__version__,
         "pillow_version": pillow_version,
         "fonts": {
             "regular_sha256": _sha256(FONT_REGULAR),

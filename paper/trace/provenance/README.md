@@ -22,7 +22,7 @@ For each artifact, record:
 |---|---|---|
 | Active domain/scene/task inventory | Active task registry and `docs/ACTIVE_TASK_INVENTORY.md` | Counts verified and recorded by `scripts/build_method_figures.py` on 2026-07-14 |
 | Dataset split and row counts | Dataset manifests plus `docs/RLVR_TASK_SPLIT_PLAN.md` | Must bind to public dataset revision |
-| Base vs answer-RLVR benchmark table | Canonical consolidated result artifact from the RLVR handoff | Pending exact source binding and protocol cross-check |
+| Base vs answer-RLVR benchmark table | Canonical `trace_eval_v1` metadata from the RLVR handoff | 7B source copied under `results/canonical/trace_eval_v1/` from pinned artifact revision; combined paper-results artifact pending |
 
 ## External baseline identities
 

@@ -47,6 +47,7 @@ EXPLICIT_PATHS = (
     "scripts/start_vllm_endpoint_pool.sh",
     "scripts/status_trace_eval.py",
     "scripts/stop_vllm_endpoint_pool.sh",
+    "scripts/vllm_sitecustomize/sitecustomize.py",
     "scripts/verify_trace_eval.py",
 )
 

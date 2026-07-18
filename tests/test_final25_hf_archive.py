@@ -720,6 +720,8 @@ class Final25HfArchiveTests(unittest.TestCase):
 
     def test_cli_wires_expected_provenance_flags_for_verify_and_coverage(self):
         parser = archive_cli_parser()
+        build = parser.parse_args(["--spool-root", "/tmp/archive", "build"])
+        self.assertEqual(build.command, "build")
         common = [
             "--spool-root",
             "/tmp/archive",

@@ -142,6 +142,15 @@ class CountQA(ImageBaseDataset):
         if data_path.exists() and not os.environ.get("TRACE_FORCE_REBUILD_LOCAL_VLMEVAL"):
             cached = _load_cached_with_images(data_path)
             if cached is not None:
+                # The fresh Hugging Face path emits answer strings, while
+                # pandas may infer integer answers when the TSV is reloaded.
+                # Preserve the fresh-row representation so dataset manifest
+                # hashes remain stable across preparation and generation.
+                cached = cached.copy()
+                cached["answer"] = [
+                    "" if pd.isna(value) else str(value).strip()
+                    for value in cached["answer"]
+                ]
                 return cached
 
         from datasets import load_dataset

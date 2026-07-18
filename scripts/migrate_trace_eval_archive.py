@@ -116,7 +116,10 @@ def _parser() -> argparse.ArgumentParser:
     upload_public.add_argument("--public-export-root", type=Path, required=True)
     upload_run = commands.add_parser(
         "upload-paper-run",
-        help="Guardedly append one verified trace_eval_v1 run to the paper repository.",
+        help=(
+            "Guardedly append one verified, explicitly allowlisted canonical or "
+            "TRACE IID run to the paper repository."
+        ),
     )
     upload_run.add_argument("--public-export-root", type=Path, required=True)
     upload_run.add_argument("--allow-paper-run-upload", action="store_true")

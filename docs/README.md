@@ -51,6 +51,9 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
      `docs/workflows/EXTERNAL_BENCHMARK_EVAL.md`
    - active external comparison suite and launcher live in
      `../evaluation/trace_eval/README.md`
+   - the pinned 2,000-row same-task IID validation comparison lives in
+     `../evaluation/trace_validation/README.md`; it is not a held-out-task
+     generalization benchmark
    - current task-calibration gates and vLLM serving commands live in
      `docs/workflows/CALIBRATION_GUIDE.md`
 5. Resources: `docs/resources/SHARED_LABEL_ASSETS.md`,

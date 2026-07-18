@@ -19,6 +19,11 @@ from scripts.trace_eval_archive_migration_lib import (
     DEFAULT_SOURCE_REPO,
     EXPECTED_INTERNAL_STAGE_SLICES,
     EXPECTED_PAPER_STAGE_SLICES,
+    IID_VALIDATION_BENCHMARK_ID,
+    IID_VALIDATION_PUBLIC_MODEL_IDS,
+    IID_VALIDATION_RUN_ID,
+    IID_VALIDATION_SEEDS,
+    IID_VALIDATION_SUITE_ID,
     INVENTORY_SCHEMA,
     MigrationIntegrityError,
     MigrationSafetyError,
@@ -30,6 +35,7 @@ from scripts.trace_eval_archive_migration_lib import (
     delete_old_repository,
     internal_upload_files,
     load_verified_public_export,
+    load_verified_public_run,
     load_selection_plan,
     promote_paper_repository,
     sha256_bytes,
@@ -669,6 +675,227 @@ def _build_plan(
     return plan, export_plan
 
 
+def _mock_iid_public_export(
+    monkeypatch: pytest.MonkeyPatch, root: Path
+) -> tuple[SimpleNamespace, Path]:
+    """Build the allowlisted IID control plane around synthetic verified parts."""
+
+    import scripts.trace_eval_public_export as public_export
+
+    source_run_id = "trace_validation_iid2000_seed42_8models_20260718"
+    source_selection_sha256 = sha256_bytes(b"iid source selection")
+    models = [
+        {
+            "source_model_id": f"private-iid-model-{ordinal}",
+            "source_revision": f"{ordinal + 1:x}" * 40,
+            "model_id": model_id,
+            "model_revision": "sha256set:" + f"{ordinal + 1:x}" * 64,
+            "display_name": f"IID model {ordinal}",
+            "repository_id": f"example/iid-model-{ordinal}",
+            "repository_revision": f"{ordinal + 1:x}" * 40,
+        }
+        for ordinal, model_id in enumerate(IID_VALIDATION_PUBLIC_MODEL_IDS)
+    ]
+    bindings: list[dict] = []
+    for config_ordinal, config_name in enumerate(
+        ("responses", "extractions", "scores")
+    ):
+        for model_ordinal, model_id in enumerate(IID_VALIDATION_PUBLIC_MODEL_IDS):
+            identity = f"{config_name}|{model_id}|{IID_VALIDATION_SEEDS[0]}"
+            bindings.append(
+                {
+                    "config_name": config_name,
+                    "model_id": model_id,
+                    "seed": IID_VALIDATION_SEEDS[0],
+                    "benchmark_id": IID_VALIDATION_BENCHMARK_ID,
+                    "manifest": {
+                        "sha256": sha256_bytes(f"manifest|{identity}".encode()),
+                        "size": 100 + config_ordinal,
+                    },
+                    "parquet": {
+                        "sha256": sha256_bytes(f"parquet|{identity}".encode()),
+                        "size": 1_000 + model_ordinal,
+                    },
+                }
+            )
+    source_slice_set_sha256 = public_export.source_slice_set_sha256(bindings)
+    plan_document = {
+        "schema_version": "trace_eval_export_plan_v1",
+        "source": {
+            "run_id": source_run_id,
+            "selection_sha256": source_selection_sha256,
+            "slice_set_sha256": source_slice_set_sha256,
+        },
+        "public": {
+            "run_id": IID_VALIDATION_RUN_ID,
+            "suite_id": IID_VALIDATION_SUITE_ID,
+            "benchmarks": [IID_VALIDATION_BENCHMARK_ID],
+            "categories": {
+                "TRACE IID validation": [IID_VALIDATION_BENCHMARK_ID]
+            },
+            "seeds": list(IID_VALIDATION_SEEDS),
+        },
+        "models": models,
+        "judge": {
+            "source_model_id": "iid-judge",
+            "model_id": "Qwen/Qwen3-32B",
+            "model_revision": "9" * 40,
+        },
+    }
+    plan_path = root.parent / "iid-public-export-plan.json"
+    plan_path.write_text(json.dumps(plan_document), encoding="utf-8")
+
+    files: list[SimpleNamespace] = []
+    readme_content = b"canonical TRACE IID validation export\n"
+    readme = root / "README.md"
+    readme.parent.mkdir(parents=True, exist_ok=True)
+    readme.write_bytes(readme_content)
+    files.append(
+        SimpleNamespace(
+            path="README.md",
+            sha256=sha256_bytes(readme_content),
+            size=len(readme_content),
+        )
+    )
+    artifacts: list[dict] = []
+    for binding in bindings:
+        config_name = binding["config_name"]
+        model_id = binding["model_id"]
+        manifest_path = (
+            f"metadata/parts/{config_name}/model={model_id}/seed=42/"
+            f"benchmark={IID_VALIDATION_BENCHMARK_ID}/part.manifest.json"
+        )
+        content = json.dumps(
+            {
+                "provenance": {
+                    "source_archive_manifest_sha256": binding["manifest"][
+                        "sha256"
+                    ],
+                    "source_archive_manifest_size": binding["manifest"]["size"],
+                    "source_archive_part_sha256": binding["parquet"]["sha256"],
+                    "source_archive_part_size": binding["parquet"]["size"],
+                }
+            },
+            sort_keys=True,
+        ).encode()
+        local = root / manifest_path
+        local.parent.mkdir(parents=True, exist_ok=True)
+        local.write_bytes(content)
+        files.append(
+            SimpleNamespace(
+                path=manifest_path,
+                sha256=sha256_bytes(content),
+                size=len(content),
+            )
+        )
+        artifacts.append(
+            {
+                "config_name": config_name,
+                "run_id": IID_VALIDATION_RUN_ID,
+                "model_id": model_id,
+                "seed": 42,
+                "benchmark_id": IID_VALIDATION_BENCHMARK_ID,
+                "manifest_path": manifest_path,
+            }
+        )
+
+    metadata_files: list[dict] = []
+
+    def add_metadata(path: str, value: dict) -> None:
+        content = json.dumps(value, sort_keys=True).encode()
+        local = root / path
+        local.parent.mkdir(parents=True, exist_ok=True)
+        local.write_bytes(content)
+        digest = sha256_bytes(content)
+        files.append(SimpleNamespace(path=path, sha256=digest, size=len(content)))
+        metadata_files.append({"path": path, "sha256": digest, "size": len(content)})
+
+    add_metadata(
+        f"metadata/suites/{IID_VALIDATION_SUITE_ID}.json",
+        {
+            "suite_id": IID_VALIDATION_SUITE_ID,
+            "benchmark_ids": [IID_VALIDATION_BENCHMARK_ID],
+            "categories": [
+                {
+                    "category_id": "trace-iid-validation",
+                    "category_name": "TRACE IID validation",
+                    "benchmark_ids": [IID_VALIDATION_BENCHMARK_ID],
+                }
+            ],
+        },
+    )
+    add_metadata(
+        f"metadata/runs/{IID_VALIDATION_RUN_ID}.json",
+        {
+            "run_id": IID_VALIDATION_RUN_ID,
+            "suite_id": IID_VALIDATION_SUITE_ID,
+            "model_ids": list(IID_VALIDATION_PUBLIC_MODEL_IDS),
+            "seeds": list(IID_VALIDATION_SEEDS),
+            "judge_model": {
+                "model_id": "Qwen/Qwen3-32B",
+                "model_revision": "9" * 40,
+            },
+            "source_selection_sha256": source_selection_sha256,
+            "source_slice_set_sha256": source_slice_set_sha256,
+        },
+    )
+    for model in models:
+        add_metadata(
+            f"metadata/models/{model['model_id']}.json",
+            {
+                key: model[key]
+                for key in (
+                    "model_id",
+                    "model_revision",
+                    "display_name",
+                    "repository_id",
+                    "repository_revision",
+                )
+            },
+        )
+    add_metadata("metadata/results/benchmark_scores.json", {"results": []})
+
+    manifest = {
+        "schema_version": "trace_eval_export_manifest_v1",
+        "neutralized": True,
+        "source_selection_sha256": source_selection_sha256,
+        "source_slice_set_sha256": source_slice_set_sha256,
+        "suite_id": IID_VALIDATION_SUITE_ID,
+        "run_ids": [IID_VALIDATION_RUN_ID],
+        "artifacts": artifacts,
+        "metadata_files": metadata_files,
+    }
+    manifest_content = json.dumps(manifest, sort_keys=True).encode()
+    manifest_path = root / "metadata" / "manifest.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_bytes(manifest_content)
+    files.append(
+        SimpleNamespace(
+            path="metadata/manifest.json",
+            sha256=sha256_bytes(manifest_content),
+            size=len(manifest_content),
+        )
+    )
+    verified = SimpleNamespace(
+        manifest=manifest,
+        manifest_sha256=sha256_bytes(manifest_content),
+        files=tuple(files),
+    )
+
+    def verify_public_export(_root, expected_artifacts, dynamic_markers=()):
+        assert Path(_root) == root.resolve()
+        assert expected_artifacts == 24
+        assert dynamic_markers == (source_run_id,)
+        return verified
+
+    monkeypatch.setattr(
+        public_export,
+        "load_and_verify_public_export",
+        verify_public_export,
+    )
+    return verified, plan_path
+
+
 def test_private_paper_upload_and_full_verification_are_idempotent(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -762,7 +989,7 @@ def test_private_paper_upload_and_full_verification_are_idempotent(
         token="secret",
     )
     assert second["uploaded"] == 0
-    assert second["already_verified"] == EXPECTED_PAPER_STAGE_SLICES + 7
+    assert second["already_verified"] == EXPECTED_PAPER_STAGE_SLICES + 6
 
 
 def test_paper_repository_appends_a_second_immutable_run(
@@ -787,6 +1014,8 @@ def test_paper_repository_appends_a_second_immutable_run(
         state_root=tmp_path,
         token="secret",
     )
+    expanded_root_readme = b"expanded repository documentation\n"
+    api.repos[DEFAULT_PAPER_REPO]["files"]["README.md"] = expanded_root_readme
 
     second_run = "qwen2.5-vl-7b-comparison-temp06-seeds42-44-v2"
     second_root = tmp_path / "public-second"
@@ -810,9 +1039,10 @@ def test_paper_repository_appends_a_second_immutable_run(
     )
     first_run = first.manifest["run_ids"][0]
     assert report["uploaded"] == EXPECTED_PAPER_STAGE_SLICES + 6
-    assert report["already_verified"] == 1
+    assert report["already_verified"] == 0
     assert report["other_runs"] == [first_run]
     remote = api.repos[DEFAULT_PAPER_REPO]["files"]
+    assert remote["README.md"] == expanded_root_readme
     assert any(path.startswith(f"runs/{first_run}/") for path in remote)
     assert any(path.startswith(f"runs/{second_run}/") for path in remote)
 
@@ -827,7 +1057,7 @@ def test_paper_repository_appends_a_second_immutable_run(
         confirmation=f"UPLOAD {DEFAULT_PAPER_REPO}/{second_run}",
     )
     assert repeated["uploaded"] == 0
-    assert repeated["already_verified"] == EXPECTED_PAPER_STAGE_SLICES + 7
+    assert repeated["already_verified"] == EXPECTED_PAPER_STAGE_SLICES + 6
 
 
 def test_paper_repository_rejects_same_run_content_and_layout_collisions(
@@ -1008,6 +1238,98 @@ def test_generic_paper_append_rejects_noncanonical_benchmark_set(
                 "UPLOAD maveryn/trace-eval-runs/"
                 "qwen2.5-vl-7b-comparison-temp06-seeds42-44-v1"
             ),
+        )
+
+
+def test_allowlisted_iid_paper_run_passes_full_plan_and_upload_validation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    public_root = tmp_path / "iid-public"
+    verified, export_plan = _mock_iid_public_export(monkeypatch, public_root)
+
+    loaded, files, plan = load_verified_public_run(
+        root=public_root,
+        public_export_plan=export_plan,
+    )
+    assert loaded.manifest_sha256 == verified.manifest_sha256
+    assert plan.suite_id == IID_VALIDATION_SUITE_ID
+    assert plan.run_id == IID_VALIDATION_RUN_ID
+    assert plan.benchmarks == (IID_VALIDATION_BENCHMARK_ID,)
+    assert plan.seeds == IID_VALIDATION_SEEDS
+    assert tuple(model.model_id for model in plan.models) == (
+        IID_VALIDATION_PUBLIC_MODEL_IDS
+    )
+    assert len(loaded.manifest["artifacts"]) == 24
+    assert len(files) == 37
+
+    api = FakeApi()
+    report = upload_paper_run(
+        api=api,
+        repo_id=DEFAULT_PAPER_REPO,
+        public_export_root=public_root,
+        public_export_plan=export_plan,
+        state_root=tmp_path,
+        token="secret",
+        allow_upload=True,
+        confirmation=f"UPLOAD {DEFAULT_PAPER_REPO}/{IID_VALIDATION_RUN_ID}",
+    )
+    assert report["run_id"] == IID_VALIDATION_RUN_ID
+    assert report["uploaded"] == len(files)
+    assert report["root_readme_created"] is True
+    remote = api.repos[DEFAULT_PAPER_REPO]["files"]
+    assert "README.md" in remote
+    assert all(
+        path == "README.md" or path.startswith(f"runs/{IID_VALIDATION_RUN_ID}/")
+        for path in remote
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("suite", "suite is not allowlisted"),
+        ("run", "unexpected run id"),
+        ("benchmark", "unexpected benchmark coverage"),
+        ("category", "unexpected categories"),
+        ("seed", "unexpected seed coverage"),
+        ("model", "unexpected public model ids"),
+    ),
+)
+def test_iid_paper_run_policy_rejects_every_noncanonical_dimension(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+    message: str,
+) -> None:
+    public_root = tmp_path / "iid-public"
+    _, export_plan = _mock_iid_public_export(monkeypatch, public_root)
+    altered = json.loads(export_plan.read_text(encoding="utf-8"))
+    if mutation == "suite":
+        altered["public"]["suite_id"] = "arbitrary_iid_suite_v1"
+    elif mutation == "run":
+        altered["public"]["run_id"] = "trace-iid-validation-other-run-v1"
+    elif mutation == "benchmark":
+        altered["public"]["benchmarks"] = ["other_iid_validation"]
+        altered["public"]["categories"] = {
+            "TRACE IID validation": ["other_iid_validation"]
+        }
+    elif mutation == "category":
+        altered["public"]["categories"] = {
+            "Other IID validation": [IID_VALIDATION_BENCHMARK_ID]
+        }
+    elif mutation == "seed":
+        altered["public"]["seeds"] = [43]
+    elif mutation == "model":
+        altered["models"][0]["model_id"] = "unexpected-iid-model"
+    else:  # pragma: no cover - the parameterization is closed above.
+        raise AssertionError(mutation)
+    altered_plan = tmp_path / f"iid-public-export-plan-{mutation}.json"
+    altered_plan.write_text(json.dumps(altered), encoding="utf-8")
+
+    with pytest.raises(MigrationIntegrityError, match=message):
+        load_verified_public_run(
+            root=public_root,
+            public_export_plan=altered_plan,
         )
 
 

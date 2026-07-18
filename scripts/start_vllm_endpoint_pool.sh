@@ -26,9 +26,12 @@ VLLM_TOKENIZERS_PARALLELISM="${VLLM_TOKENIZERS_PARALLELISM:-false}"
 VLLM_DISABLE_COMPILE_CACHE="${VLLM_DISABLE_COMPILE_CACHE:-1}"
 CPU_AFFINITY_GROUPS="${CPU_AFFINITY_GROUPS:-}"
 PYTHON_BIN="${PYTHON_BIN:-python}"
+VLLM_SITECUSTOMIZE_DIR="${VLLM_SITECUSTOMIZE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/vllm_sitecustomize" && pwd)}"
 REASONING_PARSER="${REASONING_PARSER:-}"
 CHAT_TEMPLATE="${CHAT_TEMPLATE:-}"
 ALLOWED_LOCAL_MEDIA_PATH="${ALLOWED_LOCAL_MEDIA_PATH:-}"
+MM_PROCESSOR_KWARGS="${MM_PROCESSOR_KWARGS:-}"
+GENERATION_CONFIG="${GENERATION_CONFIG:-}"
 WAIT_READY="${WAIT_READY:-1}"
 READY_TIMEOUT_SEC="${READY_TIMEOUT_SEC:-900}"
 LOG_DIR="${LOG_DIR:-logs/vllm/endpoints/${SERVED_MODEL_NAME}_$(date -u +%Y%m%dT%H%M%SZ)}"
@@ -93,6 +96,12 @@ for i in "${!GROUP_ARRAY[@]}"; do
   if [[ -n "${ALLOWED_LOCAL_MEDIA_PATH}" ]]; then
     server_args+=(--allowed-local-media-path "${ALLOWED_LOCAL_MEDIA_PATH}")
   fi
+  if [[ -n "${MM_PROCESSOR_KWARGS}" ]]; then
+    server_args+=(--mm-processor-kwargs "${MM_PROCESSOR_KWARGS}")
+  fi
+  if [[ -n "${GENERATION_CONFIG}" ]]; then
+    server_args+=(--generation-config "${GENERATION_CONFIG}")
+  fi
   echo "[start] port=${port} vllm_port=${vllm_port} gpus=${group} tp=${tp} cpus=${affinity:-unbound} threads=${CPU_THREADS_PER_PROCESS} model=${MODEL_PATH} served=${SERVED_MODEL_NAME}"
   CUDA_VISIBLE_DEVICES="${group}" \
   VLLM_PORT="${vllm_port}" \
@@ -103,6 +112,7 @@ for i in "${!GROUP_ARRAY[@]}"; do
   OPENBLAS_NUM_THREADS="${VLLM_OPENBLAS_NUM_THREADS}" \
   NUMEXPR_NUM_THREADS="${VLLM_NUMEXPR_NUM_THREADS}" \
   TOKENIZERS_PARALLELISM="${VLLM_TOKENIZERS_PARALLELISM}" \
+  PYTHONPATH="${VLLM_SITECUSTOMIZE_DIR}:${PYTHONPATH:-}" \
   nohup setsid "${launch_prefix[@]}" "${PYTHON_BIN}" -m vllm.entrypoints.openai.api_server "${server_args[@]}" \
     > "${log}" 2>&1 &
   echo "$! ${port} ${group} ${log}" >> "${PID_FILE}"

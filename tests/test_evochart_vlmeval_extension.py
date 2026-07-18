@@ -12,6 +12,7 @@ if str(VLMEVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(VLMEVAL_ROOT))
 
 
+import vlmeval.dataset.trace_local_vqa as trace_local_vqa  # noqa: E402
 from vlmeval.dataset.evochart import EvoChart, score_prediction  # noqa: E402
 from vlmeval.dataset.trace_local_vqa import CountQA, GameQALite  # noqa: E402
 
@@ -83,6 +84,34 @@ def test_countqa_boxed_prompt_does_not_change_gameqa_lite() -> None:
     assert countqa_prompt[-1]["value"].endswith("Put the final answer inside \\boxed{}.")
     assert "Put only" not in countqa_prompt[-1]["value"]
     assert gameqa_prompt[-1]["value"].endswith("Put only the final answer inside \\boxed{}.")
+
+
+def test_countqa_cached_answers_preserve_fresh_string_representation(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    data_path = tmp_path / "CountQA.tsv"
+    data_path.touch()
+    cached = pd.DataFrame(
+        {
+            "index": ["0_0", "0_1", "0_2"],
+            "answer": pd.Series([1, " 2 ", pd.NA], dtype=object),
+        }
+    )
+    monkeypatch.setattr(trace_local_vqa, "LMUDataRoot", lambda: str(tmp_path))
+    monkeypatch.setattr(
+        trace_local_vqa,
+        "_load_cached_with_images",
+        lambda path: cached if path == data_path else None,
+    )
+
+    dataset = object.__new__(CountQA)
+    loaded = dataset.load_data("CountQA")
+
+    assert loaded is not cached
+    assert loaded["answer"].tolist() == ["1", "2", ""]
+    assert cached["answer"].iloc[:2].tolist() == [1, " 2 "]
+    assert pd.isna(cached["answer"].iloc[2])
 
 
 def test_evochart_scoring_matches_published_strict_and_flex_contract() -> None:

@@ -259,6 +259,70 @@ The command verifies the complete remote run after its manifest-last upload.
 The sanitized destination is `maveryn/trace-eval-runs`. Benchmark prompts,
 ground truth, options, source rows, and media paths are excluded from it.
 
+### Internal rich-run publication
+
+Non-paper campaigns that intentionally retain prompts, ground truth, source
+rows, judge exchanges, and evaluator artifacts belong in the private
+`maveryn/trace-internal-eval-runs` repository. New uploads must still exclude
+credentials and host-local paths. Legacy ready spools must therefore be
+deterministically re-emitted before the normal archive builder is allowed to
+upload them:
+
+```bash
+python scripts/reemit_trace_eval_internal_archive.py reemit \
+  --source-root <campaign-root>/hf_archive \
+  --output-root <durable-path-free-spool> \
+  --map-root <machine-runtime-root>=runtime
+python scripts/final25_hf_archive.py \
+  --spool-root <durable-path-free-spool> build
+python scripts/reemit_trace_eval_internal_archive.py verify \
+  --root <durable-path-free-spool>
+python scripts/final25_hf_archive.py \
+  --spool-root <durable-path-free-spool> \
+  --repo-id maveryn/trace-internal-eval-runs \
+  --token-file <token-file> flush
+```
+
+The re-emitter preserves the exact run/model/seed/benchmark/stage identity,
+record ids, row order, request hashes, and provenance. Explicit machine roots
+become stable `trace-local-ref://<label>/...` references; unmapped absolute
+paths and credential-shaped keys or values fail closed. Verification scans both
+the JSON source spool and the staged Parquet/manifests that are actually sent.
+The token-free `build`/scrub-verify pair must succeed before `flush` is run.
+Remote verification must then use `final25_hf_archive.py verify`, which compares
+the uploaded objects against those locally safety-checked hashes.
+
+The completed seed-42 answer-and-annotation campaigns use source run ids
+`trace_eval_v1_temp06_seed42_trace3b_ann_additive0p50_step500_20260718` and
+`trace_eval_v1_temp06_seed42_trace7b_ann_additive0p50_step500_20260718`.
+Each has 72 slices (24 benchmarks times generation/extraction/score), and each
+remote run prefix contains 72 Parquet parts plus 72 manifests. The immutable
+artifact append is
+`maveryn/trace-internal-eval-runs@1ed79d7c08208a7e9081dedde86ed030c10b15d1`;
+the repository head after documenting both runs is
+`fa8ce278bfd1a99bb31b1b16431a36e3fd3942fa`.
+
+### Artifact repository ownership
+
+Choose the destination from the evaluation role, not from whether a model was
+trained to emit answers or annotations:
+
+- `maveryn/trace-eval-runs` stores allowlisted, neutral evaluation runs that
+  are canonical comparison artifacts. This includes the paper-facing
+  `trace_eval_v1` comparisons and the separately identified TRACE IID
+  validation comparison. Every run uses the response, extraction, and score
+  contracts above and excludes prompts, ground truth, media, and machine-local
+  paths.
+- `maveryn/trace-internal-eval-runs` stores sealed internal or non-paper run
+  archives. The single-seed 24-benchmark campaigns for the 3B and 7B
+  answer-and-annotation ablation checkpoints belong here; they do not become
+  canonical paper runs merely because they use `trace_eval_v1` benchmarks.
+
+Do not upload a raw campaign tree to either repository or duplicate one run
+between them. Preserve raw receipts, logs, judge caches, and machine paths only
+in the local forensic workspace; upload the verified contract-shaped export
+selected for the run's destination.
+
 ### Background publication
 
 For new campaigns, run the publication workflow as a separate low-priority

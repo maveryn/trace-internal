@@ -48,6 +48,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--retry-cap-seconds", type=float, default=300.0)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("init", help="Create and verify the private dataset repository.")
+    commands.add_parser(
+        "build",
+        help="Build every ready slice locally without reading a token or contacting Hugging Face.",
+    )
     daemon = commands.add_parser("daemon", help="Poll the spool and upload completed slices.")
     daemon.add_argument("--poll-seconds", type=float, default=30.0)
     commands.add_parser("flush", help="Build and upload every currently ready slice.")
@@ -122,6 +126,32 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "coverage":
             print(json.dumps(_expected_coverage(args), sort_keys=True))
             return 0
+        if args.command == "build":
+            daemon = ArchiveDaemon(
+                spool_root=args.spool_root,
+                repo_id=args.repo_id,
+                revision=args.revision,
+                token=None,
+                api=object(),
+                batch_size=args.batch_size,
+                upload_threads=args.upload_threads,
+                max_retries=args.max_retries,
+                retry_base_seconds=args.retry_base_seconds,
+                retry_cap_seconds=args.retry_cap_seconds,
+            )
+            built = daemon.build_ready()
+            failed = len(daemon.ledger.rows(("failed",)))
+            print(
+                json.dumps(
+                    {
+                        "built": built,
+                        "failed": failed,
+                        "slices": len(daemon.ledger.rows()),
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 1 if failed else 0
         token = read_token_file(args.token_file)
         api = HfApi(token=token)
         if args.command == "reconstruct":

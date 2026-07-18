@@ -8,6 +8,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CANONICAL = REPO_ROOT / "scripts" / "run_trace_final25_temp06_3seed_8models.sh"
 WRAPPER = REPO_ROOT / "scripts" / "run_trace_final26_temp06_seed42_trained_model.sh"
 POOL_STARTER = REPO_ROOT / "scripts" / "start_vllm_endpoint_pool.sh"
+VLLM_SITECUSTOMIZE = (
+    REPO_ROOT / "scripts" / "vllm_sitecustomize" / "sitecustomize.py"
+)
 
 
 def _text(path: Path) -> str:
@@ -15,7 +18,7 @@ def _text(path: Path) -> str:
 
 
 def test_shell_launchers_are_syntactically_valid() -> None:
-    for path in (CANONICAL, WRAPPER):
+    for path in (CANONICAL, WRAPPER, POOL_STARTER):
         subprocess.run(["bash", "-n", str(path)], check=True)
 
 
@@ -80,3 +83,15 @@ def test_endpoint_pool_disables_shared_compile_cache_by_default() -> None:
 
     assert 'VLLM_DISABLE_COMPILE_CACHE="${VLLM_DISABLE_COMPILE_CACHE:-1}"' in script
     assert 'VLLM_DISABLE_COMPILE_CACHE="${VLLM_DISABLE_COMPILE_CACHE}" \\' in script
+
+
+def test_endpoint_pool_forwards_multimodal_generation_and_sitecustomize_settings() -> None:
+    script = _text(POOL_STARTER)
+
+    assert 'MM_PROCESSOR_KWARGS="${MM_PROCESSOR_KWARGS:-}"' in script
+    assert 'server_args+=(--mm-processor-kwargs "${MM_PROCESSOR_KWARGS}")' in script
+    assert 'GENERATION_CONFIG="${GENERATION_CONFIG:-}"' in script
+    assert 'server_args+=(--generation-config "${GENERATION_CONFIG}")' in script
+    assert 'VLLM_SITECUSTOMIZE_DIR="${VLLM_SITECUSTOMIZE_DIR:-' in script
+    assert 'PYTHONPATH="${VLLM_SITECUSTOMIZE_DIR}:${PYTHONPATH:-}" \\' in script
+    assert "ImageFile.LOAD_TRUNCATED_IMAGES = True" in _text(VLLM_SITECUSTOMIZE)

@@ -64,6 +64,29 @@ SUPPLEMENTARY_BENCHMARKS = (
 EXPECTED_PAPER_STAGE_SLICES = 648
 EXPECTED_INTERNAL_STAGE_SLICES = 189
 
+# ``upload-paper-run`` is intentionally narrower than the public export
+# contract.  A contract-valid bundle is uploadable only when its full campaign
+# identity matches one of these paper-repository policies.  Keep the IID roster
+# independent of the exporter so an accidental exporter change cannot silently
+# widen this gate.
+IID_VALIDATION_SUITE_ID = "trace_validation_iid2000_v1"
+IID_VALIDATION_RUN_ID = "trace-iid-validation-2000-answer-seed42-8models-v1"
+IID_VALIDATION_BENCHMARK_ID = "trace_validation_iid2000"
+IID_VALIDATION_SEEDS = (42,)
+IID_VALIDATION_PUBLIC_MODEL_IDS = (
+    "qwen2.5-vl-3b-base",
+    "trace-qwen2.5-vl-3b",
+    "qwen2.5-vl-7b-base",
+    "trace-qwen2.5-vl-7b",
+    "game-rl-qwen2.5-vl-7b",
+    "sphinx-qwen2.5-vl-7b",
+    "pcgrpo-qwen2.5-vl-7b",
+    "vero-qwen2.5-vl-7b",
+)
+IID_VALIDATION_CATEGORIES = (
+    ("TRACE IID validation", (IID_VALIDATION_BENCHMARK_ID,)),
+)
+
 DATA_PATH_RE = re.compile(
     r"^data/(?P<stage>generation|extraction|score)/"
     r"run=(?P<run>[^/]+)/model=(?P<model>[^/]+)/seed=(?P<seed>[0-9]+)/"
@@ -1575,13 +1598,75 @@ def _validate_public_metadata_against_export_plan(
         raise MigrationIntegrityError("public manifest omits required attribution metadata")
 
 
+def _validate_paper_run_policy(
+    *, export_plan: Any, suite_path: Path | str
+) -> None:
+    """Require a contract-valid run to match an explicit paper allowlist."""
+
+    if export_plan.suite_id == "trace_eval_v1":
+        suite = _load_json(suite_path)
+        suite_benchmarks = tuple(
+            str(item.get("key")) if isinstance(item, Mapping) else str(item)
+            for item in suite.get("benchmarks", [])
+        )
+        categories_raw = suite.get("categories")
+        if len(suite_benchmarks) != 24 or len(set(suite_benchmarks)) != 24:
+            raise MigrationIntegrityError(
+                "canonical trace_eval_v1 suite must contain 24 benchmarks"
+            )
+        if not isinstance(categories_raw, Mapping):
+            raise MigrationIntegrityError(
+                "canonical trace_eval_v1 categories are invalid"
+            )
+        suite_categories = tuple(
+            (str(name), tuple(str(member) for member in members))
+            for name, members in categories_raw.items()
+            if isinstance(members, list)
+        )
+        if export_plan.benchmarks != suite_benchmarks:
+            raise MigrationIntegrityError(
+                "public export plan benchmark order differs from canonical trace_eval_v1"
+            )
+        if export_plan.categories != suite_categories:
+            raise MigrationIntegrityError(
+                "public export plan categories differ from canonical trace_eval_v1"
+            )
+        return
+
+    if export_plan.suite_id != IID_VALIDATION_SUITE_ID:
+        raise MigrationIntegrityError(
+            f"paper run suite is not allowlisted: {export_plan.suite_id!r}"
+        )
+    if export_plan.run_id != IID_VALIDATION_RUN_ID:
+        raise MigrationIntegrityError(
+            "allowlisted IID paper run has an unexpected run id"
+        )
+    if export_plan.benchmarks != (IID_VALIDATION_BENCHMARK_ID,):
+        raise MigrationIntegrityError(
+            "allowlisted IID paper run has unexpected benchmark coverage"
+        )
+    if export_plan.categories != IID_VALIDATION_CATEGORIES:
+        raise MigrationIntegrityError(
+            "allowlisted IID paper run has unexpected categories"
+        )
+    if export_plan.seeds != IID_VALIDATION_SEEDS:
+        raise MigrationIntegrityError(
+            "allowlisted IID paper run has unexpected seed coverage"
+        )
+    model_ids = tuple(model.model_id for model in export_plan.models)
+    if model_ids != IID_VALIDATION_PUBLIC_MODEL_IDS:
+        raise MigrationIntegrityError(
+            "allowlisted IID paper run has unexpected public model ids"
+        )
+
+
 def load_verified_public_run(
     *,
     root: Path | str,
     public_export_plan: Path | str,
     suite_path: Path | str = DEFAULT_CANONICAL_SUITE_PATH,
 ) -> tuple[Any, list[UploadFile], Any]:
-    """Validate one trace_eval_v1 bundle against its private exporter plan."""
+    """Validate one explicitly allowlisted bundle against its private plan."""
 
     try:
         from scripts.trace_eval_public_export import load_and_verify_public_export
@@ -1589,29 +1674,7 @@ def load_verified_public_run(
         from trace_eval_public_export import load_and_verify_public_export
 
     export_plan = _load_private_export_plan(public_export_plan)
-    suite = _load_json(suite_path)
-    suite_benchmarks = tuple(
-        str(item.get("key")) if isinstance(item, Mapping) else str(item)
-        for item in suite.get("benchmarks", [])
-    )
-    categories_raw = suite.get("categories")
-    if len(suite_benchmarks) != 24 or len(set(suite_benchmarks)) != 24:
-        raise MigrationIntegrityError("canonical trace_eval_v1 suite must contain 24 benchmarks")
-    if not isinstance(categories_raw, Mapping):
-        raise MigrationIntegrityError("canonical trace_eval_v1 categories are invalid")
-    suite_categories = tuple(
-        (str(name), tuple(str(member) for member in members))
-        for name, members in categories_raw.items()
-        if isinstance(members, list)
-    )
-    if export_plan.benchmarks != suite_benchmarks:
-        raise MigrationIntegrityError(
-            "public export plan benchmark order differs from canonical trace_eval_v1"
-        )
-    if export_plan.categories != suite_categories:
-        raise MigrationIntegrityError(
-            "public export plan categories differ from canonical trace_eval_v1"
-        )
+    _validate_paper_run_policy(export_plan=export_plan, suite_path=suite_path)
     root_path = Path(root)
     verified = load_and_verify_public_export(
         root_path,
@@ -1624,7 +1687,7 @@ def load_verified_public_run(
     )
     if manifest.get("neutralized") is not True:
         raise MigrationSafetyError("paper export is not marked neutralized")
-    if manifest.get("suite_id") != "trace_eval_v1" or export_plan.suite_id != "trace_eval_v1":
+    if manifest.get("suite_id") != export_plan.suite_id:
         raise MigrationIntegrityError("paper export has an unexpected suite id")
     if manifest.get("run_ids") != [export_plan.run_id]:
         raise MigrationIntegrityError("paper export run differs from its private export plan")
@@ -1857,17 +1920,7 @@ def _paper_run_files(
     run_id = run_ids[0]
     if not isinstance(run_id, str) or not PUBLIC_ID_RE.fullmatch(run_id):
         raise MigrationIntegrityError("paper export run id is invalid")
-    root = Path(state_root) / "paper-control"
-    readme_path = root / "README.md"
-    _atomic_write_bytes(readme_path, PAPER_ROOT_README.encode("utf-8"))
-    result = [
-        UploadFile(
-            path="README.md",
-            local_path=readme_path,
-            sha256=sha256_file(readme_path),
-            size=readme_path.stat().st_size,
-        )
-    ]
+    result: list[UploadFile] = []
     saw_bundle_readme = False
     for item in files:
         source_path = _safe_repo_path(item.path)
@@ -1895,6 +1948,49 @@ def _paper_run_files(
     if len({item.path for item in result}) != len(result):
         raise MigrationIntegrityError("paper run upload allowlist contains duplicate paths")
     return run_id, sorted(result, key=lambda item: item.path)
+
+
+def _ensure_paper_root_readme(
+    *,
+    api: Any,
+    repo_id: str,
+    revision: str,
+    token: str | None,
+    state_root: Path | str,
+) -> bool:
+    """Create the repository README only when a new destination has none.
+
+    Repository-level documentation may evolve as immutable run prefixes are
+    appended.  It is therefore intentionally outside each run's content set
+    and must never be overwritten or hash-pinned by a later run upload.
+    """
+
+    info = api.repo_info(
+        repo_id=repo_id,
+        repo_type="dataset",
+        revision=revision,
+        files_metadata=True,
+        token=token,
+    )
+    if "README.md" in _remote_paths(info):
+        return False
+    root = Path(state_root) / "paper-control"
+    readme_path = root / "README.md"
+    _atomic_write_bytes(readme_path, PAPER_ROOT_README.encode("utf-8"))
+    api.create_commit(
+        repo_id=repo_id,
+        repo_type="dataset",
+        revision=revision,
+        operations=[
+            CommitOperationAdd(
+                path_in_repo="README.md", path_or_fileobj=str(readme_path)
+            )
+        ],
+        commit_message="Initialize TRACE evaluation repository documentation",
+        num_threads=1,
+        token=token,
+    )
+    return True
 
 
 def _validate_paper_remote_layout(
@@ -1945,6 +2041,8 @@ def _verify_paper_run_remote(
         raise MigrationSafetyError(f"repository must remain private during upload: {repo_id}")
     desired = {item.path: item for item in files}
     remote = _remote_paths(info)
+    if "README.md" not in remote:
+        raise MigrationIntegrityError(f"paper repository has no README.md: {repo_id}")
     other_runs = _validate_paper_remote_layout(
         remote_paths=remote,
         run_id=run_id,
@@ -2017,6 +2115,13 @@ def _upload_paper_run_files(
             raise MigrationIntegrityError(f"upload source digest mismatch: {item.local_path}")
 
     ensure_private_destination(api, repo_id=repo_id, revision=revision, token=token)
+    root_readme_created = _ensure_paper_root_readme(
+        api=api,
+        repo_id=repo_id,
+        revision=revision,
+        token=token,
+        state_root=state_root,
+    )
     info = api.repo_info(
         repo_id=repo_id,
         repo_type="dataset",
@@ -2066,7 +2171,7 @@ def _upload_paper_run_files(
         (item for item in missing if item.path != manifest_path),
         key=lambda item: item.path,
     )
-    uploaded = 0
+    uploaded = int(root_readme_created)
     for offset in range(0, len(before_manifest), batch_size):
         batch = before_manifest[offset : offset + batch_size]
         api.create_commit(
@@ -2109,7 +2214,13 @@ def _upload_paper_run_files(
         state_root=state_root,
         require_private=True,
     )
-    report.update({"uploaded": uploaded, "already_verified": already_verified})
+    report.update(
+        {
+            "uploaded": uploaded,
+            "already_verified": already_verified,
+            "root_readme_created": root_readme_created,
+        }
+    )
     return report
 
 
@@ -2126,7 +2237,7 @@ def upload_paper_run(
     revision: str = "main",
     batch_size: int = 48,
 ) -> dict[str, Any]:
-    """Guarded append of any provenance-bound trace_eval_v1 run bundle."""
+    """Guardedly append one provenance-bound, explicitly allowlisted run."""
 
     assert_neutral_paper_repo_id(
         repo_id, forbidden_repo_ids=(DEFAULT_SOURCE_REPO, DEFAULT_INTERNAL_REPO)

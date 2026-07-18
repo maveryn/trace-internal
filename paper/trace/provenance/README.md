@@ -22,7 +22,7 @@ For each artifact, record:
 |---|---|---|
 | Active domain/scene/task inventory | Active task registry and `docs/ACTIVE_TASK_INVENTORY.md` | Counts verified and recorded by `scripts/build_method_figures.py` on 2026-07-14 |
 | Dataset split and row counts | Dataset manifests plus `docs/RLVR_TASK_SPLIT_PLAN.md` | Must bind to public dataset revision |
-| Base vs answer-RLVR benchmark table | Canonical `trace_eval_v1` metadata from the RLVR handoff | Complete; generated source, tables, transfer plot, and checksums are recorded in `results_assets.json` |
+| Base vs answer-RLVR benchmark table | Canonical `trace_eval_v1` metadata from the RLVR handoff | Complete; generated source, comprehensive result table, and checksums are recorded in `results_assets.json` |
 
 ## Training and result assets
 
@@ -39,10 +39,9 @@ total. It then writes:
 
 - `data/trace_eval_v1_paper_results.json`, the combined machine-readable paper
   result source;
-- `tables/main_results.tex`, `tables/per_benchmark_3b.tex`, and
-  `tables/per_benchmark_7b.tex`;
-- `tables/training_configuration.tex` and `tables/evaluation_suite.tex`; and
-- `figures/benchmark_transfer_deltas.pdf` plus its PNG inspection copy.
+- `tables/main_results.tex`, the complete benchmark-by-model result matrix;
+- `tables/training_configuration.tex`; and
+- `tables/evaluation_suite.tex`.
 
 Exact input and output hashes are in `provenance/results_assets.json`.
 `data/training_runs.json` is a paper-facing snapshot of the immutable 3B and 7B

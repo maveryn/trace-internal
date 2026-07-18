@@ -1,19 +1,10 @@
 \section{Transfer Analysis}
 \label{sec:analysis}
 
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=\textwidth]{figures/benchmark_transfer_deltas.pdf}
-  \caption{Per-benchmark change from the corresponding Qwen2.5-VL base model.
-  Benchmarks follow the six suite categories in order; alternating bands
-  separate adjacent categories. Trace-7B improves all 24 benchmarks, while
-  Trace-3B improves 21 and regresses on three.}
-  \label{fig:benchmark-deltas}
-\end{figure*}
-
-Figure~\ref{fig:benchmark-deltas} shows that the aggregate gains are broadly
-distributed. Trace-7B improves every benchmark in the suite. Trace-3B improves
-21 of 24; its three regressions are small on ChartQAPro ($-0.14$) and
+The benchmark-level changes in Table~\ref{tab:main-results} show that the
+aggregate gains are broadly distributed. Trace-7B improves every benchmark in
+the suite. Trace-3B improves 21 of 24; its three regressions are small on
+ChartQAPro ($-0.14$) and
 TreeBench ($-0.66$), and larger on EvoChart ($-1.68$). The corresponding 7B
 changes are positive (+2.24, +2.22, and +7.84), indicating that transfer from
 the same task distribution remains model-dependent.

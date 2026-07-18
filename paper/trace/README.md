@@ -28,7 +28,7 @@ named-author arXiv preprint using the official NeurIPS 2026 `preprint` style.
   to regenerate the domain-stratified appendix atlas. The atlas uses twelve
   seeded examples per domain in a three-column by four-row page layout. Run
   `python paper/trace/scripts/build_results_assets.py` to validate the frozen
-  training/evaluation sources and regenerate every result table and plot.
+  training/evaluation sources and regenerate every result table.
 - `figures/` and `tables/`: generated, publication-ready assets.
 - `provenance/`: claim, table, and figure provenance records.
 - `neurips_2026.sty`: vendored, unmodified official NeurIPS 2026 style file.

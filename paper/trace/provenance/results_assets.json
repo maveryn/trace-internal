@@ -1,36 +1,20 @@
 {
   "generator": {
     "path": "paper/trace/scripts/build_results_assets.py",
-    "sha256": "09d76d34b8315782ea3b9a91bd5f01506f842876ef53f3d4e9ae51ec0b85b0ee"
+    "sha256": "86060623cd1ee16d8daa179034f51459e615627c366737fab21caf73e8f2f148"
   },
   "outputs": {
     "paper/trace/data/trace_eval_v1_paper_results.json": {
       "bytes": 38115,
       "sha256": "77bef206cdb76c2076f67e81faf4f5df4f534a4e9ed59d962b435408670ec93a"
     },
-    "paper/trace/figures/benchmark_transfer_deltas.pdf": {
-      "bytes": 21449,
-      "sha256": "26650285ce0a17d3d6ee10764ebe658dac22424e51f7b6e5da7858737a643266"
-    },
-    "paper/trace/figures/benchmark_transfer_deltas.png": {
-      "bytes": 142628,
-      "sha256": "d6773c81a65bee3a97a87e531d214979ae98863fb10b975cb2ae5f46381e65cf"
-    },
     "paper/trace/tables/evaluation_suite.tex": {
       "bytes": 2900,
       "sha256": "ec5c5ddba25a157a73124b232611ec6ade25871b0dbae90d873fdf3a0a8c2835"
     },
     "paper/trace/tables/main_results.tex": {
-      "bytes": 1494,
-      "sha256": "fc46228bfa7a5b6479cc11a475f9b6440b7fcba981acf1f15b719a5732628b43"
-    },
-    "paper/trace/tables/per_benchmark_3b.tex": {
-      "bytes": 2235,
-      "sha256": "e52823918d3420febee49c65140d2e2dca1a9660c3d8b61d79c9bed1d95300c0"
-    },
-    "paper/trace/tables/per_benchmark_7b.tex": {
-      "bytes": 4129,
-      "sha256": "b115958342f191cbae8eecb1b463b4c35e6eec310e93e453ff81959edd7caae5"
+      "bytes": 18481,
+      "sha256": "75de21ad6cd8e42e9192a1ccb8cdd6fae9fd49b2dde978d881645f70813d4b46"
     },
     "paper/trace/tables/training_configuration.tex": {
       "bytes": 774,

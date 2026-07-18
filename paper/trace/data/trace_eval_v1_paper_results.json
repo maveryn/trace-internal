@@ -1,0 +1,1307 @@
+{
+  "comparisons": {
+    "3B": {
+      "base_model_id": "qwen2.5-vl-3b-base",
+      "benchmark_deltas": {
+        "blink": 2.6126600035069316,
+        "chartqapro": -0.1387520355013585,
+        "charxivreason": 5.766666666666662,
+        "countbenchqa": 3.2169746748802197,
+        "countqa": 0.7635253054101252,
+        "cvbench_3d": 8.30555555555555,
+        "embspatial": 1.8131868131868103,
+        "erqa": 1.0833333333333286,
+        "evochart": -1.6800000000000068,
+        "logicvista": 3.6539895600000065,
+        "mathverse": 6.429780033766669,
+        "mathvision": 6.096491228070178,
+        "mathvista": 6.300000000000011,
+        "mme_reasoning": 2.441077441077443,
+        "mmmu_pro_vision": 4.566473988439309,
+        "mmstar": 2.9777777777777885,
+        "phyx_mini_mc": 4.666666666666664,
+        "puzzlevqa": 6.583333333333329,
+        "realworldqa": 1.7864923747276649,
+        "spatialvizbench_cot": 1.751412429378533,
+        "tablevqabench": 2.720000066666671,
+        "treebench": -0.6584362139917772,
+        "visualpuzzles": 2.3116438356164437,
+        "wemath": 10.95
+      },
+      "category_deltas": {
+        "Charts & Tables": 1.6669786744579937,
+        "Perception & Counting": 1.4836809424513717,
+        "Puzzles & Logic": 3.7475110425068046,
+        "Science & General": 3.4993527019028576,
+        "Spatial Reasoning": 3.238372032863559,
+        "Visual Math": 7.4440678154592135
+      },
+      "negative_benchmark_count": 3,
+      "overall_delta": 3.5133272016069697,
+      "positive_benchmark_count": 21,
+      "trace_model_id": "trace-qwen2.5-vl-3b",
+      "zero_benchmark_count": 0
+    },
+    "7B": {
+      "base_model_id": "qwen2.5-vl-7b-base",
+      "benchmark_deltas": {
+        "blink": 3.261441346659659,
+        "chartqapro": 2.238485721524995,
+        "charxivreason": 7.399999999999999,
+        "countbenchqa": 2.669404517453799,
+        "countqa": 2.923211169284464,
+        "cvbench_3d": 4.75,
+        "embspatial": 1.5293040293040292,
+        "erqa": 2.1666666666666643,
+        "evochart": 7.839999999999989,
+        "logicvista": 4.697986577166667,
+        "mathverse": 4.314720812200008,
+        "mathvision": 2.609649122807017,
+        "mathvista": 4.699999999999989,
+        "mme_reasoning": 2.8619528619528616,
+        "mmmu_pro_vision": 3.660886319845858,
+        "mmstar": 3.755555555555553,
+        "phyx_mini_mc": 7.733333333333327,
+        "puzzlevqa": 5.45000000000001,
+        "realworldqa": 3.0501089324618817,
+        "spatialvizbench_cot": 0.5367231638417991,
+        "tablevqabench": 3.1111111333333383,
+        "treebench": 2.2222222222222214,
+        "visualpuzzles": 2.939497716894973,
+        "wemath": 10.956666666666663
+      },
+      "category_deltas": {
+        "Charts & Tables": 5.147399213714586,
+        "Perception & Counting": 2.769069813905027,
+        "Puzzles & Logic": 3.9873592890036207,
+        "Science & General": 4.549971035299166,
+        "Spatial Reasoning": 2.2456734649531214,
+        "Visual Math": 5.645259150418418
+      },
+      "contextual_overall_deltas": {
+        "game-rl-qwen2.5-vl-7b": 3.9403277518324913,
+        "pcgrpo-qwen2.5-vl-7b": 3.1825454905149613,
+        "sphinx-qwen2.5-vl-7b": 2.6433346739846755,
+        "vero-qwen2.5-vl-7b": -0.23783186604668316
+      },
+      "negative_benchmark_count": 0,
+      "overall_delta": 4.05745532788233,
+      "positive_benchmark_count": 24,
+      "trace_model_id": "trace-qwen2.5-vl-7b",
+      "zero_benchmark_count": 0
+    }
+  },
+  "models": {
+    "game-rl-qwen2.5-vl-7b": {
+      "benchmarks": {
+        "blink": {
+          "mean": 53.77871295809223,
+          "stddev": 1.2136954221057081
+        },
+        "chartqapro": {
+          "mean": 45.35299489830453,
+          "stddev": 0.38402623047523743
+        },
+        "charxivreason": {
+          "mean": 39.666666666666664,
+          "stddev": 1.0408329997330663
+        },
+        "countbenchqa": {
+          "mean": 82.61464750171116,
+          "stddev": 1.3672131660121996
+        },
+        "countqa": {
+          "mean": 19.91710296684119,
+          "stddev": 1.0395944640003372
+        },
+        "cvbench_3d": {
+          "mean": 76.19444444444444,
+          "stddev": 0.8347210667398202
+        },
+        "embspatial": {
+          "mean": 69.54212454212454,
+          "stddev": 0.9301523270126719
+        },
+        "erqa": {
+          "mean": 38.833333333333336,
+          "stddev": 1.6645820296198484
+        },
+        "evochart": {
+          "mean": 58.64000000000001,
+          "stddev": 0.8466404195406698
+        },
+        "logicvista": {
+          "mean": 43.25130499626667,
+          "stddev": 0.90412793834976
+        },
+        "mathverse": {
+          "mean": 44.07783417933333,
+          "stddev": 1.5298765922248274
+        },
+        "mathvision": {
+          "mean": 25.29605263157895,
+          "stddev": 0.3239755855854
+        },
+        "mathvista": {
+          "mean": 69.93333333333332,
+          "stddev": 0.9712534856222348
+        },
+        "mme_reasoning": {
+          "mean": 26.122334455667787,
+          "stddev": 1.065848479978819
+        },
+        "mmmu_pro_vision": {
+          "mean": 36.127167630057805,
+          "stddev": 0.5514099430155744
+        },
+        "mmstar": {
+          "mean": 62.555555555555564,
+          "stddev": 1.4686854792763029
+        },
+        "phyx_mini_mc": {
+          "mean": 41.43333333333334,
+          "stddev": 4.452340208624377
+        },
+        "puzzlevqa": {
+          "mean": 40.1,
+          "stddev": 1.5394804318340654
+        },
+        "realworldqa": {
+          "mean": 65.96949891067537,
+          "stddev": 0.32896882070896394
+        },
+        "spatialvizbench_cot": {
+          "mean": 32.655367231638415,
+          "stddev": 2.3337163335958038
+        },
+        "tablevqabench": {
+          "mean": 75.59111113333334,
+          "stddev": 0.8237943116165902
+        },
+        "treebench": {
+          "mean": 37.86008230452675,
+          "stddev": 0.9978893541549091
+        },
+        "visualpuzzles": {
+          "mean": 29.394977168949776,
+          "stddev": 0.7180220105827129
+        },
+        "wemath": {
+          "mean": 38.18666666666667,
+          "stddev": 1.0303559255584127
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 54.81269317457613,
+          "stddev": 0.41483165644649883
+        },
+        "Perception & Counting": {
+          "mean": 48.542636432792825,
+          "stddev": 0.23726429950005062
+        },
+        "Puzzles & Logic": {
+          "mean": 34.71715415522106,
+          "stddev": 0.7368174391281208
+        },
+        "Science & General": {
+          "mean": 51.52138885740552,
+          "stddev": 1.5293571284731737
+        },
+        "Spatial Reasoning": {
+          "mean": 54.30631738788518,
+          "stddev": 0.9945828181803433
+        },
+        "Visual Math": {
+          "mean": 44.37347170272807,
+          "stddev": 0.31701053916466165
+        }
+      },
+      "display_name": "Game-RL-7B",
+      "overall": {
+        "mean": 48.04561028510147,
+        "seed_count": 3,
+        "stddev": 0.4487712674256592
+      }
+    },
+    "pcgrpo-qwen2.5-vl-7b": {
+      "benchmarks": {
+        "blink": {
+          "mean": 56.6017885323514,
+          "stddev": 0.5338712027928603
+        },
+        "chartqapro": {
+          "mean": 39.320785153471405,
+          "stddev": 1.1869148209350409
+        },
+        "charxivreason": {
+          "mean": 41.23333333333333,
+          "stddev": 0.6658328118479405
+        },
+        "countbenchqa": {
+          "mean": 80.56125941136207,
+          "stddev": 1.20317562157748
+        },
+        "countqa": {
+          "mean": 17.212041884816752,
+          "stddev": 0.4087040574868059
+        },
+        "cvbench_3d": {
+          "mean": 80.22222222222221,
+          "stddev": 0.45896421227383727
+        },
+        "embspatial": {
+          "mean": 72.73809523809524,
+          "stddev": 0.22205779584216268
+        },
+        "erqa": {
+          "mean": 40.416666666666664,
+          "stddev": 0.7637626158259734
+        },
+        "evochart": {
+          "mean": 58.800000000000004,
+          "stddev": 0.5600000000000027
+        },
+        "logicvista": {
+          "mean": 43.027591349733335,
+          "stddev": 0.9313941832233933
+        },
+        "mathverse": {
+          "mean": 44.881556683566664,
+          "stddev": 0.969241898260187
+        },
+        "mathvision": {
+          "mean": 25.274122807017545,
+          "stddev": 1.041435800824589
+        },
+        "mathvista": {
+          "mean": 70.8,
+          "stddev": 0.6000000000000014
+        },
+        "mme_reasoning": {
+          "mean": 27.525252525252526,
+          "stddev": 0.9560451760606524
+        },
+        "mmmu_pro_vision": {
+          "mean": 36.859344894026975,
+          "stddev": 1.2143315033979736
+        },
+        "mmstar": {
+          "mean": 62.46666666666667,
+          "stddev": 0.757187779440035
+        },
+        "phyx_mini_mc": {
+          "mean": 42.0,
+          "stddev": 2.893095228297886
+        },
+        "puzzlevqa": {
+          "mean": 47.949999999999996,
+          "stddev": 1.0500000000000007
+        },
+        "realworldqa": {
+          "mean": 67.7995642701525,
+          "stddev": 0.9811181045052502
+        },
+        "spatialvizbench_cot": {
+          "mean": 30.762711864406782,
+          "stddev": 1.7796610169491531
+        },
+        "tablevqabench": {
+          "mean": 72.26666666666667,
+          "stddev": 2.5488646933269874
+        },
+        "treebench": {
+          "mean": 40.41152263374486,
+          "stddev": 1.9804459943236175
+        },
+        "visualpuzzles": {
+          "mean": 33.13356164383561,
+          "stddev": 1.653528074985273
+        },
+        "wemath": {
+          "mean": 39.01666666666667,
+          "stddev": 1.444379913088428
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 52.90519628836785,
+          "stddev": 0.9854008378138734
+        },
+        "Perception & Counting": {
+          "mean": 48.69665311556877,
+          "stddev": 0.2212050075978568
+        },
+        "Puzzles & Logic": {
+          "mean": 37.90910137970537,
+          "stddev": 0.78991116957339
+        },
+        "Science & General": {
+          "mean": 52.281393957711536,
+          "stddev": 0.9198192763118799
+        },
+        "Spatial Reasoning": {
+          "mean": 56.03492399784773,
+          "stddev": 0.5450948042587462
+        },
+        "Visual Math": {
+          "mean": 44.99308653931271,
+          "stddev": 0.39782999282592696
+        }
+      },
+      "display_name": "PCGRPO-7B",
+      "overall": {
+        "mean": 48.803392546419,
+        "seed_count": 3,
+        "stddev": 0.28335295115349396
+      }
+    },
+    "qwen2.5-vl-3b-base": {
+      "benchmarks": {
+        "blink": {
+          "mean": 44.52042784499386,
+          "stddev": 2.1043748789939696
+        },
+        "chartqapro": {
+          "mean": 31.56763020725477,
+          "stddev": 0.6635653203873171
+        },
+        "charxivreason": {
+          "mean": 28.900000000000002,
+          "stddev": 1.113552872566002
+        },
+        "countbenchqa": {
+          "mean": 65.43463381245722,
+          "stddev": 1.5949596437687898
+        },
+        "countqa": {
+          "mean": 14.87783595113438,
+          "stddev": 1.7998373762943543
+        },
+        "cvbench_3d": {
+          "mean": 58.666666666666664,
+          "stddev": 8.321658488546614
+        },
+        "embspatial": {
+          "mean": 59.065934065934066,
+          "stddev": 1.036337149113187
+        },
+        "erqa": {
+          "mean": 35.333333333333336,
+          "stddev": 0.8036375634160796
+        },
+        "evochart": {
+          "mean": 48.50666666666667,
+          "stddev": 0.45489925624618727
+        },
+        "logicvista": {
+          "mean": 36.4653243848,
+          "stddev": 1.2455848686590199
+        },
+        "mathverse": {
+          "mean": 33.58714043996667,
+          "stddev": 1.950905678112745
+        },
+        "mathvision": {
+          "mean": 19.254385964912277,
+          "stddev": 0.653218026693267
+        },
+        "mathvista": {
+          "mean": 58.133333333333326,
+          "stddev": 3.7447741364911877
+        },
+        "mme_reasoning": {
+          "mean": 22.615039281705947,
+          "stddev": 1.809927432420891
+        },
+        "mmmu_pro_vision": {
+          "mean": 26.589595375722542,
+          "stddev": 0.32183609033699406
+        },
+        "mmstar": {
+          "mean": 52.26666666666666,
+          "stddev": 0.5206833117271076
+        },
+        "phyx_mini_mc": {
+          "mean": 32.800000000000004,
+          "stddev": 9.959417653658269
+        },
+        "puzzlevqa": {
+          "mean": 32.550000000000004,
+          "stddev": 1.2134661099511606
+        },
+        "realworldqa": {
+          "mean": 60.348583877995644,
+          "stddev": 0.4202026475378179
+        },
+        "spatialvizbench_cot": {
+          "mean": 30.08474576271186,
+          "stddev": 1.2222207713437223
+        },
+        "tablevqabench": {
+          "mean": 69.27111106666666,
+          "stddev": 0.9071894244598853
+        },
+        "treebench": {
+          "mean": 39.25925925925926,
+          "stddev": 1.9598157859737702
+        },
+        "visualpuzzles": {
+          "mean": 26.1986301369863,
+          "stddev": 2.739726027397259
+        },
+        "wemath": {
+          "mean": 17.873333333333335,
+          "stddev": 1.2448426942121378
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 44.56135198514702,
+          "stddev": 0.057325426142197954
+        },
+        "Perception & Counting": {
+          "mean": 41.02303921696119,
+          "stddev": 0.5175155313074352
+        },
+        "Puzzles & Logic": {
+          "mean": 29.457248450873063,
+          "stddev": 0.5796020231600605
+        },
+        "Science & General": {
+          "mean": 43.00121148009621,
+          "stddev": 2.543296512582745
+        },
+        "Spatial Reasoning": {
+          "mean": 45.787669957161484,
+          "stddev": 2.365708549665683
+        },
+        "Visual Math": {
+          "mean": 32.2120482678864,
+          "stddev": 1.6511693119800124
+        }
+      },
+      "display_name": "Qwen2.5-VL-3B (base)",
+      "overall": {
+        "mean": 39.34042822635423,
+        "seed_count": 3,
+        "stddev": 0.6282148950511544
+      }
+    },
+    "qwen2.5-vl-7b-base": {
+      "benchmarks": {
+        "blink": {
+          "mean": 53.3052779238997,
+          "stddev": 1.2250421514787744
+        },
+        "chartqapro": {
+          "mean": 45.81300811080209,
+          "stddev": 0.23744281383905524
+        },
+        "charxivreason": {
+          "mean": 39.733333333333334,
+          "stddev": 1.1676186592091318
+        },
+        "countbenchqa": {
+          "mean": 82.13552361396303,
+          "stddev": 1.4807192096361315
+        },
+        "countqa": {
+          "mean": 19.589877835951135,
+          "stddev": 1.1749767023992348
+        },
+        "cvbench_3d": {
+          "mean": 76.25,
+          "stddev": 1.9649710204252706
+        },
+        "embspatial": {
+          "mean": 69.42307692307692,
+          "stddev": 0.8957055157638
+        },
+        "erqa": {
+          "mean": 39.0,
+          "stddev": 1.5612494995995996
+        },
+        "evochart": {
+          "mean": 57.06666666666666,
+          "stddev": 0.7170309151865993
+        },
+        "logicvista": {
+          "mean": 42.6547352722,
+          "stddev": 2.2408619241083123
+        },
+        "mathverse": {
+          "mean": 43.44331641283333,
+          "stddev": 0.9180429109262922
+        },
+        "mathvision": {
+          "mean": 24.81359649122807,
+          "stddev": 0.7474660950506236
+        },
+        "mathvista": {
+          "mean": 68.66666666666667,
+          "stddev": 0.40414518843273145
+        },
+        "mme_reasoning": {
+          "mean": 25.16835016835017,
+          "stddev": 1.1784511784511797
+        },
+        "mmmu_pro_vision": {
+          "mean": 35.703275529865124,
+          "stddev": 0.39346007430948293
+        },
+        "mmstar": {
+          "mean": 61.88888888888889,
+          "stddev": 0.8700787533534231
+        },
+        "phyx_mini_mc": {
+          "mean": 40.96666666666667,
+          "stddev": 3.5725807665234557
+        },
+        "puzzlevqa": {
+          "mean": 44.56666666666666,
+          "stddev": 0.6370504951205493
+        },
+        "realworldqa": {
+          "mean": 65.44662309368191,
+          "stddev": 0.8703696886901137
+        },
+        "spatialvizbench_cot": {
+          "mean": 35.141242937853114,
+          "stddev": 0.09785597782874679
+        },
+        "tablevqabench": {
+          "mean": 75.2,
+          "stddev": 0.9031303535789078
+        },
+        "treebench": {
+          "mean": 38.02469135802469,
+          "stddev": 1.3747566327975336
+        },
+        "visualpuzzles": {
+          "mean": 31.078767123287673,
+          "stddev": 0.14829202119596746
+        },
+        "wemath": {
+          "mean": 35.20333333333333,
+          "stddev": 2.9180530038594803
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 54.45325202770052,
+          "stddev": 0.2924433120652661
+        },
+        "Perception & Counting": {
+          "mean": 48.26384268295965,
+          "stddev": 0.33083985964224577
+        },
+        "Puzzles & Logic": {
+          "mean": 35.86712980762613,
+          "stddev": 0.6695186068107795
+        },
+        "Science & General": {
+          "mean": 51.00136354477564,
+          "stddev": 0.8323095682682248
+        },
+        "Spatial Reasoning": {
+          "mean": 54.95357996523251,
+          "stddev": 0.8161289022791622
+        },
+        "Visual Math": {
+          "mean": 43.03172822601535,
+          "stddev": 0.8462985268505764
+        }
+      },
+      "display_name": "Qwen2.5-VL-7B (base)",
+      "overall": {
+        "mean": 47.92848270905163,
+        "seed_count": 3,
+        "stddev": 0.29550715360235236
+      }
+    },
+    "sphinx-qwen2.5-vl-7b": {
+      "benchmarks": {
+        "blink": {
+          "mean": 55.72505698755041,
+          "stddev": 1.0590684811882536
+        },
+        "chartqapro": {
+          "mean": 43.87894103657259,
+          "stddev": 2.330682713246205
+        },
+        "charxivreason": {
+          "mean": 40.73333333333333,
+          "stddev": 0.35118845842841917
+        },
+        "countbenchqa": {
+          "mean": 83.29911019849418,
+          "stddev": 1.320143841340575
+        },
+        "countqa": {
+          "mean": 21.356893542757415,
+          "stddev": 0.2477708702356159
+        },
+        "cvbench_3d": {
+          "mean": 79.77777777777777,
+          "stddev": 0.95863521815208
+        },
+        "embspatial": {
+          "mean": 70.86996336996337,
+          "stddev": 0.7112856127886925
+        },
+        "erqa": {
+          "mean": 40.333333333333336,
+          "stddev": 2.0207259421636903
+        },
+        "evochart": {
+          "mean": 58.42666666666667,
+          "stddev": 0.16653327995728992
+        },
+        "logicvista": {
+          "mean": 44.668158091,
+          "stddev": 1.2321186906618622
+        },
+        "mathverse": {
+          "mean": 45.34686971233333,
+          "stddev": 2.4388384611602762
+        },
+        "mathvision": {
+          "mean": 26.18421052631579,
+          "stddev": 0.4569882891266367
+        },
+        "mathvista": {
+          "mean": 71.03333333333333,
+          "stddev": 0.6506407098647767
+        },
+        "mme_reasoning": {
+          "mean": 27.132435465768797,
+          "stddev": 0.34018955255281125
+        },
+        "mmmu_pro_vision": {
+          "mean": 37.57225433526012,
+          "stddev": 0.2084133685239264
+        },
+        "mmstar": {
+          "mean": 61.77777777777777,
+          "stddev": 0.5178302310102717
+        },
+        "phyx_mini_mc": {
+          "mean": 42.36666666666667,
+          "stddev": 3.271594921950659
+        },
+        "puzzlevqa": {
+          "mean": 48.56666666666666,
+          "stddev": 1.1026483271348761
+        },
+        "realworldqa": {
+          "mean": 67.27668845315904,
+          "stddev": 0.19967650086954256
+        },
+        "spatialvizbench_cot": {
+          "mean": 33.75706214689266,
+          "stddev": 1.537927411165674
+        },
+        "tablevqabench": {
+          "mean": 74.94222226666666,
+          "stddev": 1.6717965318339043
+        },
+        "treebench": {
+          "mean": 39.75308641975309,
+          "stddev": 1.7805191483772826
+        },
+        "visualpuzzles": {
+          "mean": 33.1906392694064,
+          "stddev": 0.8575901370614535
+        },
+        "wemath": {
+          "mean": 36.25333333333333,
+          "stddev": 0.5277625728803943
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 54.49529082580981,
+          "stddev": 0.8687506104071798
+        },
+        "Perception & Counting": {
+          "mean": 50.03353678713878,
+          "stddev": 0.1652134894429976
+        },
+        "Puzzles & Logic": {
+          "mean": 38.38947487321047,
+          "stddev": 0.05150480957942512
+        },
+        "Science & General": {
+          "mean": 52.2483468082159,
+          "stddev": 0.8816094734628036
+        },
+        "Spatial Reasoning": {
+          "mean": 56.18453415699179,
+          "stddev": 0.9706063118861944
+        },
+        "Visual Math": {
+          "mean": 44.70443672632894,
+          "stddev": 0.26198293000677414
+        }
+      },
+      "display_name": "Sphinx-7B",
+      "overall": {
+        "mean": 49.34260336294928,
+        "seed_count": 3,
+        "stddev": 0.15109264567170114
+      }
+    },
+    "trace-qwen2.5-vl-3b": {
+      "benchmarks": {
+        "blink": {
+          "mean": 47.13308784850079,
+          "stddev": 0.6958840902326672
+        },
+        "chartqapro": {
+          "mean": 31.42887817175341,
+          "stddev": 1.3337735791603411
+        },
+        "charxivreason": {
+          "mean": 34.666666666666664,
+          "stddev": 1.474222959166397
+        },
+        "countbenchqa": {
+          "mean": 68.65160848733744,
+          "stddev": 0.8298669166996615
+        },
+        "countqa": {
+          "mean": 15.641361256544505,
+          "stddev": 0.5667705522149467
+        },
+        "cvbench_3d": {
+          "mean": 66.97222222222221,
+          "stddev": 3.6764389976856258
+        },
+        "embspatial": {
+          "mean": 60.879120879120876,
+          "stddev": 1.1273782708067699
+        },
+        "erqa": {
+          "mean": 36.416666666666664,
+          "stddev": 0.5204164998665332
+        },
+        "evochart": {
+          "mean": 46.82666666666666,
+          "stddev": 1.3631336447074192
+        },
+        "logicvista": {
+          "mean": 40.119313944800005,
+          "stddev": 1.7086411987299348
+        },
+        "mathverse": {
+          "mean": 40.016920473733336,
+          "stddev": 1.5246041701363948
+        },
+        "mathvision": {
+          "mean": 25.350877192982455,
+          "stddev": 0.8580000069951595
+        },
+        "mathvista": {
+          "mean": 64.43333333333334,
+          "stddev": 2.122105872319604
+        },
+        "mme_reasoning": {
+          "mean": 25.05611672278339,
+          "stddev": 1.5275709976224676
+        },
+        "mmmu_pro_vision": {
+          "mean": 31.15606936416185,
+          "stddev": 1.2028122570338047
+        },
+        "mmstar": {
+          "mean": 55.24444444444445,
+          "stddev": 1.0248757828977997
+        },
+        "phyx_mini_mc": {
+          "mean": 37.46666666666667,
+          "stddev": 5.577036249956901
+        },
+        "puzzlevqa": {
+          "mean": 39.13333333333333,
+          "stddev": 1.127312438205727
+        },
+        "realworldqa": {
+          "mean": 62.13507625272331,
+          "stddev": 1.178888824267423
+        },
+        "spatialvizbench_cot": {
+          "mean": 31.836158192090394,
+          "stddev": 1.5167676563456256
+        },
+        "tablevqabench": {
+          "mean": 71.99111113333333,
+          "stddev": 0.28263313218272546
+        },
+        "treebench": {
+          "mean": 38.60082304526748,
+          "stddev": 1.1668680558648408
+        },
+        "visualpuzzles": {
+          "mean": 28.510273972602743,
+          "stddev": 0.7008007510164768
+        },
+        "wemath": {
+          "mean": 28.823333333333334,
+          "stddev": 0.3955165398985659
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 46.228330659605014,
+          "stddev": 0.9284717667161736
+        },
+        "Perception & Counting": {
+          "mean": 42.50672015941256,
+          "stddev": 0.3217659240984646
+        },
+        "Puzzles & Logic": {
+          "mean": 33.20475949337987,
+          "stddev": 0.9057125554892951
+        },
+        "Science & General": {
+          "mean": 46.50056418199907,
+          "stddev": 1.7664930850221132
+        },
+        "Spatial Reasoning": {
+          "mean": 49.02604199002504,
+          "stddev": 0.8988047236710892
+        },
+        "Visual Math": {
+          "mean": 39.656116083345616,
+          "stddev": 0.7879797944053504
+        }
+      },
+      "display_name": "Trace-3B",
+      "overall": {
+        "mean": 42.8537554279612,
+        "seed_count": 3,
+        "stddev": 0.38844675881360363
+      }
+    },
+    "trace-qwen2.5-vl-7b": {
+      "benchmarks": {
+        "blink": {
+          "mean": 56.56671927055936,
+          "stddev": 0.7295333706019546
+        },
+        "chartqapro": {
+          "mean": 48.05149383232708,
+          "stddev": 0.39550738728651685
+        },
+        "charxivreason": {
+          "mean": 47.13333333333333,
+          "stddev": 0.3511884584284229
+        },
+        "countbenchqa": {
+          "mean": 84.80492813141683,
+          "stddev": 1.437371663244351
+        },
+        "countqa": {
+          "mean": 22.5130890052356,
+          "stddev": 0.9091913605660846
+        },
+        "cvbench_3d": {
+          "mean": 81.0,
+          "stddev": 0.4330127018922193
+        },
+        "embspatial": {
+          "mean": 70.95238095238095,
+          "stddev": 0.6908307403861713
+        },
+        "erqa": {
+          "mean": 41.166666666666664,
+          "stddev": 1.282900359861721
+        },
+        "evochart": {
+          "mean": 64.90666666666665,
+          "stddev": 0.04618802153516908
+        },
+        "logicvista": {
+          "mean": 47.35272184936667,
+          "stddev": 0.6834564794963377
+        },
+        "mathverse": {
+          "mean": 47.75803722503334,
+          "stddev": 0.5128746046121273
+        },
+        "mathvision": {
+          "mean": 27.423245614035086,
+          "stddev": 0.620947155033675
+        },
+        "mathvista": {
+          "mean": 73.36666666666666,
+          "stddev": 0.4509249752822927
+        },
+        "mme_reasoning": {
+          "mean": 28.03030303030303,
+          "stddev": 0.890825357260804
+        },
+        "mmmu_pro_vision": {
+          "mean": 39.36416184971098,
+          "stddev": 0.7103009091008395
+        },
+        "mmstar": {
+          "mean": 65.64444444444445,
+          "stddev": 0.3421067626297945
+        },
+        "phyx_mini_mc": {
+          "mean": 48.699999999999996,
+          "stddev": 0.8185352771872457
+        },
+        "puzzlevqa": {
+          "mean": 50.01666666666667,
+          "stddev": 0.500832640043889
+        },
+        "realworldqa": {
+          "mean": 68.49673202614379,
+          "stddev": 0.679235610811322
+        },
+        "spatialvizbench_cot": {
+          "mean": 35.67796610169491,
+          "stddev": 0.3389830508474603
+        },
+        "tablevqabench": {
+          "mean": 78.31111113333334,
+          "stddev": 0.17350415514290843
+        },
+        "treebench": {
+          "mean": 40.24691358024691,
+          "stddev": 2.1096305543993945
+        },
+        "visualpuzzles": {
+          "mean": 34.018264840182646,
+          "stddev": 0.7721318069902209
+        },
+        "wemath": {
+          "mean": 46.16,
+          "stddev": 1.3202651248896937
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 59.60065124141511,
+          "stddev": 0.15978202146997683
+        },
+        "Perception & Counting": {
+          "mean": 51.032912496864675,
+          "stddev": 0.3997105159196691
+        },
+        "Puzzles & Logic": {
+          "mean": 39.85448909662975,
+          "stddev": 0.4685193419544687
+        },
+        "Science & General": {
+          "mean": 55.55133458007481,
+          "stddev": 0.35055844042354056
+        },
+        "Spatial Reasoning": {
+          "mean": 57.19925343018563,
+          "stddev": 0.33783352200966565
+        },
+        "Visual Math": {
+          "mean": 48.67698737643377,
+          "stddev": 0.08338664111382585
+        }
+      },
+      "display_name": "Trace-7B",
+      "overall": {
+        "mean": 51.98593803693396,
+        "seed_count": 3,
+        "stddev": 0.17445336525832628
+      }
+    },
+    "vero-qwen2.5-vl-7b": {
+      "benchmarks": {
+        "blink": {
+          "mean": 57.51358933894442,
+          "stddev": 0.6660852152629296
+        },
+        "chartqapro": {
+          "mean": 40.873173885608786,
+          "stddev": 0.4249542473039563
+        },
+        "charxivreason": {
+          "mean": 45.833333333333336,
+          "stddev": 0.8386497083606098
+        },
+        "countbenchqa": {
+          "mean": 82.95687885010267,
+          "stddev": 0.20533880903490598
+        },
+        "countqa": {
+          "mean": 23.16753926701571,
+          "stddev": 0.28526825546732104
+        },
+        "cvbench_3d": {
+          "mean": 83.1111111111111,
+          "stddev": 0.5912165737164677
+        },
+        "embspatial": {
+          "mean": 70.6043956043956,
+          "stddev": 0.07268547557870064
+        },
+        "erqa": {
+          "mean": 44.583333333333336,
+          "stddev": 0.8036375634160796
+        },
+        "evochart": {
+          "mean": 63.54666666666666,
+          "stddev": 0.16653327995729106
+        },
+        "logicvista": {
+          "mean": 47.65100671140001,
+          "stddev": 0.6711409396000008
+        },
+        "mathverse": {
+          "mean": 50.93062605753334,
+          "stddev": 1.1374221370391282
+        },
+        "mathvision": {
+          "mean": 28.146929824561408,
+          "stddev": 0.08278327231656547
+        },
+        "mathvista": {
+          "mean": 76.8,
+          "stddev": 0.3605551275464001
+        },
+        "mme_reasoning": {
+          "mean": 30.611672278338943,
+          "stddev": 0.725730480155865
+        },
+        "mmmu_pro_vision": {
+          "mean": 39.67244701348748,
+          "stddev": 0.46721987102050705
+        },
+        "mmstar": {
+          "mean": 65.77777777777777,
+          "stddev": 0.31505437508350537
+        },
+        "phyx_mini_mc": {
+          "mean": 46.63333333333333,
+          "stddev": 0.20816659994661224
+        },
+        "puzzlevqa": {
+          "mean": 49.21666666666667,
+          "stddev": 0.24664414311581298
+        },
+        "realworldqa": {
+          "mean": 69.8474945533769,
+          "stddev": 0.7199438623903424
+        },
+        "spatialvizbench_cot": {
+          "mean": 32.06214689265537,
+          "stddev": 0.46674326671915956
+        },
+        "tablevqabench": {
+          "mean": 78.47111113333334,
+          "stddev": 0.4512369659141542
+        },
+        "treebench": {
+          "mean": 41.48148148148149,
+          "stddev": 0.8902595741886383
+        },
+        "visualpuzzles": {
+          "mean": 36.95776255707762,
+          "stddev": 0.4393494383088069
+        },
+        "wemath": {
+          "mean": 46.919999999999995,
+          "stddev": 0.3579106033634645
+        }
+      },
+      "categories": {
+        "Charts & Tables": {
+          "mean": 57.181071254735535,
+          "stddev": 0.33102028861149774
+        },
+        "Perception & Counting": {
+          "mean": 51.27987223438606,
+          "stddev": 0.042533958096406005
+        },
+        "Puzzles & Logic": {
+          "mean": 41.10927705337081,
+          "stddev": 0.08141394125263732
+        },
+        "Science & General": {
+          "mean": 55.48276316949387,
+          "stddev": 0.2650994293654195
+        },
+        "Spatial Reasoning": {
+          "mean": 57.59024673537385,
+          "stddev": 0.27879891955324126
+        },
+        "Visual Math": {
+          "mean": 50.69938897052368,
+          "stddev": 0.23703823429144802
+        }
+      },
+      "display_name": "Vero-7B",
+      "overall": {
+        "mean": 52.22376990298064,
+        "seed_count": 3,
+        "stddev": 0.07340426229415475
+      }
+    }
+  },
+  "schema_version": "trace_paper_results_v1",
+  "sources": {
+    "scores_3b": {
+      "path": "results/trace_eval_v1_temp06_seed42_43_44_qwen25vl3b_base_trace_step500_20260716_scores.json",
+      "sha256": "3a7acbf1d9baf3f32fe7ba7b4e522cc713a648fecf438eeae0319b013d8efda7"
+    },
+    "scores_7b": {
+      "path": "results/canonical/trace_eval_v1/qwen2.5-vl-7b-comparison-temp06-seeds42-44-v1/metadata/results/benchmark_scores.json",
+      "sha256": "578e574d68702af0b83a9c1962bd73c36f8887787cc9ac10a8f7da3d207c10ac"
+    },
+    "scores_rl_baselines": {
+      "path": "results/trace_eval_v1_temp06_seed42_43_44_gamerl_sphinx_pcgrpo_20260717_scores.json",
+      "sha256": "7af92decffc261ad70bd2925632a4aeb3aa61a14cbc5974d285a264a32082c85"
+    },
+    "suite": {
+      "path": "evaluation/trace_eval/suite.v1.json",
+      "sha256": "b84262bcd2243d1d2879b2e02d9b49b17052659ea767df3d7303758f4d63de71"
+    },
+    "training_runs": {
+      "path": "paper/trace/data/training_runs.json",
+      "sha256": "671a208c52ef5d5409b54cbb5e9b3675e77d1743b874811fa7a585219dfa6d9b"
+    }
+  },
+  "suite": {
+    "aggregation": {
+      "average_category_means_for_overall": true,
+      "category": "unweighted_macro_average_of_4_benchmarks",
+      "overall": "unweighted_macro_average_of_24_benchmarks"
+    },
+    "benchmark_count": 24,
+    "categories": [
+      "Charts & Tables",
+      "Visual Math",
+      "Science & General",
+      "Spatial Reasoning",
+      "Perception & Counting",
+      "Puzzles & Logic"
+    ],
+    "category_count": 6,
+    "generation": {
+      "dataset_manifest_view": "trace_eval_v1",
+      "max_image_pixels": 12845056,
+      "max_tokens": 4096,
+      "media_transport": "file-url",
+      "min_image_pixels": 3136,
+      "presence_penalty": 0.0,
+      "repetition_penalty": 1.0,
+      "run_set": "trace_eval_v1",
+      "temperature": 0.6,
+      "top_k": -1,
+      "top_p": 1.0
+    },
+    "rows_per_model_seed": 32805,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "suite_id": "trace_eval_v1",
+    "vlmevalkit": {
+      "commit": "a8b12bf1c3737a33fc1de967c202f9c592b22e86",
+      "repository": "https://github.com/open-compass/VLMEvalKit"
+    }
+  },
+  "training": {
+    "data": {
+      "active_tasks": 1000,
+      "embedded_image_pixel_cap": 1280000,
+      "prompt_column": "prompt_answer",
+      "train_generation_seed": 42,
+      "train_rows": 64000,
+      "train_samples_per_task": 64,
+      "validation_generation_seed": 1042,
+      "validation_rows": 2000,
+      "validation_samples_per_task": 2
+    },
+    "retrieved_at": "2026-07-18",
+    "runs": [
+      {
+        "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "base_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+        "final_validation_exact_answer_accuracy": 0.4215,
+        "final_validation_format_accuracy": 0.995,
+        "model_size": "3B",
+        "runtime_seconds": 44071.424996037,
+        "source_commit": "847e9f5279f8111fdbfef1c8b8631fc621c23456",
+        "trained_model": "maveryn/trace-qwen2.5-vl-3b",
+        "trained_model_revision": "2ec2374d5c219e6b12e26bda93d3b3adeb1e30c5",
+        "wandb_run": "llm-reasoning-rl/trace_easyr1/kijsydl8",
+        "wandb_run_name": "trace_qwen25vl3b_easyr1_all1000_answer_nokl_step500_bsz128_rollout8_iidval2000_rerun_20260716T225857Z"
+      },
+      {
+        "base_model": "Qwen/Qwen2.5-VL-7B-Instruct",
+        "base_revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+        "final_validation_exact_answer_accuracy": 0.524,
+        "final_validation_format_accuracy": 0.999,
+        "model_size": "7B",
+        "runtime_seconds": 50068.432287883,
+        "source_commit": "d29b23f6085764ea831adb5edc5a23f89b0d98f3",
+        "trained_model": "maveryn/trace-qwen2.5-vl-7b",
+        "trained_model_revision": "4d0f1ae8ee25022058090dbdbff61957ece7331d",
+        "wandb_run": "llm-reasoning-rl/trace_easyr1/usqbkpd6",
+        "wandb_run_name": "trace_qwen25vl7b_easyr1_all1000_answer_nokl_step500_bsz128_rollout8_iidval2000_rerun_20260715T161252Z"
+      }
+    ],
+    "schema_version": "trace_paper_training_runs_v1",
+    "shared_configuration": {
+      "actor_gradient_norm_cap": 1.0,
+      "actor_learning_rate": 1e-06,
+      "actor_weight_decay": 0.01,
+      "algorithm": "grpo",
+      "annotation_reward_weight": 0.0,
+      "answer_reward_weight": 1.0,
+      "answer_scoring": "exact_json",
+      "clip_ratio_high": 0.3,
+      "clip_ratio_low": 0.2,
+      "dual_clip_bound": 3.0,
+      "effective_answer_coefficient": 0.95,
+      "format_reward_weight": 0.05,
+      "full_parameter_training": true,
+      "hardware": {
+        "gpu": "NVIDIA H100 80GB HBM3",
+        "gpu_count": 8
+      },
+      "kl_enabled": false,
+      "max_steps": 500,
+      "policy_epochs": 1,
+      "precision": "bf16",
+      "prompt_batch_size": 128,
+      "prompt_token_cap": 2048,
+      "response_token_cap": 2048,
+      "reward_formula": "0.95 * exact_answer + 0.05 * terminal_json_format",
+      "rollout_seed": 1,
+      "rollouts_per_prompt": 8,
+      "sampled_training_responses": 512000,
+      "training_temperature": 1.0,
+      "training_top_k": -1,
+      "training_top_p": 1.0,
+      "validation_interval_steps": 100,
+      "validation_rollouts_per_prompt": 1,
+      "validation_temperature": 0.6,
+      "validation_top_p": 0.95,
+      "vision_tower_frozen": false
+    },
+    "source": {
+      "dataset": {
+        "repository_id": "maveryn/trace",
+        "repository_revision": "e317b746b258630682367cc6a9d87dedd195113c"
+      },
+      "system_prompt": {
+        "path": "rlvr/examples/prompts/trace_vero_json_system_prompt_answer.txt",
+        "sha256": "f394927d9abcfb7a1e43ef48a30c29b8c70e6facdbda314d7b27c59d8c3ae900"
+      }
+    }
+  }
+}

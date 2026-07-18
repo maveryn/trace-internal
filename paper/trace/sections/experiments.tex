@@ -1,12 +1,65 @@
 \section{Experimental Setup}
 \label{sec:experiments}
 
-We evaluate whether answer-based RLVR on the broad procedural task distribution
-in \trace improves visual reasoning beyond the base model. The primary
-comparison holds the model family, task split, generated instances, training
-budget, and benchmark protocol fixed, and compares the unmodified base model
-with a model trained using typed answer rewards from \trace.
+We test whether answer-based RLVR on \trace transfers beyond the procedural
+images used for training. The controlled comparison starts from the
+Qwen2.5-VL-3B-Instruct and Qwen2.5-VL-7B-Instruct checkpoints
+\citep{bai2025qwen25vl} and changes only post-training. The final checkpoint at
+each scale is compared with its corresponding base model under one frozen
+external-evaluation protocol.
 
-Evaluation reports in-domain validation separately from transfer to external
-benchmarks. Per-benchmark scores accompany macro-averages so that gains in one
-task family do not conceal regressions in another.
+\subsection{Training data and reward}
+
+The training set contains 64 instances from each of the 1,000 tasks, for
+64,000 prompts in total. Images are embedded in the dataset and capped at
+1.28 million pixels. A separate IID set contains two new instances per task
+(2,000 total) and is used for monitoring every 100 updates; external
+benchmarks are not used for checkpoint selection. Both model scales use the
+same task identities, generated instances, prompts, and typed answers.
+
+The model may reason freely, but must end its response with a JSON object of
+the form \texttt{\{"answer": ...\}}. Let $R_a$ indicate exact equality after
+type-aware answer canonicalization and let $R_f$ indicate a valid terminal
+JSON object with exactly the requested key. The bounded reward is
+\begin{equation}
+  R = 0.95 R_a + 0.05 R_f.
+\end{equation}
+No image-space annotation reward, learned reward model, or LLM judge is used
+during training.
+
+\subsection{Optimization}
+
+We train with group relative policy optimization (GRPO), sampling eight
+responses for each of 128 prompts per update. Rewards are normalized within
+each prompt group and optimized with a clipped token-level policy objective.
+Both models receive 500 updates, exactly one shuffled pass over the 64,000
+prompts and 512,000 sampled responses. We use full-parameter training with a
+learning rate of $10^{-6}$, one policy epoch, BF16 parameters, and no KL
+penalty. Sampling uses temperature 1.0 and top-$p$ 1.0. Training runs on eight
+H100 80GB GPUs and takes 12.2 hours for 3B and 13.9 hours for 7B. The complete
+shared configuration appears in Appendix~\ref{app:experiments}.
+
+\subsection{External evaluation}
+
+The frozen \texttt{trace\_eval\_v1} suite contains 24 benchmarks organized
+into six analysis groups: charts and tables, visual mathematics, science and
+general reasoning, spatial reasoning, perception and counting, and puzzles
+and logic. We evaluate the full selected split of every benchmark, totaling
+32,805 examples per model and decoding seed. Each benchmark retains its
+native scoring contract. Category scores are unweighted means of four
+benchmark scores, and the overall score is an unweighted mean of all 24, so a
+large benchmark cannot dominate the aggregate.
+
+Generation uses temperature 0.6, top-$p$ 1.0, a 4,096-token response cap, and
+decoding seeds 42, 43, and 44. These are repeated decoding seeds for one fixed
+checkpoint, not independent training runs. We report the mean and sample
+standard deviation across seeds. All models use the same benchmark prompts,
+image preprocessing bounds, parsers, and scorers under a pinned VLMEvalKit
+revision; the full suite is listed in Table~\ref{tab:evaluation-suite}.
+
+For context at 7B, we also evaluate publicly released Qwen2.5-VL checkpoints
+from Game-RL, Sphinx, Jigsaw-R1/PCGRPO, and Vero
+\citep{tong2025gamerl,alam2026sphinx,wang2025jigsawr1,sarch2026vero}. These
+comparisons use the same external protocol, but their training corpora,
+optimization methods, and compute budgets differ. They are therefore
+contextual baselines rather than controlled alternatives to \trace training.

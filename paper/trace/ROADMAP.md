@@ -136,8 +136,10 @@ conclusion should return to taxonomy, generation, verification, and replay.
    answer-type, query-branch, and dominant-operation counts.
 5. **Rendering variation (complete):** a fixed semantic instance under
    controlled theme, typography, layout, context, and raster changes.
-6. **Main RLVR table:** base and answer-trained models under one protocol.
-7. **Transfer analysis:** per-benchmark deltas grouped by visual task family.
+6. **Main RLVR table (complete):** base, answer-trained, and contextual 7B
+   checkpoints under one protocol.
+7. **Transfer analysis (complete):** per-benchmark 3B and 7B deltas grouped by
+   evaluation category.
 8. **Ablations:** only completed experiments that share a controlled setup.
 
 All numeric assets must be generated from canonical artifacts.
@@ -149,18 +151,15 @@ Already available:
 - active registry and task inventory;
 - source contracts and domain/task documentation;
 - review artifacts and build-validation records;
+- registry-derived coverage summaries and generated method figures;
 - frozen train/validation split and dataset manifests; and
-- consolidated base and answer-RLVR result artifacts.
+- consolidated training provenance, base/answer-RLVR score records, generated
+  result tables, and per-benchmark transfer figures.
 
 Still required:
 
-1. freeze the exact release commit and dataset revision;
-2. generate registry-derived coverage summaries;
-3. audit quantitative manual-review claims;
-4. produce one canonical evaluation table with complete protocol metadata;
-5. record hardware, training duration, and available compute information; and
-6. prepare stable repository, dataset, model-card, license, and maintenance
-   links.
+1. bind the final public release commit and stable repository/model links; and
+2. complete the final arXiv source, accessibility, and claim audit.
 
 ## 7. Evidence and writing policy
 

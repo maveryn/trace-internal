@@ -131,4 +131,34 @@ the trace.
 \input{tables/rendering_variation_profiles}
 \FloatBarrier
 
+\section{Experimental Details}
+\label{app:experiments}
+
+The training snapshot, score records, and tables below are generated from
+immutable model and dataset revisions and pinned evaluation artifacts. Both
+training runs use the same 64,000 prompt identities and the final step-500
+checkpoint; no external benchmark is used to select among intermediate
+checkpoints.
+
+\input{tables/training_configuration}
+
+The evaluation suite uses the benchmark-defined scorer wherever one is
+available. A small number of open-answer benchmarks retain their pinned
+model-based grading contracts; the same grader, prompt, and parser are used
+for every evaluated checkpoint. Table~\ref{tab:evaluation-suite} records the
+complete split and scoring surface.
+
+\input{tables/evaluation_suite}
+\FloatBarrier
+
+\subsection{Per-benchmark results}
+
+Tables~\ref{tab:per-benchmark-3b} and~\ref{tab:per-benchmark-7b} report all
+benchmark means and sample standard deviations used by the main-paper
+aggregates. Seeds 42--44 vary decoding only.
+
+\input{tables/per_benchmark_3b}
+\input{tables/per_benchmark_7b}
+\FloatBarrier
+
 \input{sections/scene_atlas}

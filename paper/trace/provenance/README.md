@@ -22,7 +22,39 @@ For each artifact, record:
 |---|---|---|
 | Active domain/scene/task inventory | Active task registry and `docs/ACTIVE_TASK_INVENTORY.md` | Counts verified and recorded by `scripts/build_method_figures.py` on 2026-07-14 |
 | Dataset split and row counts | Dataset manifests plus `docs/RLVR_TASK_SPLIT_PLAN.md` | Must bind to public dataset revision |
-| Base vs answer-RLVR benchmark table | Canonical `trace_eval_v1` metadata from the RLVR handoff | 7B source copied under `results/canonical/trace_eval_v1/` from pinned artifact revision; combined paper-results artifact pending |
+| Base vs answer-RLVR benchmark table | Canonical `trace_eval_v1` metadata from the RLVR handoff | Complete; generated source, tables, transfer plot, and checksums are recorded in `results_assets.json` |
+
+## Training and result assets
+
+The paper's 3B, 7B, and contextual-baseline results are generated with:
+
+```bash
+python paper/trace/scripts/build_results_assets.py
+```
+
+The builder pins and validates the evaluation-suite SHA-256, three canonical
+score-file SHA-256 values, result schemas, run ids, model sets, seeds 42--44,
+all 24 benchmark identities, all six categories, and the 32,805-row suite
+total. It then writes:
+
+- `data/trace_eval_v1_paper_results.json`, the combined machine-readable paper
+  result source;
+- `tables/main_results.tex`, `tables/per_benchmark_3b.tex`, and
+  `tables/per_benchmark_7b.tex`;
+- `tables/training_configuration.tex` and `tables/evaluation_suite.tex`; and
+- `figures/benchmark_transfer_deltas.pdf` plus its PNG inspection copy.
+
+Exact input and output hashes are in `provenance/results_assets.json`.
+`data/training_runs.json` is a paper-facing snapshot of the immutable 3B and 7B
+model metadata and the completed W&B runs
+`llm-reasoning-rl/trace_easyr1/kijsydl8` and
+`llm-reasoning-rl/trace_easyr1/usqbkpd6`, retrieved on 2026-07-18. It records
+the shared dataset revision, optimizer/reward settings, hardware, runtime, and
+final IID monitoring values. The evaluation artifact revisions remain
+`maveryn/trace-eval-runs@4178a839b689babe16f8ac36f0de7b1b2c5ef36c`
+for the 3B and 7B base/Trace/Vero runs and
+`maveryn/trace-eval-runs@4ca25af7a4d7daa644e6f35e070dbed1af078321`
+for the three RL baseline runs.
 
 ## External baseline identities
 

@@ -1,0 +1,91 @@
+{
+  "schema_version": "trace_paper_training_runs_v1",
+  "retrieved_at": "2026-07-18",
+  "source": {
+    "dataset": {
+      "repository_id": "maveryn/trace",
+      "repository_revision": "e317b746b258630682367cc6a9d87dedd195113c"
+    },
+    "system_prompt": {
+      "path": "rlvr/examples/prompts/trace_vero_json_system_prompt_answer.txt",
+      "sha256": "f394927d9abcfb7a1e43ef48a30c29b8c70e6facdbda314d7b27c59d8c3ae900"
+    }
+  },
+  "data": {
+    "active_tasks": 1000,
+    "train_rows": 64000,
+    "train_samples_per_task": 64,
+    "train_generation_seed": 42,
+    "validation_rows": 2000,
+    "validation_samples_per_task": 2,
+    "validation_generation_seed": 1042,
+    "prompt_column": "prompt_answer",
+    "embedded_image_pixel_cap": 1280000
+  },
+  "shared_configuration": {
+    "algorithm": "grpo",
+    "max_steps": 500,
+    "prompt_batch_size": 128,
+    "rollouts_per_prompt": 8,
+    "sampled_training_responses": 512000,
+    "prompt_token_cap": 2048,
+    "response_token_cap": 2048,
+    "actor_learning_rate": 1e-06,
+    "actor_weight_decay": 0.01,
+    "actor_gradient_norm_cap": 1.0,
+    "policy_epochs": 1,
+    "clip_ratio_low": 0.2,
+    "clip_ratio_high": 0.3,
+    "dual_clip_bound": 3.0,
+    "training_temperature": 1.0,
+    "training_top_p": 1.0,
+    "training_top_k": -1,
+    "rollout_seed": 1,
+    "kl_enabled": false,
+    "full_parameter_training": true,
+    "vision_tower_frozen": false,
+    "precision": "bf16",
+    "answer_scoring": "exact_json",
+    "answer_reward_weight": 1.0,
+    "format_reward_weight": 0.05,
+    "effective_answer_coefficient": 0.95,
+    "reward_formula": "0.95 * exact_answer + 0.05 * terminal_json_format",
+    "annotation_reward_weight": 0.0,
+    "validation_interval_steps": 100,
+    "validation_temperature": 0.6,
+    "validation_top_p": 0.95,
+    "validation_rollouts_per_prompt": 1,
+    "hardware": {
+      "gpu": "NVIDIA H100 80GB HBM3",
+      "gpu_count": 8
+    }
+  },
+  "runs": [
+    {
+      "model_size": "3B",
+      "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+      "base_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+      "trained_model": "maveryn/trace-qwen2.5-vl-3b",
+      "trained_model_revision": "2ec2374d5c219e6b12e26bda93d3b3adeb1e30c5",
+      "source_commit": "847e9f5279f8111fdbfef1c8b8631fc621c23456",
+      "wandb_run": "llm-reasoning-rl/trace_easyr1/kijsydl8",
+      "wandb_run_name": "trace_qwen25vl3b_easyr1_all1000_answer_nokl_step500_bsz128_rollout8_iidval2000_rerun_20260716T225857Z",
+      "runtime_seconds": 44071.424996037,
+      "final_validation_exact_answer_accuracy": 0.4215,
+      "final_validation_format_accuracy": 0.995
+    },
+    {
+      "model_size": "7B",
+      "base_model": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "base_revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+      "trained_model": "maveryn/trace-qwen2.5-vl-7b",
+      "trained_model_revision": "4d0f1ae8ee25022058090dbdbff61957ece7331d",
+      "source_commit": "d29b23f6085764ea831adb5edc5a23f89b0d98f3",
+      "wandb_run": "llm-reasoning-rl/trace_easyr1/usqbkpd6",
+      "wandb_run_name": "trace_qwen25vl7b_easyr1_all1000_answer_nokl_step500_bsz128_rollout8_iidval2000_rerun_20260715T161252Z",
+      "runtime_seconds": 50068.432287883,
+      "final_validation_exact_answer_accuracy": 0.524,
+      "final_validation_format_accuracy": 0.999
+    }
+  ]
+}

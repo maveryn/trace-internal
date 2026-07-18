@@ -1,18 +1,36 @@
-\section{Analysis}
+\section{Transfer Analysis}
 \label{sec:analysis}
 
-We organize transfer analysis around three questions: which external task
-families benefit from \trace training, whether breadth across program
-contracts is associated with transfer beyond synthetic renderings, and where
-procedural visual style limits generalization. Negative transfer is reported
-alongside gains rather than being absorbed into an aggregate score.
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/benchmark_transfer_deltas.pdf}
+  \caption{Per-benchmark change from the corresponding Qwen2.5-VL base model.
+  Benchmarks follow the six suite categories in order; alternating bands
+  separate adjacent categories. Trace-7B improves all 24 benchmarks, while
+  Trace-3B improves 21 and regresses on three.}
+  \label{fig:benchmark-deltas}
+\end{figure*}
 
-\subsection{Model-conditional task difficulty}
+Figure~\ref{fig:benchmark-deltas} shows that the aggregate gains are broadly
+distributed. Trace-7B improves every benchmark in the suite. Trace-3B improves
+21 of 24; its three regressions are small on ChartQAPro ($-0.14$) and
+TreeBench ($-0.66$), and larger on EvoChart ($-1.68$). The corresponding 7B
+changes are positive (+2.24, +2.22, and +7.84), indicating that transfer from
+the same task distribution remains model-dependent.
 
-\trace does not assign one intrinsic difficulty score across its heterogeneous
-task contracts.  Under a fixed model checkpoint and evaluation protocol,
-however, empirical solve rate provides a practical difficulty proxy: it can
-identify tasks near the current policy's competence frontier, exclude tasks
-that are uniformly solved or failed, and initialize a curriculum.  This
-ordering is deliberately model conditional.  It should be recomputed as the
-policy changes rather than interpreted as a permanent property of the task.
+WeMath has the largest gain at both scales (+10.95 at 3B and +10.96 at 7B),
+but the improvements are not limited to symbolic mathematics. At 7B they also
+include CharXivReason (+7.40), PhyX (+7.73), PuzzleVQA (+5.45), CountBenchQA
+(+2.67), and BLINK (+3.26). This spread is consistent with the intended role
+of task-level breadth: \trace training exposes one policy to many visual
+grammars and executable operations rather than optimizing a single benchmark
+format. It does not, by itself, establish which domain or operation causes a
+particular gain; controlled mixture ablations remain necessary for that
+attribution.
+
+The benchmark patterns also caution against treating one model's solve rate as
+an intrinsic task difficulty measure. A solve-rate ordering can identify a
+useful competence frontier for a fixed checkpoint and protocol, but that
+ordering can change with model scale or family. Curriculum methods built on
+\trace should therefore recompute empirical difficulty as the policy changes
+rather than assign one universal ordering to heterogeneous task contracts.

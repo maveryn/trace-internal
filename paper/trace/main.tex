@@ -38,11 +38,12 @@ Each instance is generated from latent semantic state and yields a rendered
 image, prompt, typed answer, verifier state, and replayable execution trace.
 The environment contains 1,000 tasks across 277 scenes and 11 visual domains,
 with controlled variation in semantic content, layout, palette, typography,
-context, and rendering. Using answer-based rewards, we study whether training
-on this procedural distribution transfers beyond its synthetic imagery and
-find broad improvements across external visual-reasoning evaluations. \trace
-therefore provides a controlled setting for studying how visual task breadth
-affects multimodal reasoning.
+context, and rendering. Answer-only RLVR on 64,000 generated instances improves
+the macro-average over 24 external benchmarks by 3.51 percentage points for
+Qwen2.5-VL-3B and 4.06 points for Qwen2.5-VL-7B; the 7B model improves every
+benchmark in the suite. \trace therefore provides both a controlled task
+environment and evidence that procedural breadth can transfer beyond its
+synthetic imagery.
 \end{abstract}
 
 \input{sections/introduction}

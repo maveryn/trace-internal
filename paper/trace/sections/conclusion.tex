@@ -6,4 +6,9 @@ grammars, executable task contracts, and replayable verifier traces. This
 design connects taxonomy, generation, validation, and answer-based RLVR in one
 environment. By keeping visual grammar separate from reasoning objectives,
 \trace supports controlled extension and regeneration without obscuring the
-unit being sampled, trained, or evaluated.
+unit being sampled, trained, or evaluated. In answer-only RLVR experiments,
+64,000 generated instances improve 24-benchmark macro-averages by 3.51 points
+at 3B and 4.06 points at 7B, with positive 7B transfer on every benchmark in
+the suite. These results support procedural task breadth as a practical source
+of transferable visual-reasoning experience while leaving mixture attribution,
+difficulty-aware curricula, and effective use of audit annotations open.

@@ -6,12 +6,23 @@ judgment calls even when guided by program contracts. Procedural renderers can
 introduce style regularities unlike natural images, and broad task count does
 not guarantee complete coverage of real visual reasoning. Metadata verifiers
 guarantee consistency with the generated world, not that every rendering is
-equally easy to perceive. \trace also does not define task-local
-difficulty ladders or a universal ordering across tasks.  Solve rate depends on
-the evaluated model and protocol, while structural factors such as distractor
-quality in multiple choice and derivation depth in geometry are not directly
-commensurate.  Future work could combine contract-preserving complexity axes
-within tasks with cross-task prerequisite relations inferred from executable
-programs and empirical learning curves. \trace additionally contains
-projected visual annotations used during task auditing, but establishing
-whether and how they should be used as training targets remains future work.
+equally easy to perceive.
+
+The experiments use one training run per model size; the reported variation
+comes from three decoding seeds, not independent post-training runs. External
+checkpoints are evaluated consistently but are not matched in data,
+optimization, or compute, and several benchmarks retain their native
+model-based graders. The 24-benchmark suite is broad but cannot establish
+transfer to every real-image distribution. Mixture ablations are also needed
+to separate the effect of individual domains from the effect of training on
+the complete task distribution.
+
+\trace does not define task-local difficulty ladders or a universal ordering
+across tasks. Solve rate depends on the evaluated model and protocol, while
+structural factors such as distractor quality in multiple choice and
+derivation depth in geometry are not directly commensurate. Future work could
+combine contract-preserving complexity axes within tasks with cross-task
+prerequisite relations inferred from executable programs and empirical
+learning curves. \trace additionally contains projected visual annotations
+used during task auditing, but establishing whether and how they should be
+used as training targets remains future work.

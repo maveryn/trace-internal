@@ -1,13 +1,25 @@
 \section{Results}
 \label{sec:results}
 
-The primary comparison pairs each base Qwen2.5-VL checkpoint with its
-\trace-trained counterpart under the same benchmark decoding and scoring
-protocol. Benchmark-level macro-averages summarize transfer without allowing
-larger benchmark datasets to dominate the aggregate, while individual
-benchmark scores retain regressions and task-family differences.
+\input{tables/main_results}
 
-Comparisons with independently trained visual RLVR checkpoints use the same
-evaluation protocol but are treated as contextual references rather than
-compute-matched controls because their training data and optimization budgets
-differ.
+Answer-only training improves the benchmark-macro average at both scales. At
+3B, \trace raises the score from $39.34\pm0.63$ to $42.85\pm0.39$, a gain of
+3.51 percentage points. At 7B, it raises the score from $47.93\pm0.30$ to
+$51.99\pm0.17$, a gain of 4.06 points. These are not gains confined to one
+analysis group: all six category averages improve at both model sizes.
+
+The largest 3B category gain is on visual mathematics (+7.44), followed by
+puzzles and logic (+3.75), science (+3.50), and spatial reasoning (+3.24).
+At 7B, the gains are largest for visual mathematics (+5.65), charts and tables
+(+5.15), and science (+4.55); the smallest category gain is still +2.25 on
+spatial reasoning. Thus, increasing model scale does not eliminate the effect
+of the procedural training distribution.
+
+Under the common external protocol, Trace-7B also exceeds Game-RL-7B by 3.94
+points, Sphinx-7B by 2.64, and PCGRPO-7B by 3.18. Vero-7B obtains the highest
+overall contextual score at 52.22, 0.24 points above Trace-7B. The two models
+have different strengths: \trace is highest on charts and tables and narrowly
+higher on science, whereas Vero is higher on the other four categories. Since
+these checkpoints are not matched in training data or compute, the comparison
+characterizes the resulting policies rather than isolating a data effect.

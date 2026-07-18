@@ -56,9 +56,11 @@ illustrates the resulting visual breadth.
 We use this environment to test a direct empirical question: whether
 answer-based RLVR over a broad procedural distribution improves reasoning on
 external visual benchmarks rather than only on regenerated instances from the
-same task families. The experiments compare base and \trace-trained
-vision-language models under matched evaluation protocols and report both
-aggregate transfer and benchmark-level variation.
+same task families. Training on 64,000 instances improves the 24-benchmark
+macro-average by 3.51 points at 3B and 4.06 points at 7B. The 7B model improves
+all 24 benchmarks under the matched evaluation protocol, while benchmark-level
+results retain the smaller 3B regressions rather than hiding them in the
+aggregate.
 
 Our contributions are:
 \begin{itemize}
@@ -67,6 +69,6 @@ Our contributions are:
         tasks, 277 scenes, and 11 domains;
   \item a deterministic generator--renderer--verifier formulation with typed
         answers, replayable traces, and answer-preserving visual variation; and
-  \item a controlled answer-based RLVR study of transfer from this procedural
-        task distribution to external visual-reasoning benchmarks.
+  \item a controlled answer-based RLVR study showing broad transfer from this
+        procedural distribution across 24 external visual-reasoning benchmarks.
 \end{itemize}

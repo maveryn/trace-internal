@@ -26,14 +26,15 @@ named-author arXiv preprint using the official NeurIPS 2026 `preprint` style.
   tables. Run
   `python paper/trace/scripts/build_scene_atlas.py --review-root review/task-reviews`
   to regenerate the domain-stratified appendix atlas. The atlas uses twelve
-  seeded examples per domain in a three-column by four-row page layout.
+  seeded examples per domain in a three-column by four-row page layout. Run
+  `python paper/trace/scripts/build_results_assets.py` to validate the frozen
+  training/evaluation sources and regenerate every result table and plot.
 - `figures/` and `tables/`: generated, publication-ready assets.
 - `provenance/`: claim, table, and figure provenance records.
 - `neurips_2026.sty`: vendored, unmodified official NeurIPS 2026 style file.
 
-The current manuscript is a compileable outline, not a submission draft.
-Bracketed TODOs identify evidence or author decisions still required. Do not
-replace them with unsupported estimates.
+Result numbers must be generated from the canonical score records. Do not edit
+generated tables or copy values into new assets by hand.
 
 ## Distribution boundary
 

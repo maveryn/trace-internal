@@ -61,7 +61,6 @@
   <g>
     <rect class="tile" x="106" y="106" width="68" height="68" rx="8" stroke-width="2"/>
     <path d="M119 120h42v11h-15v30h-12v-30h-15Z" fill="#3974d7"/>
-    <path d="M126 161h28" fill="none" stroke="#e85d4a" stroke-width="3.5" stroke-linecap="round"/>
   </g>
 
   <!-- Illustrations and 3D scenes -->

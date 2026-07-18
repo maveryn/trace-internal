@@ -51,11 +51,11 @@ exact-match scoring. Across the active environment, 547 tasks return integers,
 option letters. Integers and numbers are compared as normalized JSON scalars at
 the precision specified by the task; strings and option letters are compared
 as normalized typed values. All 1,000 tasks therefore resolve to the same
-answer reward contract, \texttt{answer\_exact\_match\_v0}. Primary training
-requires neither an LLM judge nor a task-specific learned reward model. Task
-programs produce the typed target and verifier state, while the shared scorer
-only parses, normalizes, and compares the submitted answer. Figure~\ref{fig:environment-statistics}
-reports this answer-interface distribution alongside the domain inventory.
+typed exact-match reward. Primary training requires neither an LLM judge nor
+a task-specific learned reward model. Task programs produce the typed target
+and verifier state, while the shared scorer only parses, normalizes, and
+compares the submitted answer. Figure~\ref{fig:environment-statistics} reports
+this answer-interface distribution alongside the domain inventory.
 
 All random choices descend from $z$ through independent seeded streams. The
 task, query, semantic parameters, prompt realization, visual parameters, and

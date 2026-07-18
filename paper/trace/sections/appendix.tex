@@ -134,19 +134,18 @@ the trace.
 \section{Experimental Details}
 \label{app:experiments}
 
-The training snapshot, score records, and tables below are generated from
-immutable model and dataset revisions and pinned evaluation artifacts. Both
-training runs use the same 64,000 prompt identities and the final step-500
-checkpoint; no external benchmark is used to select among intermediate
-checkpoints.
+All reported results use fixed model checkpoints, dataset snapshots, and
+evaluation procedures. Both training runs use the same 64,000 prompt
+identities and the final step-500 checkpoint; no external benchmark is used to
+select among intermediate checkpoints.
 
 \input{tables/training_configuration}
 
-The evaluation suite uses the benchmark-defined scorer wherever one is
-available. A small number of open-answer benchmarks retain their pinned
-model-based grading contracts; the same grader, prompt, and parser are used
-for every evaluated checkpoint. Table~\ref{tab:evaluation-suite} records the
-complete split and scoring surface.
+The evaluation suite uses each benchmark's standard scorer wherever one is
+available. A small number of open-answer benchmarks use fixed model-based
+grading; the same grader, prompt, and parser are used for every evaluated
+checkpoint. Table~\ref{tab:evaluation-suite} records the complete benchmark
+composition and metrics.
 
 \input{tables/evaluation_suite}
 \FloatBarrier

@@ -7,37 +7,37 @@
   \label{tab:evaluation-suite}
   \begin{tabular}{@{}p{0.17\textwidth} p{0.16\textwidth} r p{0.50\textwidth}@{}}
     \toprule
-    Category & Benchmark & Rows & Scoring contract \\
+    Category & Benchmark & Rows & Metric \\
     \midrule
-    Charts \& Tables & ChartQAPro & 1,948 & pinned ChartQAPro dataset.evaluate \\
-     & CharXivReason & 1,000 & Qwen3-32B rubric score from benchmark grading prompt \\
-     & TableVQABench & 1,500 & pinned FinTabNetQA, VTabFact, VWTQ, and VWTQ-Syn scorers \\
-     & EvoChart & 1,250 & local deterministic EvoChart extension because the pinned upstream has no evaluator \\
+    Charts \& Tables & ChartQAPro & 1,948 & benchmark-defined answer accuracy \\
+     & CharXivReason & 1,000 & Qwen3-32B rubric score \\
+     & TableVQABench & 1,500 & aggregate score over four table-reasoning subsets \\
+     & EvoChart & 1,250 & deterministic normalized-answer accuracy \\
     \addlinespace[2pt]
-    Visual Math & MathVision & 3,040 & official MathVision normalized answer scorer \\
-     & MathVista & 1,000 & official MathVista normalized answer scorer \\
-     & MathVerse & 788 & official prefetch, else strict Qwen3-32B binary correctness judge \\
-     & WeMath & 1,740 & pinned WeMath dataset.evaluate Score (Strict) percent metric \\
+    Visual Math & MathVision & 3,040 & normalized-answer accuracy \\
+     & MathVista & 1,000 & normalized-answer accuracy \\
+     & MathVerse & 788 & official answer score with strict judging for unresolved responses \\
+     & WeMath & 1,740 & strict answer accuracy \\
     \addlinespace[2pt]
-    Science \& General & PhyX mini MC & 1,000 & pinned PhyX aggregation after deterministic option normalization \\
-     & MMMU-ProVis & 1,730 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & RealWorldQA & 765 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & MMStar & 1,500 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
+    Science \& General & PhyX mini MC & 1,000 & normalized multiple-choice accuracy \\
+     & MMMU-ProVis & 1,730 & benchmark-defined score \\
+     & RealWorldQA & 765 & benchmark-defined score \\
+     & MMStar & 1,500 & benchmark-defined score \\
     \addlinespace[2pt]
-    Spatial Reasoning & EmbSpatial & 3,640 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & SpatialVizBench COT & 1,180 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & CV-Bench 3D & 1,200 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & ERQA & 400 & pinned EASI ERQABench metric with the duplicate ERQADataset registry entry bypassed \\
+    Spatial Reasoning & EmbSpatial & 3,640 & benchmark-defined score \\
+     & SpatialVizBench COT & 1,180 & benchmark-defined score \\
+     & CV-Bench 3D & 1,200 & benchmark-defined score \\
+     & ERQA & 400 & EASI ERQABench score \\
     \addlinespace[2pt]
-    Perception \& Counting & BLINK & 1,901 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & CountBenchQA & 487 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & CountQA & 1,528 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & TreeBench & 405 & pinned TreeBench dimension metric \\
+    Perception \& Counting & BLINK & 1,901 & benchmark-defined score \\
+     & CountBenchQA & 487 & benchmark-defined score \\
+     & CountQA & 1,528 & benchmark-defined score \\
+     & TreeBench & 405 & dimension accuracy \\
     \addlinespace[2pt]
-    Puzzles \& Logic & PuzzleVQA & 2,000 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & VisualPuzzles & 1,168 & benchmark-defined metric from pinned VLMEvalKit dataset.evaluate \\
-     & LogicVista & 447 & pinned exact normalized option-set comparison \\
-     & MME-Reasoning & 1,188 & official deterministic functions with Qwen3-32B only for open-answer correctness \\
+    Puzzles \& Logic & PuzzleVQA & 2,000 & benchmark-defined score \\
+     & VisualPuzzles & 1,168 & benchmark-defined score \\
+     & LogicVista & 447 & normalized option-set accuracy \\
+     & MME-Reasoning & 1,188 & official score with model judging for open-answer items \\
     \bottomrule
   \end{tabular}
 \end{table*}

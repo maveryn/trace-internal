@@ -2,17 +2,21 @@
   <title id="title">Trace</title>
   <desc id="desc">The Trace wordmark beside a three-by-three atlas of visual reasoning motifs.</desc>
   <style>
+    .frame { fill: none; stroke: #17242d; }
     .tile { fill: #f7f9f9; stroke: #cad6da; }
     .ink { fill: none; stroke: #17242d; }
     .soft { fill: none; stroke: #667983; }
     .word { fill: #17242d; }
     @media (prefers-color-scheme: dark) {
+      .frame { stroke: #edf3f5; }
       .tile { fill: #17242d; stroke: #3a4c55; }
       .ink { stroke: #edf3f5; }
       .soft { stroke: #aebdc4; }
       .word { fill: #edf3f5; }
     }
   </style>
+
+  <rect class="frame" x="20" y="20" width="240" height="240" rx="14" stroke-width="3"/>
 
   <g>
     <rect class="tile" x="30" y="30" width="68" height="68" rx="8" stroke-width="2"/>

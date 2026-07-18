@@ -43,7 +43,9 @@ readable, semantically essential text.
 
 Graph layout, node glyph style, labels, colors, and mild geometric transforms
 may vary when they do not encode the answer. Questions should remain answerable
-from topology and visible labels under layout changes.
+from topology and visible labels under layout changes. Dark information-scene
+palettes require the explicit `information_scene_allow_dark` render opt-in and
+must preserve node, edge, and label contrast.
 
 ## Shared Code
 Use `trace/tasks/graph/shared/` for reusable graph sampling, algorithms,

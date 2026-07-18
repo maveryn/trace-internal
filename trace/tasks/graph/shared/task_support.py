@@ -384,7 +384,6 @@ def resolve_graph_render_params(
         params=information_style_params,
         scene_id=str(graph_scene_id),
         protected_colors=(tuple(int(value) for value in named_color(str(node_color_name))),),
-        allow_dark=False,
     )
     information_roles = graph_surface_roles_from_information_style(information_style)
 

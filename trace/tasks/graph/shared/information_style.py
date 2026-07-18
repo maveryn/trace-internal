@@ -9,6 +9,7 @@ from ...shared.visual_style.information_scene import (
     InformationSceneStyle,
     resolve_information_scene_style,
 )
+from ...shared.visual_style.request import resolve_style_bool
 
 
 GraphInformationStyle = InformationSceneStyle
@@ -28,11 +29,16 @@ def resolve_graph_information_style(
     params: Mapping[str, Any] | None,
     scene_id: str,
     protected_colors: Sequence[Color] | None = None,
-    allow_dark: bool = False,
+    allow_dark: bool | None = None,
 ) -> tuple[GraphInformationStyle, dict[str, Any]]:
     """Resolve one graph presentation style without changing topology."""
 
     resolved_params = params or {}
+    resolved_allow_dark = (
+        resolve_style_bool(resolved_params, "information_scene_allow_dark", False)
+        if allow_dark is None
+        else bool(allow_dark)
+    )
     default_treatments: tuple[str, ...] | None = None
     if str(scene_id) == "node_link":
         default_treatments = NODE_LINK_INFORMATION_SCENE_TREATMENTS
@@ -45,7 +51,7 @@ def resolve_graph_information_style(
         palette_weights=resolved_params.get("information_scene_palette_weights", {}),
         chrome_modes=resolved_params.get("information_scene_chrome_modes"),
         chrome_mode_weights=resolved_params.get("information_scene_chrome_mode_weights", {}),
-        allow_dark=bool(allow_dark),
+        allow_dark=bool(resolved_allow_dark),
         protected_colors=protected_colors or (),
     )
 

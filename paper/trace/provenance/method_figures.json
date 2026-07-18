@@ -9835,7 +9835,7 @@
         374.521
       ],
       "path": "figures/rendering_variation_examples.pdf",
-      "sha256": "a25bb6cc94bcd3fccbb3c3070c06fe498346b688f6e3d4f2f96e5861e7037cd6"
+      "sha256": "35254159ce07022bd27d0a5f80569a25d4df68731f5d1f4029d3ddab7ced936b"
     },
     {
       "media_type": "application/pdf",
@@ -9859,7 +9859,7 @@
       "line_count": 21,
       "media_type": "application/x-tex",
       "path": "tables/rendering_variation_profiles.tex",
-      "sha256": "6521e79c0d05e51781414f0543371f3eaa33aa50f7e1b513441ce0eb1c13974c"
+      "sha256": "d872ca6eeb300cafd8728fe97a9097cddf9417a82f73035cea686d7b1d6c045b"
     }
   ],
   "pillow_version": "11.3.0",
@@ -10004,20 +10004,24 @@
           "type": "integer",
           "value": 3
         },
-        "controlled_axis": "Palette",
-        "image_sha256": "9a024dd37d01c307a792fd2156134053c4df19e85d56443951e4bd4489895db7",
+        "controlled_axis": "Theme",
+        "image_sha256": "f4918486515eb5f544c25f5b87593d3cbfc7e2369b55d1e3ae7631bb1b2c451b",
         "image_size": [
           864,
           640
         ],
-        "label": "Color palette",
+        "label": "Dark theme",
         "params_override": {
+          "information_scene_allow_dark": true,
           "information_scene_palettes": [
-            "warm_editorial"
+            "dark_analytics"
+          ],
+          "information_scene_treatments": [
+            "dark_publication_figure"
           ]
         },
         "prompt_sha256": "b0860a64ca5a028422ed6aacb04a36618085a28c3b084818aa3739a85322a75d",
-        "realization_summary": "Warm editorial palette; graph topology and layout retained",
+        "realization_summary": "Dark publication treatment and analytics palette; topology and layout retained",
         "render_metadata": {
           "baseline_content_bbox_px": [
             52,
@@ -10051,7 +10055,7 @@
           "font_family": "source_sans_3",
           "layout_transform_variant": "identity",
           "layout_variant": "spring",
-          "palette_id": "warm_editorial",
+          "palette_id": "dark_analytics",
           "post_image_noise": {
             "applied": false,
             "apply_prob": 0.0,
@@ -10089,8 +10093,8 @@
             "edits": [],
             "enabled": false
           },
-          "style_pack": "clean_default:warm_editorial:none",
-          "treatment": "clean_default"
+          "style_pack": "dark_publication_figure:dark_analytics:none",
+          "treatment": "dark_publication_figure"
         },
         "semantic_sha256": "29f15281a86a75d38c693eef721d6518066231ba56a09cebd7ca7fc53b4e208f",
         "slug": "color_palette"
@@ -10492,7 +10496,7 @@
     "task_id": "task_graph__node_link__shortest_path_length"
   },
   "schema_version": "trace_paper_method_figures_v10",
-  "source_repository_head": "8b7485e07e2d9ee98dd6c75b473f5670bf4edb1d",
+  "source_repository_head": "64f903a52b47b5330f1ada1645d7868535075e72",
   "sources": [
     {
       "data_path": "review/task-reviews/charts/multiseries/task_charts__multiseries__category_total_extremum_label/data/largest_category_total_label/0000.json",

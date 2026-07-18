@@ -178,11 +178,15 @@ RENDER_VARIATION_PROFILES = (
         {},
     ),
     RenderVariationProfile(
-        "Color palette",
+        "Dark theme",
         "color_palette",
-        "Palette",
-        "Warm editorial palette; graph topology and layout retained",
-        {"information_scene_palettes": ["warm_editorial"]},
+        "Theme",
+        "Dark publication treatment and analytics palette; topology and layout retained",
+        {
+            "information_scene_allow_dark": True,
+            "information_scene_treatments": ["dark_publication_figure"],
+            "information_scene_palettes": ["dark_analytics"],
+        },
     ),
     RenderVariationProfile(
         "Typeface",
@@ -966,7 +970,7 @@ def _validate_render_variation_profile(
         if bool(noise.get("applied")):
             raise RuntimeError("baseline rendering profile unexpectedly applied raster noise")
     elif profile.slug == "color_palette":
-        if information_style.get("style_pack") != "clean_default:warm_editorial:none":
+        if information_style.get("style_pack") != "dark_publication_figure:dark_analytics:none":
             raise RuntimeError("palette rendering profile did not resolve to the pinned style pack")
     elif profile.slug == "typeface":
         if panel_geometry.get("font_family") != "eb_garamond":

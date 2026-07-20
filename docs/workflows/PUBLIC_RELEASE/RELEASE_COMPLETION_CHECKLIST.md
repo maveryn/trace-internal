@@ -67,7 +67,7 @@ completion.
 
 The last item is optional for release. Exact continuation requires preserving
 the approximately 109 GB 7B and 51 GB 3B EasyR1/FSDP checkpoint trees from
-`/dev/shm`. The merged HF models, pinned base models, launch configurations,
+ephemeral local checkpoint storage. The merged HF models, pinned base models, launch configurations,
 reward contract, dataset revision, and W&B telemetry are sufficient for
 inference, evaluation, and fresh training reproduction. If exact optimizer,
 dataloader, and scheduler continuation is not required, the full FSDP trees
@@ -106,15 +106,15 @@ source. Complete these items there before or alongside public integration:
 
 - [ ] Record the final decision about preserving or discarding the full FSDP
   continuation checkpoints.
-- [ ] Freeze a reviewed allowlist of training and evaluation files that may be
+- [x] Freeze a reviewed allowlist of training and evaluation files that may be
   copied to the public `rlvr` branch. The allowlist must contain only the
   paper-reported 3B/7B answer-only training workflow and canonical
   `trace_eval_v1` evaluation workflow.
-- [ ] Produce one canonical machine-readable release results source from the
+- [x] Produce one canonical machine-readable release results source from the
   immutable HF score metadata. It must cover the 3B base/TRACE comparison and
   the 7B base/TRACE/VERO/Game-RL/Sphinx/PCGRPO comparison without creating a
   second hand-maintained truth source.
-- [ ] Complete the 24-benchmark provenance matrix: public benchmark name,
+- [x] Complete the 24-benchmark provenance matrix: public benchmark name,
   source repository, immutable source revision or released version, split,
   row count, license/terms, citation, official prompt route, official scorer,
   and any narrowly documented adapter.
@@ -126,7 +126,7 @@ source. Complete these items there before or alongside public integration:
   paths, judge caches, and parser repair receipts internal. Public
   documentation may describe a required deviation, but must not expose
   private recovery machinery as an API.
-- [ ] Create a public-file mapping that identifies the internal source path,
+- [x] Create a public-file mapping that identifies the internal source path,
   destination public path, owner, and review status for every released RLVR
   file.
 - [ ] Update the handoff receipt with the final public commit, release tag,

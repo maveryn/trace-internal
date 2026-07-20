@@ -1,0 +1,372 @@
+{
+  "schema_version": "trace-rlvr-training-config-receipt-v1",
+  "status": "sanitized_canonical_wandb_receipt",
+  "source": {
+    "provider": "Weights & Biases",
+    "entity": "llm-reasoning-rl",
+    "project": "trace_easyr1",
+    "artifact": "config.yaml"
+  },
+  "sanitization": {
+    "removed": [
+      "machine-local dataset, model, checkpoint, prompt, and reward-function paths",
+      "non-operative annotation and task-conditioned compatibility fields",
+      "host and credential-bearing metadata"
+    ],
+    "path_replacements": {
+      "data.system_prompt_file": "rlvr/examples/prompts/trace_vero_json_system_prompt_answer.txt",
+      "data.train_files": "${input_dir}/dataset/data/train",
+      "data.val_files": "${input_dir}/dataset/data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet",
+      "trainer.save_checkpoint_path": "${output_dir}",
+      "worker.actor.model.model_path": "${input_dir}/base_model",
+      "worker.actor.model.tokenizer_path": "${input_dir}/base_model",
+      "worker.reward.reward_function": "rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py"
+    }
+  },
+  "dataset": {
+    "repository_id": "maveryn/trace",
+    "revision": "e317b746b258630682367cc6a9d87dedd195113c",
+    "train": {
+      "rows": 64000,
+      "tasks": 1000,
+      "instances_per_task": 64,
+      "seed": 42,
+      "shards": [
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00000-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00001-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00002-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00003-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00004-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00005-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00006-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00007-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00008-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00009-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00010-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00011-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00012-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00013-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00014-of-00016.parquet",
+        "data/train/trace_rlvr_train_64000_all1000_seed42-00015-of-00016.parquet"
+      ],
+      "manifest": "metadata/train/trace_rlvr_train_64000_all1000_seed42.parquet.manifest.json"
+    },
+    "validation": {
+      "rows": 2000,
+      "tasks": 1000,
+      "instances_per_task": 2,
+      "seed": 1042,
+      "file": "data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet",
+      "manifest": "metadata/validation_iid/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet.manifest.json"
+    },
+    "columns": [
+      "images",
+      "image_sizes",
+      "prompt_answer",
+      "prompt_answer_and_annotation",
+      "answer_gt",
+      "annotation_gt",
+      "reward_contract",
+      "instance_id",
+      "domain",
+      "task",
+      "scene_id",
+      "query_id",
+      "scene_variant",
+      "trace_ref"
+    ]
+  },
+  "prompt": {
+    "path": "rlvr/examples/prompts/trace_vero_json_system_prompt_answer.txt",
+    "sha256": "f394927d9abcfb7a1e43ef48a30c29b8c70e6facdbda314d7b27c59d8c3ae900"
+  },
+  "common_resolved_config": {
+    "algorithm": {
+      "adv_estimator": "grpo",
+      "disable_kl": true,
+      "filter_high": 0.99,
+      "filter_key": "overall",
+      "filter_low": 0.01,
+      "gamma": 1,
+      "kl_coef": 0,
+      "kl_horizon": 10000,
+      "kl_penalty": "low_var_kl",
+      "kl_target": 0.1,
+      "kl_type": "fixed",
+      "lam": 1,
+      "online_filtering": false,
+      "perfect_solve_threshold": 1,
+      "use_kl_loss": false,
+      "zero_solve_threshold": 0
+    },
+    "data": {
+      "answer_key": "answer_gt",
+      "filter_overlong_prompts": false,
+      "filter_overlong_prompts_workers": 16,
+      "format_prompt": null,
+      "image_dir": null,
+      "image_key": "images",
+      "max_pixels": 4194304,
+      "max_prompt_length": 2048,
+      "max_response_length": 2048,
+      "min_pixels": 262144,
+      "mini_rollout_batch_size": null,
+      "override_chat_template": null,
+      "prompt_key": "prompt_answer",
+      "rollout_batch_size": 128,
+      "seed": 1,
+      "shuffle": true,
+      "system_prompt": null,
+      "system_prompt_file": "rlvr/examples/prompts/trace_vero_json_system_prompt_answer.txt",
+      "train_files": "${input_dir}/dataset/data/train",
+      "val_batch_size": 1024,
+      "val_files": "${input_dir}/dataset/data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet",
+      "video_fps": 2,
+      "video_key": "videos"
+    },
+    "trainer": {
+      "critic_warmup": 0,
+      "find_last_checkpoint": false,
+      "load_checkpoint_path": null,
+      "logger_default": [
+        "console"
+      ],
+      "max_steps": 500,
+      "max_try_make_batch": 20,
+      "n_gpus_per_node": 8,
+      "nnodes": 1,
+      "save_checkpoint_path": "${output_dir}",
+      "save_freq": 100,
+      "save_limit": 1,
+      "save_model_only": false,
+      "total_epochs": 15,
+      "val_before_train": false,
+      "val_freq": 100,
+      "val_generations_to_log": 3,
+      "val_only": false
+    },
+    "worker": {
+      "actor": {
+        "clip_ratio_dual": 3,
+        "clip_ratio_high": 0.3,
+        "clip_ratio_low": 0.2,
+        "disable_kl": true,
+        "dynamic_batching": true,
+        "fsdp": {
+          "enable_cpu_offload": false,
+          "enable_full_shard": true,
+          "enable_rank0_init": true,
+          "fsdp_size": -1,
+          "mp_buffer_dtype": "fp32",
+          "mp_param_dtype": "bf16",
+          "mp_reduce_dtype": "fp32",
+          "torch_dtype": null,
+          "use_orig_params": false
+        },
+        "global_batch_size": 128,
+        "global_batch_size_per_device": -1,
+        "kl_coef": 0,
+        "kl_penalty": "low_var_kl",
+        "loss_avg_mode": "token",
+        "loss_type": "default",
+        "max_grad_norm": 1,
+        "micro_batch_size_per_device_for_experience": 2,
+        "micro_batch_size_per_device_for_update": 1,
+        "model": {
+          "enable_gradient_checkpointing": true,
+          "freeze_vision_tower": false,
+          "full_parameter_training": true,
+          "lora": {
+            "alpha": 64,
+            "exclude_modules": ".*visual.*",
+            "rank": 0,
+            "target_modules": "all-linear"
+          },
+          "model_path": "${input_dir}/base_model",
+          "tokenizer_path": "${input_dir}/base_model",
+          "trust_remote_code": false
+        },
+        "offload": {
+          "offload_optimizer": true,
+          "offload_params": true
+        },
+        "optim": {
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "lr": 1e-06,
+          "lr_scheduler_type": "constant",
+          "lr_warmup_ratio": 0,
+          "lr_warmup_steps": null,
+          "min_lr_ratio": null,
+          "strategy": "adamw",
+          "training_steps": 500,
+          "weight_decay": 0.01
+        },
+        "padding_free": true,
+        "ppo_epochs": 1,
+        "strategy": "fsdp",
+        "tau_negative": 1.05,
+        "tau_positive": 1,
+        "ulysses_size": 1,
+        "use_kl_loss": false,
+        "use_torch_compile": true
+      },
+      "critic": {
+        "cliprange_value": 0.5,
+        "dynamic_batching": true,
+        "fsdp": {
+          "enable_cpu_offload": false,
+          "enable_full_shard": true,
+          "enable_rank0_init": true,
+          "fsdp_size": -1,
+          "mp_buffer_dtype": "fp32",
+          "mp_param_dtype": "bf16",
+          "mp_reduce_dtype": "fp32",
+          "torch_dtype": null,
+          "use_orig_params": false
+        },
+        "global_batch_size": 256,
+        "global_batch_size_per_device": -1,
+        "loss_avg_mode": "token",
+        "max_grad_norm": 1,
+        "micro_batch_size_per_device_for_experience": 16,
+        "micro_batch_size_per_device_for_update": 4,
+        "model": {
+          "enable_gradient_checkpointing": true,
+          "freeze_vision_tower": false,
+          "lora": {
+            "alpha": 64,
+            "exclude_modules": null,
+            "rank": 0,
+            "target_modules": "all-linear"
+          },
+          "model_path": null,
+          "tokenizer_path": null,
+          "trust_remote_code": true
+        },
+        "offload": {
+          "offload_optimizer": false,
+          "offload_params": false
+        },
+        "optim": {
+          "betas": [
+            0.9,
+            0.999
+          ],
+          "lr": 1e-06,
+          "lr_scheduler_type": "constant",
+          "lr_warmup_ratio": 0,
+          "lr_warmup_steps": null,
+          "min_lr_ratio": null,
+          "strategy": "adamw",
+          "training_steps": 500,
+          "weight_decay": 0.01
+        },
+        "padding_free": false,
+        "ppo_epochs": 1,
+        "strategy": "fsdp",
+        "ulysses_size": 1
+      },
+      "hybrid_engine": true,
+      "ref": {
+        "dynamic_batching": true,
+        "fsdp": {
+          "enable_cpu_offload": true,
+          "enable_full_shard": true,
+          "enable_rank0_init": true,
+          "fsdp_size": -1,
+          "mp_buffer_dtype": "fp32",
+          "mp_param_dtype": "bf16",
+          "mp_reduce_dtype": "fp32",
+          "torch_dtype": null,
+          "use_orig_params": false
+        },
+        "micro_batch_size_per_device_for_experience": 2,
+        "offload": {
+          "offload_optimizer": false,
+          "offload_params": false
+        },
+        "padding_free": true,
+        "strategy": "fsdp",
+        "ulysses_size": 1,
+        "use_torch_compile": true
+      },
+      "reward": {
+        "answer_scoring": "exact_json",
+        "answer_weight": 1,
+        "format_weight": 0.05,
+        "num_cpus": 1,
+        "overall_formula": "0.95 * answer + 0.05 * format",
+        "reward_function": "rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py",
+        "reward_function_name": "compute_score",
+        "reward_mode": "answer",
+        "skip_special_tokens": true
+      },
+      "rollout": {
+        "disable_log_stats": true,
+        "disable_tqdm": false,
+        "dtype": "bf16",
+        "enable_chunked_prefill": false,
+        "enforce_eager": false,
+        "gpu_memory_utilization": 0.6,
+        "ignore_eos": false,
+        "limit_images": 0,
+        "max_model_len": null,
+        "max_num_batched_tokens": 8192,
+        "n": 8,
+        "name": "vllm",
+        "prompt_length": 2048,
+        "response_length": 2048,
+        "seed": 1,
+        "temperature": 1,
+        "tensor_parallel_size": 2,
+        "top_k": -1,
+        "top_p": 1,
+        "trust_remote_code": false,
+        "val_override_config": {
+          "n": 1,
+          "temperature": 0.6,
+          "top_p": 0.95
+        }
+      }
+    }
+  },
+  "runs": [
+    {
+      "config_id": "trace-qwen2.5-vl-3b",
+      "parameter_scale": "3B",
+      "wandb_run_id": "kijsydl8",
+      "wandb_config_sha256": "2d8a1461468c5950fe2a4daafa9df524d3f5c64bf1a1cff3201f9931f9bc8b35",
+      "source_revision": "847e9f5279f8111fdbfef1c8b8631fc621c23456",
+      "base_model": "Qwen/Qwen2.5-VL-3B-Instruct@66285546d2b821cf421d4f5eb2576359d3770cd3",
+      "released_model": "maveryn/trace-qwen2.5-vl-3b@2ec2374d5c219e6b12e26bda93d3b3adeb1e30c5"
+    },
+    {
+      "config_id": "trace-qwen2.5-vl-7b",
+      "parameter_scale": "7B",
+      "wandb_run_id": "usqbkpd6",
+      "wandb_config_sha256": "19dea84aa0fb748566f42974819f331ef58fde8738f0b18d8dc0876be9baab31",
+      "source_revision": "d29b23f6085764ea831adb5edc5a23f89b0d98f3",
+      "base_model": "Qwen/Qwen2.5-VL-7B-Instruct@cc594898137f460bfe9f0759e9844b3ce807cfb5",
+      "released_model": "maveryn/trace-qwen2.5-vl-7b@4d0f1ae8ee25022058090dbdbff61957ece7331d"
+    }
+  ],
+  "public_interface": {
+    "config_destinations": [
+      "rlvr/configs/trace-qwen2.5-vl-3b.yaml",
+      "rlvr/configs/trace-qwen2.5-vl-7b.yaml"
+    ],
+    "cli_destination": "rlvr/train.py",
+    "subcommands": [
+      "check",
+      "prepare",
+      "run",
+      "smoke",
+      "merge"
+    ],
+    "full_run_semantic_overrides_allowed": [],
+    "automatic_uploads": false
+  }
+}

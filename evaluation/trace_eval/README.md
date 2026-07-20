@@ -10,6 +10,15 @@ records exact benchmark order, official aliases, row counts, reporting
 categories, answer contracts, score contracts, route ownership, decoding
 settings, and the pinned VLMEvalKit revision.
 
+[`benchmark_provenance.v1.json`](benchmark_provenance.v1.json) is the reviewed
+release provenance matrix. For every suite row it records the immutable source
+revision, split, source and evaluator row counts, license or terms status,
+citation, prompt route, scorer, and any narrowly approved adapter. The release
+contains this metadata only; it does not redistribute benchmark payloads.
+
+The paper's single generated eight-model result source is
+[`../../results/canonical/trace_eval_v1/release/results.json`](../../results/canonical/trace_eval_v1/release/results.json).
+
 | Category | Benchmarks |
 | --- | --- |
 | Charts & Tables | ChartQAPro, CharXivReason, TableVQABench, EvoChart |
@@ -347,11 +356,12 @@ recorded in the sanitized export.
 
 ```bash
 PUBLISH_ROOT=<durable-private-state>/<neutral-paper-run-id>
+DATASET_MANIFEST=.tmp/trace_eval/LMUData/trace_eval_v1_dataset_manifest.json
 install -d -m 700 "${PUBLISH_ROOT}"
 
 nohup nice -n 10 python scripts/run_trace_eval_publish_worker.py \
   --campaign-root <campaign-root> \
-  --dataset-manifest /dev/shm/trace_rlvr/LMUData/trace_eval_v1_dataset_manifest.json \
+  --dataset-manifest "${DATASET_MANIFEST}" \
   --work-root "${PUBLISH_ROOT}" \
   --source-run-id <campaign-run-tag> \
   --public-run-id <neutral-paper-run-id> \
@@ -469,15 +479,16 @@ a completed publisher receipt. Transient HF failures retry with bounded
 exponential backoff until the service recovers; permanent authorization or
 contract failures stop immediately. It never kills an unknown GPU process;
 evaluation waits until all eight target GPUs and both endpoint port ranges are
-free. A machine reboot clears the checkpoint and campaign data under
-`/dev/shm`; rehydrate those artifacts before restarting after a reboot.
+free. A machine reboot clears checkpoint and campaign data kept in ephemeral
+runtime storage; rehydrate those artifacts before restarting after a reboot.
 
 Monitor or verify an existing campaign with:
 
 ```bash
+DATASET_MANIFEST=.tmp/trace_eval/LMUData/trace_eval_v1_dataset_manifest.json
 python scripts/status_trace_eval.py \
   --campaign-root <campaign-root> \
-  --dataset-manifest /dev/shm/trace_rlvr/LMUData/trace_eval_v1_dataset_manifest.json \
+  --dataset-manifest "${DATASET_MANIFEST}" \
   --model-slug <slug> --seeds 42 43 44
 
 python scripts/verify_trace_eval.py \

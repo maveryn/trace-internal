@@ -1,0 +1,69 @@
+{
+  "schema_version": "trace-rlvr-training-environment-receipt-v1",
+  "status": "sanitized_canonical_wandb_receipt",
+  "source": {
+    "provider": "Weights & Biases",
+    "artifacts": [
+      "requirements.txt",
+      "wandb-metadata.json"
+    ]
+  },
+  "sanitization": {
+    "removed": [
+      "host, user, email, executable, working-directory, network, Ray-session, and writer identifiers",
+      "GPU UUIDs and machine-local storage metadata"
+    ],
+    "requirements_policy": "Preserve each raw artifact SHA-256 and record the common reproduction-critical pins; omit the vendored verl distribution and unrelated notebook/system packages from the public lock."
+  },
+  "reference_platform": {
+    "python": "CPython 3.10.12",
+    "os": "Linux 6.8, glibc 2.35, x86_64",
+    "cuda": "12.8",
+    "gpu": "NVIDIA H100 80GB HBM3",
+    "gpu_count": 8
+  },
+  "common_reproduction_pins": {
+    "accelerate": "1.14.0",
+    "datasets": "5.0.0",
+    "flash_attn": "2.8.3",
+    "huggingface_hub": "0.36.2",
+    "liger_kernel": "0.8.0",
+    "omegaconf": "2.3.1",
+    "peft": "0.19.1",
+    "pyarrow": "24.0.0",
+    "qwen-vl-utils": "0.0.14",
+    "ray": "2.56.0",
+    "safetensors": "0.8.0",
+    "tensordict": "0.13.0",
+    "torch": "2.8.0+cu128",
+    "torchdata": "0.11.0",
+    "torchvision": "0.23.0+cu128",
+    "transformers": "4.57.6",
+    "vllm": "0.10.2"
+  },
+  "installation": {
+    "pytorch_index_url": "https://download.pytorch.org/whl/cu128",
+    "vendored_easyr1_installed_as_distribution": false
+  },
+  "runs": [
+    {
+      "config_id": "trace-qwen2.5-vl-3b",
+      "wandb_run_id": "kijsydl8",
+      "source_revision": "847e9f5279f8111fdbfef1c8b8631fc621c23456",
+      "wandb_requirements_sha256": "798ce596e11a5266591ffe01f0ca0cf29d6968308784cab476960fc1de0ecca8",
+      "wandb_metadata_sha256": "08c5d4b4f3c13f5121b5e22b93729b794845f5aba6b8e4a66a4fab96917a8fc3",
+      "unused_packages_unique_to_run": [
+        "pypdf==6.14.2",
+        "tabulate==0.10.0"
+      ]
+    },
+    {
+      "config_id": "trace-qwen2.5-vl-7b",
+      "wandb_run_id": "usqbkpd6",
+      "source_revision": "d29b23f6085764ea831adb5edc5a23f89b0d98f3",
+      "wandb_requirements_sha256": "132c380fac1fc11bea08ff130b978e997703b303f989e5b72aca4bcdfd5dd276",
+      "wandb_metadata_sha256": "d7820e1cde5dd27891f467c9eb24ca4ee9a415f8fad03999e7876641f48b6aa1",
+      "unused_packages_unique_to_run": []
+    }
+  ]
+}

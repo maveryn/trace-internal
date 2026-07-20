@@ -9,6 +9,10 @@ The internal coordinator should track cross-workstream completion in
 checklist starts from the verified GPU-host handoff and distinguishes internal
 provenance work from the public `main` and `rlvr` release surfaces.
 
+The frozen answer-only training/evaluation boundary, reviewed per-file map,
+canonical results, and historical exclusions are summarized in
+[`RLVR_RELEASE_INPUT_FREEZE.md`](RLVR_RELEASE_INPUT_FREEZE.md).
+
 ## Workstreams
 
 1. [`PAPER.md`](PAPER.md) - arXiv technical report, figures, references, and PDF.

@@ -219,8 +219,14 @@ logs/
 runs/
 samples/
 
-# Local evaluation upload bundles and forensic campaign trees
-/results/canonical/
+# Local evaluation upload bundles and forensic campaign trees. Keep the
+# reviewed trace_eval_v1 release source under version control; all other
+# canonical working bundles remain local by default.
+/results/canonical/**
+!/results/canonical/trace_eval_v1/
+!/results/canonical/trace_eval_v1/release/
+!/results/canonical/trace_eval_v1/release/README.md
+!/results/canonical/trace_eval_v1/release/results.json
 /results/trace_validation_iid*/
 
 # Local/generated RLVR datasets and paper dumps

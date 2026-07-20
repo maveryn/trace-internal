@@ -99,7 +99,7 @@
       "owner": "rlvr",
       "review_status": "approved_for_public_adaptation",
       "source_path": "docs/workflows/PUBLIC_RELEASE/rlvr_training_configs.v1.json",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "304a9094fb3eb20e9ea4e4e5249792557fc5660a15e7e2c394174d31a3684d41"
     },
     {
@@ -113,7 +113,7 @@
       "owner": "rlvr",
       "review_status": "approved_for_public_adaptation",
       "source_path": "docs/workflows/PUBLIC_RELEASE/rlvr_training_configs.v1.json",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "304a9094fb3eb20e9ea4e4e5249792557fc5660a15e7e2c394174d31a3684d41"
     },
     {
@@ -865,7 +865,7 @@
       "owner": "rlvr",
       "review_status": "approved_for_public_adaptation",
       "source_path": "scripts/build_trace_eval_release_results.py",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "451de9b8c43d04cd5970c349c108b94007055556baf0ecd4508cf0df5904ed11"
     },
     {
@@ -1306,14 +1306,15 @@
     {
       "adaptations": [
         "update default paths and imports for the public rlvr/evaluation layout",
-        "retain fail-closed model, benchmark, source-hash, and aggregation checks"
+        "retain fail-closed model, benchmark, source-hash, and aggregation checks",
+        "remove bootstrap-only working-tree revision support and require immutable commit pins"
       ],
       "component": "release_metadata",
       "destination_path": "rlvr/evaluation/scripts/validate_release_inputs.py",
       "owner": "rlvr",
       "review_status": "approved_for_public_adaptation",
       "source_path": "scripts/validate_rlvr_release_inputs.py",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "8c91519cee0274aee435f82ce7da8a440cc7f15bb122c483dd58f9860d9b484b"
     },
     {
@@ -1334,14 +1335,15 @@
     {
       "adaptations": [
         "update default paths and imports for the public rlvr/evaluation layout",
-        "retain fail-closed model, benchmark, source-hash, and aggregation checks"
+        "retain fail-closed model, benchmark, source-hash, and aggregation checks",
+        "remove bootstrap-only working-tree revision support and require immutable commit pins"
       ],
       "component": "release_metadata",
       "destination_path": "rlvr/evaluation/tests/test_release_inputs.py",
       "owner": "rlvr",
       "review_status": "approved_for_public_adaptation",
       "source_path": "tests/test_rlvr_release_inputs.py",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "bbd71ba454cf1821abb542401cfe93bd700c8e6944243e4ae5f373214077fee7"
     },
     {
@@ -1366,7 +1368,7 @@
       "owner": "rlvr",
       "review_status": "approved_exact_copy",
       "source_path": "results/canonical/trace_eval_v1/release/README.md",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "933d291e330aa0077b07fb377044d52f26685c69055966c703fb50446b188424"
     },
     {
@@ -1376,7 +1378,7 @@
       "owner": "rlvr",
       "review_status": "approved_exact_copy",
       "source_path": "evaluation/trace_eval/benchmark_provenance.v1.json",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "6a1a8f8e39580cfc83f5c68f5fb38d9969cd73df29058a97bf5d33982d49da11"
     },
     {
@@ -1386,7 +1388,7 @@
       "owner": "rlvr",
       "review_status": "approved_exact_copy",
       "source_path": "results/canonical/trace_eval_v1/release/results.json",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "569ea2463ace4c6b505d1fb168957e558667641810e90a8d9ede80f555823c98"
     },
     {
@@ -1475,7 +1477,7 @@
       "owner": "rlvr",
       "review_status": "approved_for_public_adaptation",
       "source_path": "docs/workflows/PUBLIC_RELEASE/rlvr_training_configs.v1.json",
-      "source_revision": "content_sha256_frozen_pending_internal_commit",
+      "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
       "source_sha256": "304a9094fb3eb20e9ea4e4e5249792557fc5660a15e7e2c394174d31a3684d41"
     }
   ],
@@ -1491,6 +1493,7 @@
       "repository_id": "Qwen/Qwen3-32B",
       "revision": "9216db5781bf21249d130ec9da846c4624c16137"
     },
+    "release_metadata_source_revision": "c28b706d7be5da62ee453375c9f559e99752e843",
     "trace_dataset": {
       "repository_id": "maveryn/trace",
       "revision": "e317b746b258630682367cc6a9d87dedd195113c"
@@ -1560,12 +1563,14 @@
       "environments": {
         "path": "docs/workflows/PUBLIC_RELEASE/rlvr_training_environments.v1.json",
         "schema_version": "trace-rlvr-training-environment-receipt-v1",
-        "sha256": "4d3d900e3d787a0ca0efc78f1f732ea18b3618752387810112d3f5e4b8f4357b"
+        "sha256": "4d3d900e3d787a0ca0efc78f1f732ea18b3618752387810112d3f5e4b8f4357b",
+        "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843"
       },
       "resolved_configs": {
         "path": "docs/workflows/PUBLIC_RELEASE/rlvr_training_configs.v1.json",
         "schema_version": "trace-rlvr-training-config-receipt-v1",
-        "sha256": "304a9094fb3eb20e9ea4e4e5249792557fc5660a15e7e2c394174d31a3684d41"
+        "sha256": "304a9094fb3eb20e9ea4e4e5249792557fc5660a15e7e2c394174d31a3684d41",
+        "source_revision": "c28b706d7be5da62ee453375c9f559e99752e843"
       }
     },
     "training_runs": [

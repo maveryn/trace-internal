@@ -42,6 +42,10 @@ class RLVRReleaseInputsTest(unittest.TestCase):
         checked_in = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(checked_in, build_manifest())
         self.assertEqual(checked_in["review_policy"]["default"], "deny")
+        serialized = json.dumps(checked_in, sort_keys=True)
+        self.assertNotIn("content_sha256_frozen_pending_internal_commit", serialized)
+        for row in checked_in["files"]:
+            self.assertRegex(row["source_revision"], r"^[0-9a-f]{40}$")
         historical = "rlvr/experiments/final_answer_only_manifest.json"
         self.assertNotIn(historical, {row["source_path"] for row in checked_in["files"]})
         self.assertIn(
@@ -164,6 +168,27 @@ class RLVRReleaseInputsTest(unittest.TestCase):
         self.assertEqual(rows["countbenchqa"]["row_count"], 487)
         self.assertEqual(rows["logicvista"]["source"]["source_row_count"], 448)
         self.assertEqual(rows["logicvista"]["row_count"], 447)
+
+    def test_release_facing_sources_have_no_machine_paths(self) -> None:
+        paths = (
+            "docs/workflows/PUBLIC_RELEASE/README.md",
+            "docs/workflows/PUBLIC_RELEASE/RELEASE_COMPLETION_CHECKLIST.md",
+            "docs/workflows/PUBLIC_RELEASE/RLVR_RELEASE_INPUT_FREEZE.md",
+            "docs/workflows/PUBLIC_RELEASE/rlvr_public_file_manifest.v1.json",
+            "docs/workflows/PUBLIC_RELEASE/rlvr_training_configs.v1.json",
+            "docs/workflows/PUBLIC_RELEASE/rlvr_training_environments.v1.json",
+            "evaluation/trace_eval/README.md",
+            "evaluation/trace_eval/benchmark_provenance.v1.json",
+            "results/canonical/trace_eval_v1/release/README.md",
+            "results/canonical/trace_eval_v1/release/results.json",
+            "scripts/build_rlvr_public_file_manifest.py",
+            "scripts/build_trace_eval_release_results.py",
+        )
+        markers = ("/home/", "/Users/", "/dev/shm", "/workspace/", "C:\\Users\\")
+        for relative_path in paths:
+            text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+            for marker in markers:
+                self.assertNotIn(marker, text, f"{relative_path} contains {marker!r}")
 
 
 if __name__ == "__main__":

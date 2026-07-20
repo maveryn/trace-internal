@@ -24,6 +24,7 @@ TRAINING_3B_REVISION = "847e9f5279f8111fdbfef1c8b8631fc621c23456"
 TRAINING_7B_REVISION = "d29b23f6085764ea831adb5edc5a23f89b0d98f3"
 EVALUATION_REVISION = "5cea97310204b197fdacecdd83ef938c1e3b67cd"
 EASYR1_UPSTREAM_REVISION = "dd71bbd252694f5f850213eec15795b6b88d9fea"
+RELEASE_INPUT_REVISION = "c28b706d7be5da62ee453375c9f559e99752e843"
 TRAINING_CONFIG_RECEIPT = (
     "docs/workflows/PUBLIC_RELEASE/rlvr_training_configs.v1.json"
 )
@@ -277,14 +278,6 @@ def _sha256_bytes(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
 
 
-def _sha256_path(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _destination_for_evaluation(path: str) -> str:
     if path in EVALUATION_RENAMES:
         return EVALUATION_RENAMES[path]
@@ -336,7 +329,9 @@ def _training_entries() -> list[dict[str, Any]]:
                 adaptations=adaptations,
             )
         )
-    receipt_path = REPO_ROOT / TRAINING_CONFIG_RECEIPT
+    receipt_sha256 = _sha256_bytes(
+        _git_content(RELEASE_INPUT_REVISION, TRAINING_CONFIG_RECEIPT)
+    )
     for destination in TRAINING_PUBLIC_ENTRYPOINTS:
         if destination.endswith(".yaml"):
             adaptations = [
@@ -354,8 +349,8 @@ def _training_entries() -> list[dict[str, Any]]:
             {
                 "component": "answer_only_training_entrypoint",
                 "source_path": TRAINING_CONFIG_RECEIPT,
-                "source_revision": "content_sha256_frozen_pending_internal_commit",
-                "source_sha256": _sha256_path(receipt_path),
+                "source_revision": RELEASE_INPUT_REVISION,
+                "source_sha256": receipt_sha256,
                 "destination_path": destination,
                 "owner": "rlvr",
                 "review_status": "approved_for_public_adaptation",
@@ -398,9 +393,6 @@ def _evaluation_entries() -> list[dict[str, Any]]:
 def _release_data_entries() -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for path in RELEASE_DATA_PATHS:
-        absolute = REPO_ROOT / path
-        if not absolute.is_file():
-            raise FileNotFoundError(absolute)
         status = "approved_exact_copy"
         adaptations: list[str] = []
         if path.startswith(("scripts/", "tests/")):
@@ -409,17 +401,22 @@ def _release_data_entries() -> list[dict[str, Any]]:
                 "update default paths and imports for the public rlvr/evaluation layout",
                 "retain fail-closed model, benchmark, source-hash, and aggregation checks",
             ]
+            if path in {
+                "scripts/validate_rlvr_release_inputs.py",
+                "tests/test_rlvr_release_inputs.py",
+            }:
+                adaptations.append(
+                    "remove bootstrap-only working-tree revision support and require immutable commit pins"
+                )
         entries.append(
-            {
-                "component": "release_metadata",
-                "source_path": path,
-                "source_revision": "content_sha256_frozen_pending_internal_commit",
-                "source_sha256": _sha256_path(absolute),
-                "destination_path": RELEASE_DATA_RENAMES[path],
-                "owner": "rlvr",
-                "review_status": status,
-                "adaptations": adaptations,
-            }
+            _entry(
+                component="release_metadata",
+                source_path=path,
+                source_revision=RELEASE_INPUT_REVISION,
+                destination_path=RELEASE_DATA_RENAMES[path],
+                review_status=status,
+                adaptations=adaptations,
+            )
         )
     return entries
 
@@ -483,15 +480,22 @@ def build_manifest() -> dict[str, Any]:
             "training_receipts": {
                 "resolved_configs": {
                     "path": TRAINING_CONFIG_RECEIPT,
-                    "sha256": _sha256_path(REPO_ROOT / TRAINING_CONFIG_RECEIPT),
+                    "source_revision": RELEASE_INPUT_REVISION,
+                    "sha256": _sha256_bytes(
+                        _git_content(RELEASE_INPUT_REVISION, TRAINING_CONFIG_RECEIPT)
+                    ),
                     "schema_version": "trace-rlvr-training-config-receipt-v1",
                 },
                 "environments": {
                     "path": TRAINING_ENVIRONMENT_RECEIPT,
-                    "sha256": _sha256_path(REPO_ROOT / TRAINING_ENVIRONMENT_RECEIPT),
+                    "source_revision": RELEASE_INPUT_REVISION,
+                    "sha256": _sha256_bytes(
+                        _git_content(RELEASE_INPUT_REVISION, TRAINING_ENVIRONMENT_RECEIPT)
+                    ),
                     "schema_version": "trace-rlvr-training-environment-receipt-v1",
                 },
             },
+            "release_metadata_source_revision": RELEASE_INPUT_REVISION,
             "vendored_runtime": {
                 "upstream_repository": "https://github.com/hiyouga/EasyR1",
                 "upstream_revision": EASYR1_UPSTREAM_REVISION,
@@ -579,7 +583,9 @@ def build_manifest() -> dict[str, Any]:
                     },
                 },
             },
-            "answer_prompt_sha256": _sha256_path(prompt_path),
+            "answer_prompt_sha256": _sha256_bytes(
+                _git_content(TRAINING_3B_REVISION, str(prompt_path.relative_to(REPO_ROOT)))
+            ),
             "vlmevalkit": {
                 "repository": "https://github.com/open-compass/VLMEvalKit",
                 "revision": "a8b12bf1c3737a33fc1de967c202f9c592b22e86",

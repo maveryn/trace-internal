@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import statistics
 import subprocess
 from collections import defaultdict
@@ -82,6 +83,7 @@ FORBIDDEN_TRAINING_SOURCES = {
     "scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh",
     "scripts/run_trace_qwen25vl7b_easyr1_answer_nokl_tmpfs.sh",
 }
+COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -115,6 +117,13 @@ def _require_text(value: Any, context: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{context} must be a non-empty string")
     return value
+
+
+def _require_commit(value: Any, context: str) -> str:
+    text = _require_text(value, context)
+    if COMMIT_PATTERN.fullmatch(text) is None:
+        raise ValueError(f"{context} must be a full immutable Git commit: {text!r}")
+    return text
 
 
 def _require_url(value: Any, context: str) -> str:
@@ -467,11 +476,23 @@ def validate_training_receipts(release_inputs: dict[str, Any]) -> dict[str, Any]
         ),
     }
     loaded: dict[str, dict[str, Any]] = {}
+    release_metadata_revision = _require_commit(
+        release_inputs.get("release_metadata_source_revision"),
+        "release_metadata_source_revision",
+    )
     for name, (expected_path, expected_schema) in expected.items():
         row = receipt_rows.get(name)
         if not isinstance(row, dict) or row.get("path") != expected_path:
             raise ValueError(f"unexpected {name} training receipt path")
+        source_revision = _require_commit(
+            row.get("source_revision"), f"{name} training receipt source_revision"
+        )
+        if source_revision != release_metadata_revision:
+            raise ValueError(f"{name} training receipt is not bound to the release snapshot")
         path = REPO_ROOT / expected_path
+        frozen_sha256 = _sha256_bytes(_git_content(source_revision, expected_path))
+        if row.get("sha256") != frozen_sha256:
+            raise ValueError(f"stale frozen {name} training receipt hash")
         if row.get("sha256") != _sha256_path(path):
             raise ValueError(f"stale {name} training receipt hash")
         if row.get("schema_version") != expected_schema:
@@ -637,7 +658,7 @@ def validate_file_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     status_counts: dict[str, int] = defaultdict(int)
     for entry in files:
         source_path = _require_text(entry.get("source_path"), "files[].source_path")
-        source_revision = _require_text(
+        source_revision = _require_commit(
             entry.get("source_revision"), f"{source_path}.source_revision"
         )
         source_sha256 = _require_text(
@@ -668,10 +689,7 @@ def validate_file_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"missing public adaptations for {source_path}")
         status_counts[str(status)] += 1
 
-        if source_revision == "content_sha256_frozen_pending_internal_commit":
-            actual = _sha256_path(REPO_ROOT / source_path)
-        else:
-            actual = _sha256_bytes(_git_content(source_revision, source_path))
+        actual = _sha256_bytes(_git_content(source_revision, source_path))
         if actual != source_sha256:
             raise ValueError(f"frozen source hash mismatch for {source_path}")
 
@@ -740,6 +758,22 @@ def validate_file_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("historical final_answer_only_manifest is not explicitly denylisted")
 
     release_inputs = manifest.get("release_inputs", {})
+    release_metadata_revision = _require_commit(
+        release_inputs.get("release_metadata_source_revision"),
+        "release_metadata_source_revision",
+    )
+    release_metadata_revisions = {
+        entry["source_revision"]
+        for entry in files
+        if entry.get("component") == "release_metadata"
+    }
+    if release_metadata_revisions != {release_metadata_revision}:
+        raise ValueError("release metadata files do not share the frozen source revision")
+    if any(
+        entry["source_revision"] != release_metadata_revision
+        for entry in entrypoint_rows
+    ):
+        raise ValueError("public training entrypoints are not bound to the release snapshot")
     if release_inputs.get("answer_prompt_sha256") != EXPECTED_PROMPT_SHA256:
         raise ValueError("answer-only prompt hash differs from the training contract")
     if release_inputs.get("vlmevalkit", {}).get("revision") != (

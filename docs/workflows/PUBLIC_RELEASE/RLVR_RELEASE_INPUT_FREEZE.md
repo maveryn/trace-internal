@@ -23,6 +23,12 @@ The authoritative inputs are:
 - the fail-closed validator
   [`scripts/validate_rlvr_release_inputs.py`](../../../scripts/validate_rlvr_release_inputs.py).
 
+Generated release metadata and the sanitized training receipts are frozen at
+internal source revision `c28b706d7be5da62ee453375c9f559e99752e843`.
+Every source-map entry uses a full Git commit and a SHA-256; no entry may read
+its source identity from mutable working-tree content. The reviewed map itself
+is identified by the commit or release tag that contains it.
+
 The file map is default-deny. `approved_exact_copy` means the recorded bytes
 may move after their SHA-256 is checked. `approved_for_public_adaptation` means
 the internal file is an approved source only: it must be narrowed to

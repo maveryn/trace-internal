@@ -1,0 +1,48 @@
+{
+  "generator": {
+    "path": "paper/trace/scripts/build_iid_taxonomy_analysis.py",
+    "sha256": "781c365b31b32dc3e1d639d9b4684b91316cc791c9287d78c4f1a02d353254ac"
+  },
+  "outputs": {
+    "paper/trace/data/iid_taxonomy_analysis.json": {
+      "bytes": 232939,
+      "sha256": "401e919f529617891d48f03fa334f6bfe442d4122bfcd03232a3b55f500fed10"
+    },
+    "paper/trace/figures/iid_taxonomy_gains.pdf": {
+      "bytes": 28269,
+      "sha256": "9ade112a1ba05a359cf7be2c4011c619ffd37cd55a9a049cd60dd1b1b613cef3"
+    },
+    "paper/trace/tables/iid_slice_results.tex": {
+      "bytes": 1311,
+      "sha256": "870daf138ce43545673a75347b108e5f2d1f0825a65cb0a833dba51fbf738c75"
+    }
+  },
+  "parameters": {
+    "cluster_contents": "Both unseen IID instances for the sampled task",
+    "confidence_level": 0.95,
+    "interval": "percentile",
+    "operation_rows_overlap": true,
+    "replicates": 10000,
+    "resampling_unit": "task",
+    "seed": 42
+  },
+  "schema_version": "trace_iid_taxonomy_analysis_provenance_v1",
+  "sources": {
+    "dataset": {
+      "path": "data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet",
+      "repository_id": "maveryn/trace",
+      "revision": "e317b746b258630682367cc6a9d87dedd195113c",
+      "rows": 2000,
+      "tasks": 1000
+    },
+    "evaluation": {
+      "benchmark_id": "trace_validation_iid2000",
+      "decoding_seed": 42,
+      "repository_id": "maveryn/trace-eval-runs",
+      "revision": "cf0d14aed86db2661d397ce8b68b36171873478d",
+      "run_id": "trace-iid-validation-2000-answer-seed42-8models-v1"
+    },
+    "reasoning_operation_schema": "trace_reasoning_operations_v2",
+    "source_repository_head": "191ce9802cf04d9fa1d5435a348871c946620753"
+  }
+}

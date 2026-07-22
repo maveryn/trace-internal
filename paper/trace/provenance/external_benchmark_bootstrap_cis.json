@@ -1,0 +1,65 @@
+{
+  "generator": {
+    "path": "paper/trace/scripts/build_external_bootstrap_cis.py",
+    "sha256": "310a95d82884e453e6053f646615d10cb9763118d6cbe43a1a461d49b591af0b"
+  },
+  "output": {
+    "bytes": 44937,
+    "path": "paper/trace/data/external_benchmark_bootstrap_cis.json",
+    "sha256": "ffb674982731feff511a8420040eb4b9f09f290f87acbe24ed8aede2980381ac"
+  },
+  "parameters": {
+    "aggregate_only_centering": "Recovered row vectors must reproduce the canonical aggregate exactly. A discrepancy no larger than one item may be centered on that aggregate to account for archived scorer type coercion; every adjustment is recorded per model and seed.",
+    "canonical_point_alignment": "Each bootstrap distribution is centered on the immutable mean of the three reported seed aggregates. Alignment larger than 0.01 percentage points is rejected.",
+    "confidence_level": 0.95,
+    "interval": "percentile",
+    "pairing": "Base and Trace scores paired by source ordinal and source-row hash",
+    "replicates": 10000,
+    "resampling_unit": "benchmark_item_or_official_score_group",
+    "seed": 42,
+    "seed_handling": "Each item cluster carries scores from all three decoding seeds; scores are averaged within item before resampling.",
+    "tablevqabench_resampling": "Item bootstrap stratified by official split; all five official split metrics are recomputed per replicate.",
+    "wemath_resampling": "The official strict score is recomputed per 2-step or 3-step problem family, and the 525 paired families are resampled."
+  },
+  "schema_version": "trace_external_benchmark_bootstrap_provenance_v1",
+  "source": {
+    "aggregate_only_row_reconstruction": [
+      "chartqapro",
+      "countbenchqa",
+      "mathvision",
+      "mathvista",
+      "puzzlevqa",
+      "tablevqabench",
+      "visualpuzzles"
+    ],
+    "composite_row_metrics": [
+      "wemath"
+    ],
+    "evaluation_suite_path": "evaluation/trace_eval/suite.v1.json",
+    "evaluation_suite_sha256": "b84262bcd2243d1d2879b2e02d9b49b17052659ea767df3d7303758f4d63de71",
+    "extraction_parts": 84,
+    "repository_id": "maveryn/trace-eval-runs",
+    "repository_type": "dataset",
+    "revision": "4178a839b689babe16f8ac36f0de7b1b2c5ef36c",
+    "row_reconstruction_validated_against_canonical_aggregate": true,
+    "score_parts": 288,
+    "vlmevalkit_revision": "09163430240669be7171e419bdf2f390f938d059",
+    "vlmevalkit_root": "/home/jovyan/work/VLMEvalKit",
+    "vlmevalkit_scorer_sha256": {
+      "scripts/batched_chartqapro_vllm.py": "61113c297e10c6be9b6460b9bf0ec9d8e3e01d0b20a1f2425a3760b5823617d5",
+      "vlmeval/dataset/image_mcq.py": "78023f4dfc0d207bdcbf66e522c0dbd0c712b881c86e1468ce582eac52d204ef",
+      "vlmeval/dataset/image_vqa.py": "76c25adb8cdd598945cddd24c9ebd34e3dd00dd309c0f72dc03e7d110e3ad8a9",
+      "vlmeval/dataset/utils/chartqapro.py": "9bfa75feb8c70341f788a7d85095df9a18cca08c04a7ab793d802b66afd2db83",
+      "vlmeval/dataset/utils/mathv.py": "5a79a543ccea51d6b1c93b58a36ae4ea83171d92c50c4ca382dcdc9c63fed213",
+      "vlmeval/dataset/utils/mathvista.py": "51561b35694d1bbb7a089aa672e1199288caf152ab67e38233a148243b5a5c43",
+      "vlmeval/dataset/utils/puzzlevqa.py": "4ab5826a6d05da279d8f969110da7a540fd88f3dedcd652d8b698f38960ea1f2",
+      "vlmeval/dataset/utils/tablevqabench.py": "e49a105b7f2eda3b83241d8a86d320b974bbb5f72d16b8e239ee27db31772887",
+      "vlmeval/dataset/utils/visualpuzzles.py": "1ff4c9b6eb825fe2c380e7d458e85bbe69b110a479a6c4c18bcb6f576258078d"
+    }
+  },
+  "table_output": {
+    "bytes": 4642,
+    "path": "paper/trace/tables/external_bootstrap_cis.tex",
+    "sha256": "0178d9caf7c75a6e27891b1df20741f17fcce9229e893b9b6237b434dad57a5e"
+  }
+}

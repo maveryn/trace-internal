@@ -9,6 +9,14 @@ import math
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import seaborn as sns  # noqa: E402
+from scipy.stats import spearmanr  # noqa: E402
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PAPER_ROOT = REPO_ROOT / "paper" / "trace"
@@ -47,6 +55,13 @@ SOURCE_SPECS = {
     ),
 }
 
+TEXT_SOURCE_SPECS = {
+    "iid_validation_report": (
+        REPO_ROOT / "results" / "trace_validation_iid2000_seed42_8models_20260718_results.md",
+        "2ecfdd69b26f81fde09a234ea2f7e2424046984808c9a284f770a7494823747f",
+    ),
+}
+
 EXPECTED_RUN_MODELS = {
     "qwen2.5-vl-3b-comparison-temp06-seeds42-44-v1": {
         "qwen2.5-vl-3b-base",
@@ -70,7 +85,7 @@ MODEL_LABELS = {
     "qwen2.5-vl-7b-base": "Qwen2.5-VL-7B (base)",
     "game-rl-qwen2.5-vl-7b": "Game-RL-7B",
     "sphinx-qwen2.5-vl-7b": "Sphinx-7B",
-    "pcgrpo-qwen2.5-vl-7b": "PCGRPO-7B",
+    "pcgrpo-qwen2.5-vl-7b": "PC-GRPO-7B",
     "vero-qwen2.5-vl-7b": "Vero-7B",
     "trace-qwen2.5-vl-7b": "Trace-7B",
 }
@@ -95,6 +110,14 @@ RESULT_TABLE_7B_ORDER = (
     "vero-qwen2.5-vl-7b",
 )
 
+RESULT_TABLE_7B_PRIMARY_ORDER = (
+    "qwen2.5-vl-7b-base",
+    "trace-qwen2.5-vl-7b",
+    "game-rl-qwen2.5-vl-7b",
+    "sphinx-qwen2.5-vl-7b",
+    "pcgrpo-qwen2.5-vl-7b",
+)
+
 RESULT_TABLE_3B_ORDER = (
     "qwen2.5-vl-3b-base",
     "trace-qwen2.5-vl-3b",
@@ -108,6 +131,20 @@ CATEGORY_TABLE_STYLES = {
     "Perception & Counting": "TracePerceptionBand",
     "Puzzles & Logic": "TracePuzzlesBand",
 }
+
+CATEGORY_PLOT_COLORS = {
+    "Charts & Tables": "#3C7892",
+    "Visual Math": "#6F68A8",
+    "Science & General": "#2F8F78",
+    "Spatial Reasoning": "#6F9848",
+    "Perception & Counting": "#976EA6",
+    "Puzzles & Logic": "#66788A",
+}
+
+PLOT_INK = "#1F2937"
+PLOT_MUTED = "#667085"
+PLOT_GRID = "#E4E7EC"
+PLOT_REFERENCE = "#98A2B3"
 
 PAPER_SCORE_LABELS = {
     "chartqapro": "benchmark-defined answer accuracy",
@@ -136,6 +173,37 @@ PAPER_SCORE_LABELS = {
     "mme_reasoning": "official score with model judging for open-answer items",
 }
 
+PAPER_BENCHMARK_DISPLAY_NAMES = {
+    "spatialvizbench_cot": "SpatialVizBench",
+}
+
+PAPER_BENCHMARK_CITATIONS = {
+    "chartqapro": "masry2025chartqapro",
+    "charxivreason": "wang2024charxiv",
+    "tablevqabench": "kim2024tablevqabench",
+    "evochart": "huang2025evochart",
+    "mathvision": "wang2024mathvision",
+    "mathvista": "lu2024mathvista",
+    "mathverse": "zhang2024mathverse",
+    "wemath": "qiao2025wemath",
+    "phyx_mini_mc": "shen2025phyx",
+    "mmmu_pro_vision": "yue2025mmmupro",
+    "realworldqa": "xai2024realworldqa",
+    "mmstar": "chen2024mmstar",
+    "embspatial": "du2024embspatial",
+    "spatialvizbench_cot": "wang2026spatialviz",
+    "cvbench_3d": "tong2024cambrian",
+    "erqa": "deepmind2025erqa",
+    "blink": "fu2024blink",
+    "countbenchqa": "paiss2023countbench",
+    "countqa": "tamarapalli2025countqa",
+    "treebench": "wang2026treebench",
+    "puzzlevqa": "chia2024puzzlevqa",
+    "visualpuzzles": "song2025visualpuzzles",
+    "logicvista": "xiao2024logicvista",
+    "mme_reasoning": "yuan2025mmereasoning",
+}
+
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -158,6 +226,60 @@ def _load_sources() -> tuple[dict[str, Any], dict[str, Any]]:
             "sha256": actual_sha,
         }
     return loaded, provenance
+
+
+def _load_text_sources() -> tuple[dict[str, str], dict[str, Any]]:
+    loaded: dict[str, str] = {}
+    provenance: dict[str, Any] = {}
+    for name, (path, expected_sha) in TEXT_SOURCE_SPECS.items():
+        if not path.exists():
+            raise FileNotFoundError(f"missing result source: {path}")
+        actual_sha = _sha256(path)
+        if actual_sha != expected_sha:
+            raise RuntimeError(
+                f"canonical source changed for {path}: expected {expected_sha}, got {actual_sha}"
+            )
+        loaded[name] = path.read_text(encoding="utf-8")
+        provenance[name] = {
+            "path": str(path.relative_to(REPO_ROOT)),
+            "sha256": actual_sha,
+        }
+    return loaded, provenance
+
+
+def _markdown_cells(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def _percent_value(cell: str) -> float:
+    normalized = cell.replace("**", "").replace("%", "").strip()
+    return float(normalized.split("+/-", maxsplit=1)[0].strip())
+
+
+def _parse_iid_validation_report(text: str) -> dict[str, Any]:
+    labels = {
+        "Qwen2.5-VL-3B Base": "qwen2.5-vl-3b-base",
+        "TRACE Qwen2.5-VL-3B": "trace-qwen2.5-vl-3b",
+        "Qwen2.5-VL-7B Base": "qwen2.5-vl-7b-base",
+        "TRACE Qwen2.5-VL-7B": "trace-qwen2.5-vl-7b",
+    }
+    scores: dict[str, float] = {}
+    for line in text.splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = _markdown_cells(line)
+        if len(cells) >= 2 and cells[0] in labels and "%" in cells[1]:
+            scores[labels[cells[0]]] = _percent_value(cells[1])
+    if set(scores) != set(labels.values()):
+        raise RuntimeError("IID validation report is missing a matched Base/Trace score")
+    return {
+        "rows": 2000,
+        "samples_per_task": 2,
+        "task_count": 1000,
+        "seed": 42,
+        "metric": "combined_semantic_accuracy",
+        "scores": scores,
+    }
 
 
 def _validate_suite(suite: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
@@ -345,7 +467,7 @@ def _fmt_result(
         color = "TraceGain" if delta >= 0 else "TraceLoss"
         score += (
             "\\raisebox{-0.45ex}{"
-            f"\\fontsize{{4.5}}{{4.5}}\\selectfont\\color{{{color}}}{{{delta:+.1f}}}"
+            f"\\fontsize{{4}}{{4}}\\selectfont\\color{{{color}}}{{{delta:+.1f}}}"
             "}"
         )
     return score
@@ -392,7 +514,7 @@ def _write_main_table(
                 raise ValueError(f"unsupported result-table scope: {scope}")
 
         maxima = {
-            "7B": max(float(summaries[mid]["mean"]) for mid in RESULT_TABLE_7B_ORDER),
+            "7B": max(float(summaries[mid]["mean"]) for mid in RESULT_TABLE_7B_PRIMARY_ORDER),
             "3B": max(float(summaries[mid]["mean"]) for mid in RESULT_TABLE_3B_ORDER),
         }
         cells: list[str] = []
@@ -414,18 +536,18 @@ def _write_main_table(
 
     lines = [
         "% Generated by paper/trace/scripts/build_results_assets.py. Do not edit.",
-        "\\begin{table*}[t]",
+        "\\begin{table}[t]",
         "  \\centering",
-        "  \\fontsize{6}{7}\\selectfont",
-        "  \\setlength{\\tabcolsep}{2.5pt}",
+        "  \\fontsize{7.5}{8.5}\\selectfont",
+        "  \\setlength{\\tabcolsep}{0.5pt}",
         "  \\renewcommand{\\arraystretch}{1.04}",
-        "  \\caption{Per-benchmark transfer on the 24-benchmark external evaluation suite. Each score reports the mean and sample standard deviation over decoding seeds 42--44, in percent. Smaller green/red subscripts in the Trace columns give the change from the corresponding base model. Bold marks the best result within each model scale. Category and overall averages are unweighted across benchmarks. External 7B checkpoints use the same evaluation protocol but are not training-compute matched.}",
+        "  \\caption{Per-benchmark transfer on the 24-benchmark external evaluation suite. Each score reports the mean and sample standard deviation over three decoding seeds, in percent. Smaller green/red subscripts in the \\trace columns give the change from the corresponding base model. Bold marks the best score among the base model and synthetic-data RLVR checkpoints at each model scale. Category and overall averages are unweighted across benchmarks.}",
         "  \\label{tab:main-results}",
-        "  \\begin{tabularx}{\\textwidth}{@{}>{\\raggedright\\arraybackslash}p{0.17\\textwidth} *{6}{>{\\centering\\arraybackslash}X} !{\\hspace{2pt}\\vrule width 0.45pt\\hspace{2pt}} *{2}{>{\\centering\\arraybackslash}X}@{}}",
+        "  \\begin{tabularx}{\\textwidth}{@{}>{\\raggedright\\arraybackslash}p{0.16\\textwidth} *{5}{>{\\centering\\arraybackslash}X}|>{\\centering\\arraybackslash}X|*{2}{>{\\centering\\arraybackslash}X}@{}}",
         "    \\toprule",
-        "     & \\multicolumn{6}{c}{7B checkpoints} & \\multicolumn{2}{c}{3B checkpoints} \\\\",
-        "    \\cmidrule(lr){2-7}\\cmidrule(l){8-9}",
-        "    Benchmark & Base & Trace & Game-RL & Sphinx & PCGRPO & Vero & Base & Trace \\\\",
+        "     & \\multicolumn{5}{c|}{7B base + synthetic RLVR} & \\multicolumn{1}{c|}{Real-image} & \\multicolumn{2}{c}{3B base + synthetic RLVR} \\\\",
+        "    \\cmidrule(lr){2-6}\\cmidrule(lr){7-7}\\cmidrule(l){8-9}",
+        "    Benchmark & Base & \\trace & Game-RL & Sphinx & PC-GRPO & Vero & Base & \\trace \\\\",
         "    \\midrule",
     ]
 
@@ -439,7 +561,12 @@ def _write_main_table(
         for item in benchmarks:
             if str(item["category"]) != category:
                 continue
-            cells = [_latex(str(item["display"]))] + score_cells("benchmark", str(item["key"]))
+            benchmark_key = str(item["key"])
+            display_name = PAPER_BENCHMARK_DISPLAY_NAMES.get(
+                benchmark_key,
+                str(item["display"]),
+            )
+            cells = [_latex(display_name)] + score_cells("benchmark", benchmark_key)
             lines.append(f"    \\rowcolor{{{band}}} " + " & ".join(cells) + " \\\\")
         average_cells = ["\\textit{Category average}"] + score_cells("category", category)
         lines.append(f"    \\rowcolor{{{band}}} " + " & ".join(average_cells) + " \\\\")
@@ -456,7 +583,7 @@ def _write_main_table(
         [
             "    \\bottomrule",
             "  \\end{tabularx}",
-            "\\end{table*}",
+            "\\end{table}",
             "",
         ]
     )
@@ -467,25 +594,33 @@ def _write_training_table(path: Path, training: Mapping[str, Any]) -> None:
     config = training["shared_configuration"]
     data = training["data"]
     runtimes = {row["model_size"]: row["runtime_seconds"] / 3600 for row in training["runs"]}
+    if not config["full_parameter_training"] or config["vision_tower_frozen"]:
+        raise RuntimeError("paper training table assumes full-model training with a trainable vision encoder")
     lines = [
         "% Generated by paper/trace/scripts/build_results_assets.py. Do not edit.",
-        "\\begin{table}[htbp]",
+        "\\begin{table}[t]",
         "  \\centering",
         "  \\small",
         "  \\setlength{\\tabcolsep}{5pt}",
-        "  \\caption{Shared answer-only RLVR configuration for Trace-3B and Trace-7B.}",
+        "  \\caption{RLVR configuration shared across the 3B and 7B runs.}",
         "  \\label{tab:training-configuration}",
         "  \\begin{tabular}{@{}l l@{}}",
         "    \\toprule",
         "    Setting & Value \\\\",
         "    \\midrule",
         f"    Training data & {data['train_rows']:,} prompts; {data['active_tasks']:,} tasks \\\\",
+        f"    Image pixel cap & {data['embedded_image_pixel_cap']:,} per image \\\\",
         f"    Updates & {config['max_steps']}; one shuffled data pass \\\\",
+        f"    Validation & {data['validation_rows']:,} instances every {config['validation_interval_steps']} updates \\\\",
         f"    Prompt batch / rollouts & {config['prompt_batch_size']} / {config['rollouts_per_prompt']} \\\\",
         f"    Sampled responses & {config['sampled_training_responses']:,} \\\\",
-        f"    Actor optimizer & AdamW, LR $10^{{-6}}$, no warmup \\\\",
+        f"    Prompt / response caps & {config['prompt_token_cap']:,} / {config['response_token_cap']:,} tokens \\\\",
+        f"    Optimization scope & Full model; vision encoder trainable; {str(config['precision']).upper()} \\\\",
+        f"    Actor optimizer & AdamW; LR $10^{{-6}}$; weight decay {config['actor_weight_decay']:.2f} \\\\",
+        f"    Policy epochs & {config['policy_epochs']} \\\\",
+        f"    Policy clipping & {config['clip_ratio_low']:.1f} lower; {config['clip_ratio_high']:.1f} upper; dual {config['dual_clip_bound']:.1f} \\\\",
+        f"    Rollout sampling & temperature {config['training_temperature']:.1f}; top-$p$ {config['training_top_p']:.1f} \\\\",
         f"    Reward & {1.0 - config['format_reward_weight']:.2f} exact answer $+$ {config['format_reward_weight']:.2f} JSON format \\\\",
-        "    KL penalty & disabled \\\\",
         f"    Hardware & {config['hardware']['gpu_count']} $\\times$ H100 80GB \\\\",
         f"    Runtime & {runtimes['3B']:.1f} h (3B); {runtimes['7B']:.1f} h (7B) \\\\",
         "    \\bottomrule",
@@ -497,42 +632,196 @@ def _write_training_table(path: Path, training: Mapping[str, Any]) -> None:
 
 
 def _write_suite_table(path: Path, benchmarks: list[dict[str, Any]]) -> None:
-    benchmark_keys = {str(item["key"]) for item in benchmarks}
-    if set(PAPER_SCORE_LABELS) != benchmark_keys:
-        raise RuntimeError("paper-facing score labels do not match the evaluation suite")
     lines = [
         "% Generated by paper/trace/scripts/build_results_assets.py. Do not edit.",
-        "\\begin{table*}[t]",
+        "\\begin{table}[t]",
         "  \\centering",
         "  \\scriptsize",
         "  \\setlength{\\tabcolsep}{4pt}",
         "  \\caption{External evaluation suite. Each model and decoding seed is scored on 32,805 examples.}",
         "  \\label{tab:evaluation-suite}",
-        "  \\begin{tabular}{@{}p{0.17\\textwidth} p{0.16\\textwidth} r p{0.50\\textwidth}@{}}",
+        "  \\begin{tabular}{@{}p{0.30\\textwidth} p{0.38\\textwidth} c@{}}",
         "    \\toprule",
-        "    Category & Benchmark & Rows & Metric \\\\",
+        "    Category & Benchmark & Rows \\\\",
         "    \\midrule",
     ]
     previous = None
     for item in benchmarks:
         category = str(item["category"])
         if previous is not None and category != previous:
-            lines.append("    \\addlinespace[2pt]")
+            lines.append("    \\midrule")
         category_cell = _latex(category) if category != previous else ""
-        score_label = _latex(PAPER_SCORE_LABELS[str(item["key"])])
+        benchmark_key = str(item["key"])
+        display_name = PAPER_BENCHMARK_DISPLAY_NAMES.get(
+            benchmark_key,
+            str(item["display"]),
+        )
+        citation_key = PAPER_BENCHMARK_CITATIONS.get(benchmark_key)
+        if citation_key is None:
+            raise RuntimeError(f"missing paper citation for benchmark {benchmark_key}")
+        benchmark_cell = f"{_latex(display_name)}~\\citep{{{citation_key}}}"
         lines.append(
-            f"    {category_cell} & {_latex(str(item['display']))} & {int(item['rows']):,} & {score_label} \\\\"
+            f"    {category_cell} & {benchmark_cell} & {int(item['rows']):,} \\\\"
         )
         previous = category
     lines.extend(
         [
             "    \\bottomrule",
             "  \\end{tabular}",
-            "\\end{table*}",
+            "\\end{table}",
             "",
         ]
     )
     path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _write_scale_gain_figure(
+    path: Path,
+    comparisons: Mapping[str, Mapping[str, Any]],
+    benchmarks: list[dict[str, Any]],
+    categories: list[str],
+) -> dict[str, Any]:
+    """Plot benchmark-level gains at 3B against gains at 7B."""
+
+    gains_3b = comparisons["3B"]["benchmark_deltas"]
+    gains_7b = comparisons["7B"]["benchmark_deltas"]
+    keys = [str(item["key"]) for item in benchmarks]
+    x = np.asarray([float(gains_3b[key]) for key in keys], dtype=float)
+    y = np.asarray([float(gains_7b[key]) for key in keys], dtype=float)
+    correlation = spearmanr(x, y)
+    rho = float(correlation.statistic)
+    pvalue = float(correlation.pvalue)
+    if not math.isfinite(rho) or not math.isfinite(pvalue):
+        raise RuntimeError("non-finite cross-scale gain correlation")
+
+    benchmark_categories = [str(item["category"]) for item in benchmarks]
+    display_names = {
+        str(item["key"]): PAPER_BENCHMARK_DISPLAY_NAMES.get(
+            str(item["key"]), str(item["display"])
+        )
+        for item in benchmarks
+    }
+
+    rc = {
+        "font.family": "DejaVu Sans",
+        "font.size": 8.0,
+        "axes.labelsize": 8.5,
+        "xtick.labelsize": 7.5,
+        "ytick.labelsize": 7.5,
+        "legend.fontsize": 7.0,
+        "axes.edgecolor": PLOT_REFERENCE,
+        "axes.labelcolor": PLOT_INK,
+        "xtick.color": PLOT_MUTED,
+        "ytick.color": PLOT_MUTED,
+        "text.color": PLOT_INK,
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+    }
+    with plt.rc_context(rc), sns.axes_style(
+        "whitegrid", rc={"grid.color": PLOT_GRID}
+    ), sns.plotting_context("paper", rc=rc):
+        fig, ax = plt.subplots(figsize=(6.5, 3.55))
+        for category in categories:
+            indices = [
+                index
+                for index, value in enumerate(benchmark_categories)
+                if value == category
+            ]
+            sns.scatterplot(
+                x=x[indices],
+                y=y[indices],
+                s=50,
+                color=CATEGORY_PLOT_COLORS[category],
+                edgecolor="white",
+                linewidth=0.65,
+                label=category,
+                ax=ax,
+                zorder=3,
+            )
+
+        lower = -2.5
+        upper = 12.0
+        ax.axhline(0, color=PLOT_REFERENCE, linewidth=0.8, linestyle="--", zorder=1)
+        ax.axvline(0, color=PLOT_REFERENCE, linewidth=0.8, linestyle="--", zorder=1)
+        ax.plot(
+            [lower, upper],
+            [lower, upper],
+            color=PLOT_REFERENCE,
+            linewidth=0.9,
+            linestyle=":",
+            zorder=1,
+        )
+        ax.set_xlim(lower, upper)
+        ax.set_ylim(lower, upper)
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_xlabel("3B improvement over base (points)")
+        ax.set_ylabel("7B improvement over base (points)")
+        ax.text(
+            0.04,
+            0.95,
+            rf"Spearman $\rho_s={rho:.2f}$",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=8,
+            color=PLOT_INK,
+        )
+
+        annotation_positions = {
+            "evochart": ((6, 0), "left"),
+            "chartqapro": ((-6, 30), "right"),
+            "treebench": ((-6, -16), "right"),
+        }
+        for key, (offset, horizontal_alignment) in annotation_positions.items():
+            index = keys.index(key)
+            ax.annotate(
+                display_names[key],
+                (x[index], y[index]),
+                xytext=offset,
+                textcoords="offset points",
+                fontsize=7,
+                color=PLOT_INK,
+                ha=horizontal_alignment,
+                va="center",
+                arrowprops=(
+                    None
+                    if key == "evochart"
+                    else {
+                        "arrowstyle": "-",
+                        "color": PLOT_MUTED,
+                        "linewidth": 0.55,
+                        "shrinkA": 2,
+                        "shrinkB": 2,
+                    }
+                ),
+            )
+
+        ax.legend(
+            title="Benchmark group",
+            frameon=False,
+            loc="center left",
+            bbox_to_anchor=(1.02, 0.5),
+            borderaxespad=0,
+            handletextpad=0.4,
+        )
+        sns.despine(ax=ax)
+        fig.tight_layout()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(
+            path,
+            format="pdf",
+            bbox_inches="tight",
+            pad_inches=0.02,
+            metadata={"CreationDate": None, "ModDate": None, "Creator": "Trace"},
+        )
+        plt.close(fig)
+
+    return {
+        "benchmark_count": len(keys),
+        "spearman_rho": rho,
+        "spearman_pvalue": pvalue,
+        "source_values": "benchmark mean improvement over the corresponding base model",
+    }
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
@@ -541,6 +830,9 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
 
 def main() -> None:
     loaded, source_provenance = _load_sources()
+    text_sources, text_provenance = _load_text_sources()
+    loaded.update(text_sources)
+    source_provenance.update(text_provenance)
     benchmarks, categories = _validate_suite(loaded["suite"])
     benchmark_keys = {str(item["key"]) for item in benchmarks}
     category_names = set(categories)
@@ -549,6 +841,7 @@ def main() -> None:
         _validate_result(payload, benchmark_keys, category_names)
     _validate_training(loaded["training_runs"])
     models = _index_summaries(result_payloads)
+    iid_validation = _parse_iid_validation_report(loaded["iid_validation_report"])
     comparisons = {
         "3B": _comparison(
             models,
@@ -582,6 +875,14 @@ def main() -> None:
     for directory in (data_dir, table_dir, provenance_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
+    scale_gain_figure = PAPER_ROOT / "figures" / "scale_gain_correlation.pdf"
+    scale_gain_consistency = _write_scale_gain_figure(
+        scale_gain_figure,
+        comparisons,
+        benchmarks,
+        categories,
+    )
+
     combined_path = data_dir / "trace_eval_v1_paper_results.json"
     _write_json(
         combined_path,
@@ -600,12 +901,14 @@ def main() -> None:
             },
             "models": {model_id: models[model_id] for model_id in MODEL_ORDER},
             "comparisons": comparisons,
+            "scale_gain_consistency": scale_gain_consistency,
+            "iid_validation": iid_validation,
             "training": loaded["training_runs"],
             "sources": source_provenance,
         },
     )
 
-    outputs = [combined_path]
+    outputs = [combined_path, scale_gain_figure]
     main_table = table_dir / "main_results.tex"
     training_table = table_dir / "training_configuration.tex"
     suite_table = table_dir / "evaluation_suite.tex"

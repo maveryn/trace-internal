@@ -1,0 +1,14 @@
+{
+  "figure": "paper/trace/figures/training_dynamics.pdf",
+  "figure_sha256": "a2e730a13502f9f18e7e4340823e7d394507b6998b1392c778f3cc615dd008dc",
+  "rolling_window_updates": 25,
+  "schema_version": "trace-paper-training-dynamics-provenance-v1",
+  "script": "paper/trace/scripts/build_training_dynamics.py",
+  "script_sha256": "d44a5d764a4991c1d1c565070320c40c024c3714b0c65b335ac4bf486c519f5b",
+  "source_data": "paper/trace/data/training_dynamics_wandb.json",
+  "source_data_sha256": "70aea89a57b59ab83f18bcbf7774866e03a390d54fe4006790899dfcb137fd58",
+  "wandb_runs": {
+    "3B": "kijsydl8",
+    "7B": "usqbkpd6"
+  }
+}

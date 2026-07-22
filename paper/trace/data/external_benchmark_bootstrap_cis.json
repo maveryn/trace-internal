@@ -1,0 +1,1761 @@
+{
+  "method": {
+    "aggregate_only_centering": "Recovered row vectors must reproduce the canonical aggregate exactly. A discrepancy no larger than one item may be centered on that aggregate to account for archived scorer type coercion; every adjustment is recorded per model and seed.",
+    "canonical_point_alignment": "Each bootstrap distribution is centered on the immutable mean of the three reported seed aggregates. Alignment larger than 0.01 percentage points is rejected.",
+    "confidence_level": 0.95,
+    "interval": "percentile",
+    "pairing": "Base and Trace scores paired by source ordinal and source-row hash",
+    "replicates": 10000,
+    "resampling_unit": "benchmark_item_or_official_score_group",
+    "seed": 42,
+    "seed_handling": "Each item cluster carries scores from all three decoding seeds; scores are averaged within item before resampling.",
+    "tablevqabench_resampling": "Item bootstrap stratified by official split; all five official split metrics are recomputed per replicate.",
+    "wemath_resampling": "The official strict score is recomputed per 2-step or 3-step problem family, and the 525 paired families are resampled."
+  },
+  "results": {
+    "3B": {
+      "blink": {
+        "base": {
+          "ci95": [
+            42.69682623180782,
+            46.34446782395229
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 44.52042784499386
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1901,
+        "paired_delta": {
+          "ci95": [
+            1.7534630896019638,
+            3.4893915483079088
+          ],
+          "score": 2.6126600035069245
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            45.274416973522705,
+            48.97422409258285
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 47.133087848500786
+        }
+      },
+      "chartqapro": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-3b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-3b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            29.902103205329063,
+            33.26830658011983
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 31.56763020725477
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1948,
+        "paired_delta": {
+          "ci95": [
+            -1.3023259694104983,
+            1.0586625191344432
+          ],
+          "score": -0.1387520355013585
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            29.724551501893522,
+            33.1767241313939
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 31.42887817175341
+        }
+      },
+      "charxivreason": {
+        "base": {
+          "ci95": [
+            26.799999999999997,
+            31.099999999999998
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 28.899999999999995
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1000,
+        "paired_delta": {
+          "ci95": [
+            4.133333333333336,
+            7.400000000000003
+          ],
+          "score": 5.766666666666669
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            32.2,
+            37.2
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 34.666666666666664
+        }
+      },
+      "countbenchqa": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-3b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-3b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            62.0123203285421,
+            68.85694729637237
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 65.43463381245722
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 487,
+        "paired_delta": {
+          "ci95": [
+            1.8480492813141542,
+            4.654346338124557
+          ],
+          "score": 3.2169746748802197
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            65.29774127310061,
+            72.00547570157427
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 68.65160848733744
+        }
+      },
+      "countqa": {
+        "base": {
+          "ci95": [
+            13.503490401396162,
+            16.273996509598604
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 14.877835951134381
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1528,
+        "paired_delta": {
+          "ci95": [
+            -0.06544502617801035,
+            1.5924956369982548
+          ],
+          "score": 0.7635253054101234
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            14.201570680628272,
+            17.124781849912736
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 15.641361256544505
+        }
+      },
+      "cvbench_3d": {
+        "base": {
+          "ci95": [
+            56.3611111111111,
+            60.94444444444443
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 58.66666666666666
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1200,
+        "paired_delta": {
+          "ci95": [
+            6.499999999999993,
+            10.111111111111105
+          ],
+          "score": 8.305555555555557
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            64.74999999999999,
+            69.16666666666666
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 66.97222222222221
+        }
+      },
+      "embspatial": {
+        "base": {
+          "ci95": [
+            57.774496336996336,
+            60.38461538461539
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 59.06593406593407
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 3640,
+        "paired_delta": {
+          "ci95": [
+            1.33699633699633,
+            2.280219780219773
+          ],
+          "score": 1.8131868131868032
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            59.53296703296703,
+            62.22527472527473
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 60.879120879120876
+        }
+      },
+      "erqa": {
+        "base": {
+          "ci95": [
+            31.916666666666664,
+            38.916666666666664
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 35.333333333333336
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 400,
+        "paired_delta": {
+          "ci95": [
+            -0.4999999999999998,
+            2.75
+          ],
+          "score": 1.0833333333333286
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            32.666666666666664,
+            40.25
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 36.416666666666664
+        }
+      },
+      "evochart": {
+        "base": {
+          "ci95": [
+            46.10666666666667,
+            50.960000000000015
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 48.50666666666667
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1250,
+        "paired_delta": {
+          "ci95": [
+            -3.2000000000000073,
+            -0.16000000000000714
+          ],
+          "score": -1.6800000000000068
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            44.373333333333335,
+            49.28
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 46.82666666666666
+        }
+      },
+      "logicvista": {
+        "base": {
+          "ci95": [
+            33.40790454885667,
+            39.52274422074332
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 36.4653243848
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 447,
+        "paired_delta": {
+          "ci95": [
+            0.4474272930350488,
+            6.785980611454139
+          ],
+          "score": 3.6539895599999994
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            36.539895600280985,
+            43.54958985829738
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 40.1193139448
+        }
+      },
+      "mathverse": {
+        "base": {
+          "ci95": [
+            31.048011844365995,
+            36.1685702200005
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 33.58714043996667
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 788,
+        "paired_delta": {
+          "ci95": [
+            4.272419627675291,
+            8.544839255424868
+          ],
+          "score": 6.429780033766669
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            37.225042301144505,
+            42.893401015188495
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 40.016920473733336
+        }
+      },
+      "mathvision": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-3b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-3b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            18.26754385964912,
+            20.285087719298247
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 19.25438596491228
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 3040,
+        "paired_delta": {
+          "ci95": [
+            5.0219298245614,
+            7.1820175438596445
+          ],
+          "score": 6.096491228070175
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            24.16666666666666,
+            26.578947368421048
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 25.350877192982455
+        }
+      },
+      "mathvista": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-3b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-3b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            55.7,
+            60.53333333333333
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 58.133333333333326
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1000,
+        "paired_delta": {
+          "ci95": [
+            4.533333333333348,
+            8.066666666666682
+          ],
+          "score": 6.300000000000011
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            61.83333333333336,
+            66.90000000000002
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 64.43333333333334
+        }
+      },
+      "mme_reasoning": {
+        "base": {
+          "ci95": [
+            20.847362514029175,
+            24.41077441077441
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 22.615039281705947
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1188,
+        "paired_delta": {
+          "ci95": [
+            0.7575757575757683,
+            4.068462401795746
+          ],
+          "score": 2.441077441077443
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            23.148148148148156,
+            26.93602693602694
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 25.05611672278339
+        }
+      },
+      "mmmu_pro_vision": {
+        "base": {
+          "ci95": [
+            25.009633911368013,
+            28.15028901734104
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 26.589595375722542
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1730,
+        "paired_delta": {
+          "ci95": [
+            3.1213872832369978,
+            6.050578034682079
+          ],
+          "score": 4.566473988439309
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            29.38294797687861,
+            32.92870905587668
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 31.15606936416185
+        }
+      },
+      "mmstar": {
+        "base": {
+          "ci95": [
+            50.15555555555555,
+            54.35555555555555
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 52.26666666666666
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1500,
+        "paired_delta": {
+          "ci95": [
+            1.9333333333333405,
+            4.044444444444451
+          ],
+          "score": 2.9777777777777885
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            53.06666666666667,
+            57.400000000000006
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 55.24444444444445
+        }
+      },
+      "phyx_mini_mc": {
+        "base": {
+          "ci95": [
+            31.0,
+            34.63416666666666
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 32.800000000000004
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1000,
+        "paired_delta": {
+          "ci95": [
+            3.4000000000000075,
+            5.900000000000007
+          ],
+          "score": 4.666666666666664
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            35.433333333333344,
+            39.50000000000001
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 37.46666666666667
+        }
+      },
+      "puzzlevqa": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-3b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-3b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            31.25,
+            33.85
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 32.550000000000004
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 2000,
+        "paired_delta": {
+          "ci95": [
+            4.899999999999994,
+            8.233333333333325
+          ],
+          "score": 6.583333333333329
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            37.64999999999999,
+            40.63374999999999
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 39.13333333333333
+        }
+      },
+      "realworldqa": {
+        "base": {
+          "ci95": [
+            57.29847494553377,
+            63.224400871459686
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 60.348583877995644
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 765,
+        "paired_delta": {
+          "ci95": [
+            0.9150326797385622,
+            2.657952069716776
+          ],
+          "score": 1.7864923747276649
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            59.08496732026144,
+            65.22875816993464
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 62.13507625272331
+        }
+      },
+      "spatialvizbench_cot": {
+        "base": {
+          "ci95": [
+            28.418079096045197,
+            31.780367231638408
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 30.08474576271186
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1180,
+        "paired_delta": {
+          "ci95": [
+            -0.2824858757062112,
+            3.8418079096045235
+          ],
+          "score": 1.751412429378533
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            30.056497175141242,
+            33.58757062146893
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 31.836158192090394
+        }
+      },
+      "tablevqabench": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-3b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-3b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            67.3244444,
+            71.24444439999999
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 69.27111106666666
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1500,
+        "paired_delta": {
+          "ci95": [
+            1.7777778444444614,
+            3.6888889555555693
+          ],
+          "score": 2.720000066666671
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            70.08000002222222,
+            73.91111113333334
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 71.99111113333333
+        }
+      },
+      "treebench": {
+        "base": {
+          "ci95": [
+            35.39094650205761,
+            43.12757201646091
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 39.25925925925926
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 405,
+        "paired_delta": {
+          "ci95": [
+            -2.4691358024691357,
+            1.1522633744855968
+          ],
+          "score": -0.6584362139917772
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            34.5679012345679,
+            42.635802469135776
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 38.60082304526748
+        }
+      },
+      "visualpuzzles": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-3b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-3b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            24.57191780821918,
+            27.85388127853881
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 26.1986301369863
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1168,
+        "paired_delta": {
+          "ci95": [
+            0.37100456621004935,
+            4.223744292237447
+          ],
+          "score": 2.3116438356164437
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            26.712328767123292,
+            30.393835616438363
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 28.510273972602743
+        }
+      },
+      "wemath": {
+        "base": {
+          "ci95": [
+            15.68285714285714,
+            20.127301587301588
+          ],
+          "model_id": "qwen2.5-vl-3b-base",
+          "score": 17.87333333333333
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 525,
+        "paired_delta": {
+          "ci95": [
+            8.72777777777778,
+            13.235714285714288
+          ],
+          "score": 10.950000000000003
+        },
+        "row_score_source": "grouped_strict_score_from_archived_row_ledger",
+        "trace": {
+          "ci95": [
+            26.093174603174607,
+            31.585238095238104
+          ],
+          "model_id": "trace-qwen2.5-vl-3b",
+          "score": 28.823333333333334
+        }
+      }
+    },
+    "7B": {
+      "blink": {
+        "base": {
+          "ci95": [
+            51.32386463264948,
+            55.23408732246186
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 53.3052779238997
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1901,
+        "paired_delta": {
+          "ci95": [
+            2.034017183938292,
+            4.541469402069101
+          ],
+          "score": 3.261441346659659
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            54.620375241101186,
+            58.56566719270561
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 56.56671927055936
+        }
+      },
+      "chartqapro": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-7b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-7b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            43.98864792208834,
+            47.67555612509141
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 45.81300811080209
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1948,
+        "paired_delta": {
+          "ci95": [
+            0.7643092481209381,
+            3.657394539120461
+          ],
+          "score": 2.238485721524995
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            46.07487841745329,
+            49.989886245784625
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 48.05149383232708
+        }
+      },
+      "charxivreason": {
+        "base": {
+          "ci95": [
+            37.166666666666664,
+            42.233333333333334
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 39.733333333333334
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1000,
+        "paired_delta": {
+          "ci95": [
+            5.333333333333334,
+            9.5
+          ],
+          "score": 7.399999999999999
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            44.4,
+            49.99999999999999
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 47.13333333333333
+        }
+      },
+      "countbenchqa": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-7b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-7b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            79.26078028747433,
+            84.94182067077344
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 82.13552361396303
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 487,
+        "paired_delta": {
+          "ci95": [
+            1.0266940451745525,
+            4.3121149897330735
+          ],
+          "score": 2.6694045174538132
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            81.99863107460645,
+            87.47433264887064
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 84.80492813141684
+        }
+      },
+      "countqa": {
+        "base": {
+          "ci95": [
+            17.997382198952884,
+            21.204733856893537
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 19.589877835951135
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1528,
+        "paired_delta": {
+          "ci95": [
+            1.4397905759162304,
+            4.428446771378709
+          ],
+          "score": 2.9232111692844676
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            20.767888307155324,
+            24.3673647469459
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 22.513089005235603
+        }
+      },
+      "cvbench_3d": {
+        "base": {
+          "ci95": [
+            74.3611111111111,
+            78.11111111111111
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 76.25
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1200,
+        "paired_delta": {
+          "ci95": [
+            3.111111111111111,
+            6.38888888888889
+          ],
+          "score": 4.75
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            79.11111111111111,
+            82.77777777777777
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 81.0
+        }
+      },
+      "embspatial": {
+        "base": {
+          "ci95": [
+            68.12271062271061,
+            70.69597069597069
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 69.42307692307692
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 3640,
+        "paired_delta": {
+          "ci95": [
+            0.9432234432234435,
+            2.088141025641023
+          ],
+          "score": 1.5293040293040292
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            69.60622710622711,
+            72.2985347985348
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 70.95238095238095
+        }
+      },
+      "erqa": {
+        "base": {
+          "ci95": [
+            35.16666666666667,
+            42.916666666666664
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 39.0
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 400,
+        "paired_delta": {
+          "ci95": [
+            -0.1666666666666663,
+            4.5
+          ],
+          "score": 2.1666666666666643
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            37.0,
+            45.416666666666664
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 41.166666666666664
+        }
+      },
+      "evochart": {
+        "base": {
+          "ci95": [
+            54.64000000000001,
+            59.46666666666666
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 57.06666666666667
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1250,
+        "paired_delta": {
+          "ci95": [
+            5.893333333333312,
+            9.786666666666646
+          ],
+          "score": 7.839999999999982
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            62.42666666666665,
+            67.33333333333331
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 64.90666666666665
+        }
+      },
+      "logicvista": {
+        "base": {
+          "ci95": [
+            39.075316927680994,
+            46.23415361671903
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 42.6547352722
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 447,
+        "paired_delta": {
+          "ci95": [
+            1.416853094690899,
+            7.979120059642428
+          ],
+          "score": 4.697986577166667
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            43.69686800894907,
+            51.0812826249073
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 47.35272184936667
+        }
+      },
+      "mathverse": {
+        "base": {
+          "ci95": [
+            40.56577834176734,
+            46.23625211503298
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 43.44331641283333
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 788,
+        "paired_delta": {
+          "ci95": [
+            2.115059221675473,
+            6.556683587157707
+          ],
+          "score": 4.314720812200008
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            44.67005076141236,
+            50.84602368865432
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 47.75803722503334
+        }
+      },
+      "mathvision": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-7b-base": {
+            "42": 0.03289473684210398,
+            "43": 0.0,
+            "44": 0.03289473684210398
+          },
+          "trace-qwen2.5-vl-7b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            23.596491228070175,
+            26.01973684210526
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 24.81359649122807
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 3040,
+        "paired_delta": {
+          "ci95": [
+            1.535087719298245,
+            3.6622807017543857
+          ],
+          "score": 2.609649122807017
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            26.107456140350877,
+            28.771929824561397
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 27.423245614035086
+        }
+      },
+      "mathvista": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-7b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-7b": {
+            "42": 0.09999999999998899,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            66.16666666666666,
+            71.2
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 68.66666666666667
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1000,
+        "paired_delta": {
+          "ci95": [
+            2.799999999999997,
+            6.53333333333333
+          ],
+          "score": 4.700000000000003
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            70.9,
+            75.76666666666667
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 73.36666666666667
+        }
+      },
+      "mme_reasoning": {
+        "base": {
+          "ci95": [
+            23.26038159371493,
+            27.132435465768797
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 25.16835016835017
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1188,
+        "paired_delta": {
+          "ci95": [
+            1.0381593714927053,
+            4.686447811447802
+          ],
+          "score": 2.8619528619528616
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            25.95398428731762,
+            30.190796857463525
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 28.03030303030303
+        }
+      },
+      "mmmu_pro_vision": {
+        "base": {
+          "ci95": [
+            33.89210019267822,
+            37.51445086705203
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 35.703275529865124
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1730,
+        "paired_delta": {
+          "ci95": [
+            2.2157996146435455,
+            5.125240847784202
+          ],
+          "score": 3.660886319845858
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            37.41811175337186,
+            41.348747591522155
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 39.36416184971098
+        }
+      },
+      "mmstar": {
+        "base": {
+          "ci95": [
+            59.733333333333334,
+            64.06666666666666
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 61.888888888888886
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1500,
+        "paired_delta": {
+          "ci95": [
+            2.444444444444452,
+            5.155555555555563
+          ],
+          "score": 3.75555555555556
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            63.42166666666665,
+            67.82222222222222
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 65.64444444444445
+        }
+      },
+      "phyx_mini_mc": {
+        "base": {
+          "ci95": [
+            38.83333333333333,
+            43.03333333333333
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 40.96666666666667
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1000,
+        "paired_delta": {
+          "ci95": [
+            5.1000000000000005,
+            10.366666666666669
+          ],
+          "score": 7.733333333333327
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            46.233333333333334,
+            51.20083333333332
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 48.699999999999996
+        }
+      },
+      "puzzlevqa": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-7b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-7b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            43.06666666666667,
+            46.033750000000005
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 44.56666666666667
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 2000,
+        "paired_delta": {
+          "ci95": [
+            3.8495833333333342,
+            7.083333333333335
+          ],
+          "score": 5.450000000000003
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            48.283333333333346,
+            51.75
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 50.01666666666667
+        }
+      },
+      "realworldqa": {
+        "base": {
+          "ci95": [
+            62.26579520697169,
+            68.5838779956427
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 65.44662309368192
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 765,
+        "paired_delta": {
+          "ci95": [
+            1.4379084967320261,
+            4.705882352941177
+          ],
+          "score": 3.0501089324618675
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            65.31590413943356,
+            71.59041394335512
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 68.49673202614379
+        }
+      },
+      "spatialvizbench_cot": {
+        "base": {
+          "ci95": [
+            33.22033898305085,
+            37.09039548022599
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 35.141242937853114
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1180,
+        "paired_delta": {
+          "ci95": [
+            -1.6384180790960523,
+            2.8531073446327615
+          ],
+          "score": 0.5367231638417991
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            33.61581920903954,
+            37.85310734463276
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 35.67796610169491
+        }
+      },
+      "tablevqabench": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-7b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-7b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            73.29777777777777,
+            77.03999999999999
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 75.2
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1500,
+        "paired_delta": {
+          "ci95": [
+            2.0088889111111174,
+            4.21333335555556
+          ],
+          "score": 3.111111133333324
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            76.50644446666665,
+            80.11555557777777
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 78.31111113333333
+        }
+      },
+      "treebench": {
+        "base": {
+          "ci95": [
+            33.90946502057613,
+            42.22222222222222
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 38.02469135802469
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 405,
+        "paired_delta": {
+          "ci95": [
+            2.186179906514975e-16,
+            4.444444444444445
+          ],
+          "score": 2.2222222222222214
+        },
+        "row_score_source": "archived_row_score_ledger",
+        "trace": {
+          "ci95": [
+            35.96707818930041,
+            44.526748971193406
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 40.24691358024691
+        }
+      },
+      "visualpuzzles": {
+        "aggregate_center_adjustments_points": {
+          "qwen2.5-vl-7b-base": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          },
+          "trace-qwen2.5-vl-7b": {
+            "42": 0.0,
+            "43": 0.0,
+            "44": 0.0
+          }
+        },
+        "base": {
+          "ci95": [
+            29.223744292237445,
+            32.962328767123296
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 31.078767123287673
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 1168,
+        "paired_delta": {
+          "ci95": [
+            0.884703196347022,
+            4.965753424657524
+          ],
+          "score": 2.939497716894973
+        },
+        "row_score_source": "reconstructed_from_pinned_extractions_and_official_scorer",
+        "trace": {
+          "ci95": [
+            31.93493150684931,
+            36.158675799086744
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 34.018264840182646
+        }
+      },
+      "wemath": {
+        "base": {
+          "ci95": [
+            32.15571428571429,
+            38.37793650793651
+          ],
+          "model_id": "qwen2.5-vl-7b-base",
+          "score": 35.20333333333333
+        },
+        "decoding_seeds": [
+          42,
+          43,
+          44
+        ],
+        "evaluated_items": 525,
+        "paired_delta": {
+          "ci95": [
+            8.385238095238096,
+            13.559841269841268
+          ],
+          "score": 10.956666666666663
+        },
+        "row_score_source": "grouped_strict_score_from_archived_row_ledger",
+        "trace": {
+          "ci95": [
+            42.69968253968255,
+            49.5568253968254
+          ],
+          "model_id": "trace-qwen2.5-vl-7b",
+          "score": 46.16
+        }
+      }
+    }
+  },
+  "schema_version": "trace_external_benchmark_bootstrap_cis_v1",
+  "source": {
+    "aggregate_only_row_reconstruction": [
+      "chartqapro",
+      "countbenchqa",
+      "mathvision",
+      "mathvista",
+      "puzzlevqa",
+      "tablevqabench",
+      "visualpuzzles"
+    ],
+    "composite_row_metrics": [
+      "wemath"
+    ],
+    "evaluation_suite_path": "evaluation/trace_eval/suite.v1.json",
+    "evaluation_suite_sha256": "b84262bcd2243d1d2879b2e02d9b49b17052659ea767df3d7303758f4d63de71",
+    "extraction_parts": 84,
+    "repository_id": "maveryn/trace-eval-runs",
+    "repository_type": "dataset",
+    "revision": "4178a839b689babe16f8ac36f0de7b1b2c5ef36c",
+    "row_reconstruction_validated_against_canonical_aggregate": true,
+    "score_parts": 288,
+    "vlmevalkit_revision": "09163430240669be7171e419bdf2f390f938d059",
+    "vlmevalkit_root": "/home/jovyan/work/VLMEvalKit",
+    "vlmevalkit_scorer_sha256": {
+      "scripts/batched_chartqapro_vllm.py": "61113c297e10c6be9b6460b9bf0ec9d8e3e01d0b20a1f2425a3760b5823617d5",
+      "vlmeval/dataset/image_mcq.py": "78023f4dfc0d207bdcbf66e522c0dbd0c712b881c86e1468ce582eac52d204ef",
+      "vlmeval/dataset/image_vqa.py": "76c25adb8cdd598945cddd24c9ebd34e3dd00dd309c0f72dc03e7d110e3ad8a9",
+      "vlmeval/dataset/utils/chartqapro.py": "9bfa75feb8c70341f788a7d85095df9a18cca08c04a7ab793d802b66afd2db83",
+      "vlmeval/dataset/utils/mathv.py": "5a79a543ccea51d6b1c93b58a36ae4ea83171d92c50c4ca382dcdc9c63fed213",
+      "vlmeval/dataset/utils/mathvista.py": "51561b35694d1bbb7a089aa672e1199288caf152ab67e38233a148243b5a5c43",
+      "vlmeval/dataset/utils/puzzlevqa.py": "4ab5826a6d05da279d8f969110da7a540fd88f3dedcd652d8b698f38960ea1f2",
+      "vlmeval/dataset/utils/tablevqabench.py": "e49a105b7f2eda3b83241d8a86d320b974bbb5f72d16b8e239ee27db31772887",
+      "vlmeval/dataset/utils/visualpuzzles.py": "1ff4c9b6eb825fe2c380e7d458e85bbe69b110a479a6c4c18bcb6f576258078d"
+    }
+  }
+}

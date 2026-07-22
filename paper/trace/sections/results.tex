@@ -1,27 +1,88 @@
-\clearpage
 \section{Results}
 \label{sec:results}
 
+\subsection{\trace validation}
+
+RLVR substantially improves performance on unseen instances generated from the
+same task programs. Accuracy increases from 24.45 to 41.05 at 3B and from
+34.25 to 51.55 at 7B, corresponding to gains of 16.60 and 17.30 percentage
+points, respectively. These results measure generalization to new semantic and
+visual realizations within the \trace task distributions; the external
+benchmarks in Section~\ref{sec:external-transfer} test whether the gains extend beyond
+those distributions.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.80\linewidth]{figures/iid_taxonomy_gains.pdf}
+  \caption{Held-out \trace accuracy gains by visual domain (left) and operation
+  family (right). Whiskers show 95\% task-cluster bootstrap intervals;
+  parentheses give task counts, and operation-family assignments overlap.}
+  \label{fig:iid-taxonomy-gains}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.50\linewidth]{figures/scale_gain_correlation.pdf}
+  \caption{Benchmark gains at 3B versus 7B. Colors denote benchmark groups;
+  dashed axes mark zero, the dotted diagonal marks equal gains, and
+  $\rho_s=0.60$.}
+  \label{fig:scale-gain-correlation}
+\end{figure}
+
+The improvements are distributed across domains and computational structures
+rather than being driven by a single task family. Formula evaluation and
+aggregation show the largest operation-family gains at both model scales,
+whereas the 3D domain, transformation, and matching exhibit stronger
+scale-dependent behavior. Performance also improves across all four answer
+interfaces and for both single-query and multi-query tasks. Numeric-answer
+tasks show the largest increase, although this interface contains only 51
+tasks, while option-letter tasks show the smallest. Appendix
+Table~\ref{tab:iid-slice-results} reports these overlapping slices using two
+instances per task and one decoding seed.
+
+\newpage
 \input{tables/main_results}
-\FloatBarrier
 
-Answer-only training improves the benchmark-macro average at both scales. At
-3B, \trace raises the score from $39.34\pm0.63$ to $42.85\pm0.39$, a gain of
-3.51 percentage points. At 7B, it raises the score from $47.93\pm0.30$ to
-$51.99\pm0.17$, a gain of 4.06 points. These are not gains confined to one
-analysis group: all six category averages improve at both model sizes.
+\subsection{External benchmark transfer}
+\label{sec:external-transfer}
 
-The largest 3B category gain is on visual mathematics (+7.44), followed by
-puzzles and logic (+3.75), science (+3.50), and spatial reasoning (+3.24).
-At 7B, the gains are largest for visual mathematics (+5.65), charts and tables
-(+5.15), and science (+4.55); the smallest category gain is still +2.25 on
-spatial reasoning. Thus, increasing model scale does not eliminate the effect
-of the procedural training distribution.
+Table~\ref{tab:main-results} reports transfer across the complete
+24-benchmark evaluation suite.
 
-Under the common external protocol, Trace-7B also exceeds Game-RL-7B by 3.94
-points, Sphinx-7B by 2.64, and PCGRPO-7B by 3.18. Vero-7B obtains the highest
-overall contextual score at 52.22, 0.24 points above Trace-7B. The two models
-have different strengths: \trace is highest on charts and tables and narrowly
-higher on science, whereas Vero is higher on the other four categories. Since
-these checkpoints are not matched in training data or compute, the comparison
-characterizes the resulting policies rather than isolating a data effect.
+Training on \trace improves the benchmark-macro average at both model scales.
+At 3B, the score increases from $39.34\pm0.63$ to $42.85\pm0.39$, a gain of
+3.51 percentage points. At 7B, it increases from $47.93\pm0.30$ to
+$51.99\pm0.17$, a gain of 4.06 points. The improvements are broad: all six
+category averages increase at both scales, mean performance improves on 21 of
+24 benchmarks at 3B and on all 24 benchmarks at 7B, and paired item-bootstrap
+intervals exclude zero on 18 and 21 benchmarks, respectively. EvoChart at 3B
+is the only benchmark whose interval lies entirely below zero; the remaining
+intervals either exclude zero in the positive direction or include it.
+Appendix Table~\ref{tab:external-bootstrap-cis} reports the complete
+benchmark-level intervals.
+
+Visual mathematics shows the largest category-level improvement at both scales,
+with gains of 7.44 points at 3B and 5.65 points at 7B. WeMath shows the largest
+individual improvement, increasing by 10.95 points at 3B and 10.96 points at
+7B. The gains therefore do not arise solely from improved performance on
+held-out procedural images, but extend across external benchmarks with
+different visual formats, task structures, and evaluation metrics.
+
+Under the common evaluation protocol, the \trace-trained 7B checkpoint obtains
+a macro-average 3.94 points higher than Game-RL-7B, 2.64 points higher than
+Sphinx-7B, and 3.18 points higher than PC-GRPO-7B. Among these synthetic-data
+RLVR checkpoints, it also has the highest reported mean on 21 of 24 benchmarks
+and the highest category average in all six groups. These comparisons describe
+checkpoint outcomes rather than isolate the effect of a particular method or
+training distribution, because the systems are not matched in data,
+optimization, or compute. Table~\ref{tab:main-results} reports Vero separately
+because its substantially larger training mixture includes real images.
+
+Figure~\ref{fig:scale-gain-correlation} shows moderate consistency in the
+relative transfer patterns across model scales. The negative mean changes at
+3B on ChartQAPro ($-0.14$), TreeBench ($-0.66$), and EvoChart ($-1.68$)
+become gains of 2.24, 2.22, and 7.84 points at 7B, respectively. EvoChart is
+the largest departure from the equal-gain diagonal. Thus, although the overall
+transfer pattern is positively associated across scales, the benefit of a
+fixed procedural training mixture remains dependent on model capacity and
+benchmark demands.

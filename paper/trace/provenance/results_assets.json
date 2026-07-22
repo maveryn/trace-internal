@@ -1,28 +1,36 @@
 {
   "generator": {
     "path": "paper/trace/scripts/build_results_assets.py",
-    "sha256": "3e371f7e3c3079972a0b26fa19a2abd396937053dc05b1c71d8104a2c81d2383"
+    "sha256": "3cc0eb02472be8838ba2e67bb0fa2792d8fc1789c77e431391a2bc676c46a01e"
   },
   "outputs": {
     "paper/trace/data/trace_eval_v1_paper_results.json": {
-      "bytes": 38115,
-      "sha256": "77bef206cdb76c2076f67e81faf4f5df4f534a4e9ed59d962b435408670ec93a"
+      "bytes": 38858,
+      "sha256": "c39ba721aa1489b7c3207b4ea1b600b49314e285321d708a147d9d09fa683ec2"
+    },
+    "paper/trace/figures/scale_gain_correlation.pdf": {
+      "bytes": 21341,
+      "sha256": "626f538dc6b28ea560e25686187663a87f51786afd363df60cd28c5d4075b1d7"
     },
     "paper/trace/tables/evaluation_suite.tex": {
-      "bytes": 2139,
-      "sha256": "8721f630e1e44ed79baeb4eaadf0846634e2eeee38c26d9042b66f30de9f0515"
+      "bytes": 1910,
+      "sha256": "225cf17ae705ff0bd917f748e83d8f40b9c579519726afa80acd29ab249023f5"
     },
     "paper/trace/tables/main_results.tex": {
-      "bytes": 18840,
-      "sha256": "82d3ac100e9b9fd461aa1e8151c96786ec77817d116ed0b407cb1da2a6ceb63f"
+      "bytes": 18606,
+      "sha256": "4583c3c43c66277cb267e9b620a8beb1966fe61cf0f6921554eda8938e0754f8"
     },
     "paper/trace/tables/training_configuration.tex": {
-      "bytes": 774,
-      "sha256": "f6863d590cafaee53c0ddf7fe4e94625c737578c547b55f889791555178b4328"
+      "bytes": 1097,
+      "sha256": "6325f225fddcfdf8a8a66b9dc4c2467c1ce2adce568b9fda771f60d1a5b6f522"
     }
   },
   "schema_version": "trace_paper_result_assets_v1",
   "sources": {
+    "iid_validation_report": {
+      "path": "results/trace_validation_iid2000_seed42_8models_20260718_results.md",
+      "sha256": "2ecfdd69b26f81fde09a234ea2f7e2424046984808c9a284f770a7494823747f"
+    },
     "scores_3b": {
       "path": "results/trace_eval_v1_temp06_seed42_43_44_qwen25vl3b_base_trace_step500_20260716_scores.json",
       "sha256": "3a7acbf1d9baf3f32fe7ba7b4e522cc713a648fecf438eeae0319b013d8efda7"

@@ -9817,7 +9817,7 @@
       ],
       "media_type": "image/png",
       "path": "figures/taxonomy_boundaries.png",
-      "sha256": "bee738c71a4ef1be03e6f00c22f1d75af149ca520e1af677c0accb2a1412876b"
+      "sha256": "dfa868081fe0c1fc0a22eca50e73c2c03b8d7bc75c8f6b27155d5e1e47eab1e0"
     },
     {
       "image_size": [
@@ -9826,7 +9826,7 @@
       ],
       "media_type": "image/png",
       "path": "figures/rendering_variation_pipeline.png",
-      "sha256": "7461ba4d518bd0986d36df802dc0e67ee76432739092acf657b91091e8afe795"
+      "sha256": "b982b27471e84b1a68be593c221540bbf176cabe7eb322bd60bdb56d35c53ac4"
     },
     {
       "media_type": "application/pdf",
@@ -9840,26 +9840,26 @@
     {
       "media_type": "application/pdf",
       "page_size_points": [
-        705.469,
-        301.848
+        712.07,
+        284.825
       ],
       "path": "figures/domain_operation_matrix.pdf",
-      "sha256": "4436b68ceafdfd547566493c6702e75001dee7e59fbbb1492e6433328c415aa1"
+      "sha256": "ee3b7b40e638de8df01c9f4afd369f291be3fd3d1b1065021fab9894d14f1e59"
     },
     {
       "media_type": "application/pdf",
       "page_size_points": [
-        682.366,
-        258.175
+        681.941,
+        229.455
       ],
       "path": "figures/environment_statistics.pdf",
-      "sha256": "1d234f8507c3378f295e3bdb14335cb346b1a6b3abde8acadec52f3699d545ba"
+      "sha256": "d0328fd210d27b93f17729ca536945e5afd78c71429237b5988a87295e0b9a1b"
     },
     {
       "line_count": 21,
       "media_type": "application/x-tex",
       "path": "tables/rendering_variation_profiles.tex",
-      "sha256": "d872ca6eeb300cafd8728fe97a9097cddf9417a82f73035cea686d7b1d6c045b"
+      "sha256": "72a72285ce4e2cc93cfd2591da1fc046ac6cc17ddabe5b7f831d4ac85d7040a7"
     }
   ],
   "pillow_version": "11.3.0",
@@ -9921,7 +9921,7 @@
         "label": "Baseline",
         "params_override": {},
         "prompt_sha256": "b0860a64ca5a028422ed6aacb04a36618085a28c3b084818aa3739a85322a75d",
-        "realization_summary": "Light neutral theme, sans-serif type, fixed layout, no context or noise",
+        "realization_summary": "Light neutral theme, sans-serif type, fixed layout, clean background",
         "render_metadata": {
           "baseline_content_bbox_px": [
             52,
@@ -10495,8 +10495,9 @@
     "semantic_sha256": "29f15281a86a75d38c693eef721d6518066231ba56a09cebd7ca7fc53b4e208f",
     "task_id": "task_graph__node_link__shortest_path_length"
   },
-  "schema_version": "trace_paper_method_figures_v10",
-  "source_repository_head": "64f903a52b47b5330f1ada1645d7868535075e72",
+  "schema_version": "trace_paper_method_figures_v11",
+  "seaborn_version": "0.13.2",
+  "source_repository_head": "191ce9802cf04d9fa1d5435a348871c946620753",
   "sources": [
     {
       "data_path": "review/task-reviews/charts/multiseries/task_charts__multiseries__category_total_extremum_label/data/largest_category_total_label/0000.json",

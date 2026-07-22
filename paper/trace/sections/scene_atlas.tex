@@ -2,7 +2,7 @@
 \section{Representative Task Atlas}
 \label{app:task-atlas}
 
-Each page presents twelve seeded examples from one visual domain. Panels pair each rendered instance with its semantic question and typed answer. Rule-heavy questions are condensed only when required for legibility.
+Each page presents twelve seeded examples from one visual domain. Panels pair each rendered instance with its question and typed answer. Rule-heavy questions are condensed only when required for legibility.
 
 \begingroup
 \setlength{\fboxsep}{2pt}
@@ -30,23 +30,23 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
   \endgroup
 }
 
-\begin{figure}[p]
+\begin{figure}[t]
 \centering
-\traceatlascard{Error Interval: Reference Containment}{figures/scene_atlas/assets/charts_01_error_interval_reference_containment_count.png}{The image shows a horizontal interval chart with labeled categories, point estimates, and lower-to-upper interval whiskers. Count the intervals whose lower-to-upper span contains reference value 54.}{4}{\traceatlaspromptnormal}
+\traceatlascard{Error Interval: Reference Containment}{figures/scene_atlas/assets/charts_01_error_interval_reference_containment_count.png}{The image shows a horizontal interval chart with labeled categories, point estimates, and lower-to-upper interval whiskers. How many intervals contain the reference value 54?}{4}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Region Map: Numeric Interval Region}{figures/scene_atlas/assets/charts_02_region_map_numeric_interval_region_count.png}{This image shows a world map with selected countries colored by value and a color legend. What number of countries fall in value bins between 20 and 99, inclusive?}{6}{\traceatlaspromptnormal}
+\traceatlascard{Region Map: Numeric Interval Region}{figures/scene_atlas/assets/charts_02_region_map_numeric_interval_region_count.png}{This image shows a world map with selected countries colored by value and a color legend. How many countries fall in value bins between 20 and 99, inclusive?}{6}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Scatter Cluster: Centroid Option Selection}{figures/scene_atlas/assets/charts_03_scatter_cluster_centroid_option_selection_label.png}{The visual shows a scatter plot with several colored point clusters and a matching legend. Find the centroid of cluster "Milow" by eye. Which option marker is closest?}{A}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Size Encoding: Panel Category Extremum Panel}{figures/scene_atlas/assets/charts_04_size_encoding_panel_category_extremum_panel_label.png}{The image shows multiple packed bubble-chart panels where bubble size indicates value and color indicates category. For category "River", which panel contains the item with the largest size?}{Delta}{\traceatlaspromptnormal}
+\traceatlascard{Size Encoding: Category Extremum Across Panels}{figures/scene_atlas/assets/charts_04_size_encoding_panel_category_extremum_panel_label.png}{The image shows multiple packed bubble-chart panels where bubble size indicates value and color indicates category. For category "River", which panel contains the item with the largest size?}{Delta}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Scatter Points: Category Threshold Point}{figures/scene_atlas/assets/charts_05_scatter_points_category_threshold_point_count.png}{The chart shows a categorized scatter plot with individual data points, numeric x- and y-axes, and a legend. How many plotted points from category "Storage" satisfy x greater than 50?}{2}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Single Series: Threshold Value}{figures/scene_atlas/assets/charts_06_single_series_threshold_value_count.png}{The image shows an ordered labeled dot plot where point labels identify y-values from left to right. Determine how many marks show values strictly greater than 19.}{10}{\traceatlaspromptnormal}
+\traceatlascard{Single Series: Threshold Count}{figures/scene_atlas/assets/charts_06_single_series_threshold_value_count.png}{The image shows an ordered labeled dot plot where point labels identify y-values from left to right. Determine how many marks show values strictly greater than 19.}{10}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Population Pyramid: Age Group Threshold}{figures/scene_atlas/assets/charts_07_population_pyramid_age_group_threshold_count.png}{The image shows a mirrored horizontal bar chart with one row per age group. The left and right bars show the two legend series on the same positive scale. Using the two bar values in each row, how many age groups satisfy: the sum of "Urban" and "Rural" at most 140?}{3}{\traceatlaspromptdense}
+\traceatlascard{Population Pyramid: Age Group Threshold}{figures/scene_atlas/assets/charts_07_population_pyramid_age_group_threshold_count.png}{The image shows a mirrored horizontal bar chart with one row per age group. The left and right bars show the two legend series on the same positive scale. In how many age groups is the sum of Urban and Rural at most 140?}{3}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Area: Stacked Band Dominance}{figures/scene_atlas/assets/charts_08_area_stacked_band_dominance_label.png}{The visual shows one stacked area chart with colored category bands, numeric band values, and a legend. Sum each category's band values over "S9W6" through "H2W5" in displayed x-axis order; which category is largest?}{Tradd}{\traceatlaspromptnormal}
 \hfill
@@ -57,7 +57,7 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \hfill
 \traceatlascard{Uncertainty Band: Band Overlap}{figures/scene_atlas/assets/charts_11_uncertainty_band_band_overlap_count.png}{The image shows a line chart with two labeled series, each shown with a central line and a shaded upper-to-lower uncertainty band. At how many x-axis labels do the shaded bands for "Direct" and "Antimony" overlap?}{1}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Matrix: Off Diagonal Confusion}{figures/scene_atlas/assets/charts_12_matrix_off_diagonal_confusion_label.png}{The figure shows a labeled confusion matrix with printed integer counts in each active cell. In the row for actual class "Tartus", exclude the matching diagonal cell. What predicted column label has the largest count?}{Namanga}{\traceatlaspromptnormal}
+\traceatlascard{Matrix: Off-Diagonal Confusion}{figures/scene_atlas/assets/charts_12_matrix_off_diagonal_confusion_label.png}{The figure shows a labeled confusion matrix with printed integer counts in each active cell. In the row for actual class "Tartus", exclude the matching diagonal cell. What predicted column label has the largest count?}{Namanga}{\traceatlaspromptnormal}
 \caption{Representative chart tasks.}
 \label{fig:task-atlas-charts}
 \end{figure}
@@ -72,7 +72,7 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \traceatlascard{Darts: Dart Score}{figures/scene_atlas/assets/games_03_darts_dart_score_value.png}{The image shows a simplified labeled dartboard with visible dart markers. Using the simplified dartboard scoring rule, what is the dart's score? A dart in a numbered sector scores that number; a dart in the center bullseye scores 50.}{7}{\traceatlaspromptdense}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Pacman: Next Item}{figures/scene_atlas/assets/games_04_pacman_next_item_label.png}{This scene shows a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route. Among the labeled bonus items, which one is encountered first on the highlighted route?}{F}{\traceatlaspromptnormal}
+\traceatlascard{Pac-Man: Next Item}{figures/scene_atlas/assets/games_04_pacman_next_item_label.png}{This scene shows a Pac-Man-style maze with a visible Pac-Man marker, ghosts, pellets, bonus items, and a highlighted route. Which labeled bonus item is encountered first along the highlighted route?}{F}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Minesweeper: Forced Cell}{figures/scene_atlas/assets/games_05_minesweeper_forced_cell_count.png}{In the Minesweeper grid, each number gives the mine count among its eight neighbors and each flag is a known mine. If a clue already has enough flags, its other hidden neighbors are safe; if every remaining hidden neighbor is needed, they are mines. From the outlined clue cells, how many hidden cells must be safe?}{5}{\traceatlaspromptdense}
 \hfill
@@ -83,14 +83,14 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \hfill
 \traceatlascard{Bubble Shooter: Pop Color}{figures/scene_atlas/assets/games_08_bubble_shooter_pop_color_label.png}{A shot bubble attaches at the marked target. A connected same-color group pops when the placement makes its size at least three. Which option labels the bubble color that would pop a group there?}{D}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Snakes Ladders: Remaining To Finish}{figures/scene_atlas/assets/games_09_snakes_ladders_remaining_to_finish_value.png}{The visual shows a numbered Snakes and Ladders board with one token and visible snakes and ladders. How far is the token from the final square by square number?}{12}{\traceatlaspromptnormal}
+\traceatlascard{Snakes and Ladders: Remaining Distance to Finish}{figures/scene_atlas/assets/games_09_snakes_ladders_remaining_to_finish_value.png}{The visual shows a numbered Snakes and Ladders board with one token and visible snakes and ladders. How far is the token from the final square by square number?}{12}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
 \traceatlascard{Racing Track: Ahead Object}{figures/scene_atlas/assets/games_10_racing_track_ahead_object_count.png}{The scene shows a top-down loop racing track with a checkered finish line, a direction arrow, a marked car, and other labeled cars. Follow the arrow direction from the marked car to the finish line. Do not count the marked car. Count only the cars ahead of the marked car before the finish line.}{0}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Circular Chess: Target Cell Reacher}{figures/scene_atlas/assets/games_11_circular_chess_target_cell_reacher_count.png}{On this four-ring, sixteen-sector circular chess board, sectors wrap but rings do not. The red cell is the target. Rooks move along or across rings, bishops diagonally, queens as both, knights jump, and kings one step; sliding pieces stop at the first occupied cell. How many Black pieces can reach the target?}{3}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Dots And Boxes: Owned Box}{figures/scene_atlas/assets/games_12_dots_and_boxes_owned_box_count.png}{The scene shows a dots-and-boxes grid with some edges already drawn. How many boxes are marked with player B?}{8}{\traceatlaspromptnormal}
+\traceatlascard{Dots and Boxes: Owned Box}{figures/scene_atlas/assets/games_12_dots_and_boxes_owned_box_count.png}{The scene shows a dots-and-boxes grid with some edges already drawn. How many boxes are marked with player B?}{8}{\traceatlaspromptnormal}
 \caption{Representative game tasks.}
 \label{fig:task-atlas-games}
 \end{figure}
@@ -98,23 +98,23 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 
 \begin{figure}[p]
 \centering
-\traceatlascard{Circle Pair Tangents: External Tangent Segment Length}{figures/scene_atlas/assets/geometry_01_circle_pair_tangents_external_tangent_segment_length_value.png}{This geometry diagram shows two separated non-concentric circles with centers C and D, a common tangent touching them at A and B, radii to the tangent points, and an auxiliary right triangle CED whose leg ED shows the radius difference. Find the center-to-center distance CD.}{225}{\traceatlaspromptdense}
+\traceatlascard{Circle Pair Tangents: Center Distance}{figures/scene_atlas/assets/geometry_01_circle_pair_tangents_external_tangent_segment_length_value.png}{This geometry diagram shows two separated non-concentric circles with centers C and D, a common tangent touching them at A and B, radii to the tangent points, and an auxiliary right triangle CED whose leg ED shows the radius difference. Find the center-to-center distance CD.}{225}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Solid Cross Section: Square Pyramid Parallel Slice Area}{figures/scene_atlas/assets/geometry_02_solid_cross_section_square_pyramid_parallel_slice_area.png}{The labeled diagram shows a square pyramid cut by a plane parallel to its base, with the cross-section marked and dimensions labeled. The marked slice is parallel to the base. Use similar solids with scale d/H to find the value of A for the cross-section.}{130}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Measuring Tools: Protractor Angle}{figures/scene_atlas/assets/geometry_03_measuring_tools_protractor_angle_value.png}{The figure shows a geometric figure with a protractor placed at the marked angle. Read the protractor scale at the marked angle. What is the angle measure in degrees?}{150}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Sector: Central Angle From Sector Measure}{figures/scene_atlas/assets/geometry_04_sector_central_angle_from_sector_measure_value.png}{The sector figure shows a circular sector with labeled points. Compute the measure of angle AOB. Use the labeled radius and shaded sector area.}{45}{\traceatlaspromptnormal}
+\traceatlascard{Sector: Central Angle from Sector Measure}{figures/scene_atlas/assets/geometry_04_sector_central_angle_from_sector_measure_value.png}{The sector figure shows a circular sector with labeled points. Compute the measure of angle AOB. Use the labeled radius and shaded sector area.}{45}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Special Quadrilateral: Segment Length}{figures/scene_atlas/assets/geometry_05_special_quadrilateral_segment_length_value.png}{The figure shows a quadrilateral with construction marks and measurement labels. Solve the visible rhombus side expressions. What is the length of "segment CD"?}{43}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Paper Fold: Folded Segment Length}{figures/scene_atlas/assets/geometry_06_paper_fold_folded_segment_length_value.png}{This folded-paper diagram shows a folded paper corner with dashed original edges, a crease, a folded flap, and side-length labels. The crease EF folds A onto P. What is the value of the marked segment FP?}{231}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Circle Theorem: Inscribed Angle Value Inscribed Angle From Arc}{figures/scene_atlas/assets/geometry_07_circle_theorem_inscribed_angle_value_inscribed_angle_from_arc.png}{The geometry diagram shows a circle with labeled points and shown measurements. Find the missing inscribed angle ACB.}{25}{\traceatlaspromptnormal}
+\traceatlascard{Circle Theorem: Inscribed Angle from Arc}{figures/scene_atlas/assets/geometry_07_circle_theorem_inscribed_angle_value_inscribed_angle_from_arc.png}{The geometry diagram shows a circle with labeled points and shown measurements. Find the missing inscribed angle ACB.}{25}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Rectangular Solid: Open Box Net Dimension}{figures/scene_atlas/assets/geometry_08_rectangular_solid_open_box_net_dimension_value.png}{The diagram shows a labeled rectangular solid, cube frame, or open-box net with integer measurements and one missing value marker. Use the sheet dimensions and the equal corner cutouts. Using the sheet dimensions and cut size, find the marked resulting base dimension.}{6}{\traceatlaspromptdense}
+\traceatlascard{Rectangular Solid: Open Box Net Dimension}{figures/scene_atlas/assets/geometry_08_rectangular_solid_open_box_net_dimension_value.png}{The diagram shows an open-box net with sheet dimensions, equal corner cutouts, and one missing base dimension. Using the sheet dimensions and cut size, find the marked base dimension.}{6}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Circle Centerline Overlap: Segment Length}{figures/scene_atlas/assets/geometry_09_circle_centerline_overlap_segment_length_value.png}{The diagram shows two overlapping circles whose centers lie on one line. Boundary labels mark where circles cross the shared centerline; radius labels and centerline segment labels are visible. Determine QB.}{7}{\traceatlaspromptnormal}
 \par\vspace{2pt}
@@ -138,7 +138,7 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \traceatlascard{Node Link: Bridge}{figures/scene_atlas/assets/graph_03_node_link_bridge_count.png}{The figure shows a labeled undirected graph. What is the number of bridges in the graph?}{3}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Phylogeny Tree: Mrca Clade Membership}{figures/scene_atlas/assets/graph_04_phylogeny_tree_mrca_clade_membership_count.png}{The figure shows a rooted phylogeny cladogram with labeled taxa. Count the terminal taxa in the MRCA clade for "B" and "L".}{6}{\traceatlaspromptnormal}
+\traceatlascard{Phylogeny Tree: MRCA Clade Membership}{figures/scene_atlas/assets/graph_04_phylogeny_tree_mrca_clade_membership_count.png}{The figure shows a rooted phylogeny cladogram with labeled taxa. Count the terminal taxa in the MRCA clade for "B" and "L".}{6}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Graph Options: Same Structure}{figures/scene_atlas/assets/graph_05_graph_options_same_structure_label.png}{You are shown a Reference labeled graph above four labeled graph options. Which option has the same labeled graph structure as the Reference, ignoring layout?}{B}{\traceatlaspromptnormal}
 \hfill
@@ -164,9 +164,9 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 
 \begin{figure}[p]
 \centering
-\traceatlascard{Named Path: Path Neighbor}{figures/scene_atlas/assets/icons_01_named_path_path_neighbor_label.png}{The picture shows a START-to-END icon path with six option icons labeled A-F and other icons. Which labeled icon comes immediately after the first "flag" icon along the path from START to END?}{F}{\traceatlaspromptnormal}
+\traceatlascard{Named Path: Immediate Successor}{figures/scene_atlas/assets/icons_01_named_path_path_neighbor_label.png}{The picture shows a START-to-END icon path with six option icons labeled A-F and other icons. Which labeled icon comes immediately after the first "flag" icon along the path from START to END?}{F}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Wallpaper Panels: Same Pattern As Reference}{figures/scene_atlas/assets/icons_02_wallpaper_panels_same_pattern_as_reference_label.png}{The image shows one Reference wallpaper panel above four labeled wallpaper panels filled with repeated icon motifs. Select the labeled panel whose wallpaper pattern matches the Reference panel.}{C}{\traceatlaspromptnormal}
+\traceatlascard{Wallpaper Panels: Same Pattern as Reference}{figures/scene_atlas/assets/icons_02_wallpaper_panels_same_pattern_as_reference_label.png}{The image shows one Reference wallpaper panel above four labeled wallpaper panels filled with repeated icon motifs. Select the labeled panel whose wallpaper pattern matches the Reference panel.}{C}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Sequence Strip: Size Progression Completion}{figures/scene_atlas/assets/icons_03_sequence_strip_size_progression_completion_label.png}{The image shows a top row of four boxed sequence cells with one question-mark box and a bottom row of four labeled option boxes. Which labeled option should replace the question mark in the size sequence?}{C}{\traceatlaspromptnormal}
 \par\vspace{2pt}
@@ -175,7 +175,7 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \hfill
 \traceatlascard{Single Transform Options: Inverse Geometric Transform Source}{figures/scene_atlas/assets/icons_05_single_transform_options_inverse_geometric_transform_source_label.png}{The scene shows a transformed Reference icon with a transform cue and four labeled source-option icons. Select the option that would become the Reference icon after a vertical flip.}{B}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Named Field: Reference Distance Rank}{figures/scene_atlas/assets/icons_06_named_field_reference_distance_rank_label.png}{The picture shows a panel with one reference icon, six option icons labeled A-F, and other icons. Which labeled icon is second closest to the magenta [\#D02C91] "shield" icon?}{E}{\traceatlaspromptnormal}
+\traceatlascard{Named Field: Reference Distance Rank}{figures/scene_atlas/assets/icons_06_named_field_reference_distance_rank_label.png}{The picture shows a panel with one reference icon, six option icons labeled A-F, and other icons. Which labeled icon is second closest to the magenta shield icon?}{E}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
 \traceatlascard{Icon Field: Frequency Extreme Type}{figures/scene_atlas/assets/icons_07_icon_field_frequency_extreme_type_label.png}{The picture shows one panel of assorted icons. Which marked icon type appears most often in the image?}{B}{\traceatlaspromptnormal}
@@ -185,7 +185,7 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \traceatlascard{Paired Canvas: Rotation Change}{figures/scene_atlas/assets/icons_09_paired_canvas_rotation_change_count.png}{The picture shows two icon panels labeled Left and Right with corresponding icons at matching positions. How many Right-panel icons changed rotation compared with the corresponding icon in the Left panel?}{4}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Venn Field: Same Region As Reference}{figures/scene_atlas/assets/icons_10_venn_field_same_region_as_reference_count.png}{The scene shows icons and two overlapping marked circles. By icon center, the possible regions are left-only, right-only, both-circle overlap, and outside both circles. Find the number of "mushroom" icons in the marked reference icon's region.}{3}{\traceatlaspromptdense}
+\traceatlascard{Venn Field: Same Region as Reference}{figures/scene_atlas/assets/icons_10_venn_field_same_region_as_reference_count.png}{The scene shows icons and two overlapping marked circles. By icon center, the possible regions are left-only, right-only, both-circle overlap, and outside both circles. Find the number of "mushroom" icons in the marked reference icon's region.}{3}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Overlap Grid: Occlusion Order}{figures/scene_atlas/assets/icons_11_overlap_grid_occlusion_order_count.png}{The image shows a Reference cell beside a labeled Scene grid. How many labeled Scene cells match the Reference front-to-back order? Front-to-back order means which icon is on top.}{3}{\traceatlaspromptnormal}
 \hfill
@@ -197,11 +197,11 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 
 \begin{figure}[p]
 \centering
-\traceatlascard{Library: Filtered Book In Section}{figures/scene_atlas/assets/illustrations_01_library_filtered_book_in_section_count.png}{The scene shows a library room containing 5 labeled book sections. How many upright books are in the Music section?}{3}{\traceatlaspromptnormal}
+\traceatlascard{Library: Filtered Book in Section}{figures/scene_atlas/assets/illustrations_01_library_filtered_book_in_section_count.png}{The scene shows a library room containing 5 labeled book sections. How many upright books are in the Music section?}{3}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Indoor Room: Swapped Tile Pair}{figures/scene_atlas/assets/illustrations_02_indoor_room_swapped_tile_pair_label.png}{The scene shows a bedroom with small objects. Find the pair of numbered cells that were swapped in the room image.}{A}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Rpg Dungeon: Safe Reachable Chest}{figures/scene_atlas/assets/illustrations_03_rpg_dungeon_safe_reachable_chest_count.png}{The scene shows a top-down RPG-style dungeon map with walkable floor, blocked passages, treasure chests, and monsters inside some chambers. Starting from the player, how many treasure chests can be reached without crossing boulders, excluding any chest in a chamber that contains a monster?}{1}{\traceatlaspromptdense}
+\traceatlascard{RPG Dungeon: Safe Reachable Chest}{figures/scene_atlas/assets/illustrations_03_rpg_dungeon_safe_reachable_chest_count.png}{The scene shows a top-down RPG-style dungeon map with walkable floor, blocked passages, treasure chests, and monsters inside some chambers. Starting from the player, how many treasure chests can be reached without crossing boulders, excluding any chest in a chamber that contains a monster?}{1}{\traceatlaspromptdense}
 \par\vspace{2pt}
 \noindent
 \traceatlascard{Isometric Farmstead: Farmer Same Level Tile}{figures/scene_atlas/assets/illustrations_04_isometric_farmstead_farmer_same_level_tile_label.png}{This illustration shows a farmstead drawn on isometric tiles, with a farmer and lettered candidate ground tiles. Select the lettered farm tile whose ground level matches the farmer's tile.}{C}{\traceatlaspromptnormal}
@@ -211,14 +211,14 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \traceatlascard{Pixel Village: Rotated Tile}{figures/scene_atlas/assets/illustrations_06_pixel_village_rotated_tile_label.png}{The canvas contains a top-down pixel village scene. Which letter marks the tile with the incorrect orientation?}{C}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Rpg Tactical Map: Water Barrier Unreachable Tile}{figures/scene_atlas/assets/illustrations_07_rpg_tactical_map_water_barrier_unreachable_tile_label.png}{Water tiles form a barrier and cannot be crossed; every other tile can. The blue unit moves only up, down, left, or right. Which candidate letter marks a tile the blue unit cannot reach?}{D}{\traceatlaspromptdense}
+\traceatlascard{RPG Tactical Map: Water-Barrier Unreachable Tile}{figures/scene_atlas/assets/illustrations_07_rpg_tactical_map_water_barrier_unreachable_tile_label.png}{Water tiles form a barrier and cannot be crossed; every other tile can. The blue unit moves only up, down, left, or right. Which candidate letter marks a tile the blue unit cannot reach?}{D}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Isometric Quarry: Highest Terrain Tile}{figures/scene_atlas/assets/illustrations_08_isometric_quarry_highest_terrain_tile_count.png}{The scene shows a pixel-art isometric quarry with a clean highest terrace and lower surrounding rock terrain. Count only the visible top-surface tiles on the highest elevated quarry layer.}{5}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Environment: Rotated Tile}{figures/scene_atlas/assets/illustrations_09_environment_rotated_tile_label.png}{The image shows a meadow river setting with illustrated foreground objects and visible environmental features. One of the lettered tiles is rotated relative to the rest of the environment image. Which tile is it?}{D}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Rpg House: Adjacent Room}{figures/scene_atlas/assets/illustrations_10_rpg_house_adjacent_room_count.png}{The canvas contains a top-down RPG house map with enclosed rooms, walls, and doorways. How many rooms are immediately connected to the room with the player by a doorway?}{4}{\traceatlaspromptnormal}
+\traceatlascard{RPG House: Adjacent Room}{figures/scene_atlas/assets/illustrations_10_rpg_house_adjacent_room_count.png}{The canvas contains a top-down RPG house map with enclosed rooms, walls, and doorways. How many rooms are immediately connected to the room with the player by a doorway?}{4}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Isometric Harbor: Boat Side}{figures/scene_atlas/assets/illustrations_11_isometric_harbor_boat_side_count.png}{The picture shows an isometric dockyard with shoreline tiles, water tiles, a wooden pier, dock objects, and boats tied along the dock. Count only the boats on the image-left side of the wooden main dock.}{5}{\traceatlaspromptnormal}
 \hfill
@@ -232,7 +232,7 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \centering
 \traceatlascard{Web Action: Action Target}{figures/scene_atlas/assets/pages_01_web_action_action_target_label.png}{The browser page includes a guide-code table and labeled candidate controls. Click the control on the item with category "Home", status "Clearance", and guide code "M2". Which candidate label marks that control?}{S}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Mixed Infographic Page: Two Module Field Total Comparison Module}{figures/scene_atlas/assets/pages_02_mixed_infographic_page_two_module_field_total_comparison_module_label.png}{The image shows a dense mixed infographic page with titled modules, item labels, field labels, printed values, and native context text. Between "Music" and "Logistics", which module has the greater sum of "Score" values?}{Music}{\traceatlaspromptnormal}
+\traceatlascard{Mixed Infographic Page: Field-Total Comparison}{figures/scene_atlas/assets/pages_02_mixed_infographic_page_two_module_field_total_comparison_module_label.png}{The image shows a dense mixed infographic page with titled modules, item labels, field labels, printed values, and native context text. Between "Music" and "Logistics", which module has the greater sum of "Score" values?}{Music}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Infographic: Section Icon Total Difference}{figures/scene_atlas/assets/pages_03_infographic_section_icon_total_difference_value.png}{The image shows a multi-section infographic with labeled metric cards and printed values. Add the credit card-icon cards in section "Education" and in section "Beverage". What is the nonnegative difference?}{70}{\traceatlaspromptnormal}
 \par\vspace{2pt}
@@ -248,14 +248,14 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \hfill
 \traceatlascard{Paired Forms: Total Amount Delta}{figures/scene_atlas/assets/pages_08_paired_forms_total_amount_delta_value.png}{The purchase order and receiving slip show matching item codes, quantities, and purchase-order unit values. For each item with differing quantities, multiply the absolute quantity difference by its unit value and sum the products. What is the total amount delta?}{80}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Instruction Panel: Step For Control Pair}{figures/scene_atlas/assets/pages_09_instruction_panel_step_for_control_pair_label.png}{The visual shows an instruction panel with numbered steps and visible control chips on each step. Find the step with control labels "Search" and "Share". What number is on that step?}{2}{\traceatlaspromptnormal}
+\traceatlascard{Instruction Panel: Step for Control Pair}{figures/scene_atlas/assets/pages_09_instruction_panel_step_for_control_pair_label.png}{The visual shows an instruction panel with numbered steps and visible control chips on each step. Find the step with control labels "Search" and "Share". What number is on that step?}{2}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
 \traceatlascard{Step List: Relative Offset Step}{figures/scene_atlas/assets/pages_10_step_list_relative_offset_step_label.png}{This page shows a numbered workflow step list where each step card has labeled Title and Detail fields plus other small fields. What step title is 3 steps after the step titled "Payload"?}{Drift}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Map: Landmark After Route Step}{figures/scene_atlas/assets/pages_11_map_landmark_after_route_step_label.png}{The figure shows a printed campus layout with labeled landmarks, named zones, visible walking paths, and a highlighted orange route. Trace the highlighted path from "Valley Hall" to "Lab Annex". Which label is at the 3rd reached landmark?}{Lab Annex}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Profile Card Grid: Field Ranked Profile}{figures/scene_atlas/assets/pages_12_profile_card_grid_field_ranked_profile_label.png}{This page shows a grid of profile cards, each with a visible profile name and labeled fields. Which visible profile ranks highest by Hours?}{Patsyann}{\traceatlaspromptnormal}
+\traceatlascard{Profile Card Grid: Highest-Value Profile}{figures/scene_atlas/assets/pages_12_profile_card_grid_field_ranked_profile_label.png}{This page shows a grid of profile cards, each with a visible profile name and labeled fields. Which visible profile ranks highest by Hours?}{Patsyann}{\traceatlaspromptnormal}
 \caption{Representative page tasks.}
 \label{fig:task-atlas-pages}
 \end{figure}
@@ -274,7 +274,7 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \hfill
 \traceatlascard{Magnetic Force: Force Direction Choice}{figures/scene_atlas/assets/physics_05_magnetic_force_force_direction_choice.png}{The image shows a magnetic-field panel with field-direction symbols, a charged particle, a velocity arrow, and eight labeled candidate force arrows. Which option A-H points in the direction of the force on the charged particle?}{H}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Wave Interference: Path Difference}{figures/scene_atlas/assets/physics_06_wave_interference_path_difference_value.png}{The diagram shows two labeled wave sources and their circular interference wavefronts. Using the wavefront spacing, determine |S1P-S2P| in lambda/2 steps. Use the diagram's visible wavefront spacing and labels.}{2}{\traceatlaspromptnormal}
+\traceatlascard{Wave Interference: Path Difference}{figures/scene_atlas/assets/physics_06_wave_interference_path_difference_value.png}{The diagram shows two labeled wave sources and their circular interference wavefronts. Using the visible wavefront spacing and labels, determine the absolute path difference between S1P and S2P in half-wavelength steps.}{2}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
 \traceatlascard{Spring: Spring Extension Difference}{figures/scene_atlas/assets/physics_07_spring_spring_extension_difference.png}{The figure shows a pair of identical springs with weight blocks and ruler markers. Using the two ruler markers, what integer difference in extension do the springs show?}{12}{\traceatlaspromptnormal}
@@ -284,11 +284,11 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \traceatlascard{Electromagnetic Induction: Induced Current Direction}{figures/scene_atlas/assets/physics_09_electromagnetic_induction_induced_current_direction_count.png}{The induction diagram shows six mini-panels showing conducting loops, into-page or out-of-page magnetic-field symbols, and visible cues for changing or unchanged magnetic flux. How many panels have a clockwise induced current in the loop?}{6}{\traceatlaspromptdense}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Wire Magnetism: Wire Field Direction Choice}{figures/scene_atlas/assets/physics_10_wire_magnetism_wire_field_direction_choice.png}{The diagram shows a current-carrying wire through the page and direction options for the field at point P. Use the wire current cue and point P to determine the circular magnetic-field direction. Choose the labeled arrow option. What labeled arrow option matches the field direction at point P?}{C}{\traceatlaspromptdense}
+\traceatlascard{Wire Magnetism: Wire Field Direction Choice}{figures/scene_atlas/assets/physics_10_wire_magnetism_wire_field_direction_choice.png}{The diagram shows a current-carrying wire through the page, point P, and labeled arrow options. Use the current cue to determine the circular magnetic-field direction at P. Which arrow option matches that direction?}{C}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Stack Stability: Stability Status}{figures/scene_atlas/assets/physics_11_stack_stability_stability_status_label.png}{The image shows six labeled stacks of equal-size brick blocks. Which labeled stack will stay upright because its center-of-mass projection falls within its support base?}{A}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Lever: Missing Weight Balance}{figures/scene_atlas/assets/physics_12_lever_missing_weight_balance_value.png}{The figure shows a lever setup with a fulcrum, distance marks, and weight blocks. What weight should replace the marked `?` block so the lever balances?}{4}{\traceatlaspromptnormal}
+\traceatlascard{Lever: Missing Weight Balance}{figures/scene_atlas/assets/physics_12_lever_missing_weight_balance_value.png}{The figure shows a lever with a fulcrum, distance marks, and weight blocks. What weight should replace the block marked with a question mark so the lever balances?}{4}{\traceatlaspromptnormal}
 \caption{Representative physics tasks.}
 \label{fig:task-atlas-physics}
 \end{figure}
@@ -303,25 +303,25 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 \traceatlascard{Word Search: Search Location}{figures/scene_atlas/assets/puzzles_03_word_search_search_location_label.png}{The visual shows a row-and-column labeled word-search grid. Which labeled option below the grid matches the placement of "NOVA" in the word-search grid?}{E}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Rubiks Net: Post Move Face Color Count}{figures/scene_atlas/assets/puzzles_04_rubiks_net_post_move_face_color_count_label.png}{The scene shows a Rubik-style cube net with face labels, a Target color swatch, and four labeled number options; a prime mark means counterclockwise as viewed from outside the turned face. After the sequence R' B' L, choose the count of Target-color stickers on the Upper face.}{B}{\traceatlaspromptdense}
+\traceatlascard{Rubik's Cube Net: Post-Move Face Color Count}{figures/scene_atlas/assets/puzzles_04_rubiks_net_post_move_face_color_count_label.png}{The scene shows a Rubik's Cube net with face labels, a target-color swatch, and four numbered options. A prime mark denotes a counterclockwise turn as viewed from outside the affected face. After the sequence R' B' L, which option gives the number of target-color stickers on the upper face?}{B}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Toggle Grid: Toggle Result}{figures/scene_atlas/assets/puzzles_05_toggle_grid_toggle_result_label.png}{The scene shows a toggle grid with switch cells, binary cell states, and visual answer options. Use the start grid and the red marked switch. After that one press toggles its cell and edge-neighbor cells, which labeled option matches the final state?}{D}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Maze: Nearest Exit}{figures/scene_atlas/assets/puzzles_06_maze_nearest_exit_label.png}{The image shows an orthogonal wall maze with a START cell and labeled exits on the outer boundary. Which labeled exit is nearest to START by corridor path length?}{A}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Pipe Flow: Pipe Flow Repair Tile}{figures/scene_atlas/assets/puzzles_07_pipe_flow_pipe_flow_repair_tile_label.png}{The pipe puzzle shows an industrial conduit tile grid with a green start marker and red finish flag. Find the single option whose displayed openings make a continuous path from the green start marker to the red finish flag through the black 2x2 gap. Do not rotate or flip options.}{A}{\traceatlaspromptdense}
+\traceatlascard{Pipe Flow: Repair Tile}{figures/scene_atlas/assets/puzzles_07_pipe_flow_pipe_flow_repair_tile_label.png}{The pipe puzzle shows an industrial conduit tile grid with a green start marker and red finish flag. Find the single option whose displayed openings make a continuous path from the green start marker to the red finish flag through the black 2x2 gap. Do not rotate or flip options.}{A}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Cyclic Order: Cyclic Order Equivalent}{figures/scene_atlas/assets/puzzles_08_cyclic_order_cyclic_order_equivalent_label.png}{The image shows a reference token loop above six labeled option loops. Use the token colors when comparing cyclic order. Exactly one option loop is equivalent to the reference loop. Rotations count as equivalent; reversed or reflected order does not.}{D}{\traceatlaspromptdense}
+\traceatlascard{Cyclic Order: Equivalent Arrangement}{figures/scene_atlas/assets/puzzles_08_cyclic_order_cyclic_order_equivalent_label.png}{The image shows a reference token loop above six labeled option loops. Use the token colors when comparing cyclic order. Exactly one option loop is equivalent to the reference loop. Rotations count as equivalent; reversed or reflected order does not.}{D}{\traceatlaspromptdense}
 \hfill
 \traceatlascard{Star Battle: Valid Cell Anywhere}{figures/scene_atlas/assets/puzzles_09_star_battle_valid_cell_anywhere_label.png}{The visual shows a partially filled Star Battle grid with colored regions, visible stars, and labeled candidate cells. Use these Star Battle rules: each row, column, and colored region must contain exactly one star; stars cannot touch, even diagonally. Choose the labeled cell where another star can be placed.}{C}{\traceatlaspromptdense}
 \par\vspace{2pt}
 \noindent
 \traceatlascard{Tents: Violating Tent}{figures/scene_atlas/assets/puzzles_10_tents_violating_tent_label.png}{The figure shows a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents. Inspect the labeled tents. Which label marks the tent that has no orthogonally adjacent tree?}{D}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Raven Matrix: Raven Spatial Transform}{figures/scene_atlas/assets/puzzles_11_raven_matrix_raven_spatial_transform_label.png}{The image shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Select the option whose mini-grid pattern fits the spatial arrangement rule.}{D}{\traceatlaspromptnormal}
+\traceatlascard{Raven Matrix: Spatial Transform}{figures/scene_atlas/assets/puzzles_11_raven_matrix_raven_spatial_transform_label.png}{The image shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Select the option whose mini-grid pattern fits the spatial arrangement rule.}{D}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Nonogram: Candidate Solution}{figures/scene_atlas/assets/puzzles_12_nonogram_candidate_solution_label.png}{This nonogram shows a card-style nonogram clue grid with labeled filled-grid options. Use both clue rails to identify the correct candidate grid.}{A}{\traceatlaspromptnormal}
+\traceatlascard{Nonogram: Candidate Solution}{figures/scene_atlas/assets/puzzles_12_nonogram_candidate_solution_label.png}{This nonogram shows a clue grid with labeled filled-grid options. Use both clue rails to identify the correct candidate grid.}{A}{\traceatlaspromptnormal}
 \caption{Representative puzzle tasks.}
 \label{fig:task-atlas-puzzles}
 \end{figure}
@@ -329,32 +329,32 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 
 \begin{figure}[p]
 \centering
-\traceatlascard{Organic Structure: Bond Order}{figures/scene_atlas/assets/symbolic_01_organic_structure_bond_order_count.png}{The visual panel contains a clean worksheet-style organic skeletal structure with line-angle bonds, rings, and occasional atom or substituent labels. Count only the visible triple bonds.}{4}{\traceatlaspromptnormal}
+\traceatlascard{Organic Structure: Bond Order}{figures/scene_atlas/assets/symbolic_01_organic_structure_bond_order_count.png}{The visual panel contains an organic skeletal structure with line-angle bonds, rings, and occasional atom or substituent labels. Count only the visible triple bonds.}{4}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Life Automaton: One Step Cell State}{figures/scene_atlas/assets/symbolic_02_life_automaton_one_step_cell_state_count.png}{In the START grid, dark cells are alive. An alive cell survives with two or three live neighbors; an empty cell becomes alive with exactly three; every other cell is empty next. After one update, how many cells are empty?}{9}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Dice: Pair Attribute Combo Probability}{figures/scene_atlas/assets/symbolic_03_dice_pair_attribute_combo_probability.png}{The trays show each die's top value. One die is selected uniformly and independently from each tray. Which A-F option gives the probability that both selected dice show even values?}{C}{\traceatlaspromptdense}
+\traceatlascard{Dice: Joint Even-Value Probability}{figures/scene_atlas/assets/symbolic_03_dice_pair_attribute_combo_probability.png}{The trays show each die's top value. One die is selected uniformly and independently from each tray. Which A-F option gives the probability that both selected dice show even values?}{C}{\traceatlaspromptdense}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Spinner: Multi Attribute And Probability}{figures/scene_atlas/assets/symbolic_04_spinner_multi_attribute_and_probability.png}{Each spinner sector is equally likely and has a color and shape. Which A-F fraction option gives the probability of landing on a purple sector marked with a star?}{A}{\traceatlaspromptdense}
+\traceatlascard{Spinner: Color-and-Shape Probability}{figures/scene_atlas/assets/symbolic_04_spinner_multi_attribute_and_probability.png}{Each spinner sector is equally likely and has a color and shape. Which A-F fraction option gives the probability of landing on a purple sector marked with a star?}{A}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Truth Table: Truth Pattern}{figures/scene_atlas/assets/symbolic_05_truth_table_truth_pattern_label.png}{A truth table shows an exam-scan-style input table, a target expression P, and six labeled output-pattern options. Values use 1 for true and 0 for false. The operators are ! for NOT, \& for AND, | for OR, and \textasciicircum{} for XOR. Read the rows from top to bottom. Which option matches the truth pattern for P?}{A}{\traceatlaspromptdense}
+\traceatlascard{Truth Table: Truth Pattern}{figures/scene_atlas/assets/symbolic_05_truth_table_truth_pattern_label.png}{A truth table shows an input table, a target expression P, and six labeled output-pattern options. Values use 1 for true and 0 for false. The operators are ! for NOT, \& for AND, | for OR, and \textasciicircum{} for XOR. Reading rows from top to bottom, which option matches the truth pattern for P?}{A}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Abacus: Displayed Value Readout}{figures/scene_atlas/assets/symbolic_06_abacus_displayed_value_readout.png}{On the three-column abacus, beads touching the center bar are active. An active upper bead is worth 5 and each active lower bead 1. Read the 100, 10, and 1 columns from left to right. Which option gives the displayed number?}{A}{\traceatlaspromptdense}
+\traceatlascard{Abacus: Displayed Value}{figures/scene_atlas/assets/symbolic_06_abacus_displayed_value_readout.png}{On the three-column abacus, beads touching the center bar are active. An active upper bead is worth 5 and each active lower bead 1. Read the 100, 10, and 1 columns from left to right. Which option gives the displayed number?}{A}{\traceatlaspromptdense}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Braille Cell: Matching Pattern}{figures/scene_atlas/assets/symbolic_07_braille_cell_matching_pattern_label.png}{This Braille-cell panel shows a notebook-style Braille reference cell and six labeled Braille option cells. Which option letter matches the reference Braille-cell pattern?}{D}{\traceatlaspromptnormal}
+\traceatlascard{Braille Cell: Matching Pattern}{figures/scene_atlas/assets/symbolic_07_braille_cell_matching_pattern_label.png}{This panel shows a Braille reference cell and six labeled Braille option cells. Which option letter matches the reference pattern?}{D}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Morse Code: Morse Word Read}{figures/scene_atlas/assets/symbolic_08_morse_code_morse_word_read_label.png}{A visual Morse-code panel presents an exam-scan-style Morse-code word card above four labeled word options. Which labeled word option matches the Morse code shown above?}{C}{\traceatlaspromptnormal}
+\traceatlascard{Morse Code: Morse Word Read}{figures/scene_atlas/assets/symbolic_08_morse_code_morse_word_read_label.png}{A visual Morse-code panel presents a Morse-code word above four labeled word options. Which labeled option matches the Morse code?}{C}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Music Staff: Scale Degree Function}{figures/scene_atlas/assets/symbolic_09_music_staff_scale_degree_function_label.png}{The visual shows a notebook-style sheet-music staff panel with marked notation items. Select the option naming the scale-degree function of note 3 in G major.}{E}{\traceatlaspromptnormal}
+\traceatlascard{Music Staff: Scale Degree Function}{figures/scene_atlas/assets/symbolic_09_music_staff_scale_degree_function_label.png}{The visual shows a sheet-music staff with marked notation items. Select the option naming the scale-degree function of note 3 in G major.}{E}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
 \traceatlascard{Agent Automaton: Future Grid}{figures/scene_atlas/assets/symbolic_10_agent_automaton_future_grid_label.png}{Starting at the arrow, apply three updates. Before moving, state 0 turns right and becomes 1; state 1 goes straight and becomes 2; state 2 turns left and becomes 0. The agent then moves one cell forward, wrapping at the grid edge. Which option shows the resulting grid?}{C}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Turing Tape: Turing Written Symbol}{figures/scene_atlas/assets/symbolic_11_turing_tape_turing_written_symbol_count.png}{Starting from the shown tape, head, and state, simulate six transitions. At each step, use the visible table to write a symbol, move left or right, and change state. How many tape cells contain symbol 0 afterward?}{5}{\traceatlaspromptdense}
+\traceatlascard{Turing Tape: Written-Symbol Count}{figures/scene_atlas/assets/symbolic_11_turing_tape_turing_written_symbol_count.png}{Starting from the shown tape, head, and state, simulate six transitions. At each step, use the visible table to write a symbol, move left or right, and change state. How many tape cells contain symbol 0 afterward?}{5}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Logic Gate Circuit: Output Value}{figures/scene_atlas/assets/symbolic_12_logic_gate_circuit_output_value_label.png}{A Boolean logic-gate panel shows a clean worksheet-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Evaluate each circuit. Which option's final OUT value is 1?}{A}{\traceatlaspromptdense}
+\traceatlascard{Logic Gate Circuit: Output Value}{figures/scene_atlas/assets/symbolic_12_logic_gate_circuit_output_value_label.png}{A Boolean logic-gate panel shows a circuit with labeled inputs, standard gate symbols, wires, and final OUT nodes. Evaluate each circuit. Which option's final OUT value is 1?}{A}{\traceatlaspromptnormal}
 \caption{Representative symbolic tasks.}
 \label{fig:task-atlas-symbolic}
 \end{figure}
@@ -362,28 +362,28 @@ Each page presents twelve seeded examples from one visual domain. Panels pair ea
 
 \begin{figure}[p]
 \centering
-\traceatlascard{Object Cluster: Multi Attribute Exclusion}{figures/scene_atlas/assets/three_d_01_object_cluster_multi_attribute_exclusion_count.png}{The visible scene contains many small 3D objects arranged on a plain surface. Count the cyan [\#34C4E0] clustered objects that are not cups. How many are there?}{1}{\traceatlaspromptnormal}
+\traceatlascard{Object Cluster: Color-and-Type Exclusion}{figures/scene_atlas/assets/three_d_01_object_cluster_multi_attribute_exclusion_count.png}{The visible scene contains many small 3D objects arranged on a plain surface. How many cyan objects are not cups?}{1}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Object Scene: Reference Nearest}{figures/scene_atlas/assets/three_d_02_object_scene_reference_nearest_label.png}{The scene shows a large reference object and six smaller candidate objects. Looking at the washing machine, choose the option for the nearest object.}{F}{\traceatlaspromptnormal}
+\traceatlascard{Object Scene: Nearest to Reference}{figures/scene_atlas/assets/three_d_02_object_scene_reference_nearest_label.png}{The scene shows a washing machine as the reference and six smaller candidate objects. Which option identifies the candidate nearest the washing machine?}{F}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Object Cluster: Multi Attribute Or}{figures/scene_atlas/assets/three_d_03_object_cluster_multi_attribute_or_count.png}{The image shows many small 3D objects arranged on a plain surface. What is the number of objects matching either condition: stools or blue [\#2D75E6] objects?}{5}{\traceatlaspromptnormal}
+\traceatlascard{Object Cluster: Type-or-Color Count}{figures/scene_atlas/assets/three_d_03_object_cluster_multi_attribute_or_count.png}{The image shows many small 3D objects arranged on a plain surface. How many objects are either stools or blue?}{5}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Surface Fixture: Repeated Element}{figures/scene_atlas/assets/three_d_04_surface_fixture_repeated_element_count.png}{The image shows a U-bolt plate with visible U-bolts. How many U-bolts are visible?}{7}{\traceatlaspromptnormal}
+\traceatlascard{Surface Fixture: U-Bolt Count}{figures/scene_atlas/assets/three_d_04_surface_fixture_repeated_element_count.png}{The image shows a U-bolt plate with visible U-bolts. How many U-bolts are visible?}{7}{\traceatlaspromptnormal}
 \hfill
-\traceatlascard{Warehouse: Nearest Candidate To Reference}{figures/scene_atlas/assets/three_d_05_warehouse_nearest_candidate_to_reference_label.png}{The image shows a perspective warehouse aisle with shelf racks, warehouse equipment, one red sphere reference object, candidate warehouse objects, and a text option panel below the scene. Which option describes the warehouse object closest to the red sphere?}{C}{\traceatlaspromptdense}
+\traceatlascard{Warehouse: Nearest Candidate to Reference}{figures/scene_atlas/assets/three_d_05_warehouse_nearest_candidate_to_reference_label.png}{The image shows a perspective warehouse aisle with shelf racks, warehouse equipment, one red sphere reference object, candidate warehouse objects, and a text option panel below the scene. Which option describes the warehouse object closest to the red sphere?}{C}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Room: Wall Object Same Wall Reference}{figures/scene_atlas/assets/three_d_06_room_wall_object_same_wall_reference_label.png}{The picture shows a perspective indoor room with floor, walls, furniture, room objects, and wall-mounted objects. Which option describes the object that shares a wall with the fan?}{B}{\traceatlaspromptnormal}
+\traceatlascard{Room: Object on the Reference Wall}{figures/scene_atlas/assets/three_d_06_room_wall_object_same_wall_reference_label.png}{The picture shows a perspective indoor room with floor, walls, furniture, room objects, and wall-mounted objects. Which option describes the object that shares a wall with the fan?}{B}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Carousel: Object Type Ordered Adjacent Pair}{figures/scene_atlas/assets/three_d_07_carousel_object_type_ordered_adjacent_pair_count.png}{The scene shows small 3D objects riding on two concentric elliptical conveyor belts. Following the order of the INNER belt, count each gloves immediately followed by pyramids. How many pairs are there?}{0}{\traceatlaspromptnormal}
+\traceatlascard{Carousel: Ordered Adjacent Pair Count}{figures/scene_atlas/assets/three_d_07_carousel_object_type_ordered_adjacent_pair_count.png}{The scene shows small 3D objects on two concentric elliptical belts. Following the order of the inner belt, count each occurrence of gloves immediately followed by pyramids. How many pairs are there?}{0}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Street: Intersection Nearest}{figures/scene_atlas/assets/three_d_08_street_intersection_nearest_label.png}{The view shows a perspective street intersection or T intersection with roads, sidewalks, crosswalk markings, street context, candidate street objects, and a text option panel below the scene. Which option describes the object closest to where the roads meet?}{B}{\traceatlaspromptdense}
 \hfill
-\traceatlascard{Conveyor: Object Type Ordered Adjacent Pair}{figures/scene_atlas/assets/three_d_09_conveyor_object_type_ordered_adjacent_pair_count.png}{The visual shows a three-lane conveyor with small objects on each lane. Following the order of the LEFT belt, count each flowers immediately followed by trophies. How many pairs are there?}{0}{\traceatlaspromptnormal}
+\traceatlascard{Conveyor: Ordered Adjacent Pair Count}{figures/scene_atlas/assets/three_d_09_conveyor_object_type_ordered_adjacent_pair_count.png}{The visual shows a three-lane conveyor with small objects on each lane. Following the order of the left belt, count each occurrence of flowers immediately followed by trophies. How many pairs are there?}{0}{\traceatlaspromptnormal}
 \par\vspace{2pt}
 \noindent
-\traceatlascard{Conveyor: Belt Total Object}{figures/scene_atlas/assets/three_d_10_conveyor_belt_total_object_count.png}{The visual shows a three-lane conveyor with small objects on each lane. How many objects are on the MIDDLE belt?}{1}{\traceatlaspromptnormal}
+\traceatlascard{Conveyor: Objects on Selected Belt}{figures/scene_atlas/assets/three_d_10_conveyor_belt_total_object_count.png}{The visual shows a three-lane conveyor with small objects on each lane. How many objects are on the MIDDLE belt?}{1}{\traceatlaspromptnormal}
 \hfill
 \traceatlascard{Carousel: Between Object Type Anchors}{figures/scene_atlas/assets/three_d_11_carousel_between_object_type_anchors_count.png}{A 3D conveyor carousel is shown with objects on the inner and outer belts. Follow the OUTER belt direction from the marked bowl A to the marked umbrella B. How many objects are strictly between them?}{5}{\traceatlaspromptnormal}
 \hfill

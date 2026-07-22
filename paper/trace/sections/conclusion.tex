@@ -1,14 +1,14 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-\trace treats multidomain visual reasoning data as a formal environment of scene
-grammars, executable task contracts, and replayable verifier traces. This
-design connects taxonomy, generation, validation, and answer-based RLVR in one
-environment. By keeping visual grammar separate from reasoning objectives,
-\trace supports controlled extension and regeneration without obscuring the
-unit being sampled, trained, or evaluated. In answer-only RLVR experiments,
-64,000 generated instances improve 24-benchmark macro-averages by 3.51 points
-at 3B and 4.06 points at 7B, with positive 7B transfer on every benchmark in
-the suite. These results support procedural task breadth as a practical source
-of transferable visual-reasoning experience while leaving mixture attribution,
-difficulty-aware curricula, and effective use of audit annotations open.
+\trace formulates procedural visual data as an executable environment in which
+scene grammars, task programs, bounded queries, and reward contracts are explicit
+and separable. This structure provides stable units for generation, task-balanced
+sampling, verification, and analysis while keeping every instance exactly
+verifiable and deterministically replayable across semantic and visual variation.
+RLVR on 64,000 \trace instances improves the macro-average across 24 external
+benchmarks by 3.51 points at 3B and 4.06 points at 7B, with positive mean changes
+on 21 of 24 and all 24 benchmarks, respectively. These results provide evidence
+that broad, structured procedural experience can support transferable visual
+reasoning rather than only improving performance on regenerated instances from
+the same task distributions.

@@ -1,65 +1,81 @@
 \section{Experimental Setup}
 \label{sec:experiments}
 
-We test whether answer-based RLVR on \trace transfers beyond the procedural
-images used for training. The controlled comparison starts from the
-Qwen2.5-VL-3B-Instruct and Qwen2.5-VL-7B-Instruct checkpoints
-\citep{bai2025qwen25vl} and changes only post-training. The final checkpoint at
-each scale is compared with its corresponding base model under one frozen
-external-evaluation protocol.
+Our experiments test whether RLVR on procedurally generated \trace instances
+improves visual reasoning beyond the distributions represented by the training
+tasks. We initialize from Qwen2.5-VL-3B-Instruct and
+Qwen2.5-VL-7B-Instruct~\citep{bai2025qwen25vl} and apply the same training
+procedure at both model scales. Each resulting checkpoint is compared with its
+corresponding base checkpoint under a common external-evaluation protocol.
 
 \subsection{Training data and reward}
 
-The training set contains 64 instances from each of the 1,000 tasks, for
-64,000 prompts in total. Images are embedded in the dataset and capped at
-1.28 million pixels. A separate IID set contains two new instances per task
-(2,000 total) and is used for monitoring every 100 updates; external
-benchmarks are not used for checkpoint selection. Both model scales use the
-same task identities, generated instances, prompts, and typed answers.
+Both model scales are trained on the same fixed set of 64,000 instances,
+comprising 64 independently generated examples from each of the 1,000 \trace
+tasks. A separate held-out \trace validation set contains two previously unseen
+instances per task, for 2,000 examples in total. All reported results use the
+final checkpoint after 500 updates.
 
-The model may reason freely, but must end its response with a JSON object of
-the form \texttt{\{"answer": ...\}}. Let $R_a$ indicate exact equality after
-type-aware answer canonicalization and let $R_f$ indicate a valid terminal
-JSON object with exactly the requested key. The bounded reward is
+The model may produce an unrestricted reasoning trace, but its response must
+terminate with a JSON object of the form
+\texttt{\{"answer": ...\}}. Let $R_a \in \{0,1\}$ indicate whether the
+submitted answer exactly matches the target after type-aware canonicalization,
+and let $R_f \in \{0,1\}$ indicate whether the response ends with a valid JSON
+object containing exactly the requested key. The reward is
 \begin{equation}
   R = 0.95 R_a + 0.05 R_f.
 \end{equation}
-No image-space annotation reward, learned reward model, or LLM judge is used
-during training.
+Answer correctness therefore determines the reward, while the smaller format
+term encourages a consistently parseable output interface.
 
 \subsection{Optimization}
 
-We train with group relative policy optimization (GRPO), sampling eight
-responses for each of 128 prompts per update. Rewards are normalized within
-each prompt group and optimized with a clipped token-level policy objective.
-Both models receive 500 updates, exactly one shuffled pass over the 64,000
-prompts and 512,000 sampled responses. We use full-parameter training with a
-learning rate of $10^{-6}$, one policy epoch, BF16 parameters, and no KL
-penalty. Sampling uses temperature 1.0 and top-$p$ 1.0. Training runs on eight
-H100 80GB GPUs and takes 12.2 hours for 3B and 13.9 hours for 7B. The complete
-shared configuration appears in Appendix~\ref{app:experiments}.
+We optimize both models with group relative policy optimization (GRPO). Each
+update samples 128 prompts and generates eight responses per prompt. Rewards
+are normalized within each eight-response group and optimized using a clipped
+token-level policy objective. The 500 updates correspond to one shuffled pass
+over the 64,000 training prompts and produce 512,000 sampled responses in
+total.
+
+We use full-parameter training with BF16 parameters, a learning rate of
+$10^{-6}$, and one policy epoch per update. Rollout sampling uses temperature
+1.0 and top-$p$ 1.0. Training is performed on eight H100 80GB GPUs and takes
+12.2 hours for the 3B model and 13.9 hours for the 7B model. The two scales
+share the same data, reward, sampling schedule, and optimization
+hyperparameters; Appendix~\ref{app:experiments} provides the complete
+configuration.
 
 \subsection{External evaluation}
 
-The external evaluation suite contains 24 benchmarks organized into six
-analysis groups: charts and tables, visual mathematics, science and general
-reasoning, spatial reasoning, perception and counting, and puzzles and logic.
-We evaluate the full selected split of every benchmark, totaling
-32,805 examples per model and decoding seed. Each benchmark retains its
-native scoring contract. Category scores are unweighted means of four
-benchmark scores, and the overall score is an unweighted mean of all 24, so a
-large benchmark cannot dominate the aggregate.
+To measure transfer beyond the \trace task distributions, we evaluate each
+base and trained checkpoint on 24 external benchmarks spanning six analysis
+groups: charts and tables, visual mathematics, science and general reasoning,
+spatial reasoning, perception and counting, and puzzles and logic. Each group
+contains four benchmarks. Table~\ref{tab:main-results} reports the complete
+per-benchmark results, while Appendix Table~\ref{tab:evaluation-suite} lists
+the evaluated splits, sample counts, and benchmark-specific references.
 
-Generation uses temperature 0.6, top-$p$ 1.0, a 4,096-token response cap, and
-decoding seeds 42, 43, and 44. These are repeated decoding seeds for one fixed
-checkpoint, not independent training runs. We report the mean and sample
-standard deviation across seeds. All models use the same benchmark prompts,
-image preprocessing bounds, parsers, and scorers under a pinned VLMEvalKit
-revision; the full suite is listed in Table~\ref{tab:evaluation-suite}.
+We evaluate each designated split in full, yielding 32,805 examples per model
+and decoding seed. Each benchmark retains its native evaluation metric.
+Category scores are computed as unweighted means of the four benchmarks in
+that group, and the overall score is the unweighted mean across all 24
+benchmarks. This macro-averaging prevents benchmarks with larger evaluation
+sets from dominating the aggregate result.
 
-For context at 7B, we also evaluate publicly released Qwen2.5-VL checkpoints
-from Game-RL, Sphinx, Jigsaw-R1/PCGRPO, and Vero
-\citep{tong2025gamerl,alam2026sphinx,wang2025jigsawr1,sarch2026vero}. These
-comparisons use the same external protocol, but their training corpora,
-optimization methods, and compute budgets differ. They are therefore
-contextual baselines rather than controlled alternatives to \trace training.
+For each fixed checkpoint, we repeat decoding with three seeds and report the
+mean and sample standard deviation. The seeds affect only response generation;
+the model weights remain unchanged. All checkpoints are evaluated with the same
+benchmark prompts, image-preprocessing bounds, parsers, scorers, and
+VLMEvalKit version~\citep{duan2024vlmevalkit}. Exact inference settings are provided in
+Appendix~\ref{app:experiments}.
+
+At the 7B scale, we additionally evaluate publicly available synthetic-data
+RLVR checkpoints from Game-RL, Sphinx, and
+PC-GRPO~\citep{tong2025gamerl,alam2026sphinx,jeddi2025pcgrpo}. We report
+Vero~\citep{sarch2026vero} separately as a real-image reference because its
+600K-example training mixture draws from 59 datasets and includes real-image
+data, whereas our runs use 64K procedurally generated instances. All
+checkpoints are evaluated under the same external protocol. Because their
+training data, optimization, and compute are not matched, these comparisons
+characterize checkpoint outcomes rather than isolate the effect of a specific
+training method or data source.

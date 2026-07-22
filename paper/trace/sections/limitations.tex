@@ -1,28 +1,28 @@
-\section{Limitations}
+\section{Limitations and Future Work}
 \label{sec:limitations}
 
-The taxonomy is designed and curated by humans, so its task boundaries remain
-judgment calls even when guided by program contracts. Procedural renderers can
-introduce style regularities unlike natural images, and broad task count does
-not guarantee complete coverage of real visual reasoning. Metadata verifiers
-guarantee consistency with the generated world, not that every rendering is
-equally easy to perceive.
+The \trace taxonomy is explicit but human-designed: task boundaries can still
+involve judgment, and the 1,000 authored tasks do not exhaust visual reasoning.
+The current operation families characterize computation types but do not define
+a common notion of difficulty across domains. Future work could model complexity
+through program structure, semantic-state size, visual density, and empirical
+solve rates.
 
-The experiments use one training run per model size; the reported variation
-comes from three decoding seeds, not independent post-training runs. External
-checkpoints are evaluated consistently but are not matched in data,
-optimization, or compute, and several benchmarks retain their native
-model-based graders. The 24-benchmark suite is broad but cannot establish
-transfer to every real-image distribution. Mixture ablations are also needed
-to separate the effect of individual domains from the effect of training on
-the complete task distribution.
+Our experiments show transfer from the complete \trace mixture but do not
+attribute gains to particular domains, operation families, sampling choices, or
+rendering controls. Such attribution would require mixture ablations. The
+current study also uses uniform task sampling over one fixed training pass;
+the explicit task identities and generation parameters could instead support
+difficulty-aware curricula, adaptive sampling, and mixture optimization based on
+model competence or learning progress.
 
-\trace does not define task-local difficulty ladders or a universal ordering
-across tasks. Solve rate depends on the evaluated model and protocol, while
-structural factors such as distractor quality in multiple choice and
-derivation depth in geometry are not directly commensurate. Future work could
-combine contract-preserving complexity axes within tasks with cross-task
-prerequisite relations inferred from executable programs and empirical
-learning curves. \trace additionally contains projected visual annotations
-used during task auditing, but establishing whether and how they should be
-used as training targets remains future work.
+Results are based on one training run per model scale, so variation across
+decoding seeds reflects inference variability rather than independent training
+variation. Comparisons with released RLVR checkpoints are descriptive because
+their data, optimization, and compute are unmatched. The external suite is broad
+but cannot establish transfer to every natural-image distribution, and some
+benchmarks use model-based graders. Finally, procedural consistency does not
+guarantee equal perceptual difficulty: synthetic renderers may introduce
+regularities or occasional ambiguities not found in natural images. Richer
+rendering sources and replay-based failure analysis are natural directions for
+future work.

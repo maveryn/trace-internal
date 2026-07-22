@@ -60,6 +60,236 @@ DOMAIN_CAPTION_NOUNS = {
     "illustrations": "illustration",
 }
 
+TITLE_OVERRIDES = {
+    "task_charts__matrix__off_diagonal_confusion_label": (
+        "Matrix: Off-Diagonal Confusion"
+    ),
+    "task_charts__size_encoding__panel_category_extremum_panel_label": (
+        "Size Encoding: Category Extremum Across Panels"
+    ),
+    "task_charts__single_series__threshold_value_count": (
+        "Single Series: Threshold Count"
+    ),
+    "task_games__pacman__next_item_label": "Pac-Man: Next Item",
+    "task_games__snakes_ladders__remaining_to_finish_value": (
+        "Snakes and Ladders: Remaining Distance to Finish"
+    ),
+    "task_geometry__circle_theorem__inscribed_angle_value_inscribed_angle_from_arc": (
+        "Circle Theorem: Inscribed Angle from Arc"
+    ),
+    "task_geometry__circle_pair_tangents__external_tangent_segment_length_value": (
+        "Circle Pair Tangents: Center Distance"
+    ),
+    "task_graph__phylogeny_tree__mrca_clade_membership_count": (
+        "Phylogeny Tree: MRCA Clade Membership"
+    ),
+    "task_icons__named_path__path_neighbor_label": "Named Path: Immediate Successor",
+    "task_illustrations__rpg_dungeon__safe_reachable_chest_count": (
+        "RPG Dungeon: Safe Reachable Chest"
+    ),
+    "task_illustrations__rpg_tactical_map__water_barrier_unreachable_tile_label": (
+        "RPG Tactical Map: Water-Barrier Unreachable Tile"
+    ),
+    "task_illustrations__rpg_house__adjacent_room_count": (
+        "RPG House: Adjacent Room"
+    ),
+    "task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label": (
+        "Mixed Infographic Page: Field-Total Comparison"
+    ),
+    "task_pages__profile_card_grid__field_ranked_profile_label": (
+        "Profile Card Grid: Highest-Value Profile"
+    ),
+    "task_puzzles__rubiks_net__post_move_face_color_count_label": (
+        "Rubik's Cube Net: Post-Move Face Color Count"
+    ),
+    "task_puzzles__pipe_flow__pipe_flow_repair_tile_label": "Pipe Flow: Repair Tile",
+    "task_puzzles__cyclic_order__cyclic_order_equivalent_label": (
+        "Cyclic Order: Equivalent Arrangement"
+    ),
+    "task_puzzles__raven_matrix__raven_spatial_transform_label": (
+        "Raven Matrix: Spatial Transform"
+    ),
+    "task_symbolic__abacus__displayed_value_readout": "Abacus: Displayed Value",
+    "task_symbolic__dice__pair_attribute_combo_probability": (
+        "Dice: Joint Even-Value Probability"
+    ),
+    "task_symbolic__spinner__multi_attribute_and_probability": (
+        "Spinner: Color-and-Shape Probability"
+    ),
+    "task_symbolic__turing_tape__turing_written_symbol_count": (
+        "Turing Tape: Written-Symbol Count"
+    ),
+    "task_three_d__object_cluster__multi_attribute_exclusion_count": (
+        "Object Cluster: Color-and-Type Exclusion"
+    ),
+    "task_three_d__object_cluster__multi_attribute_or_count": (
+        "Object Cluster: Type-or-Color Count"
+    ),
+    "task_three_d__object_scene__reference_nearest_label": (
+        "Object Scene: Nearest to Reference"
+    ),
+    "task_three_d__room__wall_object_same_wall_reference_label": (
+        "Room: Object on the Reference Wall"
+    ),
+    "task_three_d__carousel__object_type_ordered_adjacent_pair_count": (
+        "Carousel: Ordered Adjacent Pair Count"
+    ),
+    "task_three_d__conveyor__object_type_ordered_adjacent_pair_count": (
+        "Conveyor: Ordered Adjacent Pair Count"
+    ),
+    "task_three_d__conveyor__belt_total_object_count": (
+        "Conveyor: Objects on Selected Belt"
+    ),
+    "task_three_d__surface_fixture__repeated_element_count": (
+        "Surface Fixture: U-Bolt Count"
+    ),
+}
+
+TITLE_SMALL_WORDS = frozenset(
+    {"and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to"}
+)
+TITLE_ACRONYMS = {
+    "3d": "3D",
+    "iqr": "IQR",
+    "mrca": "MRCA",
+    "rpg": "RPG",
+}
+
+# Publication-facing rewrites remove repetitive generic scaffolding while
+# preserving every rule needed to answer the selected instance. Source hashes
+# force explicit review whenever an underlying task prompt changes.
+CURATED_PROMPT_OVERRIDES: dict[str, tuple[str, str]] = {
+    "task_charts__error_interval__reference_containment_count": (
+        "1d405668fe4c3e307b731bd992cdb1709d9d0f50b4f53d78024114d5760a42b4",
+        "The image shows a horizontal interval chart with labeled categories, "
+        "point estimates, and lower-to-upper interval whiskers. How many intervals "
+        "contain the reference value 54?",
+    ),
+    "task_charts__region_map__numeric_interval_region_count": (
+        "4e069555f353a76513bbe6cce13add1a6bec961c5122d9b033ad7dc4ca885cae",
+        "This image shows a world map with selected countries colored by value and "
+        "a color legend. How many countries fall in value bins between 20 and 99, "
+        "inclusive?",
+    ),
+    "task_charts__population_pyramid__age_group_threshold_count": (
+        "140065c573929b3849a9cd9894aae1569938f65d87106b60ab39830f2058ccac",
+        "The image shows a mirrored horizontal bar chart with one row per age "
+        "group. The left and right bars show the two legend series on the same "
+        "positive scale. In how many age groups is the sum of Urban and Rural at "
+        "most 140?",
+    ),
+    "task_games__pacman__next_item_label": (
+        "7326829ed9dabd87edb8041d6761f7e67df547716686da8ebf0b8d0d98842fbf",
+        "This scene shows a Pac-Man-style maze with a visible Pac-Man marker, "
+        "ghosts, pellets, bonus items, and a highlighted route. Which labeled "
+        "bonus item is encountered first along the highlighted route?",
+    ),
+    "task_geometry__rectangular_solid__open_box_net_dimension_value": (
+        "e212e8e63dad027655ef01560a3560ab65d720392dcc7fa5aa2c2a82887ff608",
+        "The diagram shows an open-box net with sheet dimensions, equal corner "
+        "cutouts, and one missing base dimension. Using the sheet dimensions and "
+        "cut size, find the marked base dimension.",
+    ),
+    "task_physics__wire_magnetism__wire_field_direction_choice": (
+        "c42ddaccd12c9ee98227fcbd5334a1131eea19fc17b4cabf8c454b50d819d79e",
+        "The diagram shows a current-carrying wire through the page, point P, and "
+        "labeled arrow options. Use the current cue to determine the circular "
+        "magnetic-field direction at P. Which arrow option matches that direction?",
+    ),
+    "task_physics__lever__missing_weight_balance_value": (
+        "4e47b68a1ce4f4652d2ddfe6b965fb811365e8828bf6012680a495c235b91ecf",
+        "The figure shows a lever with a fulcrum, distance marks, and weight blocks. "
+        "What weight should replace the block marked with a question mark so the "
+        "lever balances?",
+    ),
+    "task_physics__wave_interference__path_difference_value": (
+        "0229561a31727b0ffaf5b435582d42e7f6eed967ab4d32af682d881fb95a12b8",
+        "The diagram shows two labeled wave sources and their circular interference "
+        "wavefronts. Using the visible wavefront spacing and labels, determine "
+        "the absolute path difference between S1P and S2P in half-wavelength steps.",
+    ),
+    "task_icons__named_field__reference_distance_rank_label": (
+        "6ff31dbc9b704c32fcc168db617699da307575eb125789d3cf2e331dec908c12",
+        "The picture shows a panel with one reference icon, six option icons labeled "
+        "A-F, and other icons. Which labeled icon is second closest to the magenta "
+        "shield icon?",
+    ),
+    "task_puzzles__nonogram__candidate_solution_label": (
+        "f134126720c75c0e0ead2c054d5b90f1276338978b622230237ae6cdb4afbea8",
+        "This nonogram shows a clue grid with labeled filled-grid options. Use both "
+        "clue rails to identify the correct candidate grid.",
+    ),
+    "task_puzzles__rubiks_net__post_move_face_color_count_label": (
+        "687ec783793920a37b315a00cd2141eeff7ec72cf85dbdf01b85e5b75c322b05",
+        "The scene shows a Rubik's Cube net with face labels, a target-color swatch, "
+        "and four numbered options. A prime mark denotes a counterclockwise turn as "
+        "viewed from outside the affected face. After the sequence R' B' L, which "
+        "option gives the number of target-color stickers on the upper face?",
+    ),
+    "task_symbolic__organic_structure__bond_order_count": (
+        "e06ea00be7c89829ec0113aa8742e069b66200a2cb87152cc3e2d274369e9088",
+        "The visual panel contains an organic skeletal structure with line-angle "
+        "bonds, rings, and occasional atom or substituent labels. Count only the "
+        "visible triple bonds.",
+    ),
+    "task_symbolic__truth_table__truth_pattern_label": (
+        "8a56fe1db19fc39a3f578b9f24c5e9c990da0defa08d475893320ac797205ea0",
+        "A truth table shows an input table, a target expression P, and six labeled "
+        "output-pattern options. Values use 1 for true and 0 for false. The "
+        "operators are ! for NOT, & for AND, | for OR, and ^ for XOR. Reading rows "
+        "from top to bottom, which option matches the truth pattern for P?",
+    ),
+    "task_symbolic__braille_cell__matching_pattern_label": (
+        "c97dc3f1b35aa808b68f299a70a3659e0b0dbf3f3306209525671a02a998493a",
+        "This panel shows a Braille reference cell and six labeled Braille option "
+        "cells. Which option letter matches the reference pattern?",
+    ),
+    "task_symbolic__morse_code__morse_word_read_label": (
+        "5893d94bbc4ae9721aea33f338bcd480468a17f93e9470cffda558f720851b86",
+        "A visual Morse-code panel presents a Morse-code word above four labeled "
+        "word options. Which labeled option matches the Morse code?",
+    ),
+    "task_symbolic__music_staff__scale_degree_function_label": (
+        "2109cfa5ff0de46246c758809e69c1bee74b8e8c5b9346c24186ebbb1a07e106",
+        "The visual shows a sheet-music staff with marked notation items. Select "
+        "the option naming the scale-degree function of note 3 in G major.",
+    ),
+    "task_symbolic__logic_gate_circuit__output_value_label": (
+        "45714263988de900b6f238982e9a241bb3c9fcf05c6133358010748858d29f87",
+        "A Boolean logic-gate panel shows a circuit with labeled inputs, standard "
+        "gate symbols, wires, and final OUT nodes. Evaluate each circuit. Which "
+        "option's final OUT value is 1?",
+    ),
+    "task_three_d__carousel__object_type_ordered_adjacent_pair_count": (
+        "670b588f8cf7c917fb238f36901ed25541b7f408cdcf630a4fb8c99d6f13c18f",
+        "The scene shows small 3D objects on two concentric elliptical belts. "
+        "Following the order of the inner belt, count each occurrence of gloves "
+        "immediately followed by pyramids. How many pairs are there?",
+    ),
+    "task_three_d__conveyor__object_type_ordered_adjacent_pair_count": (
+        "57c087be0bd9f967cd3b3a232bf46f3a77efb7db7f68eeb6e544dac6eb5ec7dc",
+        "The visual shows a three-lane conveyor with small objects on each lane. "
+        "Following the order of the left belt, count each occurrence of flowers "
+        "immediately followed by trophies. How many pairs are there?",
+    ),
+    "task_three_d__object_cluster__multi_attribute_exclusion_count": (
+        "e7be9f121b1417d25663d3b0d3098e040395f373fc86d38c756bbb42984c9524",
+        "The visible scene contains many small 3D objects arranged on a plain "
+        "surface. How many cyan objects are not cups?",
+    ),
+    "task_three_d__object_cluster__multi_attribute_or_count": (
+        "dc80b310c428127f7bdd5175f32eff5b07e78143f5005d57f8d225989cbc6809",
+        "The image shows many small 3D objects arranged on a plain surface. How many "
+        "objects are either stools or blue?",
+    ),
+    "task_three_d__object_scene__reference_nearest_label": (
+        "55f386c349f7766aae344f8ef6dd59569f490985faac838982b838b3154ff2c9",
+        "The scene shows a washing machine as the reference and six smaller "
+        "candidate objects. Which option identifies the candidate nearest the "
+        "washing machine?",
+    ),
+}
+
 # These paper-local condensations preserve every rule needed to answer the
 # selected instance. The source hash forces explicit recuration if that prompt
 # changes rather than silently publishing stale wording.
@@ -249,10 +479,22 @@ def latex_escape(text: str) -> str:
 
 
 def humanize(value: str) -> str:
-    return value.replace("_", " ").strip().title()
+    words = value.replace("_", " ").strip().split()
+    rendered: list[str] = []
+    for index, word in enumerate(words):
+        lowered = word.lower()
+        if lowered in TITLE_ACRONYMS:
+            rendered.append(TITLE_ACRONYMS[lowered])
+        elif index > 0 and lowered in TITLE_SMALL_WORDS:
+            rendered.append(lowered)
+        else:
+            rendered.append(word.title())
+    return " ".join(rendered)
 
 
 def compact_title(scene_id: str, task_id: str) -> str:
+    if task_id in TITLE_OVERRIDES:
+        return TITLE_OVERRIDES[task_id]
     objective = task_id.rsplit("__", maxsplit=1)[-1]
     for suffix in ("_value", "_label", "_count"):
         if objective.endswith(suffix):
@@ -272,7 +514,22 @@ def normalized_prompt(record: dict[str, Any]) -> str:
 
 def prompt_display(record: dict[str, Any]) -> tuple[str, str, str, str]:
     source_question = normalized_prompt(record)
-    if len(source_question) <= FULL_PROMPT_MAX_CHARACTERS:
+    task_id = str(record["task_id"])
+    if task_id in CURATED_PROMPT_OVERRIDES:
+        expected_hash, display_question = CURATED_PROMPT_OVERRIDES[task_id]
+        actual_hash = hashlib.sha256(source_question.encode()).hexdigest()
+        if actual_hash != expected_hash:
+            raise ValueError(
+                f"Atlas source question changed for {task_id}: expected {expected_hash}, "
+                f"found {actual_hash}; recurate its publication wording"
+            )
+        display_mode = "curated"
+        font_tier = (
+            "normal"
+            if len(display_question) <= NORMAL_PROMPT_MAX_CHARACTERS
+            else "dense"
+        )
+    elif len(source_question) <= FULL_PROMPT_MAX_CHARACTERS:
         font_tier = (
             "normal"
             if len(source_question) <= NORMAL_PROMPT_MAX_CHARACTERS
@@ -281,7 +538,6 @@ def prompt_display(record: dict[str, Any]) -> tuple[str, str, str, str]:
         display_question = source_question
         display_mode = "full"
     else:
-        task_id = str(record["task_id"])
         if task_id not in COMPACT_PROMPT_OVERRIDES:
             raise ValueError(
                 f"Atlas question for {task_id} has {len(source_question)} characters; "
@@ -446,7 +702,7 @@ def latex_preamble() -> list[str]:
         r"\section{Representative Task Atlas}",
         r"\label{app:task-atlas}",
         "",
-        r"Each page presents twelve seeded examples from one visual domain. Panels pair each rendered instance with its semantic question and typed answer. Rule-heavy questions are condensed only when required for legibility.",
+        r"Each page presents twelve seeded examples from one visual domain. Panels pair each rendered instance with its question and typed answer. Rule-heavy questions are condensed only when required for legibility.",
         "",
         r"\begingroup",
         r"\setlength{\fboxsep}{2pt}",
@@ -494,9 +750,10 @@ def build_atlas(
     manifest_domains: list[dict[str, Any]] = []
     for domain in DOMAIN_ORDER:
         domain_title = DOMAIN_TITLES[domain]
+        placement = "t" if domain == DOMAIN_ORDER[0] else "p"
         lines.extend(
             [
-                r"\begin{figure}[p]",
+                rf"\begin{{figure}}[{placement}]",
                 r"\centering",
             ]
         )
@@ -578,7 +835,7 @@ def main() -> None:
     )
 
     manifest = {
-        "schema_version": "trace_paper_scene_atlas_v2",
+        "schema_version": "trace_paper_scene_atlas_v3",
         "artifact": args.tex_path.resolve().relative_to(paper_root).as_posix(),
         "artifact_sha256": sha256(args.tex_path.resolve()),
         "generator": Path(__file__).resolve().relative_to(paper_root).as_posix(),
@@ -603,6 +860,13 @@ def main() -> None:
                 "long_question_policy": (
                     "reviewed complete-sentence condensation with source hash"
                 ),
+                "curated_display_policy": (
+                    "publication wording overrides are source-hash guarded"
+                ),
+            },
+            "title_policy": {
+                "default": "humanized scene and objective identifiers",
+                "publication_overrides": sorted(TITLE_OVERRIDES),
             },
         },
         "source_root": "review/task-reviews (supplied with --review-root)",

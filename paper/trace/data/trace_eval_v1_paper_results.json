@@ -91,6 +91,19 @@
       "zero_benchmark_count": 0
     }
   },
+  "iid_validation": {
+    "metric": "combined_semantic_accuracy",
+    "rows": 2000,
+    "samples_per_task": 2,
+    "scores": {
+      "qwen2.5-vl-3b-base": 24.45,
+      "qwen2.5-vl-7b-base": 34.25,
+      "trace-qwen2.5-vl-3b": 41.05,
+      "trace-qwen2.5-vl-7b": 51.55
+    },
+    "seed": 42,
+    "task_count": 1000
+  },
   "models": {
     "game-rl-qwen2.5-vl-7b": {
       "benchmarks": {
@@ -349,7 +362,7 @@
           "stddev": 0.39782999282592696
         }
       },
-      "display_name": "PCGRPO-7B",
+      "display_name": "PC-GRPO-7B",
       "overall": {
         "mean": 48.803392546419,
         "seed_count": 3,
@@ -1149,8 +1162,18 @@
       }
     }
   },
+  "scale_gain_consistency": {
+    "benchmark_count": 24,
+    "source_values": "benchmark mean improvement over the corresponding base model",
+    "spearman_pvalue": 0.0019393928765259116,
+    "spearman_rho": 0.6
+  },
   "schema_version": "trace_paper_results_v1",
   "sources": {
+    "iid_validation_report": {
+      "path": "results/trace_validation_iid2000_seed42_8models_20260718_results.md",
+      "sha256": "2ecfdd69b26f81fde09a234ea2f7e2424046984808c9a284f770a7494823747f"
+    },
     "scores_3b": {
       "path": "results/trace_eval_v1_temp06_seed42_43_44_qwen25vl3b_base_trace_step500_20260716_scores.json",
       "sha256": "3a7acbf1d9baf3f32fe7ba7b4e522cc713a648fecf438eeae0319b013d8efda7"

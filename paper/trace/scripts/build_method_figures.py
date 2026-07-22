@@ -22,7 +22,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
-from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
+import seaborn as sns  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont, ImageOps, __version__ as pillow_version
 
 
@@ -174,7 +174,7 @@ RENDER_VARIATION_PROFILES = (
         "Baseline",
         "baseline",
         "Reference",
-        "Light neutral theme, sans-serif type, fixed layout, no context or noise",
+        "Light neutral theme, sans-serif type, fixed layout, clean background",
         {},
     ),
     RenderVariationProfile(
@@ -552,20 +552,20 @@ def _build_taxonomy_boundaries(samples: list[LoadedSample], output: Path) -> Non
     body = _font(29)
     small = _font(25)
 
-    draw.text((55, 35), "(a) Public hierarchy", font=heading, fill=INK)
+    draw.text((55, 35), "(a) Trace hierarchy", font=heading, fill=INK)
     hierarchy_y = 150
     domain_box = (65, hierarchy_y - 45, 430, hierarchy_y + 55)
     scene_box = (570, hierarchy_y - 45, 990, hierarchy_y + 55)
     draw.rectangle(domain_box, fill=(240, 245, 250), outline=BLUE, width=3)
     draw.rectangle(scene_box, fill=(245, 246, 248), outline=MUTED, width=2)
     _center_text(draw, domain_box, "domain: puzzles", _font(29, bold=True), fill=BLUE)
-    _center_text(draw, scene_box, "scene: cell board", _font(29, bold=True), fill=INK)
+    _center_text(draw, scene_box, "scene grammar: cell board", _font(29, bold=True), fill=INK)
     _draw_arrow(draw, (domain_box[2] + 20, hierarchy_y + 5), (scene_box[0] - 20, hierarchy_y + 5), fill=MUTED, width=5)
     task_names = ("reachable region", "shortest path", "largest component", "symmetry violation")
     task_group = (1160, 70, 3130, 245)
     draw.rectangle(task_group, fill=CARD, outline=LINE, width=2)
     draw.rectangle((1190, 56, 1465, 88), fill=PAPER)
-    draw.text((1200, 55), "public task objectives", font=small, fill=MUTED)
+    draw.text((1200, 55), "task programs", font=small, fill=MUTED)
     task_x = 1200
     task_w, task_gap = 440, 24
     for index, task_name in enumerate(task_names):
@@ -587,7 +587,7 @@ def _build_taxonomy_boundaries(samples: list[LoadedSample], output: Path) -> Non
     panel_w = (3090 - 2 * panel_gap) // 3
     panels = tuple((55 + i * (panel_w + panel_gap), panel_y0, 55 + i * (panel_w + panel_gap) + panel_w, panel_y1) for i in range(3))
     accents = (BLUE, ORANGE, GREEN)
-    headings = ("(b) Query variation", "(c) Public task split", "(d) Generation variation")
+    headings = ("(b) Query variation", "(c) Task boundary", "(d) Generation variation")
     for index, (panel, accent, panel_heading) in enumerate(zip(panels, accents, headings)):
         if index:
             draw.line((panel[0] - panel_gap // 2, panel[1], panel[0] - panel_gap // 2, panel[3]), fill=LINE, width=2)
@@ -610,7 +610,7 @@ def _build_taxonomy_boundaries(samples: list[LoadedSample], output: Path) -> Non
 
 
 def _load_environment_coverage(repo_root: Path) -> dict[str, Any]:
-    """Load environment counts from the generated inventory and task contracts."""
+    """Load environment counts from the generated inventory and task programs."""
 
     column_keys = tuple(key for key, _ in PROGRAM_OPERATION_COLUMNS)
     if column_keys != REASONING_OPERATION_KEYS:
@@ -667,7 +667,7 @@ def _load_environment_coverage(repo_root: Path) -> dict[str, Any]:
             raise RuntimeError(f"missing task documentation for {task_id}")
         task_doc_text = task_doc.read_text(encoding="utf-8")
         if "## Program Contract" not in task_doc_text:
-            raise RuntimeError(f"missing concrete program contract for {task_id}")
+            raise RuntimeError(f"missing concrete task-program definition for {task_id}")
         try:
             operations = task_reasoning_operations(task_id)
             documented_operations = parse_reasoning_operations(task_doc_text)
@@ -767,47 +767,91 @@ def _build_domain_landscape(coverage: dict[str, Any], output: Path) -> None:
     if total != int(coverage["task_count"]):
         raise RuntimeError("answer-interface counts do not match the active task count")
 
-    with plt.rc_context(PAPER_PLOT_RC):
-        fig = plt.figure(figsize=(10.8, 4.15), facecolor="white")
-        grid = fig.add_gridspec(1, 3, width_ratios=(1.30, 1.05, 1.08), wspace=0.36)
+    with plt.rc_context(PAPER_PLOT_RC), sns.axes_style(
+        "whitegrid",
+        {
+            "axes.edgecolor": PLOT_LINE,
+            "axes.grid": True,
+            "axes.grid.axis": "x",
+            "grid.color": PLOT_GRID,
+            "grid.linewidth": 0.45,
+        },
+    ):
+        fig = plt.figure(figsize=(10.8, 3.65), facecolor="white")
+        grid = fig.add_gridspec(1, 3, width_ratios=(1.28, 1.02, 1.10), wspace=0.34)
         axes = [fig.add_subplot(grid[0, index]) for index in range(3)]
         y = np.arange(len(domains))
 
         def style_axis(axis: Any) -> None:
             axis.set_axisbelow(True)
-            axis.grid(axis="x", color=PLOT_GRID, linewidth=0.5)
+            axis.grid(axis="x", color=PLOT_GRID, linewidth=0.45)
+            axis.grid(axis="y", visible=False)
             axis.spines[["top", "right", "left"]].set_visible(False)
             axis.spines["bottom"].set_color(PLOT_LINE)
             axis.tick_params(axis="y", length=0)
             axis.tick_params(axis="x", length=2.5, width=0.5)
+            axis.set_xlabel("")
 
-        axes[0].barh(y, task_values, height=0.62, color=PLOT_BLUE)
-        axes[0].set_yticks(y, domain_labels)
+        axes[0].hlines(y, 0, task_values, color="#a9bcc8", linewidth=1.0, zorder=1)
+        sns.scatterplot(
+            x=task_values,
+            y=y,
+            marker="o",
+            s=31,
+            color="#1f5f78",
+            edgecolor="white",
+            linewidth=0.45,
+            legend=False,
+            ax=axes[0],
+            zorder=2,
+        )
+        axes[0].set_yticks(y, labels=domain_labels)
         axes[0].invert_yaxis()
         axes[0].set_xlim(0, 200)
         axes[0].set_xticks((0, 50, 100, 150, 200))
-        axes[0].set_title("(a) Tasks by domain", loc="left", fontweight="bold", pad=6)
+        axes[0].set_title("(a) Tasks", loc="left", fontweight="semibold", pad=5)
         style_axis(axes[0])
         for row, value in enumerate(task_values):
-            axes[0].text(value + 3, row, str(value), va="center", fontsize=7, color=PLOT_INK)
+            axes[0].text(value + 4, row, str(value), va="center", fontsize=6.8, color=PLOT_INK)
 
-        axes[1].barh(y, scene_values, height=0.62, color=PLOT_BLUE_LIGHT)
-        axes[1].set_yticks(y, [])
+        axes[1].hlines(y, 0, scene_values, color="#c5d4dc", linewidth=1.0, zorder=1)
+        sns.scatterplot(
+            x=scene_values,
+            y=y,
+            marker="o",
+            s=31,
+            color="#6e9bad",
+            edgecolor="white",
+            linewidth=0.45,
+            legend=False,
+            ax=axes[1],
+            zorder=2,
+        )
+        axes[1].set_yticks(y, labels=[])
         axes[1].invert_yaxis()
         axes[1].set_xlim(0, 60)
         axes[1].set_xticks((0, 15, 30, 45, 60))
-        axes[1].set_title("(b) Scenes by domain", loc="left", fontweight="bold", pad=6)
+        axes[1].set_title("(b) Scene grammars", loc="left", fontweight="semibold", pad=5)
         style_axis(axes[1])
         for row, value in enumerate(scene_values):
-            axes[1].text(value + 1.0, row, str(value), va="center", fontsize=7, color=PLOT_INK)
+            axes[1].text(value + 1.3, row, str(value), va="center", fontsize=6.8, color=PLOT_INK)
 
         answer_y = np.arange(len(answer_order))
-        axes[2].barh(answer_y, answer_values, height=0.55, color=PLOT_BLUE)
-        axes[2].set_yticks(answer_y, [answer_labels[key] for key in answer_order])
-        axes[2].invert_yaxis()
+        sns.barplot(
+            x=answer_values,
+            y=[answer_labels[key] for key in answer_order],
+            orient="h",
+            color="#3c7892",
+            width=0.56,
+            saturation=0.9,
+            ax=axes[2],
+        )
         axes[2].set_xlim(0, 600)
         axes[2].set_xticks((0, 200, 400, 600))
-        axes[2].set_title("(c) Answer interfaces", loc="left", fontweight="bold", pad=6)
+        axes[2].set_title(
+            "(c) Answer interfaces", loc="left", fontweight="semibold", pad=5
+        )
+        axes[2].set_ylabel("")
         style_axis(axes[2])
         for row, value in enumerate(answer_values):
             axes[2].text(
@@ -845,44 +889,45 @@ def _build_domain_operation_matrix(coverage: dict[str, Any], output: Path) -> No
         for row in domains
     ]
     column_labels = [label for _, label in PROGRAM_OPERATION_COLUMNS]
-    cmap = LinearSegmentedColormap.from_list("trace_operation_share", [PLOT_ZERO, "#9fc0c4", "#176d75"])
+    cmap = sns.light_palette("#176d75", as_cmap=True)
 
-    with plt.rc_context(PAPER_PLOT_RC):
-        fig, axis = plt.subplots(figsize=(11.4, 4.65), facecolor="white")
-        image = axis.imshow(shares, cmap=cmap, vmin=0.0, vmax=max_share, aspect="auto", interpolation="nearest")
-        axis.set_xticks(np.arange(len(column_labels)), column_labels)
-        axis.set_yticks(np.arange(len(row_labels)), row_labels)
+    with plt.rc_context(PAPER_PLOT_RC), sns.axes_style("white"):
+        fig = plt.figure(figsize=(11.4, 4.35), facecolor="white")
+        grid = fig.add_gridspec(2, 1, height_ratios=(1.0, 0.045), hspace=0.22)
+        axis = fig.add_subplot(grid[0, 0])
+        colorbar_axis = fig.add_subplot(grid[1, 0])
+        sns.heatmap(
+            shares,
+            cmap=cmap,
+            vmin=0.0,
+            vmax=max_share,
+            annot=counts,
+            fmt="d",
+            annot_kws={"fontsize": 6.9},
+            linewidths=0.45,
+            linecolor="white",
+            xticklabels=column_labels,
+            yticklabels=row_labels,
+            cbar=True,
+            cbar_ax=colorbar_axis,
+            cbar_kws={"orientation": "horizontal"},
+            ax=axis,
+        )
         axis.xaxis.tick_top()
-        axis.tick_params(axis="x", length=0, pad=5, labelsize=6.8)
-        axis.tick_params(axis="y", length=0, pad=5, labelsize=7.2)
-        axis.set_xticks(np.arange(-0.5, len(column_labels), 1), minor=True)
-        axis.set_yticks(np.arange(-0.5, len(row_labels), 1), minor=True)
-        axis.grid(which="minor", color="white", linewidth=1.2)
-        axis.tick_params(which="minor", bottom=False, left=False)
-        for spine in axis.spines.values():
-            spine.set_visible(False)
+        axis.tick_params(axis="x", length=0, pad=5, labelsize=6.7, rotation=0)
+        axis.tick_params(axis="y", length=0, pad=5, labelsize=7.1, rotation=0)
+        axis.set_xlabel("")
+        axis.set_ylabel("")
 
-        for row_index in range(counts.shape[0]):
-            for column_index in range(counts.shape[1]):
-                text_color = "white" if shares[row_index, column_index] >= 0.52 * max_share else PLOT_INK
-                axis.text(
-                    column_index,
-                    row_index,
-                    str(int(counts[row_index, column_index])),
-                    ha="center",
-                    va="center",
-                    fontsize=7.0,
-                    color=text_color,
-                    fontweight="bold" if shares[row_index, column_index] >= 0.35 * max_share else "normal",
-                )
-
-        colorbar = fig.colorbar(image, ax=axis, orientation="horizontal", fraction=0.05, pad=0.10, aspect=45)
-        colorbar.set_label("Share of tasks within domain", fontsize=7.2, color=PLOT_MUTED, labelpad=3)
-        colorbar.set_ticks((0.0, max_share / 2.0, max_share))
-        colorbar.set_ticklabels(("0%", f"{max_share / 2.0:.0%}", f"{max_share:.0%}"))
-        colorbar.ax.tick_params(labelsize=6.8, length=2, colors=PLOT_MUTED)
-        colorbar.outline.set_edgecolor(PLOT_LINE)
-        colorbar.outline.set_linewidth(0.5)
+        colorbar_axis.set_xlabel("Share of tasks within domain", fontsize=7.1, color=PLOT_MUTED, labelpad=3)
+        colorbar_axis.xaxis.set_label_position("bottom")
+        colorbar_axis.set_xticks((0.0, max_share / 2.0, max_share))
+        colorbar_axis.set_xticklabels(("0%", f"{max_share / 2.0:.0%}", f"{max_share:.0%}"))
+        colorbar_axis.tick_params(axis="x", labelsize=6.7, length=2, colors=PLOT_MUTED)
+        colorbar_axis.tick_params(axis="y", left=False, labelleft=False)
+        for spine in colorbar_axis.spines.values():
+            spine.set_linewidth(0.45)
+            spine.set_edgecolor(PLOT_LINE)
 
         _save_plot_pdf(fig, output)
 
@@ -1181,7 +1226,7 @@ def _build_rendering_variation_profile_table(
     source = "\n".join(
         (
             "% Generated by paper/trace/scripts/build_method_figures.py; do not edit manually.",
-            r"\begin{table}[h]",
+        r"\begin{table}[t]",
             r"  \centering",
             r"  \scriptsize",
             r"  \setlength{\tabcolsep}{4pt}",
@@ -1215,7 +1260,7 @@ def _build_rendering_variation_pipeline(output: Path) -> None:
         ("Layout realization", (2095, 40, 2950, 395), ("panels and spacing", "camera and framing", "offset and scale jitter"), "render-only when unqueried"),
         ("Draw scene", (2095, 505, 2950, 860), ("marks, objects, and text", "options and legends", "scene-local context"), "realizes the sampled state"),
         ("Project and check", (1070, 505, 1925, 860), ("final coordinates", "visibility and contrast", "collision and fit"), "uses final geometry"),
-        ("Optional finishing", (45, 505, 900, 860), ("non-answer context", "tone and compression", "noise and texture"), "preserves the answer contract"),
+        ("Optional finishing", (45, 505, 900, 860), ("non-answer context", "tone and compression", "noise and texture"), "preserves the reward contract"),
     )
     for index, (title, box, lines, boundary) in enumerate(stages, start=1):
         draw.rectangle(box, fill=CARD, outline=BLUE if index == 1 else LINE, width=3 if index == 1 else 2)
@@ -1340,9 +1385,10 @@ def main() -> None:
     _build_rendering_variation_profile_table(rendering_variation, outputs[7])
 
     manifest = {
-        "schema_version": "trace_paper_method_figures_v10",
+        "schema_version": "trace_paper_method_figures_v11",
         "source_repository_head": _git_head(repo_root),
         "matplotlib_version": matplotlib.__version__,
+        "seaborn_version": sns.__version__,
         "pillow_version": pillow_version,
         "fonts": {
             "regular_sha256": _sha256(FONT_REGULAR),

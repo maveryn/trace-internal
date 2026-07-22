@@ -5,6 +5,10 @@
 \usepackage[preprint]{neurips_2026}
 \input{preamble}
 
+\makeatletter
+\renewcommand{\@notice}{}
+\makeatother
+
 \title{%
   \begin{tabular}{@{}c@{\hspace{0.32em}}l@{}}
     \raisebox{-0.35\height}{\includegraphics[height=0.58in]{figures/trace-mark.pdf}} &
@@ -19,51 +23,50 @@
   Md Tanvirul Alam \\
   Rochester Institute of Technology \\
   Rochester, NY, USA \\
-  \texttt{ma8235@rit.edu}
+  \texttt{ma8235@rit.edu} \\
+  \url{https://maveryn.github.io/trace/}
 }
 
 \begin{document}
+\raggedbottom
 
 \maketitle
 
 \begin{abstract}
 \sloppy
-Reinforcement learning with verifiable rewards has advanced language
-reasoning, but multimodal training still lacks visual data that combine broad
-coverage with exact, reproducible supervision. We present \trace, a
-taxonomy-guided environment for multidomain visual reasoning. \trace separates
-visible scene grammars from executable reasoning tasks, allowing visual form,
-program structure, and bounded query variation to be controlled independently.
-Each instance is generated from latent semantic state and yields a rendered
-image, prompt, typed answer, verifier state, and replayable execution trace.
-The environment contains 1,000 tasks across 277 scenes and 11 visual domains,
-with controlled variation in semantic content, layout, palette, typography,
-context, and rendering. Answer-only RLVR on 64,000 generated instances improves
-the macro-average over 24 external benchmarks by 3.51 percentage points for
-Qwen2.5-VL-3B and 4.06 points for Qwen2.5-VL-7B; the 7B model improves every
-benchmark in the suite. \trace therefore provides both a controlled task
-environment and evidence that procedural breadth can transfer beyond its
-synthetic imagery.
+Reinforcement learning with verifiable rewards (RLVR) has substantially improved
+language-model reasoning, yet its extension to vision-language models remains
+constrained by the lack of training data that are simultaneously broad, exactly
+verifiable, and reproducible. We introduce \trace, a taxonomy-guided environment
+for multidomain visual reasoning. \trace factorizes task construction into a
+scene grammar and an executable task program, separating visual realization from
+answer computation. A shared semantic state determines the rendered image,
+prompt, typed answer, verifier state, and replayable instance trace. The resulting
+environment comprises 1,000 tasks over 277 scene grammars and 11 visual domains,
+with controlled semantic and visual variation. RLVR on 64,000 \trace instances
+improves the macro-average across 24 external benchmarks by 3.51 percentage
+points for Qwen2.5-VL-3B and 4.06 points for Qwen2.5-VL-7B, providing evidence
+that broad procedural training can transfer beyond the generated task
+distributions.
+\textbf{Project page:} \url{https://maveryn.github.io/trace/}
 \end{abstract}
 
 \input{sections/introduction}
 \input{sections/related_work}
-\input{sections/trace_design}
 \input{sections/taxonomy}
-\input{sections/environment_coverage}
-\input{sections/generation_quality}
+\input{sections/trace_design}
 \input{sections/experiments}
 \input{sections/results}
-\input{sections/analysis}
+\input{sections/training_dynamics}
 \input{sections/limitations}
 \input{sections/conclusion}
 
-\section*{Broader Impact}
 \input{sections/broader_impact}
 
 \bibliographystyle{plainnat}
 \bibliography{references}
 
+\clearpage
 \appendix
 \input{sections/appendix}
 

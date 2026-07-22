@@ -54,7 +54,7 @@ This is a concise working checklist distilled from the official
 - [ ] Registry-derived counts match the release commit.
 - [ ] Dataset manifests match paper counts and splits.
 - [ ] All result tables are generated, not manually transcribed.
-- [ ] The answer-only RLVR protocol and reward metrics are defined consistently
+- [ ] The RLVR protocol and reward metrics are defined consistently
       in code, data, and paper.
 - [ ] The public repository can generate a documented smoke dataset from a
       clean environment.

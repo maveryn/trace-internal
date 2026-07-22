@@ -14,6 +14,12 @@ named-author arXiv preprint using the official NeurIPS 2026 `preprint` style.
    [`provenance/README.md`](provenance/README.md).
 4. Build with `make -C paper/trace` from the repository root.
 
+Install the paper-asset Python dependencies with:
+
+```bash
+python -m pip install -r paper/trace/requirements.txt
+```
+
 ## Source layout
 
 - `main.tex`: NeurIPS-preprint entry point and section order.

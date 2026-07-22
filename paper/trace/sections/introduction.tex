@@ -1,74 +1,78 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Reinforcement learning with verifiable rewards (RLVR) has become an effective
-route to stronger reasoning in language models because mathematical and
-programmatic tasks admit inexpensive, objective feedback
-\citep{shao2024deepseekmath,deepseekai2025deepseekr1}. Extending this recipe to
-vision-language models is more difficult. A useful visual example must support
-both exact verification and genuine dependence on the image, while also
-varying enough in content and presentation to avoid training on a narrow visual
-template. Recent multimodal RL methods demonstrate progress on mathematics,
-counting, spatial reasoning, and general visual understanding
-\citep{liu2025visualrft,huang2025visionr1,peng2025lmmr1,meng2025mmeureka}, but
-the data needed to train broadly transferable visual reasoning remains a
-central constraint.
+Reinforcement learning with verifiable rewards (RLVR) has emerged as an effective
+approach for improving language-model reasoning, particularly in mathematical and
+programmatic domains where solutions can be evaluated with inexpensive, objective
+feedback~\citep{shao2024deepseekmath,guo2025deepseek}. Extending this paradigm to
+vision-language models requires training data whose questions are grounded in
+visual content, whose answers can be verified exactly, and whose variation extends
+beyond a narrow set of templates. Recent multimodal RL methods report gains in
+visual mathematics, counting, spatial reasoning, and general visual
+understanding~\citep{liu2025visualrft,huang2025visionr1,peng2025lmmr1,
+meng2025mmeureka}, yet constructing visual training data that support broad and
+transferable reasoning remains a central bottleneck.
 
-Two complementary directions expose this limitation. Large mixtures provide
-coverage by combining many existing datasets and task-specific rewards
-\citep{sarch2026vero}, but their sampling units and reasoning boundaries are
-inherited from heterogeneous sources. Procedural systems provide exact labels
-and controlled generation, yet typically concentrate on one visual grammar or
-a small family of related objectives, including jigsaws, logic puzzles, games,
-and abstract perception tasks
-\citep{wang2025jigsawr1,feng2025visualsphinx,tong2025gamerl,
-alam2026sphinx,yang2026tron}. Consequently, breadth, controllability, and
-verifiability are rarely represented within one coherent task organization.
+Existing work has pursued two main strategies. Large training mixtures broaden
+coverage by combining many datasets with task-specific rewards
+~\citep{sarch2026vero}, but they inherit heterogeneous task granularity, sampling
+units, and reasoning boundaries from their source collections. Procedural systems
+instead provide exact supervision and controlled generation, but typically focus
+on a single scene grammar or a small set of closely related objectives, such as
+jigsaws, visual logic puzzles, games, or abstract perception tasks
+~\citep{wang2025jigsawr1,feng2025visualsphinx,tong2025gamerl,
+alam2026sphinx,yang2026tron}. As a result, breadth, controllability, and exact
+verification are rarely combined within one coherent task organization.
 
-\trace addresses this gap through a program-centered taxonomy. A scene defines
-the visible grammar---its objects, relations, and layout family---whereas a
-task defines the reasoning program, answer type, and verifier semantics. A
-bounded query changes a meaningful program argument, such as extremum
-direction, without creating another task. This distinction extends the use of
-structured scene representations and executable question programs in systems
-such as CLEVR and Task Me Anything
-\citep{johnson2017clevr,zhang2024taskmeanything}: the taxonomy determines not
-only generation, but also sampling, verification, and cross-domain analysis.
+We introduce \trace, a taxonomy-guided environment that addresses this gap by
+separating visual construction from reasoning computation. A scene grammar defines
+the objects, relations, and layout family that can be rendered; a task program
+specifies the computation and answer type; and a reward contract defines exact
+verification. Bounded query variation changes a meaningful task argument, such as
+extremum direction, without creating a separate task. Building on structured scene
+representations and executable question programs in CLEVR and Task Me Anything
+~\citep{johnson2017clevr,zhang2024taskmeanything}, \trace uses this decomposition
+not only to generate instances, but also to define the units used for sampling,
+verification, and cross-domain analysis.
 
-The resulting environment contains 1,000 tasks across 277 scenes and 11 visual
-domains. Each image and answer is derived from the same latent scene state, so
-verification evaluates a known program result rather than inferring a label
-from pixels. Seeded generation supports deterministic replay, while
-scene-compatible controls vary object populations, values, layout, palette,
-typography, contextual text, and bounded raster effects. Figure~\ref{fig:domain-montage}
-illustrates the resulting visual breadth.
+This organization yields 1,000 tasks over 277 scene grammars spanning 11 visual
+domains. Each instance is generated from a semantic state on which the task program
+is executed; the same state determines the image, prompt, typed answer, and verifier
+state. Supervision therefore follows directly from the task computation rather than
+from labels assigned after rendering. The environment supports controlled variation
+in both semantic content and visual realization while preserving stable task
+identity and exact rewards. Figure~\ref{fig:domain-montage} illustrates the resulting
+visual breadth.
 
-\begin{figure*}[t]
+\begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/domain_montage.pdf}
-  \caption{Representative generated instances from the 11 visual domains in
-  \trace. The visual grammars range from charts and diagrams to games, pages,
-  puzzles, and object scenes; the executable contracts beneath these images
-  are developed in Sections~\ref{sec:design} and~\ref{sec:taxonomy}.}
+  \caption{Representative instances from the 11 visual domains in \trace,
+  spanning charts, games, geometry, graphs, icons, illustrations, pages,
+  physics, puzzles, symbolic notation, and three-dimensional scenes.}
   \label{fig:domain-montage}
-\end{figure*}
+\end{figure}
 
-We use this environment to test a direct empirical question: whether
-answer-based RLVR over a broad procedural distribution improves reasoning on
-external visual benchmarks rather than only on regenerated instances from the
-same task families. Training on 64,000 instances improves the 24-benchmark
-macro-average by 3.51 points at 3B and 4.06 points at 7B. The 7B model improves
-all 24 benchmarks under the matched evaluation protocol, while benchmark-level
-results retain the smaller 3B regressions rather than hiding them in the
-aggregate.
+We use \trace to test whether RLVR on procedural visual tasks transfers beyond
+held-out instances from the same environment. Qwen2.5-VL-3B and
+Qwen2.5-VL-7B are trained on the same 64,000 \trace instances and evaluated on
+24 external visual-reasoning benchmarks. Training improves the benchmark
+macro-average by 3.51 percentage points at 3B and 4.06 points at 7B, providing
+evidence that broad procedural training can support transfer beyond the
+generated task distributions.
 
 Our contributions are:
 \begin{itemize}
-  \item a program-centered taxonomy that separates visual scene grammar from
-        executable reasoning task and bounded query variation across 1,000
-        tasks, 277 scenes, and 11 domains;
-  \item a deterministic generator--renderer--verifier formulation with typed
-        answers, replayable traces, and answer-preserving visual variation; and
-  \item a controlled answer-based RLVR study showing broad transfer from this
-        procedural distribution across 24 external visual-reasoning benchmarks.
+    \item A program-centered taxonomy that separates scene grammars, executable
+    task programs, and bounded query variation, providing stable task units across
+    1,000 tasks, 277 scene grammars, and 11 visual domains;
+
+    \item An executable generator--renderer--verifier environment in which images,
+    prompts, typed answers, verifier states, and replayable instance traces derive
+    from shared semantic state, enabling exact supervision and controlled semantic
+    and visual variation; and
+
+    \item A two-scale RLVR study showing gains of 3.51 and 4.06 points on the
+    24-benchmark macro-average at 3B and 7B, respectively, with positive mean
+    changes on 21 of 24 benchmarks at 3B and all 24 benchmarks at 7B.
 \end{itemize}

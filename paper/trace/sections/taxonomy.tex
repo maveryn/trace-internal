@@ -1,136 +1,162 @@
 \section{A Program-Centered Task Taxonomy}
 \label{sec:taxonomy}
 
-The taxonomy determines what is generated, sampled, and analyzed as
-one task.  It must therefore distinguish genuine reasoning objectives without
-turning every prompt argument or visual style into a new sampling unit. \trace
-organizes tasks as follows; Table~\ref{tab:task-boundaries} previews how
-the resulting boundary rule treats representative variations.
+A procedural environment requires a stable unit of generation, sampling,
+verification, and analysis. Defining this unit is nontrivial: changes to the
+reasoning objective should produce distinct tasks, whereas changes to prompt
+arguments or visual realization should not artificially inflate the task
+inventory. \trace addresses this problem through the hierarchy
 \begin{equation}
-  \text{domain} \longrightarrow \text{scene} \longrightarrow \text{task}.
+  \text{domain} \longrightarrow \text{scene grammar} \longrightarrow \text{task}.
   \label{eq:public-taxonomy}
 \end{equation}
-A domain groups related visual inputs for reporting and balancing.  A scene is
-a stable visible grammar: its object vocabulary, relations, layout family,
-and query-facing scaffold. A task binds that grammar to one objective
-contract. This hierarchy describes observable and computational structure,
-not the internal organization of a generator.
+A domain groups related visual inputs for reporting and mixture balancing. A
+scene grammar defines a reusable family of semantic states and visual
+realizations through its object vocabulary, relations, layout family, and
+question-facing scaffold. A task couples that grammar to an executable task
+program, answer schema, and reward contract. This factorization separates the
+visual structure of an instance from the computation used to answer it.
 
-\subsection{Task identity as a contract}
+\subsection{Task identity and equivalence}
 
-Let a scene contract be $\mathcal{S}$ and an objective contract be
+We represent a task as
 \begin{equation}
-  \mathcal{O} = (P,\mathcal{Y},\mathcal{V}),
+  T = (\mathcal{S}, P, \mathcal{Y}, \mathcal{C}),
 \end{equation}
-where $P$ is a concrete reasoning program, $\mathcal{Y}$ is the answer schema,
-and $\mathcal{V}$ is the verifier contract that specifies answer serialization
-and scoring. A task is the pair $T=(\mathcal{S},\mathcal{O})$. The
-program must specify the candidate set, operand roles, intermediate
-computation, final operator, and output binding; a label such as
-``count objects'' or ``select an extremum'' is not by itself a task
-definition.
+where $\mathcal{S}$ is the scene grammar, $P$ is the task program,
+$\mathcal{Y}$ is the answer schema, and $\mathcal{C}$ is the reward contract.
+The task program specifies how candidate objects are constructed, the roles of
+its operands, any intermediate computations, the final operator, and the
+binding between the computed result and the returned answer. Broad descriptions
+such as \textit{count objects} or \textit{select an extremum} therefore do not
+identify a task precisely enough for sampling or analysis.
 
-Two candidates can be merged only when
+Within \trace, two candidate task definitions are merged only when
 \begin{equation}
   T_i \equiv T_j
   \quad\Longleftrightarrow\quad
   \mathcal{S}_i \simeq \mathcal{S}_j,\;
   P_i \simeq P_j,\;
-  \mathcal{Y}_i=\mathcal{Y}_j,\;
-  \mathcal{V}_i \simeq \mathcal{V}_j,
+  \mathcal{Y}_i = \mathcal{Y}_j,\;
+  \mathcal{C}_i \simeq \mathcal{C}_j.
   \label{eq:task-equivalence}
 \end{equation}
-where $\simeq$ permits renaming literal operands, such as a color or category,
-but preserves the candidate set, operand arity, intermediate objects, output
-binding, visible scaffold, and scoring semantics.  A change to any of these
-elements produces a separate task even if the prompts look similar or the
-final answer has the same type.
+Here, $\mathcal{S}_i \simeq \mathcal{S}_j$ requires the same object
+vocabulary, relations, layout family, and visible scaffold;
+$P_i \simeq P_j$ requires the same candidate construction, operand roles,
+intermediate operations, final operator, and output binding; and
+$\mathcal{C}_i \simeq \mathcal{C}_j$ requires equivalent answer
+normalization and scoring behavior. These relations permit the renaming of
+literal operands, such as a color or category, but not changes to the
+underlying visual or computational structure. A change to any of these
+elements is represented as a separate task in \trace, even when the resulting
+prompts appear similar or share the same answer type.
 
-\subsection{Queries are semantic arguments, not task units}
-
-An internal query $q$ selects a bounded argument of $P$ when that argument
-meaningfully changes the question while leaving the contract in
-Equation~\ref{eq:task-equivalence} intact.  In the boxplot example in
-Figure~\ref{fig:taxonomy-boundaries}, largest and smallest IQR are two values
-of an extremum-direction argument.  Both branches use the same boxes,
-compute $q_3-q_1$, and return a group label under the same verifier contract.
-They are therefore queries of one task rather than two tasks.
-
-By contrast, counting icons with one shape attribute and counting icons that
-satisfy both a shape and a color are separate objectives.  The latter adds an
-operand role and constructs an intersection before counting.  Inclusive OR is
-also separate: although it uses the same attributes and returns the same
-answer type, its selected set is a union rather than an intersection.  In
-geometry, directly applying the exterior-angle relation and solving an
-algebraic angle expression likewise remain separate because they construct
-different intermediate quantities.  Sharing an integer answer type does not
-erase that program difference.
-
-Generation parameters $\theta$ occupy a third category.  Palette, font,
-layout, labels, board dimensions, and local difficulty may alter the rendered
-instance while leaving the prompt semantics and program unchanged.  The two
-cell boards in Figure~\ref{fig:taxonomy-boundaries}, for example, instantiate
-the same reachability task under different visual and structural parameters.
-Treating these changes as queries would promote incidental generation choices
-into the reasoning taxonomy.
-
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=\textwidth]{figures/taxonomy_boundaries.png}
-  \caption{Task-boundary examples. The hierarchy first fixes a visual
-  scene grammar and then a reasoning objective.  Extremum direction remains a
-  query when the boxplot program and output contracts are unchanged (left).
-  Adding a conjunctive attribute changes the icon-filtering program and creates
-  another task (center).  Rendering and layout variation remain generation
-  parameters when the reachability program is unchanged (right).}
-  \label{fig:taxonomy-boundaries}
-\end{figure*}
+Table~\ref{tab:task-boundaries} summarizes the operational consequences of
+this rule.
 
 \begin{table}[t]
   \centering
   \small
-  \caption{Applying the task-boundary rule to representative variations.}
+  \caption{Operational examples of the \trace task-boundary rule. Changes to
+  bounded program arguments remain queries, while semantic and render-only
+  variation preserve task identity. Changes to the computation or scene
+  grammar define a new task.}
   \label{tab:task-boundaries}
-  \begin{tabular}{@{}p{0.30\columnwidth}p{0.47\columnwidth}p{0.17\columnwidth}@{}}
+  \begin{tabular}{@{}p{0.30\columnwidth}p{0.43\columnwidth}p{0.21\columnwidth}@{}}
     \toprule
-    Variation & Contract effect & Classification \\
+    Variation & Effect on task definition & Classification \\
     \midrule
-    Palette, layout, item count & Program and output roles unchanged & Generation \\
-    Largest vs. smallest IQR & Only extremum direction changes & Query \\
-    Shape vs. shape-and-color count & Predicate arity and selected set change & New task \\
-    AND vs. inclusive OR count & Intermediate set operator changes & New task \\
-    Direct vs. algebraic exterior angle & Derivation rule changes & New task \\
-    Same extremum family in another scene & Visual grammar or output contract changes & New task \\
+    Palette or layout
+      & Fixed semantic state, task program, and reward contract unchanged
+      & Render-only generation \\
+    Item count or sampled values
+      & Semantic state changes within the same scene grammar and task program
+      & Semantic generation \\
+    Largest vs. smallest IQR
+      & Only extremum direction changes
+      & Query \\
+    Shape vs. shape-and-color count
+      & Predicate arity and selected set change
+      & New task \\
+    AND vs. inclusive OR count
+      & Intermediate set operator changes
+      & New task \\
+    Direct vs. algebraic exterior angle
+      & Derivation rule changes
+      & New task \\
+    Same extremum family in another scene grammar
+      & Scene grammar changes
+      & New task \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsection{Canonical programs without collapsing scenes}
+\subsection{Task, query, and generation boundaries}
 
-Program names are canonicalized across the environment so that equivalent
-operators can be found and analyzed together.  For example, choosing the
-boxplot with extreme IQR and choosing the grid line with an extreme shape count
-both instantiate an extreme-metric selection family. They remain separate
-tasks because their scene grammars, metric constructions, outputs, and
-visible scaffolds differ.  Canonicalization thus normalizes reasoning
-vocabulary without discarding the visual contract that defines the task.
+A task may expose an internal query variable $q$ that selects a bounded
+argument of $P$ while preserving the task program, answer schema, and reward
+contract. For example, choosing between the largest and smallest interquartile
+range changes the extremum direction but not the candidate set, metric, output
+binding, or verification rule.
 
-The distinction matters statistically. Tasks are sampled uniformly by
-default, with query sampling occurring inside a selected task.  Splitting one
-program into many operand-specific tasks would give that behavior excess
-probability mass, while merging different programs would hide heterogeneous
-reasoning behind one average.  We consequently merge only demonstrated
-contract equivalences and otherwise preserve the narrower task boundary. The
-result is a taxonomy that defines a common unit for generation, supervision,
-sampling, and analysis.
+Generation parameters $\theta$ instead determine the instance sampled from a
+fixed task definition. Semantic parameters vary the underlying state---such as
+object counts, values, thresholds, or board dimensions---and may therefore
+change the answer. Render-only parameters vary the visual realization of a
+fixed semantic state and query while preserving all answer-relevant relations
+and the resulting reward. Figure~\ref{fig:taxonomy-boundaries} illustrates
+these distinctions.
 
-\subsection{Compositional extensibility}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/taxonomy_boundaries.png}
+  \caption{Examples of the task boundary in \trace. \textbf{Left:} Changing
+  extremum direction modifies only a bounded query argument and therefore
+  remains within one boxplot task. \textbf{Center:} Adding a conjunctive
+  attribute changes the candidate predicate and selected set, producing a new
+  icon-filtering task. \textbf{Right:} Changes to board dimensions, layout, and
+  visual treatment remain generation parameters because the reachability
+  program and reward contract are unchanged.}
+  \label{fig:taxonomy-boundaries}
+\end{figure}
 
-The same boundary rule permits controlled growth. A new visual grammar expands
-the scene set, while a new reasoning contract expands the tasks available
-within a scene. Because visual realization and objective definition are
-separate, rendering primitives can be shared or improved without changing the
-statistical identity of an existing task. Conversely, one scene can support
-several reasoning programs without duplicating its visual construction. This
-factorization makes breadth an explicit composition of scene and objective
-coverage rather than an accumulation of unrelated templates.
+This separation prevents both forms of inventory distortion. Treating every
+operand choice as a new task would overcount a single computation, whereas
+merging distinct intermediate operations would obscure meaningful differences
+in reasoning.
+
+\subsection{Canonical task programs and extensibility}
+
+Although task identity remains bound to a scene grammar, task-program operators
+are canonicalized across grammars so that recurring computational structures
+can be analyzed jointly. For example, selecting the boxplot with the extreme
+IQR and selecting the grid line with the extreme shape count both instantiate
+the canonical signature
+\[
+  \emph{filter candidates}
+  \rightarrow
+  \emph{compute metric}
+  \rightarrow
+  \emph{select extremum}
+  \rightarrow
+  \emph{return candidate label}.
+\]
+They nevertheless remain distinct tasks because they operate over different
+scene grammars, construct different metrics, and bind the result to different
+visual entities. Canonicalization therefore exposes shared reasoning structure
+without collapsing scene-specific task identity.
+
+The same distinction determines the training mixture. \trace samples tasks
+uniformly by default and samples query values only after a task has been
+selected. Splitting a task into operand-specific variants would consequently
+overweight one program, whereas merging programs with different computations
+would hide heterogeneous reasoning behind a single sampling unit and aggregate
+score.
+
+The factorization also provides a controlled path for extension. A new scene
+grammar introduces a new family of semantic states and visual realizations,
+while a new task adds an executable program and reward contract to an existing
+grammar. Renderers can therefore evolve without redefining the tasks applied
+to their semantic states, and additional reasoning objectives can reuse an
+existing scene grammar without duplicating its visual construction.

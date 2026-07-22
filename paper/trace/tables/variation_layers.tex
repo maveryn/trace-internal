@@ -1,0 +1,28 @@
+\begin{table}[t]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3.5pt}
+  \renewcommand{\arraystretch}{1.02}
+  \caption{Variation layers and the invariants they preserve.}
+  \label{tab:variation-layers}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.21\linewidth}
+                       >{\raggedright\arraybackslash}p{0.44\linewidth}
+                       >{\raggedright\arraybackslash}p{0.25\linewidth}@{}}
+    \toprule
+    Layer & Representative controls & Required invariant \\
+    \midrule
+    Semantic instance
+      & Dimensions, cardinalities, values, operation length, candidate set
+      & Scene grammar and task program \\
+    Structural realization
+      & Placement, spacing, panel arrangement, framing, answer-preserving camera
+      & Semantic relations and answer \\
+    Surface and context
+      & Palette, typography, skins, materials, labels, non-answer text
+      & Semantic state and answer \\
+    Post-render
+      & Blur, resampling, compression, tone, noise, texture
+      & Canvas geometry and answer \\
+    \bottomrule
+  \end{tabular}
+\end{table}

@@ -2,7 +2,7 @@
 
 Sections 3 and 4 contain the executable-instance formalism, program-centered
 taxonomy, worked task boundaries, and method figures. The remaining work is to
-bind the frozen release and answer-only RLVR experiments to canonical evidence,
+bind the frozen release and RLVR experiments to canonical evidence,
 then complete the results and final prose.
 
 ## 1. Paper thesis
@@ -10,18 +10,18 @@ then complete the results and final prose.
 Trace is a taxonomy-guided environment for multidomain visual reasoning. Its
 central contribution is a task design and generation system in which:
 
-1. the public taxonomy separates visible scene grammar (`scene_id`) from a
-   stable reasoning contract (`task_id`);
-2. every task has an executable program, typed answer, and explicit verifier
-   contract;
+1. the public taxonomy separates scene grammar (`scene_id`) from a stable task
+   program (`task_id`);
+2. every task has an executable task program, typed answer, verifier state, and
+   explicit reward contract;
 3. instances are deterministic, replayable, and generated with controlled
    visual and semantic variation; and
-4. the resulting task distribution supports broad answer-based RLVR.
+4. the resulting task distribution supports broad RLVR.
 
 The paper should lead with the environment design. Dataset scale and RLVR
 results validate that design; they do not replace the taxonomy or generation
-story. Trace also retains optional image-space annotations for task auditing,
-but annotation supervision is not a primary claim or experiment in this report.
+story. Alternative supervision interfaces remain implementation details rather
+than separate experimental tracks in this report.
 Difficulty calibration remains a repository development workflow and is not a
 main-paper contribution; mention it only in an appendix if it supports a
 reported analysis.
@@ -31,7 +31,7 @@ reported analysis.
 The active registry currently contains:
 
 - **1,000 tasks**
-- **277 scenes**
+- **277 scene grammars**
 - **11 domains**
 
 These values were recomputed from the active task registry on 2026-07-14.
@@ -47,15 +47,16 @@ manually transcribed.
 
 The introduction should make at most four top-level claims:
 
-1. **A principled task taxonomy.** Trace separates domain, scene grammar,
-   objective contract, and internal query variation using executable program
-   boundaries rather than prompt names.
+1. **A principled task taxonomy.** Trace separates domain, scene grammar, task
+   program, and internal query variation using executable boundaries rather
+   than prompt names.
 2. **Executable and verifiable generation.** Answers are computed from latent
-   scene state and packaged with typed reward contracts and replayable traces.
+   scene state and packaged with typed reward contracts and replayable instance
+   traces.
 3. **Broad procedural coverage with explicit quality control.** The release
-   covers 1,000 tasks across 277 scenes and 11 domains, with contract
+   covers 1,000 tasks across 277 scene grammars and 11 domains, with reward-contract
    validation, manual review, and deterministic export.
-4. **Evidence for post-training utility.** Controlled answer-only RLVR
+4. **Evidence for post-training utility.** Controlled RLVR
    experiments measure transfer across a broad external benchmark suite.
 
 Claim 4 must match the final canonical result artifacts. Do not include pending
@@ -65,7 +66,7 @@ or exploratory supervision variants in the abstract or contribution list.
 
 ### Abstract and introduction
 
-Use a direct sequence: problem, Trace design, verified scale, answer-only RLVR
+Use a direct sequence: problem, Trace design, verified scale, RLVR
 setup, and one evidence-backed result. Motivate the need for stable task units,
 executable answers, controlled rendering, and reproducible reward contracts.
 
@@ -80,13 +81,13 @@ Organize by problem rather than chronology:
 - precise positioning of Trace.
 
 Keep the section between 1.25 and 1.5 rendered pages. Do not create a dedicated
-grounding or annotation-supervision subsection.
+grounding or supervision-mode subsection.
 
 ### The Trace environment
 
 Describe the primary instance record as image, prompt, typed answer, reward
-contract, and sidecar trace. Explain semantic generation, task execution,
-rendering, prompt realization, verifier binding, and deterministic replay. The
+contract, and instance trace. Explain semantic generation, task execution,
+rendering, prompt realization, verifier-state binding, and deterministic replay. The
 reachable-region example should demonstrate that the answer and verifier state
 come from one execution. Any projected overlay is explanatory audit metadata,
 not a required training output.
@@ -96,8 +97,8 @@ not a required training output.
 This is the paper's main section. Explain:
 
 - `domain -> scene_id -> task_id`;
-- scene as visible input grammar;
-- task as stable reasoning program plus answer and verifier contract;
+- scene as scene grammar;
+- task as stable task program plus answer schema and reward contract;
 - query as meaningful internal program or prompt variation, not a sampling
   unit;
 - program canonicalization across scenes and domains; and
@@ -112,24 +113,23 @@ Separate code-enforced guarantees from human review procedures.
 
 ### Experiments, results, and analysis
 
-Define the frozen base model, dataset revision, answer-only RLVR recipe,
+Define the frozen base model, dataset revision, RLVR recipe,
 benchmark suite, decoding, and metrics. The primary comparison is base versus
-Trace answer-only RLVR under a controlled protocol. Report aggregate and
+Trace RLVR under a controlled protocol. Report aggregate and
 per-benchmark results, then analyze transfer by task family, program breadth,
 and synthetic-to-external generalization. Negative transfer must remain visible.
 
 ### Limitations and conclusion
 
 Discuss taxonomy subjectivity, renderer regularities, synthetic-to-real
-transfer, coverage gaps, verifier limits, compute, and maintenance. A brief
-future-work note may mention learning from the audit annotations, but the
+transfer, coverage gaps, verifier limits, compute, and maintenance. The
 conclusion should return to taxonomy, generation, verification, and replay.
 
 ## 5. Required figures and tables
 
 1. **Domain montage (complete):** representative images from all 11 domains.
 2. **Executable instance pipeline (complete):** semantic execution, answer,
-   verifier binding, replay trace, and typed reward.
+   verifier state, instance trace, and reward contract.
 3. **Task-boundary examples (complete):** query variation, task splitting, and
    non-query generation variation.
 4. **Coverage summaries (complete):** generated domain, scene, task,
@@ -149,7 +149,7 @@ All numeric assets must be generated from canonical artifacts.
 Already available:
 
 - active registry and task inventory;
-- source contracts and domain/task documentation;
+- source task programs, reward contracts, and domain/task documentation;
 - review artifacts and build-validation records;
 - registry-derived coverage summaries and generated method figures;
 - frozen train/validation split and dataset manifests; and
@@ -163,14 +163,14 @@ Still required:
 
 ## 7. Evidence and writing policy
 
-Classify every claim as a contract fact, inventory fact, dataset fact,
+Classify every claim as a reward-contract fact, inventory fact, dataset fact,
 experimental fact, interpretation, or planned work. Record each figure and
 table's source files, commit, dataset revision, command, and output hash in
 `provenance/README.md`.
 
 Lead paragraphs with claims, then evidence and implications. Keep section roles
-distinct. Prefer concrete terms such as scene grammar, objective contract,
-execution trace, typed answer, and verifier contract. Do not describe scale as
+distinct. Use scene grammar, task program, verifier state, reward contract,
+instance trace, and typed answer consistently. Do not describe scale as
 quality, manually transcribe result cells, hide negative transfer, or present
 planned experiments as completed.
 

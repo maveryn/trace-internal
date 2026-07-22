@@ -1,0 +1,132 @@
+{
+  "audit_date": "2026-07-22",
+  "schema_version": "trace-machine-retirement-audit-v1",
+  "source_repositories": {
+    "internal": {
+      "repository": "maveryn/trace-internal",
+      "remote_heads": {
+        "main": "28785f91cdf3a4d35f92a790de975adfbf552c68",
+        "rlvr_before_audit_receipt": "d7c6830c56a028c4570f6f473d28049afffbb7c0"
+      },
+      "final_handoff_tag": "machine-retirement-handoff-20260722",
+      "local_only_reachable_commits": 0,
+      "worktree_clean_before_audit_receipt": true
+    },
+    "public": {
+      "repository": "maveryn/trace",
+      "remote_heads": {
+        "dev": "1cd627f05639a7e0f89ae5c4c727c96f49536220",
+        "main": "e89c17cd8993d567f2d47a50141a865064fa5b00",
+        "rlvr": "4f64405de90a5bdc52803d4fc2e71c14ec051efc"
+      },
+      "local_only_reachable_commits": 0,
+      "all_worktrees_match_remote": true
+    },
+    "paper_skills": {
+      "repository": "maveryn/ml-codex-skills",
+      "remote_heads": {
+        "main": "54876bbffd4c7752d5826cf0e3e40d7ee7d3b89a"
+      },
+      "local_only_reachable_commits": 0,
+      "worktree_clean": true
+    }
+  },
+  "durable_remote_artifacts": {
+    "calibration": {
+      "repository": "maveryn/trace-internal-calibration",
+      "revision": "7c439def86a89722a6757ce2b37362c9a52f4d81",
+      "task_count": 1000,
+      "pending_task_count": 0,
+      "content_set_sha256": "6db157d83fe1377178ed8b0508e837b1cf2f4a5c4d36c73d6b2c3955e511cb0a"
+    },
+    "external_eval_subsets": {
+      "repository": "maveryn/trace-external-eval-subsets",
+      "revision": "eb0df9b304356f6fa7ee0293e513ff7a2a0be3cf",
+      "private": true,
+      "file_count": 18,
+      "total_bytes": 4131770,
+      "selected_rows": 8000,
+      "content_set_sha256": "fcba5e939c5573f9188c8293be47190e9762eecc0588593ecb14fa5999e8ec46"
+    },
+    "annotation_experiment": {
+      "checkpoint_3b": {
+        "repository": "maveryn/trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500",
+        "revision": "68ea66ce6ddcb1c683a58d0992d19f6e61963e4d",
+        "private": false,
+        "file_count": 16,
+        "total_bytes": 8147618748
+      },
+      "checkpoint_7b": {
+        "repository": "maveryn/trace-qwen25vl7b-rlvr-ann-additive-0p50-sectioned-step500",
+        "revision": "f5ecbe0f8564548f201a6e4e2719225f1c8947e2",
+        "private": true,
+        "file_count": 18,
+        "total_bytes": 16600357216
+      },
+      "evaluation_archive": {
+        "repository": "maveryn/trace-internal-eval-runs",
+        "revision": "fa8ce278bfd1a99bb31b1b16431a36e3fd3942fa",
+        "models": 2,
+        "benchmarks_per_model": 24,
+        "seeds": [42],
+        "generation_extraction_score_files_per_model": 144,
+        "total_files_for_experiment": 288
+      }
+    }
+  },
+  "intentionally_not_archived": [
+    {
+      "path": "out/",
+      "bytes_at_audit": 119021447092,
+      "reason": "Generated dataset and calibration staging; canonical datasets and final calibration ledger are already on Hugging Face."
+    },
+    {
+      "path": "review/",
+      "bytes_at_audit": 38907685973,
+      "reason": "Regenerable task-review images and stale operational review history; final task calibration state is archived separately."
+    },
+    {
+      "path": ".tmp/",
+      "bytes_at_audit": 20902236759,
+      "reason": "Download, export, and Hugging Face caches."
+    },
+    {
+      "path": "external/",
+      "bytes_at_audit": 4082085022,
+      "reason": "Third-party benchmark caches and media; licenses do not permit indiscriminate redistribution."
+    },
+    {
+      "path": "runs/",
+      "bytes_at_audit": 3190572444,
+      "reason": "Superseded preliminary evaluation with copied benchmark images; canonical evaluations are remotely archived."
+    },
+    {
+      "path": "dist/",
+      "bytes_at_audit": 190905466,
+      "reason": "Rebuildable and stale wheel/sdist outputs."
+    },
+    {
+      "path": "logs/",
+      "bytes_at_audit": 108306018,
+      "reason": "Operational logs superseded by compact Git receipts, Hugging Face artifacts, and W&B telemetry."
+    },
+    {
+      "path": "paper/trace/main.pdf",
+      "bytes_at_audit": 18550329,
+      "reason": "Rebuildable from tracked LaTeX source."
+    },
+    {
+      "path": "paper/trace/trace-overleaf.zip",
+      "bytes_at_audit": 17744135,
+      "reason": "Rebuildable submission bundle."
+    }
+  ],
+  "explicit_exclusions": {
+    "credentials": "All local token and key files remain ignored and were not uploaded or committed.",
+    "review_database": "The SQLite issue/review database is historical operational state and is not required by runtime, training, evaluation, or paper reproduction.",
+    "optimizer_checkpoints": "Full optimizer/FSDP checkpoints were intentionally omitted; merged inference checkpoints and resolved training configurations are remote.",
+    "qwen3_alpha_experiment": "Discarded by prior decision; no checkpoint or evaluation archive is required for the canonical handoff.",
+    "task_conditioned_step100": "Only the compact tracked summary is retained; the exploratory checkpoint and full run were not selected for preservation."
+  },
+  "audit_result": "No unique large local artifact remains that warrants a new upload. Durable source, datasets, checkpoints, evaluations, telemetry, and calibration state are remotely preserved."
+}

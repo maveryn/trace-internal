@@ -9,19 +9,19 @@ After verifying the remote identities in this receipt, continue with
 
 ## Source repositories
 
-- Internal source: `maveryn/trace-internal`, branch `rlvr`. The GPU-host
-  handoff point is tagged `gpu-host-handoff-20260717` after the active baseline
-  campaign and its publication receipt are complete.
-- Public source: `maveryn/trace`, branches `main` and `rlvr`. Local commit
-  `d5d0215ff887e15c2ffafac632f27a3e0e76b5e8` contains the validated public CI,
-  release constraints, verifier documentation, release checker, and an explicit
-  RLVR release boundary. Its push requires a GitHub credential with `repo` and
-  `workflow` scopes. A two-patch recovery copy is stored at
-  `maveryn/trace-internal-eval-runs@a53ce5f687851532db7ba4f8c761237634b4f96a`
-  under `handoff/public-repository/d5d0215/`.
-- Public `rlvr` is intentionally not populated during this handoff. Curate the
-  paper training and canonical evaluation surface separately on the next
-  machine; do not copy the internal evaluation tree wholesale.
+- Internal source: `maveryn/trace-internal`. `main` resolves to
+  `28785f91cdf3a4d35f92a790de975adfbf552c68`; the substantive `rlvr` state
+  immediately before this final audit is
+  `d7c6830c56a028c4570f6f473d28049afffbb7c0`. The earlier GPU handoff remains
+  tagged `gpu-host-handoff-20260717`; the audit receipt and final handoff state
+  are tagged `machine-retirement-handoff-20260722`.
+- Public source: `maveryn/trace`. At the final machine audit, `main` resolves to
+  `e89c17cd8993d567f2d47a50141a865064fa5b00`, `dev` to
+  `1cd627f05639a7e0f89ae5c4c727c96f49536220`, and `rlvr` to
+  `4f64405de90a5bdc52803d4fc2e71c14ec051efc`. All three local worktrees match
+  these remote heads.
+- Paper-writing skills: `maveryn/ml-codex-skills`, `main` at
+  `54876bbffd4c7752d5826cf0e3e40d7ee7d3b89a`.
 
 ## Dataset and models
 
@@ -41,6 +41,7 @@ post-step-500 optimizer-state continuation becomes a requirement.
 
 | Scope | Repository and revision | Coverage |
 | --- | --- | --- |
+| Fixed external subsets | `maveryn/trace-external-eval-subsets@eb0df9b304356f6fa7ee0293e513ff7a2a0be3cf` | Private manifest-only indices for eight 1,000-row subsets, seed 42; 8,000 selected rows total. No benchmark media are redistributed. The verified 18-file content-set SHA-256 is `fcba5e939c5573f9188c8293be47190e9762eecc0588593ecb14fa5999e8ec46`. |
 | Canonical 7B comparison | `maveryn/trace-eval-runs@4178a839b689babe16f8ac36f0de7b1b2c5ef36c` | Base, TRACE, and VERO; 24 benchmarks; seeds 42/43/44; 648 response/extraction/score slices. The immutable run prefix remains valid after later repository appends. |
 | Canonical 3B comparison | `maveryn/trace-eval-runs@4178a839b689babe16f8ac36f0de7b1b2c5ef36c` | Base and TRACE; 24 benchmarks; seeds 42/43/44; 432 slices. The immutable run prefix remains valid after repository-level documentation changes. |
 | RL 7B baselines | `maveryn/trace-eval-runs@4ca25af7a4d7daa644e6f35e070dbed1af078321` | Game-RL, Sphinx, and PCGRPO; 24 benchmarks; seeds 42/43/44; 648 response/extraction/score slices. Repository documentation head: `b61d7702d0c95435869597b1050c8140d5b0d1f2`. |
@@ -63,6 +64,27 @@ The archive migration verification receipt proves that the canonical 24 and
 seven supplementary benchmarks are a disjoint, complete partition of the
 original 31-benchmark archive. See
 `results/trace_eval_archive_migration_20260717_verification_receipt.json`.
+
+### Experimental annotation artifacts
+
+The preliminary annotation-supervision experiment is not a headline paper
+result, but its expensive checkpoints and row-level evaluations are already
+preserved for future work:
+
+- 3B checkpoint:
+  `maveryn/trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500@68ea66ce6ddcb1c683a58d0992d19f6e61963e4d`
+  (8.15 GB).
+- 7B checkpoint:
+  `maveryn/trace-qwen25vl7b-rlvr-ann-additive-0p50-sectioned-step500@f5ecbe0f8564548f201a6e4e2719225f1c8947e2`
+  (16.60 GB).
+- Evaluation archive:
+  `maveryn/trace-internal-eval-runs@fa8ce278bfd1a99bb31b1b16431a36e3fd3942fa`.
+  It contains generation, extraction, and score slices for all 24 benchmarks at
+  seed 42 for both annotation checkpoints: 144 files per model and 288 files in
+  total.
+
+These runs are exploratory and should not be combined with the canonical
+three-seed answer-focused comparison without an explicit protocol distinction.
 
 ## Task calibration artifacts
 
@@ -188,6 +210,11 @@ Before publishing the paper-facing `rlvr` branch:
    tables; do not treat XLSX files as the source of truth.
 5. Continue public-repository curation on `rlvr` only after agreeing on the
    exact paper-facing file list.
+
+The final local/remote inventory and explicit disposal decisions are recorded
+in `results/trace_machine_retirement_audit_20260722.json`. Large local review
+artifacts, copied benchmark media, caches, old package builds, and preliminary
+runs are intentionally excluded from the handoff.
 
 No access tokens, benchmark media, or machine-local paths belong in this
 receipt or the public repository.

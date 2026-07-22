@@ -64,6 +64,25 @@ seven supplementary benchmarks are a disjoint, complete partition of the
 original 31-benchmark archive. See
 `results/trace_eval_archive_migration_20260717_verification_receipt.json`.
 
+## Task calibration artifacts
+
+The final task-level calibration ledger is archived privately at
+`maveryn/trace-internal-calibration@7c439def86a89722a6757ce2b37362c9a52f4d81`.
+It covers all 1,000 active tasks with zero pending tasks: 955 pass the final
+numerical gates directly and 45 have an explicit human acceptance record. The
+archive also contains 225 available referenced solve-rate workbooks; its
+manifest records the nine optional referenced workbooks that were unavailable
+at archival time.
+
+This is a mixed calibration ledger, not a uniform model benchmark. It combines
+757 records from the original 20-question by 8-rollout Qwen2.5-VL-3B prompt
+pilot with 243 records from later 50-question by 8-rollout calibration or
+explicit resolution records, principally using Qwen2.5-VL-7B. The verified
+content-set SHA-256 is
+`6db157d83fe1377178ed8b0508e837b1cf2f4a5c4d36c73d6b2c3955e511cb0a`.
+See `results/trace_task_calibration_v0_20260722_publish_receipt.json` for the
+complete publication and remote-verification receipt.
+
 ## Training telemetry
 
 - TRACE 7B W&B run: `llm-reasoning-rl/trace_easyr1/usqbkpd6`.

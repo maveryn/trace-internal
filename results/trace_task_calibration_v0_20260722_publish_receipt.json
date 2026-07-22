@@ -1,0 +1,41 @@
+{
+  "artifact_id": "trace-task-calibration-v0-20260722",
+  "archived_at": "2026-07-22T07:13:25.325538+00:00",
+  "content_set_sha256": "6db157d83fe1377178ed8b0508e837b1cf2f4a5c4d36c73d6b2c3955e511cb0a",
+  "coverage": {
+    "active_task_count": 1000,
+    "human_accepted_outside_numeric_gates_count": 45,
+    "numeric_gate_pass_count": 955,
+    "pending_task_count": 0,
+    "prompt_count_distribution": {
+      "20": 757,
+      "50": 243
+    },
+    "rollout_count_distribution": {
+      "160": 757,
+      "400": 243
+    }
+  },
+  "manifest_sha256": "b5accc1eefd1dbd3b5f29c5956f9ed7ef297177c83ae91f6665da84f70f2c814",
+  "private": true,
+  "remote_file_count": 296,
+  "remote_verification": {
+    "content_hash_errors": 0,
+    "missing_files": 0,
+    "unexpected_files_excluding_gitattributes": 0
+  },
+  "repository_id": "maveryn/trace-internal-calibration",
+  "repository_type": "dataset",
+  "revision": "7c439def86a89722a6757ce2b37362c9a52f4d81",
+  "schema_version": "trace-task-calibration-publish-receipt-v1",
+  "source": {
+    "branch": "rlvr",
+    "commit": "aa3ebdcdc48d66cd7b6e42b344184a57311f390c",
+    "repository": "maveryn/trace-internal"
+  },
+  "workbooks": {
+    "archived_count": 225,
+    "missing_optional_count": 9,
+    "referenced_count": 234
+  }
+}
